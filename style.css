@@ -5,3 +5,5 @@
 .detail-stat{background:#263b55;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:5px}.detail-stat strong{font-size:19px}
 .meter{height:12px;background:#344963;border-radius:20px;overflow:hidden}.meter>div{height:100%;background:#5ba5dc;border-radius:20px}
 @media(min-width:720px){.player-overlay{align-items:center}.player-panel .grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.skill-line{display:grid;grid-template-columns:65px minmax(0,1fr) 28px;align-items:center;gap:10px;margin:12px 0;font-size:13px}.skill-line .meter{height:9px}.skill-line strong{text-align:right}
