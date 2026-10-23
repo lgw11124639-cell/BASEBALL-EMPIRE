@@ -1,1 +1,5 @@
-{"version":"0.9.29","build":"20261024-home929","notes":"Mobile home layout fix"}
+{
+  "version": "0.9.30",
+  "build": "20261024-inning930",
+  "notes": "이닝별 점수표 2회 칸 비정상 너비 수정, 타자 기록표 CSS 분리"
+}
