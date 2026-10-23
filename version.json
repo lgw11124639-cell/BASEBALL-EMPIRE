@@ -1,5 +1,5 @@
 {
-  "version": "0.4.6",
-  "build": "20261023-stats46",
-  "notes": "투수 ERA·승패·WHIP·QS, 타자 타율·홈런·안타·타점·도루 표시"
+  "version": "0.4.7",
+  "build": "20261023-stats47",
+  "notes": "선발 ERA·승패·IP·K·WHIP·QS, 불펜 ERA·등판·승패·홀드·세이브·블론·WHIP·K, 타자 AVG·HR·H·RBI·SB·OBP·SLG·OPS"
 }
