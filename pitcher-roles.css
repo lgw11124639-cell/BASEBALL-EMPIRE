@@ -1,0 +1,1 @@
+.roster-modes{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important}.roster-modes button{font-size:11px!important;padding:11px 2px!important;letter-spacing:-.3px}.entry-group .entry-player select{width:110px}@media(max-width:390px){.roster-modes button{font-size:10px!important}.entry-group .entry-player select{width:102px}}
