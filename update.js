@@ -15,5 +15,5 @@ history.replaceState(null,'',base.toString());document.open();document.write(htm
 }catch(e){btn.disabled=false;btn.textContent='업데이트 적용';if(el('be-version-message'))el('be-version-message').textContent='업데이트 실패: '+e.message+' · 인터넷 연결을 확인해 주세요.'}}
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',draw);else draw();
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});window.addEventListener('online',check);setTimeout(check,1500);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});window.addEventListener('online',check);setTimeout(check,1500);setInterval(check,60000);
 })();
