@@ -1,5 +1,5 @@
 {
-  "version": "0.4.7",
-  "build": "20261023-stats47",
-  "notes": "선발 ERA·승패·IP·K·WHIP·QS, 불펜 ERA·등판·승패·홀드·세이브·블론·WHIP·K, 타자 AVG·HR·H·RBI·SB·OBP·SLG·OPS"
+  "version": "0.4.8",
+  "build": "20261023-sim48",
+  "notes": "정규시즌 자동 경기일 진행, 리그 순위 및 타격·투구 기록 누적(초기 시뮬레이션)"
 }
