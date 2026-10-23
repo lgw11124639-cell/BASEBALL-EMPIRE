@@ -107,19 +107,25 @@ function closePlayer(){detailPlayerId=null;document.querySelector('#player-overl
 
 let leaguePane='standings';
 const awardCategories=[
- ['타자 MVP','batter',p=>(p.hits||0)*1.5+(p.homeRuns||0)*5+(p.runsBattedIn||0)*1.8+(p.walks||0)*.4],
- ['투수 MVP','pitcher',p=>(p.pitchingWins||p.pitcherWins||0)*9+(p.pitchingStrikeouts||p.strikeoutsPitched||0)*.5+(p.saves||0)*2-(p.earnedRuns||0)*1.5],
- ['홈런왕','batter',p=>p.homeRuns||0],
- ['타격왕','average',p=>(p.hits||0)/Math.max(1,p.atBats||0)],
- ['타점왕','batter',p=>p.runsBattedIn||0],
- ['도루왕','batter',p=>p.stolenBases||0],
- ['탈삼진왕','pitcher',p=>p.pitchingStrikeouts||p.strikeoutsPitched||0],
- ['다승왕','pitcher',p=>p.pitchingWins||p.pitcherWins||0],
- ['세이브왕','pitcher',p=>p.saves||0],
- ['평균자책점 1위','era',p=>-9*(p.earnedRuns||0)/Math.max(1,p.inningsPitched||0)]
+ ['정규시즌 MVP','all',p=>p.position==='P'?((p.pitchingWins||0)*12+(p.pitchingStrikeouts||0)*.7+(p.saves||0)*3-(p.earnedRuns||0)*1.5):((p.hits||0)*1.6+(p.homeRuns||0)*6+(p.runsBattedIn||0)*2+(p.walks||0)*.5)],
+ ['신인왕','rookie',p=>p.position==='P'?((p.pitchingWins||0)*12+(p.pitchingStrikeouts||0)*.6):((p.hits||0)*1.4+(p.homeRuns||0)*6+(p.runsBattedIn||0)*1.5)],
+ ['타율 1위','average',p=>(p.hits||0)/Math.max(1,p.atBats||0)],
+ ['홈런 1위','batter',p=>p.homeRuns||0],
+ ['타점 1위','batter',p=>p.runsBattedIn||0],
+ ['안타 1위','batter',p=>p.hits||0],
+ ['득점 1위','batter',p=>p.runs||0],
+ ['출루율 1위','average',p=>((p.hits||0)+(p.walks||0))/Math.max(1,(p.atBats||0)+(p.walks||0))],
+ ['장타율 1위','average',p=>((p.hits||0)+3*(p.homeRuns||0))/Math.max(1,p.atBats||0)],
+ ['도루 1위','batter',p=>p.stolenBases||0],
+ ['다승 1위','pitcher',p=>p.pitchingWins||p.pitcherWins||0],
+ ['평균자책점 1위','era',p=>-9*(p.earnedRuns||0)/Math.max(1,p.inningsPitched||0)],
+ ['탈삼진 1위','pitcher',p=>p.pitchingStrikeouts||p.strikeoutsPitched||0],
+ ['세이브 1위','pitcher',p=>p.saves||0],
+ ['홀드 1위','pitcher',p=>p.holds||0],
+ ...['투수','포수','1루수','2루수','3루수','유격수','외야수','지명타자'].map(pos=>['골든글러브 · '+pos,'gold:'+pos,p=>p.position==='P'?((p.pitchingWins||0)*10+(p.pitchingStrikeouts||0)*.6-(p.earnedRuns||0)):((p.hits||0)*1.4+(p.homeRuns||0)*5+(p.runsBattedIn||0)*1.5)])
 ];
-function awardCandidates(category){const [name,kind,score]=category;let ps=state.players.filter(p=>kind==='pitcher'||kind==='era'?p.position==='P':p.position!=='P');if(kind==='average'){const max=Math.max(0,...ps.map(p=>p.atBats||0));ps=ps.filter(p=>(p.atBats||0)>=Math.max(1,max*.55))}if(kind==='era'){const max=Math.max(0,...ps.map(p=>p.inningsPitched||0));ps=ps.filter(p=>(p.inningsPitched||0)>=Math.max(1,max*.55))}return ps.filter(p=>p.games>0||p.atBats>0||p.inningsPitched>0).sort((a,b)=>score(b)-score(a)||a.id-b.id).slice(0,5)}
-function awardValue(category,p){const v=category[2](p);return category[0]==='타격왕'?v.toFixed(3):category[0]==='평균자책점 1위'?(-v).toFixed(2):String(Math.round(v*10)/10)}
+function awardCandidates(category){const [name,kind,score]=category;let ps=state.players.filter(p=>kind==='all'?true:kind==='rookie'?p.age<=23&&p.games<=100:kind.startsWith('gold:')?(kind==='gold:투수'?p.position==='P':kind==='gold:포수'?p.position==='C':kind==='gold:외야수'?['LF','CF','RF','OF'].includes(p.position):kind==='gold:지명타자'?p.position!=='P':p.position===({'1루수':'1B','2루수':'2B','3루수':'3B','유격수':'SS'}[kind.slice(5)])):kind==='pitcher'||kind==='era'?p.position==='P':p.position!=='P');if(kind==='average'){const max=Math.max(0,...ps.map(p=>p.atBats||0));ps=ps.filter(p=>(p.atBats||0)>=Math.max(1,max*.55))}if(kind==='era'){const max=Math.max(0,...ps.map(p=>p.inningsPitched||0));ps=ps.filter(p=>(p.inningsPitched||0)>=Math.max(1,max*.55))}return ps.filter(p=>p.games>0||p.atBats>0||p.inningsPitched>0).sort((a,b)=>score(b)-score(a)||a.id-b.id).slice(0,5)}
+function awardValue(category,p){const v=category[2](p);return ['타율 1위','출루율 1위','장타율 1위'].includes(category[0])?v.toFixed(3):category[0]==='평균자책점 1위'?(-v).toFixed(2):String(Math.round(v*10)/10)}
 function awardsFinished(){return state.teams.every(t=>(t.wins||0)+(t.losses||0)+(t.draws||0)>=144)}
 function finalizeAwards(){if(!awardsFinished()||state.awards?.[state.year])return;state.awards=state.awards||{};state.awards[state.year]=awardCategories.map(c=>{const p=awardCandidates(c)[0];return p?{title:c[0],playerId:p.id,playerName:p.name,teamId:p.teamId,value:awardValue(c,p)}:null}).filter(Boolean);for(const a of state.awards[state.year])clubNotice('시즌 시상','리그 '+a.title+' 수상',a.playerName+' 선수가 '+a.title+'을 수상했습니다. 시즌 공식 기록 '+a.value+'.',[a.teamId],[a.playerId])}
 function awardPanel(){const completed=awardsFinished(),awards=state.awards?.[state.year]||[];return '<section class="dashboard-section"><h2>'+state.year+' 시즌 '+(completed?'공식 수상 결과':'개인 타이틀 후보')+'</h2><p>'+(completed?'정규시즌 종료 · 공식 수상자 확정':'정규시즌 진행 중 · 기록에 따라 후보 순위가 변동됩니다.')+'</p>'+awardCategories.map(c=>{const official=awards.find(a=>a.title===c[0]);const candidates=awardCandidates(c);return '<div style="margin:20px 0;padding:16px;border:1px solid #dce4ef;border-radius:14px"><h3>'+esc(c[0])+'</h3>'+(official?'<p><strong>🏆 수상자 '+esc(official.playerName)+'</strong> · '+esc(official.value)+'</p>':'')+(candidates.length?candidates.map((p,i)=>'<button data-award-player="'+p.id+'" style="display:flex;width:100%;justify-content:space-between;gap:8px;padding:10px 4px;background:transparent;border:0;border-bottom:1px solid #e5e9ef;text-align:left;color:inherit"><span>'+(i+1)+'위 · '+esc(p.name)+' <small>'+esc(state.teams[p.teamId].name)+'</small></span><strong>'+esc(awardValue(c,p))+'</strong></button>').join(''):'<p>아직 기록이 없습니다.</p>')+'</div>'}).join('')+'</section>'}
