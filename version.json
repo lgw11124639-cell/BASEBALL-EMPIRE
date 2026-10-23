@@ -1,5 +1,5 @@
 {
   "version": "0.9.13",
-  "build": "20261024-closecontrast913",
-  "notes": "기사 닫기 버튼 글씨 대비 및 가독성 개선"
+  "build": "20261024-pitchloss913",
+  "notes": "선발 등판 회차 표시 제거 · 패전투수 책임 귀속 수정"
 }
