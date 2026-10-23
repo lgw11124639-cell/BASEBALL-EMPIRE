@@ -4,13 +4,13 @@
 .scoreboard-table{border-collapse:collapse!important;width:max-content!important;min-width:100%;font-size:12px!important}
 .scoreboard-table th,.scoreboard-table td{padding:7px 8px!important;line-height:1.35!important;height:auto!important;min-height:0!important;white-space:nowrap!important;vertical-align:middle!important}
 .scoreboard-table tbody tr{height:auto!important;min-height:0!important}
-.scoreboard-table th:nth-child(2){min-width:112px!important}
+.batting-box-table th:nth-child(2){min-width:112px!important}
 .scoreboard-table small{font-size:10px!important;line-height:1.3!important;margin-top:2px!important}
 .scoreboard-table .article-player-link{padding:0!important;line-height:1.3!important;font-size:12px!important}
 .player-panel [data-profile-pane="record"] table th,.player-panel [data-profile-pane="record"] table td{padding:6px 9px!important;line-height:1.35!important;height:auto!important}
 .player-panel [data-profile-pane="record"] table{font-size:12px!important}
 .player-panel [data-profile-pane="record"] .profile-heading{margin-top:20px!important;margin-bottom:10px!important}
-@media(max-width:480px){.scoreboard-table th,.scoreboard-table td{padding:6px 7px!important}.scoreboard-table th:nth-child(2){min-width:105px!important}}
+@media(max-width:480px){.scoreboard-table th,.scoreboard-table td{padding:6px 7px!important}.batting-box-table th:nth-child(2){min-width:105px!important}}
 </style><style id="home-mobile-layout-fix">
 @media(max-width:600px){
 .game-shell{padding:calc(env(safe-area-inset-top) + 10px) 12px calc(90px + env(safe-area-inset-bottom))!important;max-width:100vw!important;overflow-x:clip}
@@ -32,4 +32,4 @@
 .news-headline-day{font-size:10px!important;min-width:32px!important}
 .news-headline-arrow{font-size:16px!important}
 }
-</style></head><body><div id="app"><main style="padding:24px;color:#e8efff;font-family:system-ui">게임을 불러오는 중입니다…</main></div><script>window.addEventListener("error",function(e){var el=document.getElementById("app");if(el&&el.textContent.includes("게임을 불러오는 중"))el.innerHTML="<main style=\"padding:24px;color:#fff;font-family:system-ui\"><h2>게임 실행 오류</h2><p>"+String(e.message).replace(/</g,"&lt;")+"</p><p>저장 데이터는 삭제되지 않았습니다.</p></main>"});window.addEventListener("unhandledrejection",function(e){var el=document.getElementById("app");if(el&&el.textContent.includes("게임을 불러오는 중"))el.textContent="게임 초기화 실패: "+String(e.reason)})</script><script type="module" src="app.js?v=20261024-home929"></script><script defer src="update.js?v=20261024-home929"></script></body></html>
+</style><style id="inning-score-width-fix">.scoreboard-table:not(.batting-box-table){width:100%!important;min-width:max-content!important;table-layout:auto!important}.scoreboard-table:not(.batting-box-table) th,.scoreboard-table:not(.batting-box-table) td{min-width:0!important;width:auto!important;padding:7px 6px!important;text-align:center!important}.scoreboard-table:not(.batting-box-table) th:first-child{text-align:left!important;white-space:nowrap!important}</style></head><body><div id="app"><main style="padding:24px;color:#e8efff;font-family:system-ui">게임을 불러오는 중입니다…</main></div><script>window.addEventListener("error",function(e){var el=document.getElementById("app");if(el&&el.textContent.includes("게임을 불러오는 중"))el.innerHTML="<main style=\"padding:24px;color:#fff;font-family:system-ui\"><h2>게임 실행 오류</h2><p>"+String(e.message).replace(/</g,"&lt;")+"</p><p>저장 데이터는 삭제되지 않았습니다.</p></main>"});window.addEventListener("unhandledrejection",function(e){var el=document.getElementById("app");if(el&&el.textContent.includes("게임을 불러오는 중"))el.textContent="게임 초기화 실패: "+String(e.reason)})</script><script type="module" src="app.js?v=20261024-home929"></script><script defer src="update.js?v=20261024-home929"></script></body></html>
