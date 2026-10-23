@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const CURRENT='0.9.52', BUILD='20261024-gamelog952';
+const CURRENT='0.9.53', BUILD='20261024-careerlive953';
 let available=null,checking=false;
 function el(id){return document.getElementById(id)}
 function draw(){if(el('be-version-widget'))return;const panel=document.createElement('aside');panel.id='be-version-widget';panel.innerHTML='<button id="be-version-toggle" type="button" aria-expanded="false">⚾ v'+CURRENT+'</button><div id="be-version-panel" hidden><strong>BASEBALL EMPIRE</strong><p>설치된 버전: v'+CURRENT+'</p><p id="be-version-message">최신 버전을 확인할 수 있습니다.</p><button id="be-check" type="button">업데이트 확인</button><button id="be-apply" type="button" hidden>업데이트 적용</button><button id="be-hide" type="button">닫기</button></div>';document.body.appendChild(panel);el('be-version-toggle').onclick=()=>{const p=el('be-version-panel');p.hidden=!p.hidden;el('be-version-toggle').setAttribute('aria-expanded',String(!p.hidden));if(!p.hidden)check()};el('be-check').onclick=check;el('be-hide').onclick=()=>{el('be-version-panel').hidden=true;el('be-version-toggle').setAttribute('aria-expanded','false')};el('be-apply').onclick=apply}
