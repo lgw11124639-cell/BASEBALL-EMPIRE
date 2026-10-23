@@ -1,5 +1,5 @@
 {
-  "version": "0.9.2",
-  "build": "20261024-awardtabs92",
-  "notes": "MVP 및 개인 타이틀 4개 부문 탭 분리"
+  "version": "0.9.3",
+  "build": "20261024-newsfix93",
+  "notes": "구단 뉴스 빈 카드 수정 및 기존 드래프트 결과 호환"
 }
