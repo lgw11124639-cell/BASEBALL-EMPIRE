@@ -11,7 +11,7 @@ const response=await fetch(base.toString(),{cache:'no-store'});if(!response.ok)t
 let html=await response.text();if(!html.includes('id="app"')||!html.includes('app.js'))throw Error('새 화면 파일이 올바르지 않습니다');
 const cacheKey=encodeURIComponent(available.build)+'-'+Date.now();
 html=html.replace(/(\b(?:src|href)=")([^"]+\.(?:js|css))(?:\?[^"]*)?(")/g,(all,pre,path,end)=>pre+path+'?fresh='+cacheKey+end);
-history.replaceState(null,'',base.toString());document.open();document.write(html);document.close();
+history.replaceState(null,'',base.toString());location.replace(base.toString());
 }catch(e){btn.disabled=false;btn.textContent='업데이트 적용';if(el('be-version-message'))el('be-version-message').textContent='업데이트 실패: '+e.message+' · 인터넷 연결을 확인해 주세요.'}}
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',draw);else draw();
