@@ -66,3 +66,23 @@
 .be-home-more summary,.save-section summary{cursor:pointer;font-weight:700;color:#23496e;padding:7px 0}
 .be-home-more details>.dashboard-section{box-shadow:none;border:0;padding:12px 0;margin:0}
 @media(max-width:480px){.be-season-controls button{padding:10px 12px!important;font-size:14px}.be-season-controls select{padding:8px!important;font-size:14px}.be-summary-grid strong{font-size:14px}}
+
+
+/* Compact player details on iPhone */
+.pro-profile .profile-banner{padding:14px!important;gap:12px!important}
+.pro-profile .profile-art{max-width:105px!important;min-width:78px!important}
+.pro-profile .profile-identity{min-width:0}
+.pro-profile .profile-number{font-size:15px!important}
+.pro-profile .profile-name{font-size:25px!important;line-height:1.15!important}
+.pro-profile .profile-summary{display:none!important}
+.pro-profile .profile-content{padding:14px!important}
+.pro-profile .profile-heading{font-size:16px!important;margin:16px 0 9px!important}
+.pro-profile .profile-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important}
+.pro-profile .profile-facts>div{padding:10px!important;min-width:0}
+.pro-profile .profile-facts small{font-size:11px!important}
+.pro-profile .profile-facts strong{font-size:15px!important}
+.pro-profile .profile-note{font-size:13px!important;line-height:1.5!important}
+.pro-profile .profile-tabs{position:sticky;top:0;z-index:2}
+.pro-profile .profile-tabs button{font-size:13px!important;padding:11px 5px!important}
+.pro-profile [data-profile-pane="overview"]>.profile-heading:nth-of-type(n+3){margin-top:22px!important}
+@media(max-width:430px){.pro-profile .profile-banner{flex-direction:row!important}.pro-profile .profile-art{width:88px!important}.pro-profile .profile-sub{font-size:12px!important}}
