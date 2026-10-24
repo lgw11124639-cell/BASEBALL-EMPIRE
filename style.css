@@ -127,3 +127,6 @@
 .season-record-table .season-team-cell{min-width:88px}
 .season-record-table .career-total-row td,.season-record-table .career-total-row th{background:#eaf8ef;font-weight:800}
 .season-record-table .career-total-row .season-sticky-cell{background:#eaf8ef}
+
+/* v0.9.229: mobile player season history: prevent sticky season column from masking adjacent statistics */
+@media(max-width:700px){.pro-profile .season-record-scroll{overflow-x:auto!important;overflow-y:hidden!important;touch-action:pan-x pan-y}.pro-profile .season-record-table{width:max-content!important;min-width:max-content!important;table-layout:auto!important}.pro-profile .season-record-table th,.pro-profile .season-record-table td{position:static!important;left:auto!important;z-index:auto!important;min-width:76px!important;padding:10px 12px!important;overflow:visible!important;text-overflow:clip!important}.pro-profile .season-record-table .season-sticky-cell{position:static!important;min-width:126px!important;width:126px!important;box-shadow:none!important;white-space:nowrap!important}.pro-profile .season-record-table .season-team-cell{min-width:100px!important}}
