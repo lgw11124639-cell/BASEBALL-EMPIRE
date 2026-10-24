@@ -116,3 +116,14 @@
 .pro-profile .profile-content [data-profile-pane="record"] table{font-variant-numeric:tabular-nums}
 .pro-profile .profile-content [data-profile-pane="record"] table td{white-space:nowrap}
 @media(max-width:390px){.pro-profile .profile-art{width:145px!important;flex-basis:145px!important;min-width:145px!important;height:255px!important}.pro-profile .profile-banner{gap:10px!important;padding:12px!important}.pro-profile .profile-identity .profile-chip{font-size:11px!important}}
+
+/* Season history: stable columns, horizontal scroll, sticky year */
+.season-record-scroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;border:1px solid #dce5ed;border-radius:12px;overscroll-behavior-x:contain}
+.season-record-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:13px;font-variant-numeric:tabular-nums;table-layout:auto}
+.season-record-table th,.season-record-table td{box-sizing:border-box;white-space:nowrap;padding:11px 13px;text-align:center;border-bottom:1px solid #dce5ed;min-width:68px}
+.season-record-table thead th{background:#edf3fa;font-weight:800;color:#18334e}
+.season-record-table .season-sticky-cell{position:sticky;left:0;z-index:2;min-width:112px;text-align:left;background:#fff;font-weight:800;box-shadow:2px 0 3px #0e2e4d12}
+.season-record-table thead .season-sticky-cell{z-index:3;background:#edf3fa}
+.season-record-table .season-team-cell{min-width:88px}
+.season-record-table .career-total-row td,.season-record-table .career-total-row th{background:#eaf8ef;font-weight:800}
+.season-record-table .career-total-row .season-sticky-cell{background:#eaf8ef}
