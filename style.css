@@ -102,3 +102,17 @@
 .pro-profile .profile-extra[open]>:not(summary){margin-left:12px;margin-right:12px}
 .pro-profile .profile-content{padding:12px!important}
 .pro-profile .profile-facts>div{box-shadow:none!important}
+
+
+/* v0.9.205: prominent player portrait and full season table */
+.pro-profile .profile-banner{display:flex!important;align-items:stretch!important;gap:15px!important;padding:18px 14px!important}
+.pro-profile .profile-art{width:clamp(145px,39vw,220px)!important;min-width:145px!important;max-width:220px!important;flex:0 0 clamp(145px,39vw,220px)!important;min-height:255px!important;height:clamp(255px,72vw,345px)!important;overflow:hidden!important;border-radius:12px!important}
+.pro-profile .profile-art>img,.pro-profile .profile-art img,.pro-profile .profile-art>svg,.pro-profile .profile-art canvas{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center top!important}
+.pro-profile .profile-identity{flex:1 1 0!important;min-width:0!important;align-self:center!important}
+.pro-profile .profile-name{font-size:clamp(22px,6vw,31px)!important;overflow-wrap:anywhere!important}
+.pro-profile .profile-sub{line-height:1.5!important;overflow-wrap:anywhere!important}
+.pro-profile .player-photo-upload{max-width:100%!important;white-space:normal!important}
+.pro-profile .profile-content [data-profile-pane="record"]>h3:first-child{margin-top:4px!important}
+.pro-profile .profile-content [data-profile-pane="record"] table{font-variant-numeric:tabular-nums}
+.pro-profile .profile-content [data-profile-pane="record"] table td{white-space:nowrap}
+@media(max-width:390px){.pro-profile .profile-art{width:145px!important;flex-basis:145px!important;min-width:145px!important;height:255px!important}.pro-profile .profile-banner{gap:10px!important;padding:12px!important}.pro-profile .profile-identity .profile-chip{font-size:11px!important}}
