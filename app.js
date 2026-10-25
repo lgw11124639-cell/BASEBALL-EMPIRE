@@ -373,12 +373,12 @@ function nationalTeamFormScore(p){
  const x=currentSeasonBoxStats(p),g=Number(x.games)||0;
  if(p.position==='P'){
   const ip=Number(x.inningsPitched)||0,er=Number(x.earnedRuns)||0,k=Number(x.pitchingStrikeouts)||0,bb=Number(x.walksAllowed)||0;
-  if(ip<12||g<5)return -100;
+  if(ip<12||g<5)return Math.max(0,(Number(p.overall)||60)*.55);
   const era=er*9/ip;
   return Math.min(100,ip*.18)+Math.max(0,6-era)*9+k/Math.max(1,ip)*15-bb/Math.max(1,ip)*8;
  }
  const ab=Number(x.atBats)||0,h=Number(x.hits)||0,hr=Number(x.homeRuns)||0,bb=Number(x.walks)||0;
- if(ab<45||g<12)return -100;
+ if(ab<45||g<12)return Math.max(0,(Number(p.overall)||60)*.55);
  return h/ab*120+hr*1.6+bb/Math.max(1,ab)*25+Math.min(30,ab*.07);
 }
 function nationalTeamLineup(selected){
