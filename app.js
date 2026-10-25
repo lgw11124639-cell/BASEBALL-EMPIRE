@@ -324,7 +324,9 @@ function simulateOverseasSeason(year){
   const legacyNames={MLB:['New York','Los Angeles','Chicago','Boston','Seattle','San Francisco','Houston','Atlanta'],NPB:['Tokyo','Osaka','Fukuoka','Nagoya','Yokohama','Hiroshima','Sapporo','Chiba'],CPBL:['Taipei','Taoyuan','Taichung','Tainan','Kaohsiung','Hsinchu']};
   const oldNames=legacyNames[league.id]||[];
  const clubs=league.clubs.map((name,ci)=>{
-   const fallback=oldNames[ci];const old=Array.isArray(previousClubs[name])?previousClubs[name]:(Array.isArray(previousClubs[fallback])?previousClubs[fallback]:[]);
+   const fallback=oldNames[ci];
+   const old=Array.isArray(previousClubs[name])?previousClubs[name]:(Array.isArray(previousClubs[fallback])?previousClubs[fallback]:[]);
+   // A migrated roster is keyed by its current club, never by its original draft slot.
    const players=[];
    for(let i=0;i<18;i++){
     const pitcher=i<8,prior=old[i],age=prior?(Number(prior.age)||25)+1:ri(r,20,34);
@@ -345,14 +347,15 @@ function simulateOverseasSeason(year){
    }
    return {name,wins:ri(r,50,100),players};
   });
-  // Transfer same-position players and keep both roster slots consistent.
+  // Perform the transfer only after season statistics have been recorded.
+  // The destination club owns the player in the next season's persistent roster.
   if(clubs.length>1){
    const first=clubs[0],second=clubs[1],slot=ri(r,8,17);
-   const left=first.players[slot],right=second.players[slot];
-   first.players[slot]={...right,team:first.name};
-   second.players[slot]={...left,team:second.name};
-   const oldLeft=clubRosters[first.name][slot],oldRight=clubRosters[second.name][slot];
-   clubRosters[first.name][slot]=oldRight;clubRosters[second.name][slot]=oldLeft;
+   const firstRoster=clubRosters[first.name],secondRoster=clubRosters[second.name];
+   const left=firstRoster[slot],right=secondRoster[slot];
+   if(left&&right&&left.position===right.position){
+    firstRoster[slot]=right;secondRoster[slot]=left;
+   }
   }
   nextRosters[league.id]=clubRosters;
   leagues[league.id]={country:league.country,clubs,champion:clubs.reduce((a,b)=>a.wins>b.wins?a:b).name};
