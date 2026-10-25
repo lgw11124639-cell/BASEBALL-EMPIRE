@@ -130,3 +130,12 @@
 
 /* v0.9.229: mobile player season history: prevent sticky season column from masking adjacent statistics */
 @media(max-width:700px){.pro-profile .season-record-scroll{overflow-x:auto!important;overflow-y:hidden!important;touch-action:pan-x pan-y}.pro-profile .season-record-table{width:max-content!important;min-width:max-content!important;table-layout:auto!important}.pro-profile .season-record-table th,.pro-profile .season-record-table td{position:static!important;left:auto!important;z-index:auto!important;min-width:76px!important;padding:10px 12px!important;overflow:visible!important;text-overflow:clip!important}.pro-profile .season-record-table .season-sticky-cell{position:static!important;min-width:126px!important;width:126px!important;box-shadow:none!important;white-space:nowrap!important}.pro-profile .season-record-table .season-team-cell{min-width:100px!important}}
+
+/* History honors: readable player names and compact mobile cards */
+.history-honor-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:8px!important}
+.history-honor-list .history-honor{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:9px!important;min-height:58px!important;padding:11px 13px!important;margin:0!important;flex-wrap:wrap!important;width:100%!important;text-align:left!important;background:#f1f5fb!important;border:1px solid #d5e2f0!important;border-radius:11px!important;color:#17324e!important;font-size:14px!important;line-height:1.4!important;cursor:pointer!important;box-shadow:none!important}
+.history-honor-list .history-honor strong{font-size:16px!important;font-weight:800!important;color:#163c67!important;white-space:nowrap!important}
+.history-honor-list .history-honor span{color:#253e58!important;font-size:14px!important;font-weight:650!important;opacity:1!important}
+.history-honor-list .history-honor small{color:#60748a!important;font-size:12px!important;opacity:1!important}
+.history-honor-list .history-honor:active{background:#dceaf9!important}
+@media(max-width:600px){.history-honor-list{grid-template-columns:1fr!important}.history-honor-list .history-honor{min-height:54px!important;padding:10px 12px!important}}
