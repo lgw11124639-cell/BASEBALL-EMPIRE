@@ -223,7 +223,7 @@ function honorRetiredPlayers(year){
    arr.push(award);awardsByPlayer.set(id,arr);
   }
  }
- const champions=new Set((history.champions||[]).map(x=>String(x.year)+':'+String(x.teamId??x.winnerId??x.championTeamId)));
+ const champions=new Set(Object.values(state.postseasons||{}).filter(x=>x?.finished&&x.champion!=null&&Number(x.year)<=Number(year)).map(x=>String(x.year)+':'+String(x.champion)));
  const honorScore=(r,playerId,teamId=null)=>{
   const stats=teamId==null?r:r.byTeam.get(String(teamId));
   if(!stats)return 0;
