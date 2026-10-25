@@ -205,6 +205,7 @@ function honorRetiredPlayers(year){
  history.hallOfFame=history.hallOfFame||[];history.retiredNumbers=history.retiredNumbers||[];
  const seasons=Object.values(history.seasons||{}).filter(x=>Number(x.year)<=Number(year));const playerById=new Map(state.players.map(p=>[String(p.id),p]));
  const records=new Map();
+ const summarizedIdsByYear=new Map(seasons.map(season=>[Number(season.year),new Set((season.players||[]).filter(p=>p.id!=null&&Number(p.games)>0).map(p=>String(p.id)))]));
  for(const season of seasons)for(const x of season.players||[]){
   if(x.id==null||!(Number(x.games)>0||Number(x.atBats)>0||Number(x.inningsPitched)>0))continue;
   const id=String(x.id),r=records.get(id)||{years:new Set(),byTeam:new Map(),hits:0,homeRuns:0,wins:0,saves:0,strikeouts:0};
@@ -224,7 +225,7 @@ function honorRetiredPlayers(year){
   t.hits+=Number(x.hits)||0;t.homeRuns+=Number(x.homeRuns)||0;
   t.wins+=Number(x.pitchingWins)||0;t.saves+=Number(x.saves)||0;t.strikeouts+=Number(x.pitchingStrikeouts)||0;
   r.byTeam.set(teamId,t);
-  if(!(season.players||[]).some(p=>String(p.id)===id&&Number(p.games)>0)){
+  if(!summarizedIdsByYear.get(Number(season.year))?.has(id)){
    r.hits+=Number(x.hits)||0;r.homeRuns+=Number(x.homeRuns)||0;r.wins+=Number(x.pitchingWins)||0;r.saves+=Number(x.saves)||0;r.strikeouts+=Number(x.pitchingStrikeouts)||0;
   }
   records.set(id,r);
