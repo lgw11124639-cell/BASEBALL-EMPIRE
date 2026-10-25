@@ -42,6 +42,19 @@ function compactRetiredPlayerTraining(data){
 const SAVE_PARTS=['players','gameResults','history','careerRecords','teams','retiredPlayers'];
 function idbRead(key){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readonly');const req=tx.objectStore('saves').get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 function idbWrite(key,value){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite');let finished=false;const timer=setTimeout(()=>{if(finished)return;finished=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): '+key.split(':').slice(-1)[0]))},12000);const settle=(error)=>{if(finished)return;finished=true;clearTimeout(timer);if(error)reject(error);else resolve()};tx.oncomplete=()=>settle();tx.onerror=()=>settle(tx.error||Error('IndexedDB 저장 실패'));tx.onabort=()=>settle(tx.error||Error('IndexedDB 저장 취소'));try{tx.objectStore('saves').put(value,key)}catch(e){settle(e)}})}
+function idbWriteSmallBatch(entries){
+ if(!entries.length)return Promise.resolve();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');
+  let settled=false;
+  const timer=setTimeout(()=>{if(settled)return;settled=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): 소형 데이터 묶음'))},12000);
+  const finish=e=>{if(settled)return;settled=true;clearTimeout(timer);e?reject(e):resolve()};
+  tx.oncomplete=()=>finish();
+  tx.onerror=()=>finish(tx.error||Error('묶음 저장 실패'));
+  tx.onabort=()=>finish(tx.error||Error('묶음 저장 취소'));
+  try{for(const [key,value] of entries)store.put(value,key)}catch(e){try{tx.abort()}catch(_){}finish(e)}
+ });
+}
 let splitSaveCount=0;
 function cleanupSplitSaveKeys(active,previous){
  if(seasonStepBusy||autoSeasonRunning)return Promise.resolve(0);
@@ -64,7 +77,8 @@ function cleanupSplitSaveKeys(active,previous){
 async function save(){
  if(!state)return;
  const stamp=new Date().toISOString(),generation='v2-'+Date.now()+'-'+Math.floor(Math.random()*1000000);
- const snapshot=structuredClone(state);snapshot.lastSaved=stamp;compactRetiredPlayerTraining(snapshot);
+ // IndexedDB clones values on put; avoid an extra full-state copy per day.
+ const snapshot={...state,lastSaved:stamp};
  const meta={...snapshot},keys=[];
  try{
   for(const field of SAVE_PARTS){
@@ -85,14 +99,16 @@ async function save(){
    meta.__minorLeagueKeys=seasonKeys;
   }
   // Store remaining state fields separately to avoid a single oversized meta write.
-  const extraKeys=[];
+  const extraKeys=[],smallWrites=[];
   for(const field of Object.keys(meta)){
    if(field==='__minorLeagueKeys')continue;
    const key=generation+':extra:'+field;
-   await idbWrite(key,meta[field]);
+   smallWrites.push([key,meta[field]]);
    extraKeys.push([field,key]);
    delete meta[field];
   }
+  // Reduce transaction overhead while keeping large archives in separate writes.
+  for(let i=0;i<smallWrites.length;i+=8)await idbWriteSmallBatch(smallWrites.slice(i,i+8));
   meta.__extraKeys=extraKeys;
   await idbWrite(generation+':meta',meta);
   // Each idbWrite resolves only after transaction commit. Avoid re-reading every
