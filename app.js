@@ -512,7 +512,10 @@ function nationalTeamTournamentDay(){
   if(prior)return {game:prior,winner:korean?(prior.won?'KR':prior.opponent):prior.winner};
   let game;
   if(korean){
-   const opponent=home==='KR'?away:home,box=internationalOpeningGame(year,event,selected(),opponent,seed);
+   const opponent=home==='KR'?away:home,roster=selected(),pitchDays=record.internationalPitchDays||(record.internationalPitchDays={}),priorDays=new Map(roster.filter(p=>p.position==='P').map(p=>[p.id,p.lastAppearance]));
+   for(const p of roster.filter(p=>p.position==='P')){const last=pitchDays[p.id];if(Number.isFinite(Number(last))&&last!=null)p.lastAppearance=Math.max(Number(p.lastAppearance)||-999,Number(last));}
+   let box;try{box=internationalOpeningGame(year,event,roster,opponent,seed);}finally{for(const p of roster.filter(p=>p.position==='P'))p.lastAppearance=priorDays.get(p.id);}
+   if(box)for(const p of box.homePitchers||[])if((Number(p.outs)||0)>0)pitchDays[p.id]=state.day;
    if(!box||box.homeRuns===box.awayRuns)return null;
    game={round,date:today,...box,won:box.homeRuns>box.awayRuns};
    record.matchResults.push(game);record.openingGame=record.openingGame||game;
