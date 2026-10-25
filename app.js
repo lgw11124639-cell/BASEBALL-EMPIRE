@@ -500,19 +500,20 @@ function snapshotOverseasInterest(year){
  for(const p of state.players){
   if(p.retired||p.foreignPlayer||p.draftPending||p.overseasContract||p.level==='방출'||p.level==='은퇴'||p.level==='FA대기')continue;
   if(playerNationality(p)!=='KR')continue;
-  const age=Number(p.age)||25,service=Number(p.serviceYears)||0,overall=Number(p.overall)||0;
+  const age=Number(p.age)||25,service=Number(faServiceStatus(p).record.creditedSeasons)||0,overall=Number(p.overall)||0;
+  const recentGames=Number(p.games)||0,performance=p.position==='P'?(Number(p.inningsPitched)||0)>=65:(Number(p.atBats)||0)>=180;
   // Preliminary scouting threshold only; formal posting and overseas FA rules are separate.
-  if(age<22||age>35||service<5||overall<75)continue;
-  if(r()>.16)continue;
+  if(age<22||age>35||service<7||overall<78||!performance)continue;
+  if(r()>.10)continue;
   const league=leagues[overall>=85&&r()<.7?0:1];
   const club=league.clubs[ri(r,0,league.clubs.length-1)];
-  offers.push({playerId:p.id,name:p.name,teamId:p.teamId,league:league.id,club,year,stage:'관심',route:service>=9?'해외 FA 검토':'포스팅 자격 검토'});
-  if(offers.length>=20)break;
+  offers.push({playerId:p.id,name:p.name,teamId:p.teamId,league:league.id,club,year,stage:'관심',route:service>=9?'해외 FA 자격 검토':'포스팅 자격 검토'});
+  if(offers.length>=8)break;
  }
  archive[year]=offers;
  // News coverage is based on actual scouting-interest records, never a completed transfer.
  // Cap headlines to avoid filling the owner's news feed with speculative stories.
- for(const offer of offers.slice(0,4)){
+ for(const offer of offers.slice(0,3)){
   const oldClub=state.teams.find(t=>String(t.id)===String(offer.teamId));
   const headline='[해외 진출] '+offer.name+', '+offer.league+' '+offer.club+' 관심… '+offer.route;
   const article=(oldClub?.name||'KBO 소속 구단')+'의 '+offer.name+' 선수가 '+offer.league+' '+offer.club+'의 관심 대상으로 떠올랐다. 해외 구단의 선수 관찰 단계로, 공식 계약이나 이적이 확정된 것은 아니다. 향후 해외 진출 자격과 구단 협의 결과에 따라 진행 여부가 결정될 전망이다.';
