@@ -392,7 +392,27 @@ function honorRetiredPlayers(year){
   }
  }
 }
-function jerseyNumber(p){if(!state?.players)return p.jerseyNumber??'—';const teamId=p.teamId;const roster=state.players.filter(x=>x.teamId===teamId&&!x.retired&&x.level!=='방출'&&x.level!=='은퇴').sort((a,b)=>{const priority=x=>x.level==='1군'?0:x.level==='2군'?1:x.level==='육성'?2:3;return priority(a)-priority(b)||a.id-b.id});const reserved=new Set((state.history?.retiredNumbers||[]).filter(x=>String(x.teamId)===String(teamId)).map(x=>Number(x.number)));const used=new Set(reserved);for(const x of roster){const n=Number(x.jerseyNumber);if(x.jerseyNumber!=null&&Number.isInteger(n)&&n>=0&&n<=999&&!used.has(n))used.add(n);else if(x.jerseyNumber!=null)x.jerseyNumber=null}for(const x of roster){if(x.jerseyNumber!=null)continue;let n=1;while(used.has(n)&&n<=999)n++;if(n>999)break;x.jerseyNumber=n;used.add(n)}return p.jerseyNumber??'—'}
+function jerseyNumber(p){
+ if(!state?.players)return p.jerseyNumber??'—';
+ const teamId=p.teamId;
+ const roster=state.players.filter(x=>String(x.teamId)===String(teamId)&&!x.retired&&!['방출','은퇴','계약종료'].includes(x.level)).sort((a,b)=>{
+  const priority=x=>x.level==='1군'?0:x.level==='2군'?1:x.level==='육성'?2:3;
+  return priority(a)-priority(b)||Number(a.id)-Number(b.id);
+ });
+ const reserved=new Set((state.history?.retiredNumbers||[]).filter(x=>String(x.teamId)===String(teamId)).map(x=>Number(x.number)).filter(n=>Number.isInteger(n)&&n>=1&&n<=99));
+ const used=new Set(reserved);
+ for(const x of roster){
+  const n=Number(x.jerseyNumber);
+  if(x.jerseyNumber!=null&&Number.isInteger(n)&&n>=1&&n<=99&&!used.has(n))used.add(n);
+  else x.jerseyNumber=null;
+ }
+ for(const x of roster){
+  if(x.jerseyNumber!=null)continue;
+  let n=1;while(n<=99&&used.has(n))n++;
+  if(n<=99){x.jerseyNumber=n;used.add(n)}
+ }
+ return p.jerseyNumber??'—';
+}
 function positionName(p,b){return p.position==='P'?'투수':({C:'포수','1B':'1루수','2B':'2루수','3B':'3루수',SS:'유격수',LF:'좌익수',CF:'중견수',RF:'우익수',IF:'내야수',OF:'외야수'}[p.position]||p.position)}
 function playerFace(p){if(p.profile?.photoData&&/^data:image\/(jpeg|png|webp);base64,/.test(p.profile.photoData))return '<img class="real-player-photo" src="'+p.profile.photoData+'" alt="'+esc(p.name)+' 선수 프로필 사진">';const team=state.teams.find(t=>t.id===p.teamId);const initials=esc(team?.name||'BE');const num=String(jerseyNumber(p));return '<div class="official-player-art" role="img" aria-label="선수 사진 미등록 · 구단 유니폼 대체 이미지"><div class="jersey-halo"></div><div class="jersey-shoulders"><div class="jersey-body"><span class="jersey-letters">'+initials+'</span><span class="jersey-number">'+num+'</span></div></div><span class="jersey-photo-status">선수 사진 미등록</span></div>'}
 
