@@ -552,6 +552,7 @@ function resolveOverseasContractExpiry(year){
   p.nationalDutyUntil=null;
   const profile=ensureProfile(p);
   profile.contractYears=2;
+  profile.overseasReturn={year:year+1,formerClub:transfer.club,originalTeamId:team.id,rights:'원소속 구단 복귀 처리',faReviewRequired:true};
   p.teamHistory=p.teamHistory||[];
   p.teamHistory.push({year,from:transfer.club,to:team.id,reason:'해외 계약 만료 후 KBO 복귀'});
   state.players.push(p);
