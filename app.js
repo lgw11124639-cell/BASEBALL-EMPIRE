@@ -37,8 +37,44 @@ function compactRetiredPlayerTraining(data){
  }
  return count;
 }
-async function save(){if(!state)return;const stamp=new Date().toISOString();const data=state;let lastError;for(let attempt=0;attempt<2;attempt++){let tx=null;try{if(!db||attempt){try{db?.close()}catch(_){}db=await openDB()}tx=db.transaction('saves','readwrite');const done=new Promise((ok,no)=>{tx.oncomplete=()=>ok();tx.onerror=()=>no(tx.error||new Error('IndexedDB transaction failed'));tx.onabort=()=>no(tx.error||new Error('IndexedDB transaction aborted'))});const saveStarted=performance.now();let requestFinished=false;const request=tx.objectStore('saves').put(data,'main');request.onsuccess=()=>{requestFinished=true};let timeoutId;try{await Promise.race([done,new Promise((_,reject)=>{timeoutId=setTimeout(()=>reject(new Error('저장 응답 지연: IndexedDB 거래가 15초 동안 완료되지 않았습니다. (쓰기 요청 '+(requestFinished?'완료':'미완료')+', 경과 '+Math.round(performance.now()-saveStarted)+'ms, 선수 '+(data.players?.length||0)+'명, 경기 '+(data.gameResults?.length||0)+'건)')),15000)})])}finally{clearTimeout(timeoutId)}state.lastSaved=stamp;return}catch(e){lastError=e;const name=e?.name||'';if(name==='QuotaExceededError'||name==='DataCloneError')break;if(attempt===0){try{tx?.abort()}catch(_){}try{db?.close()}catch(_){}db=null}else break}}try{const sizes=Object.entries(data).map(([key,value])=>{let bytes=0;try{bytes=new Blob([JSON.stringify(value)]).size}catch(_){}return {key,bytes}}).sort((a,b)=>b.bytes-a.bytes).slice(0,6);console.warn('BASEBALL EMPIRE 저장 실패 진단',sizes,lastError)}catch(_){}throw lastError}
-async function load(){const tx=db.transaction('saves','readonly');const q=tx.objectStore('saves').get('main');return new Promise((ok,no)=>{q.onsuccess=()=>ok(q.result||null);q.onerror=()=>no(q.error)})}
+// Keep the original 'main' record untouched. Publish a new snapshot only after
+// every component has committed successfully; interrupted writes remain invisible.
+const SAVE_PARTS=['players','gameResults','history','careerRecords','teams','minorLeague','retiredPlayers'];
+function idbRead(key){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readonly');const req=tx.objectStore('saves').get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+function idbWrite(key,value){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite');tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||Error('IndexedDB 저장 실패'));tx.onabort=()=>reject(tx.error||Error('IndexedDB 저장 취소'));tx.objectStore('saves').put(value,key)})}
+async function save(){
+ if(!state)return;
+ const stamp=new Date().toISOString(),generation='v2-'+Date.now()+'-'+Math.floor(Math.random()*1000000);
+ const snapshot=structuredClone(state);snapshot.lastSaved=stamp;compactRetiredPlayerTraining(snapshot);
+ const meta={...snapshot},keys=[];
+ try{
+  for(const field of SAVE_PARTS){
+   if(!Object.prototype.hasOwnProperty.call(meta,field))continue;
+   const key=generation+':'+field;
+   await idbWrite(key,meta[field]);
+   keys.push([field,key]);delete meta[field];
+  }
+  await idbWrite(generation+':meta',meta);
+  // Verify all components before making the generation visible to load().
+  for(const [field,key] of keys){const check=await idbRead(key);if(check===undefined)throw Error('저장 검증 실패: '+field)}
+  if(await idbRead(generation+':meta')===undefined)throw Error('저장 메타 검증 실패');
+  await idbWrite('active-split', {generation,keys,metaKey:generation+':meta'});
+  state.lastSaved=stamp;
+ }catch(e){try{db?.close()}catch(_){}db=await openDB();throw e}
+}
+async function load(){
+ const pointer=await idbRead('active-split');
+ if(pointer&&pointer.generation&&Array.isArray(pointer.keys)&&pointer.metaKey){
+  try{
+   const meta=await idbRead(pointer.metaKey);
+   if(!meta||typeof meta!=='object')throw Error('메타 누락');
+   const restored={...meta};
+   for(const [field,key] of pointer.keys){const part=await idbRead(key);if(part===undefined)throw Error('누락된 저장 항목: '+field);restored[field]=part}
+   return restored;
+  }catch(e){console.error('분리 저장 불러오기 실패, 기존 main으로 복구 시도',e)}
+ }
+ return await idbRead('main')||null;
+}
 const money=n=>(n/1e8).toFixed(1)+'억';
 function titleScreen(){closePlayer();const hasSave=!!state;app.innerHTML='<main class="start-screen"><div class="start-card"><div class="start-mark">⚾</div><div class="start-kicker">PRO BASEBALL MANAGEMENT SIMULATION</div><h1>BASEBALL<br>EMPIRE</h1><p class="start-sub">당신의 구단, 당신의 리그, 새로운 야구의 역사</p><div class="start-buttons"><button id="entry-new">새 게임하기</button><button id="entry-load" class="secondary" '+(hasSave?'':'disabled')+'>이어하기 · 불러오기</button></div>'+(hasSave?'<div class="start-save"><strong>저장된 구단</strong><p>'+esc(state.teams[state.teamId].city+' '+state.teams[state.teamId].name)+' · '+state.year+' 시즌 · '+state.day+'일 차</p><small>마지막 저장: '+(state.lastSaved?new Date(state.lastSaved).toLocaleString('ko-KR'):'자동 저장')+'</small></div>':'<p class="start-no-save">저장된 게임이 없습니다. 새 게임을 시작하세요.</p>')+'<p class="start-foot">저장 데이터는 이 기기의 브라우저에 보관됩니다.</p></div></main>';document.querySelector('#entry-new').onclick=()=>{if(hasSave&&!confirm('새 게임을 시작하면 현재 저장된 게임이 교체됩니다. 먼저 홈 화면에서 백업을 다운로드하는 것을 권장합니다. 계속할까요?'))return;entryMode='new';welcome()};document.querySelector('#entry-load').onclick=()=>{if(!state)return;entryMode='game';tab='home';render()}}
 function welcome(){app.innerHTML='<main class="wrap"><button class="secondary" id="back-to-menu">← 뒤로가기</button><div class="muted">NEW LEAGUE · 10 CLUBS</div><h1>⚾ BASEBALL EMPIRE</h1><p>새로운 가상 프로야구 리그가 출범합니다. 운영할 구단을 선택하세요.</p><div class="grid">'+TEAMS.map((t,i)=>'<button class="team '+(selected===i?'selected':'')+'" data-team="'+i+'"><div style="color:'+t[2]+';font-size:24px">◆</div><strong>'+t[0]+' '+t[1]+'</strong><div class="tag">특성: '+t[3]+'</div></button>').join('')+'</div><section class="card"><p>선택: <strong>'+TEAMS[selected][0]+' '+TEAMS[selected][1]+'</strong></p><button id="start">새 리그 시작</button></section></main>';document.querySelector('#back-to-menu').onclick=()=>{entryMode='title';render()};document.querySelectorAll('[data-team]').forEach(b=>b.onclick=()=>{selected=+b.dataset.team;welcome()});document.querySelector('#start').onclick=async()=>{try{state=world(selected);await save();entryMode='game';render()}catch(e){alert('세계 저장 실패: '+e.message)}}}
