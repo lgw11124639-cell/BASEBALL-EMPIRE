@@ -13,7 +13,7 @@ for(const file of ['app.js','sw.js','update.js']){
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert(/app\.js\?v=[^"'\s]+/.test(html),'versioned app.js URL missing');
 console.log('PASS: versioned PWA app entry');
-for(const file of ['pitching-awards.test.js','minor-record-audit.test.js','minor-season-totals.test.js']){
+for(const file of ['pitching-awards.test.js','minor-record-audit.test.js','minor-season-totals.test.js','inning-progression.test.js']){
   const result=spawnSync(process.execPath,[path.join(__dirname,file)],{encoding:'utf8',timeout:30000});
   if(result.stdout)process.stdout.write(result.stdout);
   if(result.stderr)process.stderr.write(result.stderr);
