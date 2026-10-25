@@ -1050,6 +1050,20 @@ function scoutReport(p,s){const x=ensureProfile(p),pitcher=p.position==='P',b=pl
 function performanceOpinion(p){if(p.position==='P'){if((p.inningsPitched||0)<20)return '투구 이닝이 충분하지 않아 실제 성적에 근거한 평가는 보류합니다.';const era=(p.earnedRuns||0)*9/p.inningsPitched;return era<3.5?'현재까지 실점 억제력이 좋은 편입니다.':era<5?'현재까지 평균적인 실점 관리 수준을 보였습니다.':'현재까지 실점 관리에 어려움을 겪었습니다.'}if((p.atBats||0)<60)return '타석 표본이 충분하지 않아 실제 성적에 근거한 평가는 보류합니다.';const avg=(p.hits||0)/p.atBats;return avg>=.3?'현재까지 안타 생산이 꾸준합니다.':avg>=.24?'현재까지 타격 성적은 무난한 편입니다.':'현재까지 안타 생산에 어려움을 겪었습니다.'}
 function profileMarkup(p){const x=ensureProfile(p),b=playerBaseball(p);return '<section class="card"><h3>체력 및 출전 관리</h3><p>현재 상태: '+conditionText(p)+'</p><p>'+(p.position==='P'?'투구 이닝과 최근 등판 간격에 따라 피로가 누적되며, 감독이 회복 상태를 고려해 등판을 결정합니다.':'경기 출전량에 따라 피로가 쌓이고 휴식으로 회복됩니다.')+'</p><p class="muted">피로 누적과 회복은 경기 진행 시 반영됩니다.</p></section>'+'<section class="card"><h3>스카우트별 평가</h3><p class="muted">서로 다른 관점을 가진 구단 스카우트의 잠정 평가입니다. 능력치 숫자는 공개하지 않습니다.</p>'+SCOUTS.map(s=>scoutReport(p,s)).join('')+'</section><section class="card"><h3>실제 경기 성적에 따른 평가</h3><p>'+esc(performanceOpinion(p))+'</p><p class="muted">경기 결과가 기록되면 현재 누적 성적을 기준으로 의견이 달라집니다.</p></section><section class="card"><h3>성향 · 계약 · 몸 상태</h3><p>선수 성향: '+esc(x.trait)+'</p><p>계약 잔여 기간: '+x.contractYears+'년</p><p>부상 상태: '+esc(x.injury.status)+'</p></section><section class="card"><h3>성장 기록</h3>'+(x.growth.length?x.growth.map(g=>'<p>'+esc(g.season)+'시즌 · '+esc(g.note)+'</p>').join(''):'<p class="muted">아직 관찰된 성장 기록이 없습니다.</p>')+'</section>'}
 function playerBaseball(p){const x=ensureProfile(p);if(!x.baseball){const r=rng((p.id*11939)>>>0);x.baseball={throwHand:r()<.75?'우투':'좌투',batHand:r()<.68?'우타':'좌타',delivery:p.position==='P'?((v)=>v<.64?'오버핸드':v<.92?'쓰리쿼터':v<.985?'사이드암':'언더핸드')(r()):null,role:p.position==='P'?(r()<.48?'선발':'불펜'):null,fatigue:0,recovery:ri(r,8,17),lastAppearance:null}}return x.baseball}
+function honorArticleBody(p,record,year,teamId,awards,champions){
+ const teamStats=teamId==null?null:record.byTeam.get(String(teamId));
+ const career=p.position==='P'?'통산 '+record.wins+'승, '+record.saves+'세이브, '+record.strikeouts+'탈삼진':'통산 '+record.hits+'안타, '+record.homeRuns+'홈런';
+ const teamCareer=teamStats?' 이 구단에서는 '+teamStats.years.size+'시즌 동안 '+(p.position==='P'?teamStats.wins+'승, '+teamStats.saves+'세이브':teamStats.hits+'안타, '+teamStats.homeRuns+'홈런')+'을 기록했다.':'';
+ const milestones=p.position==='P'?[['200승',record.wins>=200],['100승',record.wins>=100],['300세이브',record.saves>=300],['2000탈삼진',record.strikeouts>=2000]]:[['2000안타',record.hits>=2000],['1000안타',record.hits>=1000],['300홈런',record.homeRuns>=300],['200홈런',record.homeRuns>=200]];
+ const achievements=milestones.filter(x=>x[1]).map(x=>x[0]);
+ const trophies=(awards||[]).filter(a=>teamId==null||String(a.teamId)===String(teamId));
+ const awardNames=[...new Set(trophies.map(a=>String(a.title||'').trim()).filter(Boolean))];
+ const awardText=awardNames.length?' 개인 타이틀 및 수상 기록은 '+awardNames.map(n=>n+' '+trophies.filter(a=>String(a.title||'').trim()===n).length+'회').join(', ')+'다.':'';
+ const national=(p.nationalTeamHistory||[]).filter(x=>Number(x.year)<=Number(year));
+ const nationalText=national.length?' 국가대표 경력으로는 '+national.map(x=>x.year+'년 '+x.event+' '+(x.result||'참가')).join(', ')+'이 있다.':'';
+ const titles=teamStats?[...teamStats.years].filter(y=>champions.has(String(y)+':'+String(teamId))).length:0;
+ return p.name+'은 KBO에서 '+record.years.size+'시즌을 뛰며 '+career+'을 남겼다.'+teamCareer+(achievements.length?' 주요 누적 대기록은 '+achievements.join(', ')+'이다.':'')+awardText+nationalText+(titles?' 해당 구단에서 우승 '+titles+'차례를 경험했다.':'');
+}
 function honorRetiredPlayers(year){
  state.history=state.history||{};const history=state.history;
  history.hallOfFame=history.hallOfFame||[];history.retiredNumbers=history.retiredNumbers||[];
@@ -1115,7 +1129,7 @@ function honorRetiredPlayers(year){
   const hallEligible=r.years.size>=10&&honorScore(r,id)>=72;
   if(hallEligible&&!existingHall.has(id)){
    history.hallOfFame.push({playerId:p.id,name:p.name,year,inductedYear:year});
-   clubNotice('명예의 전당',year+' 명예의 전당 헌액 · '+p.name,p.name+' 선수가 뛰어난 통산 성적과 오랜 활약을 인정받아 명예의 전당에 헌액됐습니다.',state.teams.map(t=>t.id),[p.id]);
+   clubNotice('명예의 전당',year+' 명예의 전당 헌액 · '+p.name,p.name+' 선수가 명예의 전당에 헌액됐다. '+honorArticleBody(p,r,year,null,awardsByPlayer.get(id),champions),state.teams.map(t=>t.id),[p.id]);
    existingHall.add(id);
   }
   for(const [teamId,t] of r.byTeam){
@@ -1124,7 +1138,7 @@ function honorRetiredPlayers(year){
    const number=Number(retired.teamId)===Number(teamId)&&retired.jerseyNumber!=null?Number(retired.jerseyNumber):NaN;
    if(!Number.isInteger(number)||number<0||number>999||existingNumbers.has(teamId+':'+number)||existingHonoredPlayers.has(teamId+':'+id))continue;
    history.retiredNumbers.push({playerId:p.id,name:p.name,teamId:Number(teamId),number,year});
-   clubNotice('영구결번',year+' '+(state.teams.find(x=>String(x.id)===teamId)?.name||'구단')+' 영구결번 #'+number+' · '+p.name,p.name+' 선수의 등번호 '+number+'번이 구단의 영구결번으로 지정됐습니다.',[Number(teamId)],[p.id]);
+   clubNotice('영구결번',year+' '+(state.teams.find(x=>String(x.id)===teamId)?.name||'구단')+' 영구결번 #'+number+' · '+p.name,p.name+' 선수의 등번호 '+number+'번이 영구결번으로 지정됐다. '+honorArticleBody(p,r,year,teamId,awardsByPlayer.get(id),champions),[Number(teamId)],[p.id]);
    existingNumbers.add(teamId+':'+number);
    existingHonoredPlayers.add(teamId+':'+id);
    for(const active of state.players){if(String(active.teamId)===teamId&&String(active.id)!==id&&!active.retired&&!['방출','은퇴','계약종료'].includes(active.level)&&Number(active.jerseyNumber)===number)active.jerseyNumber=null;}
