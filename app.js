@@ -399,17 +399,21 @@ function jerseyNumber(p){
   const priority=x=>x.level==='1군'?0:x.level==='2군'?1:x.level==='육성'?2:3;
   return priority(a)-priority(b)||Number(a.id)-Number(b.id);
  });
- const reserved=new Set((state.history?.retiredNumbers||[]).filter(x=>String(x.teamId)===String(teamId)).map(x=>Number(x.number)).filter(n=>Number.isInteger(n)&&n>=1&&n<=99));
+ const reserved=new Set((state.history?.retiredNumbers||[]).filter(x=>String(x.teamId)===String(teamId)).map(x=>Number(x.number)).filter(n=>Number.isInteger(n)&&n>=0));
  const used=new Set(reserved);
+ // Preserve each player's valid existing number when possible.
  for(const x of roster){
   const n=Number(x.jerseyNumber);
-  if(x.jerseyNumber!=null&&Number.isInteger(n)&&n>=1&&n<=99&&!used.has(n))used.add(n);
+  if(x.jerseyNumber!=null&&Number.isInteger(n)&&n>=0&&!used.has(n))used.add(n);
   else x.jerseyNumber=null;
  }
+ // Prefer 1–99, then allocate 100+ if the club has no free two-digit numbers.
  for(const x of roster){
   if(x.jerseyNumber!=null)continue;
-  let n=1;while(n<=99&&used.has(n))n++;
-  if(n<=99){x.jerseyNumber=n;used.add(n)}
+  let n=1;
+  while(n<=99&&used.has(n))n++;
+  if(n>99){n=100;while(used.has(n))n++}
+  x.jerseyNumber=n;used.add(n);
  }
  return p.jerseyNumber??'—';
 }
