@@ -139,3 +139,11 @@
 .history-honor-list .history-honor small{color:#60748a!important;font-size:12px!important;opacity:1!important}
 .history-honor-list .history-honor:active{background:#dceaf9!important}
 @media(max-width:600px){.history-honor-list{grid-template-columns:1fr!important}.history-honor-list .history-honor{min-height:54px!important;padding:10px 12px!important}}
+
+/* Rank-based highlights in player career record panel */
+#player-career-rank .profile-facts>div{background:#fff!important;border:1px solid #d9e4f0!important;color:#193957!important}
+#player-career-rank .profile-facts>div small{color:#68809b!important}
+#player-career-rank .profile-facts>div strong{color:#193957!important}
+#player-career-rank .profile-facts>div.career-top10{background:linear-gradient(135deg,#194a78,#23689e)!important;border-color:#23689e!important}
+#player-career-rank .profile-facts>div.career-top10 small{color:#d2e3f5!important}
+#player-career-rank .profile-facts>div.career-top10 strong{color:#fff!important}
