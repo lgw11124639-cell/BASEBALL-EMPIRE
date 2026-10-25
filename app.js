@@ -497,23 +497,42 @@ function nationalTeamTournamentDay(){
   if(other){other.date=now.toISOString().slice(0,10);record.otherMatches.push(other);}
  }
  const standings=internationalGroupStandings(record);
- if(index===3&&standings.findIndex(x=>x.code==='KR')>=2||index===4&&!record.matchResults[3]?.won){
+ if(index===3&&standings.findIndex(x=>x.code==='KR')>=2){
+  record.finished=true;
+ }else if(index===4&&!record.matchResults[3]?.won){
   record.finished=true;
  }else{
   const selected=record.players.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);
-  const knockoutOpponent=index===3?(standings.find(x=>x.code!=='KR')?.code||rivals[0]):index===4?(record.finalOpponent||rivals[1]):rivals[index];
+  const knockoutOpponent=index===3?(standings.find(x=>x.code!=='KR')?.code||rivals[0]):(record.finalOpponent||rivals[1]);
   const box=internationalOpeningGame(year,event,selected,knockoutOpponent,index+1);
   if(!box)return;
   const game={round:rounds[index],date:now.toISOString().slice(0,10),...box,won:box.homeRuns>box.awayRuns};
   record.matchResults.push(game);record.openingGame=record.openingGame||game;
   record.games=record.matchResults.length;record.wins=record.matchResults.filter(g=>g.won).length;record.losses=record.games-record.wins;
   clubNotice('국가대표',year+' '+event+' '+game.round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
-  if(index===3&&game.won){const otherSemi=internationalRivalResult(year,event,'준결승',...standings.filter(x=>x.code!=='KR').slice(1,3).map(x=>x.code));if(otherSemi){otherSemi.date=now.toISOString().slice(0,10);record.otherMatches.push(otherSemi);record.finalOpponent=otherSemi.winner||otherSemi.home;}}
-  if(index===4||index===3&&!game.won||index===2&&internationalGroupStandings(record).findIndex(x=>x.code==='KR')>=2)record.finished=true;
+  if(index===3){
+   const otherTeams=standings.filter(x=>x.code!=='KR'&&x.code!==knockoutOpponent).slice(0,2).map(x=>x.code);
+   if(otherTeams.length===2){
+    const otherSemi=internationalRivalResult(year,event,'준결승',otherTeams[0],otherTeams[1]);
+    if(otherSemi){otherSemi.date=now.toISOString().slice(0,10);record.otherMatches.push(otherSemi);record.finalOpponent=otherSemi.winner||otherSemi.home;
+     const loser=otherSemi.winner===otherSemi.home?otherSemi.away:otherSemi.home;
+     if(!game.won){record.bronzeOpponent=loser;}
+     else{const bronze=internationalRivalResult(year,event,'3위 결정전',knockoutOpponent,loser);if(bronze){bronze.date=now.toISOString().slice(0,10);record.otherMatches.push(bronze);}}
+    }
+   }
+   if(!game.won){
+    if(record.bronzeOpponent){const bronze=internationalOpeningGame(year,event,selected,record.bronzeOpponent,6);if(bronze){record.bronzeMatch={round:'3위 결정전',date:now.toISOString().slice(0,10),...bronze,won:bronze.homeRuns>bronze.awayRuns};record.medal=record.bronzeMatch.won?'동메달':'4위';}}
+    record.finished=true;
+   }
+  }
+  if(index===4){record.finished=true;record.medal=game.won?'금메달':'은메달';}
+  if(index===2&&internationalGroupStandings(record).findIndex(x=>x.code==='KR')>=2)record.finished=true;
  }
+
  if(record.finished){
   record.gold=record.matchResults.length===5&&record.matchResults[4].won;
-  for(const id of record.players){const p=state.players.find(x=>x.id===id);if(!p)continue;const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);if(history){history.games=record.games;history.result=record.gold?'금메달':'대회 종료';}if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);}
+  record.medal=record.medal||(record.gold?'금메달':'본선 탈락');
+  for(const id of record.players){const p=state.players.find(x=>x.id===id);if(!p)continue;const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);if(history){history.games=record.games;history.result=record.medal||'대회 종료';}if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);}
   clubNotice('국가대표',year+' '+event+' 대한민국 야구 대표팀 '+(record.gold?'금메달':'대회 종료'),'최종 '+record.wins+'승 '+record.losses+'패',state.teams.map(t=>t.id),record.players);
  }
 }
@@ -1375,10 +1394,10 @@ function nationalTeamPanel(){
  const options=records.map(x=>'<option value="'+esc(x.year+'|'+x.event)+'" '+(x===selected?'selected':'')+'>'+esc(x.year+' '+x.event)+'</option>').join('');
  const standings=internationalGroupStandings(selected);
  const standingsRows=standings.map((x,i)=>'<tr class="'+(x.code==='KR'?'nt-korea':'')+'"><td>'+(i+1)+'</td><th>'+esc(name(x.code))+'</th><td>'+x.wins+'</td><td>'+x.losses+'</td><td>'+(x.runs-x.allowed>0?'+':'')+(x.runs-x.allowed)+'</td></tr>').join('');
- const games=matches.map(g=>'<details class="nt-match"><summary><span class="nt-match-meta">'+esc(g.date||'날짜 미상')+' · '+esc(g.round)+'</span><span class="nt-match-main"><b>대한민국</b><strong>'+esc(g.homeRuns)+' : '+esc(g.awayRuns)+'</strong><b>'+esc(name(g.opponent))+'</b></span><span class="nt-match-status">'+esc(g.won?'승리':'패배')+' · 기록 보기</span></summary><div class="nt-match-detail">'+internationalMatchDetails(g)+'</div></details>').join('');
+ const games=[...matches,...(selected.bronzeMatch?[selected.bronzeMatch]:[])].map(g=>'<details class="nt-match"><summary><span class="nt-match-meta">'+esc(g.date||'날짜 미상')+' · '+esc(g.round)+'</span><span class="nt-match-main"><b>대한민국</b><strong>'+esc(g.homeRuns)+' : '+esc(g.awayRuns)+'</strong><b>'+esc(name(g.opponent))+'</b></span><span class="nt-match-status">'+esc(g.won?'승리':'패배')+' · 기록 보기</span></summary><div class="nt-match-detail">'+internationalMatchDetails(g)+'</div></details>').join('');
  const otherRows=other.map(g=>'<tr><td>'+esc(g.round)+'</td><td>'+esc(name(g.home))+' - '+esc(name(g.away))+'</td><td>'+esc(g.homeRuns)+' : '+esc(g.awayRuns)+'</td></tr>').join('');
  const lineupRows=(lineup.battingOrder||[]).map(x=>'<tr><td>'+esc(x.order)+'</td><td>'+esc(x.position)+'</td><th>'+esc(x.name)+'</th><td>'+esc(x.team)+'</td></tr>').join('');
- const status=selected.gold?'금메달':selected.finished===false?'대회 진행 중':'대회 종료';
+ const status=selected.finished===false?'대회 진행 중':selected.medal||(selected.gold?'금메달':'대회 종료');
  return '<style>.nt-page{display:grid;gap:12px}.nt-page .nt-hero{padding:16px;border:1px solid var(--line,#d5dbe3);border-radius:14px;background:var(--card,#fff)}.nt-page .nt-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.nt-page .nt-head h2{margin:0;font-size:1.15rem}.nt-page select{max-width:180px;min-width:0}.nt-page .nt-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.nt-page .nt-summary span{padding:7px 11px;border-radius:9px;background:rgba(128,128,128,.09);font-size:.88rem}.nt-page .nt-panel{border:1px solid var(--line,#d5dbe3);border-radius:12px;padding:12px;background:var(--card,#fff);min-width:0}.nt-page .nt-panel h3{margin:0 0 10px;font-size:1rem}.nt-page .nt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.nt-page .nt-match{border:1px solid var(--line,#d5dbe3);border-radius:10px;margin:7px 0;overflow:hidden}.nt-page .nt-match summary{cursor:pointer;list-style:none;padding:11px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:space-between}.nt-page .nt-match summary::-webkit-details-marker{display:none}.nt-page .nt-match-meta,.nt-page .nt-match-status{font-size:.76rem;opacity:.7}.nt-page .nt-match-main{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}.nt-page .nt-match-main strong{font-size:1.1rem;font-variant-numeric:tabular-nums}.nt-page .nt-match-detail{padding:10px;border-top:1px solid var(--line,#d5dbe3);overflow-x:auto}.nt-page .nt-korea{font-weight:800;background:rgba(48,110,220,.08)}.nt-page .table-wrap{overflow-x:auto}.nt-page table{width:100%;font-size:.84rem}.nt-page th,.nt-page td{padding:7px 6px;white-space:nowrap}.nt-page .nt-note{font-size:.83rem;opacity:.75;margin:8px 0 0}@media(max-width:720px){.nt-page .nt-grid{grid-template-columns:1fr}.nt-page .nt-hero{padding:12px}.nt-page .nt-match summary{align-items:flex-start;flex-direction:column}.nt-page .nt-match-main{width:100%;justify-content:space-between}.nt-page .nt-match-status{align-self:flex-end}}</style>'+
  '<div class="nt-page"><section class="nt-hero"><div class="nt-head"><h2>대한민국 국가대표</h2><select id="national-year-select">'+options+'</select></div><div class="nt-summary"><span>'+esc(selected.year+' '+selected.event)+'</span><span>'+esc(status)+'</span><span>'+esc(selected.wins||0)+'승 '+esc(selected.losses||0)+'패</span></div><p class="nt-note">감독 '+esc(staff.manager||'미정')+' · 투수코치 '+esc(staff.pitchCoach||'미정')+' · 타격코치 '+esc(staff.batCoach||'미정')+'</p></section>'+
  '<div class="nt-grid"><section class="nt-panel"><h3>조별리그 순위</h3><div class="table-wrap"><table><thead><tr><th>순위</th><th>국가</th><th>승</th><th>패</th><th>득실차</th></tr></thead><tbody>'+standingsRows+'</tbody></table></div><p class="nt-note">동률 시 득실차·득점 순서로 정렬</p></section><section class="nt-panel"><h3>다른 국가 경기</h3><div class="table-wrap"><table><thead><tr><th>라운드</th><th>대진</th><th>점수</th></tr></thead><tbody>'+(otherRows||'<tr><td colspan="3">아직 경기가 없습니다.</td></tr>')+'</tbody></table></div></section></div>'+
