@@ -56,6 +56,7 @@ function idbWriteSmallBatch(entries){
  });
 }
 let splitSaveCount=0;
+let lastCommittedSplitPointer=null;
 function cleanupSplitSaveKeys(active,previous){
  if(seasonStepBusy||autoSeasonRunning)return Promise.resolve(0);
  return new Promise((resolve,reject)=>{
@@ -113,8 +114,12 @@ async function save(){
   await idbWrite(generation+':meta',meta);
   // Each idbWrite resolves only after transaction commit. Avoid re-reading every
   // large record: the active pointer is published last, after all writes commit.
-  const previous=await idbRead('active-split');
-  await idbWrite('active-split', {generation,keys,metaKey:generation+':meta',previousGeneration:previous?.generation||previous?.previousGeneration||null});
+  // Cache the last committed pointer in memory; avoid an extra IndexedDB
+  // read on every simulated day. Reloads still read the pointer from disk.
+  const previous=lastCommittedSplitPointer||await idbRead('active-split');
+  const nextPointer={generation,keys,metaKey:generation+':meta',previousGeneration:previous?.generation||previous?.previousGeneration||null};
+  await idbWrite('active-split',nextPointer);
+  lastCommittedSplitPointer=nextPointer;
   // Reclaim abandoned snapshots in small batches; never touch legacy 'main',
   // the active generation, or the previous known-good generation.
   splitSaveCount++;
