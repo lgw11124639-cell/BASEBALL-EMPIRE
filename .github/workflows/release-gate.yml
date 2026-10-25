@@ -13,4 +13,6 @@ jobs:
         with:
           node-version: '22'
       - name: Check syntax and record regression tests
-        run: node tests/release-smoke.test.js
+        run: |
+          node tests/release-smoke.test.js
+          node tests/velocity-balance.test.js
