@@ -537,7 +537,7 @@ function nationalTeamTournamentDay(){
  const groupFixtures=[];
  for(let gi=0;gi<record.groups.length;gi++){
   const group=record.groups[gi];
-  for(let i=0;i<group.length;i++)for(let j=i+1;j<group.length;j++)groupFixtures.push({group:gi,home:group[i],away:group[j],round:'조별리그 '+String.fromCharCode(65+gi)+'조 '+(i+1)+'-'+(j+1),day:1+Math.floor((groupFixtures.filter(x=>x.group===gi).length)/2)});
+  for(let i=0;i<group.length;i++)for(let j=i+1;j<group.length;j++)groupFixtures.push({group:gi,home:group[i],away:group[j],round:'조별리그 '+String.fromCharCode(65+gi)+'조 '+(i+1)+'-'+(j+1),day:1+groupFixtures.filter(x=>x.group===gi).length});
  }
  const groupLast=Math.max(...groupFixtures.map(g=>g.day));
  for(let i=0;i<groupFixtures.length;i++){
