@@ -373,16 +373,10 @@ function nationalTeamFormScore(p){
 }
 function nationalTeamLineup(selected){
  const hitters=selected.filter(p=>p.position!=='P');
- const slots=['C','1B','2B','3B','SS','LF','CF','RF','DH'],used=new Set();
- const lineup=slots.map(position=>{
-  let p=hitters.find(x=>!used.has(x.id)&&x.position===position);
-  if(!p)p=hitters.find(x=>!used.has(x.id));
-  if(!p)return null;
-  used.add(p.id);
-  return {order:used.size,position,name:p.name,id:p.id,team:state.teams.find(t=>t.id===p.teamId)?.name||'',form:Math.round(nationalTeamFormScore(p)*10)/10};
- }).filter(Boolean);
+ const ordered=chooseBattingNine(hitters,null,p=>nationalTeamFormScore(p));
+ const batting=ordered.map((p,i)=>({order:i+1,position:ordered.assignedPositions?.get(p.id)||p.position,name:p.name,id:p.id,team:state.teams.find(t=>t.id===p.teamId)?.name||'',form:Math.round(nationalTeamFormScore(p)*10)/10}));
  const pitchers=selected.filter(p=>p.position==='P').map(p=>({id:p.id,name:p.name,team:state.teams.find(t=>t.id===p.teamId)?.name||'',form:Math.round(nationalTeamFormScore(p)*10)/10}));
- return {battingOrder:lineup,startingPitcher:pitchers[0]||null,pitchers};
+ return {battingOrder:batting,startingPitcher:pitchers[0]||null,pitchers};
 }
 function internationalSharedGame(korea,opponent,seed){
  const makeClub=(id,players)=>{
