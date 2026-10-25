@@ -16,3 +16,4 @@ jobs:
         run: |
           node tests/release-smoke.test.js
           node tests/velocity-balance.test.js
+          node tests/velocity-longrun.test.js
