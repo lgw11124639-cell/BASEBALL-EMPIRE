@@ -309,6 +309,7 @@ function overseasGeneratedName(code,r){
  const names=OVERSEAS_EXTRA_NAMES[code],first=names?names[0]:OVERSEAS_FIRST[code]||OVERSEAS_FIRST.US,last=names?names[1]:OVERSEAS_LAST[code]||OVERSEAS_LAST.US;
  return first[ri(r,0,first.length-1)]+' '+last[ri(r,0,last.length-1)];
 }
+function pitcherPosition(i){return i<8?'P':['C','1B','2B','3B','SS','LF','CF','RF','DH'][(i-8)%9]}
 function simulateOverseasSeason(year){
  state.international=state.international||{};
  const store=state.international.overseas=state.international.overseas||{seasons:{}};
@@ -329,7 +330,7 @@ function simulateOverseasSeason(year){
    // A migrated roster is keyed by its current club, never by its original draft slot.
    const players=[];
    for(let i=0;i<18;i++){
-    const pitcher=i<8,prior=old[i],age=prior?(Number(prior.age)||25)+1:ri(r,20,34);
+    const pitcher=i<8,prior=old[i]&&old[i].position===(pitcherPosition(i))?old[i]:null,age=prior?(Number(prior.age)||25)+1:ri(r,20,34);
     const rating=prior?Math.max(35,Math.min(94,(Number(prior.rating)||60)+(age<28?ri(r,0,2):age>33?-ri(r,0,3):ri(r,-1,1)))):ri(r,48,90);
     const retired=age>39||(age>35&&r()<.15);
     const fresh=!prior||retired;
@@ -337,7 +338,7 @@ function simulateOverseasSeason(year){
     const id=fresh?league.id+'-'+ci+'-'+year+'-'+i:prior.id;
     const nationality=fresh?overseasNationality(league,r):(prior.nationality||league.country);
     const playerName=fresh?overseasGeneratedName(nationality,r):prior.name;
-    const position=pitcher?'P':['C','1B','2B','3B','SS','LF','CF','RF','DH'][(i-8)%9];
+    const position=pitcherPosition(i);
     const games=pitcher?ri(r,18,62):ri(r,70,145);
     const avg=pitcher?undefined:Math.round(Math.min(.385,.185+pRating*.00125+r()*.045)*1000)/1000;
     const hr=pitcher?undefined:ri(r,0,Math.max(2,Math.round(pRating*.32)));
@@ -347,10 +348,9 @@ function simulateOverseasSeason(year){
    }
    return {name,wins:ri(r,50,100),players};
   });
-  // Perform the transfer only after season statistics have been recorded.
-  // The destination club owns the player in the next season's persistent roster.
+  // Rotate players only between identical positions; season results remain unchanged.
   if(clubs.length>1){
-   const first=clubs[0],second=clubs[1],slot=ri(r,8,17);
+   const first=clubs[0],second=clubs[1],slot=ri(r,0,17);
    const firstRoster=clubRosters[first.name],secondRoster=clubRosters[second.name];
    const left=firstRoster[slot],right=secondRoster[slot];
    if(left&&right&&left.position===right.position){
