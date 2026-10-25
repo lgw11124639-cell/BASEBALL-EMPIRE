@@ -1,1 +1,1 @@
-{"version":"1.0.0","build":"20261025-v100","notes":"BASEBALL EMPIRE v1.0 정식 출시 · 기존 저장 데이터 유지 · 기록 검증 및 안정화"}
+{"version":"1.0.1","build":"20261025-v101","notes":"IndexedDB 일시 오류 발생 시 연결 재설정 후 저장 재시도 · 기존 기록 보존"}
