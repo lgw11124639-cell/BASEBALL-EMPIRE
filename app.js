@@ -421,7 +421,7 @@ function internationalOpponentRoster(year,country){
  const surnames=['김','이','박','정','최','강','오','윤','한','임'];
  const names=['민준','준호','도윤','지훈','현우','태민','성호','재원','승현','진우'];
  const positions=['P','P','P','P','P','P','P','P','P','P','P','P','C','C','1B','2B','3B','SS','LF','CF','RF','DH','LF','1B'];
- return positions.map((position,i)=>({id:-(year*100000+i+country.charCodeAt(0)*100),name:country+' '+surnames[Math.floor(seed()*surnames.length)]+names[Math.floor(seed()*names.length)],position,overall:48+Math.floor(seed()*37),age:20+Math.floor(seed()*15),level:'1군',nationality:country}));
+ return positions.map((position,i)=>({id:-(year*1000000+country.split('').reduce((n,c)=>n*128+c.charCodeAt(0),0)*100+i),name:country+' '+surnames[Math.floor(seed()*surnames.length)]+names[Math.floor(seed()*names.length)],position,overall:48+Math.floor(seed()*37),age:20+Math.floor(seed()*15),level:'1군',nationality:country}));
 }
 function internationalOpeningGame(year,event,selected,opponentCode,round){
  const opponent=opponentCode||(event==='아시안게임'?'JP':'US');
