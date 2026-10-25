@@ -601,19 +601,31 @@ function newsPlayerSeasonFeature(n){
  }).filter(Boolean);
  return blocks.join('');
 }
+function newsAwardFeature(n){
+ if(n.kind!=='시즌 시상'||!Array.isArray(n.players)||!n.players.length)return '';
+ const playerId=n.players[0],year=Number(n.year);
+ const awards=(state.awards?.[year]||[]).filter(a=>String(a.playerId)===String(playerId));
+ const award=awards.find(a=>String(n.title||'').includes(a.title))||awards[0];
+ if(!award)return '';
+ const history=Object.entries(state.awards||{}).filter(([y])=>Number(y)<=year).flatMap(([y,list])=>(Array.isArray(list)?list:[]).filter(a=>String(a.playerId)===String(playerId)&&a.title===award.title).map(a=>Number(y))).sort((a,b)=>a-b);
+ const times=history.filter(y=>y<=year).length;
+ const subtitle=times>1?'개인 통산 '+times+'번째 '+award.title+' 수상':'개인 첫 '+award.title+' 수상';
+ return '<section style="margin:24px 0;padding:22px 18px;border-left:4px solid #377bb8;background:#f4f8fd"><small style="font-weight:800;color:#3678b7">시즌 공식 타이틀</small><h3 style="margin:10px 0;font-size:22px">'+esc(award.title)+'</h3><p style="margin:8px 0">'+esc(subtitle)+'</p><p style="margin:8px 0">수상 기록: <strong>'+esc(award.value??'기록 없음')+'</strong></p>'+(history.length>1?'<p style="margin:8px 0;color:#607a95">역대 수상 연도: '+esc(history.join(' · '))+'</p>':'')+'</section>';
+}
 function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
  const modal=document.createElement('div');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
- const category=n.kind==='FA 특집'?'FA·이적 시장':'리그 대기록';
+ const category=n.kind==='FA 특집'?'FA·이적 시장':n.kind==='시즌 시상'?'시즌 타이틀·수상':'리그 대기록';
  const body=String(n.body||'').trim();
  const clubIds=(Array.isArray(n.teams)?n.teams:[]).map(Number).filter(Number.isFinite);
  const articleClubs=clubIds.map(id=>state.teams.find(t=>Number(t.id)===id)).filter(Boolean);
  const logoFeature=articleClubs.length?'<figure style="margin:24px 0 28px;border-radius:12px;overflow:hidden;background:#152e4e;padding:32px 15px 20px;text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap">'+articleClubs.slice(0,2).map(team=>'<div style="min-width:110px;color:#fff;font-weight:800"><div style="display:flex;justify-content:center;align-items:center;margin-bottom:12px">'+teamLogo(team,true)+'</div>'+esc(team.city+' '+team.name)+'</div>').join('<span style="color:#fff;font-size:24px;font-weight:800">→</span>')+'</div><figcaption style="color:#d7e7f6;font-size:13px;margin-top:20px">'+esc(n.kind==='FA 특집'?'FA 계약 구단':'관련 구단')+' · BASEBALL EMPIRE SPORTS</figcaption></figure>':'';
  const seasonStatsFeature=newsPlayerSeasonFeature(n);
+ const awardFeature=newsAwardFeature(n);
  const paragraphs=body.split(/(?<=[.!?。])\\s+(?=[가-힣A-Za-z0-9])/).reduce((arr,sentence,i)=>{if(i%2===0)arr.push(sentence);else arr[arr.length-1]+=' '+sentence;return arr},[]).filter(Boolean);
- modal.innerHTML='<div style="position:sticky;top:0;background:#fff;border-bottom:2px solid #3476b8;z-index:2;padding:calc(env(safe-area-inset-top, 0px) + 15px) 18px 17px;display:flex;justify-content:space-between;align-items:center;gap:12px"><div style="min-width:0"><small style="display:block;color:#6383a5;font-size:12px;letter-spacing:1px">BASEBALL EMPIRE SPORTS · '+esc(seasonDateLabel(n.day))+'</small><strong style="display:block;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(n.title)+'</strong></div><button type="button" class="news-close" style="flex-shrink:0;background:#e8f1fb;color:#174674;border:0;border-radius:10px;padding:12px 14px;font-weight:800">✕ 닫기</button></div><article class="news-article-body editorial-story" style="max-width:760px;margin:0 auto;padding:36px 20px 70px"><div class="article-category">스포츠 <span>›</span> 야구 <span>›</span> '+esc(category)+'</div><h1 class="editorial-headline">'+esc(n.title)+'</h1><p class="editorial-subtitle">'+esc(paragraphs[0]||body)+'</p><div class="editorial-meta"><strong>BASEBALL EMPIRE 스포츠팀</strong><span>'+esc(seasonDateLabel(n.day))+' | '+esc(n.kind)+'</span></div>'+logoFeature+'<div class="editorial-copy" style="border-top:1px solid #dbe4ed;margin-top:24px;padding-top:24px">'+(paragraphs.length?paragraphs.map(p=>'<p>'+esc(p)+'</p>').join(''):'<p>기사 내용이 없습니다.</p>')+'</div>'+seasonStatsFeature+'<p class="article-note" style="margin-top:35px">본 기사는 게임 내 FA 계약 및 대기록 데이터를 바탕으로 작성됐습니다.</p></article>';
+ modal.innerHTML='<div style="position:sticky;top:0;background:#fff;border-bottom:2px solid #3476b8;z-index:2;padding:calc(env(safe-area-inset-top, 0px) + 15px) 18px 17px;display:flex;justify-content:space-between;align-items:center;gap:12px"><div style="min-width:0"><small style="display:block;color:#6383a5;font-size:12px;letter-spacing:1px">BASEBALL EMPIRE SPORTS · '+esc(seasonDateLabel(n.day))+'</small><strong style="display:block;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(n.title)+'</strong></div><button type="button" class="news-close" style="flex-shrink:0;background:#e8f1fb;color:#174674;border:0;border-radius:10px;padding:12px 14px;font-weight:800">✕ 닫기</button></div><article class="news-article-body editorial-story" style="max-width:760px;margin:0 auto;padding:36px 20px 70px"><div class="article-category">스포츠 <span>›</span> 야구 <span>›</span> '+esc(category)+'</div><h1 class="editorial-headline">'+esc(n.title)+'</h1><p class="editorial-subtitle">'+esc(paragraphs[0]||body)+'</p><div class="editorial-meta"><strong>BASEBALL EMPIRE 스포츠팀</strong><span>'+esc(seasonDateLabel(n.day))+' | '+esc(n.kind)+'</span></div>'+logoFeature+'<div class="editorial-copy" style="border-top:1px solid #dbe4ed;margin-top:24px;padding-top:24px">'+(paragraphs.length?paragraphs.map(p=>'<p>'+esc(p)+'</p>').join(''):'<p>기사 내용이 없습니다.</p>')+'</div>'+awardFeature+seasonStatsFeature+'<p class="article-note" style="margin-top:35px">본 기사는 게임 내 FA 계약 및 대기록 데이터를 바탕으로 작성됐습니다.</p></article>';
  document.body.appendChild(modal);
  modal.querySelector('.news-close').onclick=()=>modal.remove();
 }
