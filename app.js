@@ -564,13 +564,13 @@ function nationalTeamTournamentDay(){
  if(record.bracket.quarterfinals.length){
   if(elapsed<groupLast+1)return;
   const winners=[];
-  for(let i=0;i<4;i++){const pair=record.bracket.quarterfinals[i],result=play('8강 '+(i+1),pair[0],pair[1],100+i);if(!result)return;winners.push(result.winner);}
+  for(let i=0;i<4;i++){if(elapsed<groupLast+1+Math.floor(i/2))return;const pair=record.bracket.quarterfinals[i],result=play('8강 '+(i+1),pair[0],pair[1],100+i);if(!result)return;winners.push(result.winner);}
   semifinalPairs=[[winners[0],winners[1]],[winners[2],winners[3]]];record.bracket.semifinals=semifinalPairs;
  }
- if(elapsed<groupLast+3)return;
+ if(elapsed<groupLast+(record.bracket.quarterfinals.length?4:2))return;
  const semi=[];
  for(let i=0;i<2;i++){const pair=semifinalPairs[i],result=play('준결승 '+(i+1),pair[0],pair[1],200+i);if(!result)return;semi.push({winner:result.winner,loser:pair.find(x=>x!==result.winner)});}
- if(elapsed<groupLast+5)return;
+ if(elapsed<groupLast+(record.bracket.quarterfinals.length?6:4))return;
  const final=play('결승',semi[0].winner,semi[1].winner,301),bronze=play('3위 결정전',semi[0].loser,semi[1].loser,302);
  if(!final||!bronze)return;
  const champion=final.winner,runnerUp=[semi[0].winner,semi[1].winner].find(x=>x!==champion),third=bronze.winner,fourth=[semi[0].loser,semi[1].loser].find(x=>x!==third);
