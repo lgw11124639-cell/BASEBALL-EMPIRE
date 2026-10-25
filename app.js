@@ -483,59 +483,80 @@ function nationalTeamTournamentDay(){
   for(const p of selected){p.nationalDutyUntil=end;p.nationalTeamHistory=p.nationalTeamHistory||[];p.nationalTeamHistory.push({year,event,games:0,result:'대회 진행 중'});}
   clubNotice('국가대표',year+' '+event+' 대한민국 야구 대표팀 소집','감독 '+staff.manager+' · 대표팀 '+selected.length+'명 선발 · 대회 경기는 일정에 따라 진행됩니다.',state.teams.map(t=>t.id),record.players);
  }
- if(record.finished||!Array.isArray(record.matchResults))return;
- const rivals=event==='아시안게임'?['TW','JP','CN','AU','JP']:['AU','TW','US','JP','US'];
- const rounds=['조별리그 1차전','조별리그 2차전','조별리그 3차전','준결승','결승'];
- const days=[1,3,5,8,11],index=record.matchResults.length;
- if(index>=5)return;
- const startDate=new Date(record.start+'T12:00:00'),elapsed=Math.round((now-startDate)/86400000);
- if(elapsed<days[index]-1)return;
- record.otherMatches=record.otherMatches||[];
- if(index<3&&!record.otherMatches.some(g=>g.round===rounds[index])){
-  const opponents=event==='아시안게임'?[['JP','CN'],['TW','CN'],['TW','JP']]:[['TW','US'],['AU','US'],['AU','TW']];
-  const [homeCode,awayCode]=opponents[index];
-  const other=internationalRivalResult(year,event,rounds[index],homeCode,awayCode);
-  if(other){other.date=now.toISOString().slice(0,10);record.otherMatches.push(other);}
- }
- const standings=internationalGroupStandings(record);
- if(index===3&&standings.findIndex(x=>x.code==='KR')>=2){
-  record.finished=true;
- }else if(index===4&&!record.matchResults[3]?.won){
-  record.finished=true;
- }else{
-  const selected=record.players.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);
-  const knockoutOpponent=index===3?(standings.find(x=>x.code!=='KR')?.code||rivals[0]):(record.finalOpponent||rivals[1]);
-  const box=internationalOpeningGame(year,event,selected,knockoutOpponent,index+1);
-  if(!box)return;
-  const game={round:rounds[index],date:now.toISOString().slice(0,10),...box,won:box.homeRuns>box.awayRuns};
-  record.matchResults.push(game);record.openingGame=record.openingGame||game;
-  record.games=record.matchResults.length;record.wins=record.matchResults.filter(g=>g.won).length;record.losses=record.games-record.wins;
-  clubNotice('국가대표',year+' '+event+' '+game.round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
-  if(index===3){
-   const otherTeams=standings.filter(x=>x.code!=='KR'&&x.code!==knockoutOpponent).slice(0,2).map(x=>x.code);
-   if(otherTeams.length===2){
-    const otherSemi=internationalRivalResult(year,event,'준결승',otherTeams[0],otherTeams[1]);
-    if(otherSemi){otherSemi.date=now.toISOString().slice(0,10);record.otherMatches.push(otherSemi);record.finalOpponent=otherSemi.winner||otherSemi.home;
-     const loser=otherSemi.winner===otherSemi.home?otherSemi.away:otherSemi.home;
-     if(!game.won){record.bronzeOpponent=loser;}
-     else{const bronze=internationalRivalResult(year,event,'3위 결정전',knockoutOpponent,loser);if(bronze){bronze.date=now.toISOString().slice(0,10);record.otherMatches.push(bronze);}}
-    }
-   }
-   if(!game.won){
-    if(record.bronzeOpponent){const bronze=internationalOpeningGame(year,event,selected,record.bronzeOpponent,6);if(bronze){record.bronzeMatch={round:'3위 결정전',date:now.toISOString().slice(0,10),...bronze,won:bronze.homeRuns>bronze.awayRuns};record.medal=record.bronzeMatch.won?'동메달':'4위';}}
-    record.finished=true;
-   }
-  }
-  if(index===4){record.finished=true;record.medal=game.won?'금메달':'은메달';}
-  if(index===2&&internationalGroupStandings(record).findIndex(x=>x.code==='KR')>=2)record.finished=true;
- }
 
- if(record.finished){
-  record.gold=record.matchResults.length===5&&record.matchResults[4].won;
-  record.medal=record.medal||(record.gold?'금메달':'본선 탈락');
-  for(const id of record.players){const p=state.players.find(x=>x.id===id);if(!p)continue;const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);if(history){history.games=record.games;history.result=record.medal||'대회 종료';}if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);}
-  clubNotice('국가대표',year+' '+event+' 대한민국 야구 대표팀 '+(record.gold?'금메달':'대회 종료'),'최종 '+record.wins+'승 '+record.losses+'패',state.teams.map(t=>t.id),record.players);
+ if(record.finished||!Array.isArray(record.matchResults))return;
+ record.otherMatches=Array.isArray(record.otherMatches)?record.otherMatches:[];
+ const rivals=event==='아시안게임'?['TW','JP','CN']:['AU','TW','US'];
+ const otherPairs=event==='아시안게임'?[['JP','CN'],['TW','CN'],['TW','JP']]:[['TW','US'],['AU','US'],['AU','TW']];
+ const days=[1,3,5,8,11],startDate=new Date(record.start+'T12:00:00'),elapsed=Math.round((now-startDate)/86400000);
+ const today=now.toISOString().slice(0,10);
+ const selected=()=>record.players.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);
+ const otherGame=(round,home,away)=>{
+  if(!home||!away||home===away)return null;
+  const prior=record.otherMatches.find(g=>g.round===round&&((g.home===home&&g.away===away)||(g.home===away&&g.away===home)));
+  if(prior)return prior;
+  const game=internationalRivalResult(year,event,round,home,away);
+  if(!game||!game.winner)return null;
+  game.date=today;record.otherMatches.push(game);return game;
+ };
+ const koreaGame=(round,opponent,seed)=>{
+  const prior=record.matchResults.find(g=>g.round===round)|| (round==='3위 결정전'?record.bronzeMatch:null);
+  if(prior)return prior;
+  const box=internationalOpeningGame(year,event,selected(),opponent,seed);
+  if(!box||box.homeRuns===box.awayRuns)return null;
+  const game={round,date:today,...box,won:box.homeRuns>box.awayRuns};
+  if(round==='3위 결정전')record.bronzeMatch=game;
+  else{record.matchResults.push(game);record.openingGame=record.openingGame||game;}
+  record.games=record.matchResults.length+(record.bronzeMatch?1:0);
+  record.wins=record.matchResults.filter(g=>g.won).length+(record.bronzeMatch?.won?1:0);
+  record.losses=record.games-record.wins;
+  clubNotice('국가대표',year+' '+event+' '+round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
+  return game;
+ };
+ for(let i=0;i<3;i++){
+  if(elapsed<days[i]-1)break;
+  const round='조별리그 '+(i+1)+'차전';
+  const [home,away]=otherPairs[i];
+  if(!otherGame(round,home,away))return;
+  if(!koreaGame(round,rivals[i],i+1))return;
  }
+ if(record.matchResults.filter(g=>String(g.round).startsWith('조별리그')).length<3||elapsed<days[3]-1)return;
+ const standings=internationalGroupStandings(record);
+ const top=standings.slice(0,4).map(x=>x.code);
+ if(top.length!==4)return;
+ // The same bracket is used whether or not Korea advances: first vs fourth, second vs third.
+ record.bracket=record.bracket||{semifinals:[[top[0],top[3]],[top[1],top[2]]]};
+ const semis=record.bracket.semifinals;
+ if(!Array.isArray(semis)||semis.length!==2)return;
+ const semiResults=[];
+ for(let i=0;i<2;i++){
+  const [home,away]=semis[i],round='준결승';
+  const game=home==='KR'?koreaGame(round,away,4):away==='KR'?koreaGame(round,home,4):otherGame(round,home,away);
+  if(!game)return;
+  const winner=home==='KR'||away==='KR'?(game.won?'KR':home==='KR'?away:home):game.winner;
+  if(!winner)return;
+  semiResults.push({winner,loser:winner===home?away:home});
+ }
+ if(elapsed<days[4]-1)return;
+ const finalists=semiResults.map(x=>x.winner),bronzeTeams=semiResults.map(x=>x.loser);
+ const final=finalists.includes('KR')?koreaGame('결승',finalists.find(x=>x!=='KR'),5):otherGame('결승',finalists[0],finalists[1]);
+ const bronze=bronzeTeams.includes('KR')?koreaGame('3위 결정전',bronzeTeams.find(x=>x!=='KR'),6):otherGame('3위 결정전',bronzeTeams[0],bronzeTeams[1]);
+ if(!final||!bronze)return;
+ const champion=finalists.includes('KR')?(final.won?'KR':finalists.find(x=>x!=='KR')):final.winner;
+ const third=bronzeTeams.includes('KR')?(bronze.won?'KR':bronzeTeams.find(x=>x!=='KR')):bronze.winner;
+ if(!champion||!third)return;
+ const runnerUp=finalists.find(x=>x!==champion),fourth=bronzeTeams.find(x=>x!==third);
+ record.finalStandings=[champion,runnerUp,third,fourth];
+ record.medals={gold:champion,silver:runnerUp,bronze:third};
+ record.medal=champion==='KR'?'금메달':runnerUp==='KR'?'은메달':third==='KR'?'동메달':'4위';
+ record.gold=champion==='KR';record.finished=true;
+ for(const id of record.players){
+  const p=state.players.find(x=>x.id===id);if(!p)continue;
+  const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);
+  if(history){history.games=record.games;history.result=record.medal;}
+  if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);
+ }
+ clubNotice('국가대표',year+' '+event+' 대회 종료 · '+record.medal,'최종 '+record.wins+'승 '+record.losses+'패 · 금 '+champion+' / 은 '+runnerUp+' / 동 '+third,state.teams.map(t=>t.id),record.players);
 }
 function countDailyFaRegistration(){const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,today=now.toISOString().slice(0,10);if(month<3||month>10)return;for(const p of state.players){if(p.retired||p.draftPending||p.level!=='1군'||p.profile?.injury?.days>0||p.nationalDutyUntil&&today<=p.nationalDutyUntil)continue;p.faRegisteredDaysByYear=p.faRegisteredDaysByYear||{};const days=p.faRegisteredDaysByYear;if(days[year]>=145)continue;days[year]=(Number(days[year])||0)+1}}
 function releasedPlayerSigningDay(){const date=seasonDate(state.day);if(date.getDate()!==10)return;state.releasedSignings=state.releasedSignings||[];const pool=state.players.filter(p=>!p.retired&&!p.foreignPlayer&&['방출','계약종료'].includes(p.level)&&Number(p.age||25)<39).sort((a,b)=>(Number(b.overall)||0)-(Number(a.overall)||0));for(const team of state.teams){const active=state.players.filter(p=>String(p.teamId)===String(team.id)&&!p.retired&&!['방출','은퇴','계약종료','웨이버 대기'].includes(p.level));if(active.length>=65)continue;const candidate=pool.find(p=>p.teamId!==team.id&&p.level!=='1군'&&p.level!=='2군'&&Number(p.overall||0)>=48&&!state.releasedSignings.some(x=>x.year===state.year&&x.playerId===p.id)&&!state.players.some(x=>String(x.teamId)===String(team.id)&&!x.retired&&!['방출','계약종료','은퇴'].includes(x.level)&&x.position===p.position&&Number(x.overall||0)>=Number(p.overall||0)+8));if(!candidate)continue;const salary=Math.max(30000000,Math.round((Number(candidate.overall)||50)*1100000/1000000)*1000000);if(financeTeam(team.id).budget<salary*1.5)continue;const previous=candidate.teamId;candidate.previousTeamId=previous;candidate.teamId=team.id;candidate.level='2군';candidate.salary=salary;candidate.contractSigned=true;ensureProfile(candidate).contractYears=1;state.releasedSignings.push({year:state.year,day:state.day,playerId:candidate.id,fromTeamId:previous,toTeamId:team.id,salary});clubNotice('방출선수 영입',team.name+' '+candidate.name+' 영입','전 소속 '+(state.teams.find(t=>String(t.id)===String(previous))?.name||'미상')+' · 1년 연봉 '+money(salary)+' · 2군 등록. 선수 기록은 유지됩니다.',[team.id,previous],[candidate.id]);pool.splice(pool.indexOf(candidate),1)}}
