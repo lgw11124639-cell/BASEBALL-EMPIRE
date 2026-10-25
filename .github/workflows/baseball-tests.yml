@@ -21,3 +21,5 @@ jobs:
         run: node tests/international-record-isolation.test.cjs
       - name: International schedule
         run: node tests/international-schedule.test.cjs
+      - name: National team return
+        run: node tests/national-return.test.cjs
