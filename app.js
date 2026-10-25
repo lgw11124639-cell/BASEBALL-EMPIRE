@@ -199,7 +199,7 @@ function reviewUnsignedFaMarket(){if(!state.faMarket?.length||state.day%14!==0||
 function frontOfficeDay(){for(const t of state.teams)officeAI(t.id);reviewUnsignedFaMarket();reviewManagerEmployment();const day=state.day,month=seasonDate(day).getMonth()+1;if(day%28!==0||month<4||month>7||day%84!==0)return;const rr=rng((day*7187+state.year*37)>>>0);const eligible=p=>!p.retired&&!p.draftPending&&p.level==='2군'&&!(p.profile?.injury?.days>0)&&p.contractSigned!==false&&!p.foreignPlayer;const rosters=new Map(state.teams.map(t=>[t.id,state.players.filter(p=>p.teamId===t.id&&eligible(p))]));const need=(id,pos)=>{const team=state.players.filter(p=>p.teamId===id&&!p.retired&&!p.draftPending&&p.level!=='방출');const same=team.filter(p=>p.position===pos);const active=same.filter(p=>p.level==='1군');const expected=pos==='P'?12:pos==='C'?3:pos==='SS'||pos==='CF'?3:2;return Math.max(0,expected-active.length)*5+Math.max(0,4-same.length)*2};const teams=[...state.teams].sort((a,b)=>((a.wins||0)/Math.max(1,(a.wins||0)+(a.losses||0)))-((b.wins||0)/Math.max(1,(b.wins||0)+(b.losses||0))));for(const buyer of teams){const budget=financeTeam(buyer.id).budget;if(!Number.isFinite(budget)||budget<100000000)continue;const wants=[...new Set(['P','C','SS','CF','1B','2B','3B','LF','RF'])].sort((x,y)=>need(buyer.id,y)-need(buyer.id,x));const target=wants[0];if(need(buyer.id,target)<4)continue;const candidates=state.teams.filter(t=>t.id!==buyer.id).flatMap(t=>(rosters.get(t.id)||[]).filter(p=>p.position===target&&Number(p.salary||0)<budget*.12&&Number(p.overall||0)>=50).map(p=>({p,t}))).sort((x,y)=>((y.p.overall||0)+Math.min(12,(y.p.potential||0)-(y.p.overall||0))*.35)-((x.p.overall||0)+Math.min(12,(x.p.potential||0)-(x.p.overall||0))*.35));let done=false;for(const {p:incoming,t:seller} of candidates.slice(0,12)){if(need(seller.id,target)>need(buyer.id,target)-3)continue;const give=(rosters.get(buyer.id)||[]).filter(x=>x.id!==incoming.id&&x.position!==target&&need(seller.id,x.position)>need(buyer.id,x.position)).sort((x,y)=>Math.abs((x.overall||0)-(incoming.overall||0))+Math.abs((x.potential||0)-(incoming.potential||0))*.4-(y.overall||0)*0)[0];if(!give)continue;const diff=Math.abs((give.overall||0)-(incoming.overall||0))+Math.abs((give.potential||0)-(incoming.potential||0))*.4;if(diff>12)continue;incoming.teamId=buyer.id;give.teamId=seller.id;incoming.teamHistory=incoming.teamHistory||[];give.teamHistory=give.teamHistory||[];incoming.teamHistory.push({year:state.year,from:seller.id,to:buyer.id,reason:'트레이드'});give.teamHistory.push({year:state.year,from:buyer.id,to:seller.id,reason:'트레이드'});clubNotice('트레이드',buyer.city+' '+buyer.name+' · '+seller.city+' '+seller.name+' 트레이드',buyer.name+'은 '+target+' 포지션 보강을 위해 '+incoming.name+'을 영입하고 '+give.name+'을 내보냈습니다. 양 구단 단장이 포지션 수급·유망주 잠재력·예산을 검토했습니다.',[buyer.id,seller.id],[incoming.id,give.id]);done=true;break}if(done)break}}
 function prospectInterestNews(){
  const date=seasonDate(state.day),month=date.getMonth()+1,day=date.getDate();
- if(month<5||month>9||day!==20)return;
+ if(month<5||month>8||day!==20)return;
  const year=date.getFullYear(),key=year+':'+month;
  state.prospectInterestNews=state.prospectInterestNews||{};
  if(state.prospectInterestNews[key])return;
@@ -209,7 +209,9 @@ function prospectInterestNews(){
   const league=source.data;if(!league)continue;
   const schools=league[source.teams]||[];
   for(const p of league[source.players]||[]){
-   if(p.draftEligible===false)continue;
+   if(p.draftEligible===false||p.contracted)continue;
+   if(source.kind==='고교'&&Number(p.age)<18)continue;
+   if(source.kind==='대학'&&Number(p.collegeYears||1)<4)continue;
    const games=Number(p.games)||0,score=(Number(p.potential)||60)*.55+(Number(p.overall)||40)*.45+Math.min(12,games*.2);
    const school=schools.find(t=>String(t.id)===String(p[source.teamKey]));
    candidates.push({id:p.id,name:p.name,position:p.position,school:school?.name||source.kind+' 야구부',kind:source.kind,score,stats:prospectStatSummary(p)});
@@ -235,6 +237,7 @@ function prospectInterestNews(){
   clubNotice('드래프트 전망',title,body,[favorite.id,...(rival?[rival.id]:[])],[p.id]);
  }
  for(const old of Object.keys(state.prospectInterestNews).filter(k=>Number(k.split(':')[0])<year-1))delete state.prospectInterestNews[old];
+ for(const old of Object.keys(state.prospectForecasts).map(Number).filter(y=>y<year-1))delete state.prospectForecasts[old];
 }
 function prospectStatSummary(p){
  const g=Number(p.games)||0;
@@ -251,6 +254,7 @@ function draftForecastResultNews(draftYear,picks){
  state.prospectForecastResultYears=state.prospectForecastResultYears||{};
  if(state.prospectForecastResultYears[draftYear])return;
  state.prospectForecastResultYears[draftYear]=true;
+ for(const old of Object.keys(state.prospectForecastResultYears).map(Number).filter(y=>y<draftYear-4))delete state.prospectForecastResultYears[old];
  for(const prediction of published.slice(0,8)){
   const pick=picks.find(x=>String(x.highSchoolProspectId||x.collegeProspectId)===String(prediction.id)&&x.origin===prediction.kind);
   if(!pick)continue;
