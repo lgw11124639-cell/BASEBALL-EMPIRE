@@ -580,7 +580,7 @@ function nationalTeamTournamentDay(){
  // End national-team unavailability when the actual tournament finishes.
  record.end=today;
  for(const id of record.players){const member=state.players.find(x=>String(x.id)===String(id));if(member&&member.nationalDutyUntil&&member.nationalDutyUntil>=today)member.nationalDutyUntil=new Date(now.getTime()-86400000).toISOString().slice(0,10);}
- for(const id of record.players){const p=state.players.find(x=>x.id===id);if(!p)continue;const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);if(history){history.games=record.games;history.result=record.medal;}if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);}
+ for(const id of record.players){const p=state.players.find(x=>x.id===id);if(!p)continue;const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);if(history){history.games=(record.matchResults||[]).filter(g=>(g.homeBatters||[]).some(x=>String(x.id)===String(p.id)&&((Number(x.atBats)||0)+(Number(x.walks)||0)>0))||(g.homePitchers||[]).some(x=>String(x.id)===String(p.id)&&(Number(x.outs)||0)>0)).length;history.result=record.medal;}if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);}
  clubNotice('국가대표',year+' '+event+' 대회 종료 · '+record.medal,'대한민국 '+record.wins+'승 '+record.losses+'패 · 금 '+champion+' / 은 '+runnerUp+' / 동 '+third,state.teams.map(t=>t.id),record.players);
 
 }
