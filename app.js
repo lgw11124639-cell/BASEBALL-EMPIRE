@@ -400,7 +400,11 @@ function internationalSharedGame(korea,opponent,seed){
  if(!home||!away)return null;
  const r=rng(seed>>>0);
  const box=runBaseballInnings(away,home,r,{historical:true,maxInnings:12});
- return {homeRuns:home.runs,awayRuns:away.runs,homeInnings:box.homeInnings,awayInnings:box.awayInnings,homeStarter:home.starter.name,awayStarter:away.starter.name};
+ return {homeRuns:home.runs,awayRuns:away.runs,homeInnings:box.homeInnings,awayInnings:box.awayInnings,homeStarter:home.starter.name,awayStarter:away.starter.name,
+  homeBatters:home.plan.first.filter(p=>p.position!=='P').map(p=>({id:p.id,name:p.name,atBats:p.atBats||0,hits:p.hits||0,homeRuns:p.homeRuns||0,runsBattedIn:p.runsBattedIn||0,walks:p.walks||0})),
+  awayBatters:away.plan.first.filter(p=>p.position!=='P').map(p=>({id:p.id,name:p.name,atBats:p.atBats||0,hits:p.hits||0,homeRuns:p.homeRuns||0,runsBattedIn:p.runsBattedIn||0,walks:p.walks||0})),
+  homePitchers:home.usage.map(x=>({id:x.p.id,name:x.p.name,outs:x.outs||0,strikeouts:x.strikeouts||0,hits:x.hits||0,walks:x.walks||0,earnedRuns:x.er||0})),
+  awayPitchers:away.usage.map(x=>({id:x.p.id,name:x.p.name,outs:x.outs||0,strikeouts:x.strikeouts||0,hits:x.hits||0,walks:x.walks||0,earnedRuns:x.er||0}))};
 }
 function internationalOpponentRoster(year,country){
  const seed=rng((year*70139+country.split('').reduce((n,c)=>n*31+c.charCodeAt(0),0))>>>0);
@@ -415,6 +419,7 @@ function internationalOpeningGame(year,event,selected,opponentCode,round){
  const participants=[...selected,...rival];
  const counters=snapshotLeagueCounters(participants);
  const fatigue=new Map(participants.map(p=>[p.id,Number(playerBaseball(p).fatigue)||0]));
+ const battingBefore=new Map(participants.map(p=>[p.id,Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Number(p[k])||0]))]));
  let result=null;
  try{
   result=internationalSharedGame(selected,rival,year*99173+event.length*101+(round||0)*811);
@@ -423,7 +428,7 @@ function internationalOpeningGame(year,event,selected,opponentCode,round){
   restoreLeagueCounters(counters);
   for(const p of participants)playerBaseball(p).fatigue=fatigue.get(p.id);
  }
- return result?{opponent,homeRuns:result.homeRuns,awayRuns:result.awayRuns,homeInnings:result.homeInnings,awayInnings:result.awayInnings,homeStarter:result.homeStarter,awayStarter:result.awayStarter}:null;
+ return result?{opponent,homeRuns:result.homeRuns,awayRuns:result.awayRuns,homeInnings:result.homeInnings,awayInnings:result.awayInnings,homeStarter:result.homeStarter,awayStarter:result.awayStarter,homeBatters:result.homeBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),awayBatters:result.awayBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),homePitchers:result.homePitchers,awayPitchers:result.awayPitchers}:null;
 }
 function internationalTournamentSchedule(year,event,selected){
  const rivals=event==='아시안게임'?['TW','JP','CN','AU','JP']:['AU','TW','US','JP','US'];
@@ -1330,7 +1335,7 @@ function internationalMatchDetails(g){
  if(!home.length&&!away.length)return '<p>이닝별 기록이 저장되지 않은 경기입니다.</p>';
  const innings=Array.from({length:Math.max(9,home.length,away.length)},(_,i)=>i);
  const row=(name,values,total)=>'<tr><th>'+esc(name)+'</th>'+innings.map(i=>'<td>'+esc(values[i]===null?'—':values[i]??'—')+'</td>').join('')+'<td><b>'+esc(total)+'</b></td></tr>';
- return '<div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>팀</th>'+innings.map(i=>'<th>'+(i+1)+'</th>').join('')+'<th>R</th></tr></thead><tbody>'+row(g.opponent||'상대',away,g.awayRuns)+row('대한민국',home,g.homeRuns)+'</tbody></table></div><p class="article-note">선발투수 · 대한민국 '+esc(g.homeStarter||'기록 없음')+' / 상대 '+esc(g.awayStarter||'기록 없음')+'</p>';
+ return '<div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>팀</th>'+innings.map(i=>'<th>'+(i+1)+'</th>').join('')+'<th>R</th></tr></thead><tbody>'+row(g.opponent||'상대',away,g.awayRuns)+row('대한민국',home,g.homeRuns)+'</tbody></table></div><p class="article-note">선발투수 · 대한민국 '+esc(g.homeStarter||'기록 없음')+' / 상대 '+esc(g.awayStarter||'기록 없음')+'</p>'+(['home','away'].map(side=>{const batters=g[side+'Batters'],pitchers=g[side+'Pitchers'];if(!Array.isArray(batters)&&!Array.isArray(pitchers))return '';const name=side==='home'?'대한민국':g.opponent||'상대';const bats=(batters||[]).filter(p=>p.atBats||p.walks).map(p=>'<tr><th>'+esc(p.name)+'</th><td>'+p.atBats+'</td><td>'+p.hits+'</td><td>'+p.homeRuns+'</td><td>'+p.runsBattedIn+'</td><td>'+p.walks+'</td></tr>').join('');const arms=(pitchers||[]).map(p=>'<tr><th>'+esc(p.name)+'</th><td>'+baseballIP(p.outs)+'</td><td>'+p.strikeouts+'</td><td>'+p.hits+'</td><td>'+p.walks+'</td><td>'+p.earnedRuns+'</td></tr>').join('');return '<h4>'+esc(name)+' 타자 기록</h4><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>타수</th><th>안타</th><th>홈런</th><th>타점</th><th>볼넷</th></tr></thead><tbody>'+bats+'</tbody></table></div><h4>'+esc(name)+' 투수 기록</h4><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>이닝</th><th>삼진</th><th>피안타</th><th>볼넷</th><th>자책</th></tr></thead><tbody>'+arms+'</tbody></table></div>'}).join(''));
 }
 function nationalTeamPanel(){
  const records=Object.values(state.nationalTeamResults||{}).sort((a,b)=>b.year-a.year);
