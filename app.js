@@ -394,7 +394,7 @@ function internationalSharedGame(korea,opponent,seed){
   if(pitchers.length<2||hitters.length<9)return null;
   const formScore=p=>id===-1001&&nationalTeamFormScore(p)>-100?nationalTeamFormScore(p):Number(p.overall)||60;
   const lineup=chooseBattingNine(hitters,null,formScore);
-  const rotation=pitchers.slice().sort((a,b)=>formScore(b)-formScore(a));const rested=rotation.filter(p=>id!==-1001||(Number(playerBaseball(p).fatigue)||0)<75);const pool=rested.length?rested:rotation;const starter=pool[Math.abs(seed>>>0)%Math.min(5,pool.length)],roles=new Map(pitchers.map(p=>[p.id,p.id===starter.id?'선발':'불펜']));
+  const rotation=pitchers.slice().sort((a,b)=>formScore(b)-formScore(a));const rested=rotation.filter(p=>id!==-1001||((Number(playerBaseball(p).fatigue)||0)<75&&sharedPitcherRestDays(p,false,state.day)>=3));const fallback=rotation.filter(p=>id!==-1001||sharedPitcherRestDays(p,false,state.day)>=2);const pool=rested.length?rested:fallback.length?fallback:rotation;const starter=pool[Math.abs(seed>>>0)%Math.min(5,pool.length)],roles=new Map(pitchers.map(p=>[p.id,p.id===starter.id?'선발':'불펜']));
   const relievers=pitchers.filter(p=>p.id!==starter.id).sort((a,b)=>formScore(b)-formScore(a));
   if(relievers.length>=2){roles.set(relievers[0].id,'마무리');roles.set(relievers[1].id,'셋업');}
   const plan={first:hitters,starters:rotation,bullpen:relievers,roles,lineupPositions:lineup.assignedPositions,score:formScore};
