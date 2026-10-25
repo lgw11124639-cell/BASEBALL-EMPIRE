@@ -257,10 +257,10 @@ function honorRetiredPlayers(year){
    if(!qualified)continue;
    const number=Number(retired.teamId)===Number(teamId)&&retired.jerseyNumber!=null?Number(retired.jerseyNumber):NaN;
    if(!Number.isInteger(number)||number<0||number>999||existingNumbers.has(teamId+':'+number)||existingHonoredPlayers.has(teamId+':'+id))continue;
-   if(state.players.some(x=>String(x.teamId)===teamId&&String(x.id)!==id&&!x.retired&&!['방출','은퇴','계약종료'].includes(x.level)&&Number(x.jerseyNumber)===number))continue;
    history.retiredNumbers.push({playerId:p.id,name:p.name,teamId:Number(teamId),number,year});
    existingNumbers.add(teamId+':'+number);
    existingHonoredPlayers.add(teamId+':'+id);
+   for(const active of state.players){if(String(active.teamId)===teamId&&String(active.id)!==id&&!active.retired&&!['방출','은퇴','계약종료'].includes(active.level)&&Number(active.jerseyNumber)===number)active.jerseyNumber=null;}
   }
  }
 }
