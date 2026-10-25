@@ -294,23 +294,46 @@ const OVERSEAS_FIRST={US:['James','William','Ethan','Logan','Daniel','Michael'],
 const OVERSEAS_LAST={US:['Smith','Johnson','Williams','Brown','Davis','Miller'],JP:['Sato','Suzuki','Tanaka','Yamamoto','Nakamura','Kobayashi'],TW:['Chen','Lin','Wang','Chang','Liu','Huang']};
 function simulateOverseasSeason(year){
  state.international=state.international||{};
- state.international.overseas=state.international.overseas||{seasons:{}};
- const store=state.international.overseas;store.seasons=store.seasons||{};
+ const store=state.international.overseas=state.international.overseas||{seasons:{}};
+ store.seasons=store.seasons||{};
  if(store.seasons[year])return;
- const leagues={};
+ const leagues={},previous=store.rosters||{};
+ const nextRosters={};
  for(const league of OVERSEAS_LEAGUES){
   const r=rng((year*132721+league.id.charCodeAt(0)*9017)>>>0);
+  const previousClubs=previous[league.id]||{};
+  const clubRosters={};
   const clubs=league.clubs.map((name,ci)=>{
-   const players=Array.from({length:18},(_,i)=>{
-    const pitcher=i<8,age=ri(r,20,36),rating=ri(r,48,90);
-    const playerName=OVERSEAS_FIRST[league.country][ri(r,0,5)]+' '+OVERSEAS_LAST[league.country][ri(r,0,5)];
+   const old=Array.isArray(previousClubs[name])?previousClubs[name]:[];
+   const players=[];
+   for(let i=0;i<18;i++){
+    const pitcher=i<8,prior=old[i],age=prior?(Number(prior.age)||25)+1:ri(r,20,34);
+    const rating=prior?Math.max(35,Math.min(94,(Number(prior.rating)||60)+(age<28?ri(r,0,2):age>33?-ri(r,0,3):ri(r,-1,1)))):ri(r,48,90);
+    const retired=age>39||(age>35&&r()<.15);
+    const fresh=!prior||retired;
+    const pAge=fresh?ri(r,19,26):age,pRating=fresh?ri(r,45,78):rating;
+    const id=fresh?league.id+'-'+ci+'-'+year+'-'+i:prior.id;
+    const playerName=fresh?OVERSEAS_FIRST[league.country][ri(r,0,5)]+' '+OVERSEAS_LAST[league.country][ri(r,0,5)]:prior.name;
+    const nationality=fresh?league.country:(prior.nationality||league.country);
+    const position=pitcher?'P':['C','1B','2B','3B','SS','LF','CF','RF','DH'][(i-8)%9];
     const games=pitcher?ri(r,18,62):ri(r,70,145);
-    return {id:league.id+'-'+ci+'-'+i,name:playerName,nationality:league.country,position:pitcher?'P':['C','1B','2B','3B','SS','LF','CF','RF','DH'][(i-8)%9],age,team:name,games,avg:pitcher?undefined:Math.round((.185+rating*.00125+r()*.045)*1000)/1000,hr:pitcher?undefined:ri(r,0,Math.max(2,Math.round(rating*.32))),era:pitcher?Math.round(Math.max(1.7,7-rating*.047+r()*.9)*100)/100:undefined};
-   });
+    const avg=pitcher?undefined:Math.round(Math.min(.385,.185+pRating*.00125+r()*.045)*1000)/1000;
+    const hr=pitcher?undefined:ri(r,0,Math.max(2,Math.round(pRating*.32)));
+    const era=pitcher?Math.round(Math.max(1.7,7-pRating*.047+r()*.9)*100)/100:undefined;
+    players.push({id,name:playerName,nationality,position,age:pAge,team:name,games,avg,hr,era});
+    (clubRosters[name]||(clubRosters[name]=[])).push({id,name:playerName,nationality,position,age:pAge,rating:pRating});
+   }
    return {name,wins:ri(r,50,100),players};
   });
+  // Deterministic off-season transfers between clubs, without detailed match logs.
+  if(clubs.length>1){
+   const first=clubRosters[clubs[0].name],second=clubRosters[clubs[1].name];
+   if(first&&second){const slot=ri(r,8,17),tmp=first[slot];first[slot]=second[slot];second[slot]=tmp}
+  }
+  nextRosters[league.id]=clubRosters;
   leagues[league.id]={country:league.country,clubs,champion:clubs.reduce((a,b)=>a.wins>b.wins?a:b).name};
  }
+ store.rosters=nextRosters;
  store.seasons[year]={year,leagues};
  const years=Object.keys(store.seasons).map(Number).sort((a,b)=>b-a);
  for(const old of years.slice(3))delete store.seasons[old];
@@ -330,7 +353,16 @@ function snapshotInternationalPool(year){
   if(group.length<30)group.push(item);
   else{let min=0;for(let i=1;i<group.length;i++)if(group[i].score<group[min].score)min=i;if(score>group[min].score)group[min]=item}
  }
- const teams={};for(const code of countries)teams[code]=groups[code].sort((a,b)=>b.score-a.score).slice(0,28).map(({id,name,position,teamId})=>({id,name,position,teamId}));
+ // Overseas statistics are already generated at season rollover; merge candidates without copying match logs.
+ const overseas=state.international.overseas?.seasons?.[year]?.leagues||{};
+ for(const league of Object.values(overseas))for(const club of league.clubs||[])for(const p of club.players||[]){
+  const code=p.nationality;if(!groups[code])continue;
+  const score=p.position==='P'?Math.round(100-(Number(p.era)||5)*7):Math.round((Number(p.avg)||.22)*200+(Number(p.hr)||0)*.7);
+  const group=groups[code],item={id:p.id,name:p.name,position:p.position,score,teamId:null,overseasLeague:Object.keys(overseas).find(k=>overseas[k]===league),club:club.name};
+  if(group.length<30)group.push(item);
+  else{let min=0;for(let i=1;i<group.length;i++)if(group[i].score<group[min].score)min=i;if(score>group[min].score)group[min]=item}
+ }
+ const teams={};for(const code of countries)teams[code]=groups[code].sort((a,b)=>b.score-a.score).slice(0,28).map(({id,name,position,teamId,overseasLeague,club})=>({id,name,position,teamId,...(overseasLeague?{overseasLeague,club}:{})}));
  state.international.seasons[year]={year,teams};
  const years=Object.keys(state.international.seasons).map(Number).sort((a,b)=>b-a);
  for(const old of years.slice(5))delete state.international.seasons[old];
