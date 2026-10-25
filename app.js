@@ -358,7 +358,7 @@ function awardPanel(){const year=awardYear===null?state.year:awardYear,archived=
 function winPct(t){return (t.wins||0)/((t.wins||0)+(t.losses||0)||1)}function gameGap(a,b){const n=((a.wins||0)-(b.wins||0)+(b.losses||0)-(a.losses||0))/2;return n===0?'—':String(n)}function seasonTeamHonorStats(year){
  const byPlayer=new Map();
  for(const g of state.gameResults||[]){
-  if(g.year!=null&&Number(g.year)!==Number(year))continue;
+  if(g.year!=null?Number(g.year)!==Number(year):Number(year)!==Number(state.year))continue;
   for(const [side,kind] of [['away','Batters'],['home','Batters'],['away','Pitchers'],['home','Pitchers']]){
    const teamId=g[side],isPitcher=kind==='Pitchers';
    for(const line of g[side+kind]||[]){
