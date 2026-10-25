@@ -205,7 +205,7 @@ function honorRetiredPlayers(year){
  history.hallOfFame=history.hallOfFame||[];history.retiredNumbers=history.retiredNumbers||[];
  const seasons=Object.values(history.seasons||{}).filter(x=>Number(x.year)<=Number(year));const playerById=new Map(state.players.map(p=>[String(p.id),p]));
  const records=new Map();
- const summarizedIdsByYear=new Map(seasons.map(season=>[Number(season.year),new Set((season.players||[]).filter(p=>p.id!=null&&Number(p.games)>0).map(p=>String(p.id)))]));
+ const summarizedIdsByYear=new Map(seasons.map(season=>[Number(season.year),new Set((season.players||[]).filter(p=>p.id!=null&&(Number(p.games)>0||Number(p.atBats)>0||Number(p.inningsPitched)>0)).map(p=>String(p.id)))]));
  for(const season of seasons)for(const x of season.players||[]){
   if(x.id==null||!(Number(x.games)>0||Number(x.atBats)>0||Number(x.inningsPitched)>0))continue;
   const id=String(x.id),r=records.get(id)||{years:new Set(),byTeam:new Map(),hits:0,homeRuns:0,wins:0,saves:0,strikeouts:0};
