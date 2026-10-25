@@ -536,8 +536,17 @@ function nationalTeamTournamentDay(){
  };
  const groupFixtures=[];
  for(let gi=0;gi<record.groups.length;gi++){
-  const group=record.groups[gi];
-  for(let i=0;i<group.length;i++)for(let j=i+1;j<group.length;j++)groupFixtures.push({group:gi,home:group[i],away:group[j],round:'조별리그 '+String.fromCharCode(65+gi)+'조 '+(i+1)+'-'+(j+1),day:1+groupFixtures.filter(x=>x.group===gi).length});
+  const group=record.groups[gi],slots=group.map((_,i)=>i);
+  if(slots.length%2)slots.push(-1);
+  const days=new Map();
+  for(let round=0;round<slots.length-1;round++){
+   for(let k=0;k<slots.length/2;k++){
+    const x=slots[k],y=slots[slots.length-1-k];
+    if(x>=0&&y>=0)days.set(Math.min(x,y)+'-'+Math.max(x,y),round+1);
+   }
+   slots.splice(1,0,slots.pop());
+  }
+  for(let i=0;i<group.length;i++)for(let j=i+1;j<group.length;j++)groupFixtures.push({group:gi,home:group[i],away:group[j],round:'조별리그 '+String.fromCharCode(65+gi)+'조 '+(i+1)+'-'+(j+1),day:days.get(i+'-'+j)});
  }
  const groupLast=Math.max(...groupFixtures.map(g=>g.day));
  for(let i=0;i<groupFixtures.length;i++){
