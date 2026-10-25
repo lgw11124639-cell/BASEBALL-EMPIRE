@@ -37,3 +37,13 @@ for(const [event,groups,days] of [
  }
  console.log(event+': fixtures and dates OK');
 }
+
+for(const [event,groupLast,hasQuarterfinal] of [['WBC',5,true],['아시안게임',3,false],['올림픽',3,false]]){
+ const quarter=hasQuarterfinal?[groupLast+2,groupLast+2,groupLast+3,groupLast+3]:[];
+ const semi=groupLast+(hasQuarterfinal?4:2);
+ const medal=groupLast+(hasQuarterfinal?6:4);
+ assert.ok(!quarter.length||Math.max(...quarter)<semi,event+' quarterfinal rest');
+ assert.ok(semi<medal,event+' final rest');
+ assert.equal(new Set([semi,medal]).size,2,event+' distinct knockout days');
+ console.log(event+': knockout date offsets OK');
+}
