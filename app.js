@@ -402,7 +402,7 @@ function simulateOverseasSeason(year){
    for(let i=0;i<18;i++){
     const pitcher=i<8,prior=old[i]&&old[i].position===(pitcherPosition(i))?old[i]:null,age=prior?(Number(prior.age)||25)+1:ri(r,20,34);
     const rating=prior?Math.max(35,Math.min(94,(Number(prior.rating)||60)+(age<28?ri(r,0,2):age>33?-ri(r,0,3):ri(r,-1,1)))):ri(r,48,90);
-    const retired=age>39||(age>35&&r()<.15);
+    const exported=prior&&String(prior.id).startsWith('KBO-')&&((state.international.overseasTransfers||[]).some(t=>'KBO-'+String(t.id)===String(prior.id)&&year<Number(t.startYear||year)+Number(t.contract?.years||2)));const retired=!exported&&(age>39||(age>35&&r()<.15));
     const fresh=!prior||retired;
     const pAge=fresh?ri(r,19,26):age,pRating=fresh?ri(r,45,78):rating;
     const id=fresh?league.id+'-'+ci+'-'+year+'-'+i:prior.id;
@@ -423,7 +423,7 @@ function simulateOverseasSeason(year){
    const first=clubs[0],second=clubs[1],slot=ri(r,0,17);
    const firstRoster=clubRosters[first.name],secondRoster=clubRosters[second.name];
    const left=firstRoster[slot],right=secondRoster[slot];
-   if(left&&right&&left.position===right.position){
+   if(left&&right&&left.position===right.position&&!String(left.id).startsWith('KBO-')&&!String(right.id).startsWith('KBO-')){
     firstRoster[slot]=right;secondRoster[slot]=left;
    }
   }
