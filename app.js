@@ -215,19 +215,44 @@ function honorRetiredPlayers(year){
   }
   r.byTeam.set(teamId,t);records.set(id,r);
  }
+ const awardsByPlayer=new Map();
+ for(const [awardYear,list] of Object.entries(state.awards||{})){
+  if(Number(awardYear)>Number(year))continue;
+  for(const award of list||[]){
+   const id=String(award.playerId),arr=awardsByPlayer.get(id)||[];
+   arr.push(award);awardsByPlayer.set(id,arr);
+  }
+ }
+ const champions=new Set((history.champions||[]).map(x=>String(x.year)+':'+String(x.teamId??x.winnerId??x.championTeamId)));
+ const honorScore=(r,playerId,teamId=null)=>{
+  const stats=teamId==null?r:r.byTeam.get(String(teamId));
+  if(!stats)return 0;
+  const years=stats.years.size;
+  const performance=playerById.get(String(playerId))?.position==='P'
+   ?Math.min(65,stats.wins*.19+stats.saves*.105+stats.strikeouts*.012)
+   :Math.min(65,stats.hits*.023+stats.homeRuns*.085);
+  const awards=(awardsByPlayer.get(String(playerId))||[]).filter(a=>teamId==null||String(a.teamId)===String(teamId));
+  let awardPoints=0;
+  for(const a of awards){
+   const title=String(a.title||'');
+   awardPoints+=/MVP|최우수선수/.test(title)?12:/골든글러브/.test(title)?5:/신인왕/.test(title)?4:2;
+  }
+  const championships=teamId==null?0:[...stats.years].filter(y=>champions.has(String(y)+':'+String(teamId))).length;
+  return performance+Math.min(24,awardPoints)+Math.min(12,years*.7)+Math.min(12,championships*4);
+ };
  const existingHall=new Set(history.hallOfFame.map(x=>String(x.playerId??x.id)));
  const existingNumbers=new Set(history.retiredNumbers.map(x=>String(x.teamId)+':'+String(x.number)));
  for(const retired of state.retiredPlayers||[]){
   if(Number(retired.year)>Number(year))continue;
   const id=String(retired.id),p=playerById.get(id),r=records.get(id);
   if(!p||!r)continue;
-  const hallEligible=r.years.size>=10&&(p.position==='P'?(r.wins>=180||r.saves>=300||r.strikeouts>=2200):(r.hits>=2000||r.homeRuns>=350));
+  const hallEligible=r.years.size>=10&&honorScore(r,id)>=72;
   if(hallEligible&&!existingHall.has(id)){
    history.hallOfFame.push({playerId:p.id,name:p.name,year,inductedYear:year});
    existingHall.add(id);
   }
   for(const [teamId,t] of r.byTeam){
-   const qualified=t.years.size>=8&&(p.position==='P'?(t.wins>=140||t.saves>=250||t.strikeouts>=1700):(t.hits>=1600||t.homeRuns>=280));
+   const qualified=t.years.size>=8&&honorScore(r,id,teamId)>=80;
    if(!qualified)continue;
    const number=Number(retired.teamId)===Number(teamId)?Number(retired.jerseyNumber??p.jerseyNumber):NaN;
    if(!Number.isInteger(number)||number<0||number>999||existingNumbers.has(teamId+':'+number))continue;
