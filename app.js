@@ -44,6 +44,7 @@ function idbRead(key){return new Promise((resolve,reject)=>{const tx=db.transact
 function idbWrite(key,value){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite');let finished=false;const timer=setTimeout(()=>{if(finished)return;finished=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): '+key.split(':').slice(-1)[0]))},12000);const settle=(error)=>{if(finished)return;finished=true;clearTimeout(timer);if(error)reject(error);else resolve()};tx.oncomplete=()=>settle();tx.onerror=()=>settle(tx.error||Error('IndexedDB 저장 실패'));tx.onabort=()=>settle(tx.error||Error('IndexedDB 저장 취소'));try{tx.objectStore('saves').put(value,key)}catch(e){settle(e)}})}
 let splitSaveCount=0;
 function cleanupSplitSaveKeys(active,previous){
+ if(seasonStepBusy||autoSeasonRunning)return Promise.resolve(0);
  return new Promise((resolve,reject)=>{
   const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');
   let removed=0;
