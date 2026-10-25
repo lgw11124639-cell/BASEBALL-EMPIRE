@@ -65,11 +65,22 @@ async function save(){
    delete meta.minorLeague;
    meta.__minorLeagueKeys=seasonKeys;
   }
+  // Store remaining state fields separately to avoid a single oversized meta write.
+  const extraKeys=[];
+  for(const field of Object.keys(meta)){
+   if(field==='__minorLeagueKeys')continue;
+   const key=generation+':extra:'+field;
+   await idbWrite(key,meta[field]);
+   extraKeys.push([field,key]);
+   delete meta[field];
+  }
+  meta.__extraKeys=extraKeys;
   await idbWrite(generation+':meta',meta);
   // Verify all components before making the generation visible to load().
   for(const [field,key] of keys){const check=await idbRead(key);if(check===undefined)throw Error('저장 검증 실패: '+field)}
   if(await idbRead(generation+':meta')===undefined)throw Error('저장 메타 검증 실패');
   for(const [year,key] of meta.__minorLeagueKeys||[]){if(await idbRead(key)===undefined)throw Error('2군 시즌 저장 검증 실패: '+year)}
+  for(const [field,key] of meta.__extraKeys||[]){if(await idbRead(key)===undefined)throw Error('기타 저장 검증 실패: '+field)}
   await idbWrite('active-split', {generation,keys,metaKey:generation+':meta'});
   state.lastSaved=stamp;
  }catch(e){try{db?.close()}catch(_){}db=await openDB();throw e}
@@ -81,6 +92,7 @@ async function load(){
    const meta=await idbRead(pointer.metaKey);
    if(!meta||typeof meta!=='object')throw Error('메타 누락');
    const restored={...meta};
+   if(Array.isArray(restored.__extraKeys)){for(const [field,key] of restored.__extraKeys){const value=await idbRead(key);if(value===undefined)throw Error('기타 데이터 누락: '+field);restored[field]=value}delete restored.__extraKeys}
    for(const [field,key] of pointer.keys){const part=await idbRead(key);if(part===undefined)throw Error('누락된 저장 항목: '+field);restored[field]=part}
    if(Array.isArray(restored.__minorLeagueKeys)){restored.minorLeague={};for(const [year,key] of restored.__minorLeagueKeys){const part=await idbRead(key);if(part===undefined)throw Error('2군 시즌 누락: '+year);restored.minorLeague[year]=part}delete restored.__minorLeagueKeys}
    return restored;
