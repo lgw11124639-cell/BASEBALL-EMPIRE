@@ -208,12 +208,12 @@ function honorRetiredPlayers(year){
  for(const season of seasons)for(const x of season.players||[]){
   if(x.id==null||!(Number(x.games)>0||Number(x.atBats)>0||Number(x.inningsPitched)>0))continue;
   const id=String(x.id),r=records.get(id)||{years:new Set(),byTeam:new Map(),hits:0,homeRuns:0,wins:0,saves:0,strikeouts:0};
-  const teamId=String(x.teamId),t=r.byTeam.get(teamId)||{years:new Set(),hits:0,homeRuns:0,wins:0,saves:0,strikeouts:0};
-  r.years.add(Number(season.year));t.years.add(Number(season.year));
+  const teamId=String(x.teamId),hasTeamStats=Array.isArray(season.teamPlayerStats),t=hasTeamStats?null:(r.byTeam.get(teamId)||{years:new Set(),hits:0,homeRuns:0,wins:0,saves:0,strikeouts:0});
+  r.years.add(Number(season.year));if(t)t.years.add(Number(season.year));
   for(const [field,key] of [['hits','hits'],['homeRuns','homeRuns'],['pitchingWins','wins'],['saves','saves'],['pitchingStrikeouts','strikeouts']]){
-   const n=Number(x[field])||0;r[key]+=n;t[key]+=n;
+   const n=Number(x[field])||0;r[key]+=n;if(t)t[key]+=n;
   }
-  if(!Array.isArray(season.teamPlayerStats))r.byTeam.set(teamId,t);records.set(id,r);
+  if(t)r.byTeam.set(teamId,t);records.set(id,r);
  }
  for(const season of seasons)for(const x of season.teamPlayerStats||[]){
   const r=records.get(String(x.id));if(!r||!(Number(x.games)>0))continue;
