@@ -39,7 +39,7 @@ function compactRetiredPlayerTraining(data){
 }
 // Keep the original 'main' record untouched. Publish a new snapshot only after
 // every component has committed successfully; interrupted writes remain invisible.
-const SAVE_PARTS=['players','gameResults','history','careerRecords','teams','minorLeague','retiredPlayers'];
+const SAVE_PARTS=['players','gameResults','history','careerRecords','teams','retiredPlayers'];
 function idbRead(key){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readonly');const req=tx.objectStore('saves').get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 function idbWrite(key,value){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite');let finished=false;const timer=setTimeout(()=>{if(finished)return;finished=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): '+key.split(':').slice(-1)[0]))},12000);const settle=(error)=>{if(finished)return;finished=true;clearTimeout(timer);if(error)reject(error);else resolve()};tx.oncomplete=()=>settle();tx.onerror=()=>settle(tx.error||Error('IndexedDB 저장 실패'));tx.onabort=()=>settle(tx.error||Error('IndexedDB 저장 취소'));try{tx.objectStore('saves').put(value,key)}catch(e){settle(e)}})}
 async function save(){
@@ -54,10 +54,22 @@ async function save(){
    await idbWrite(key,meta[field]);
    keys.push([field,key]);delete meta[field];
   }
+  // Split the large second-division archive by year without removing any season.
+  if(meta.minorLeague&&typeof meta.minorLeague==='object'&&!Array.isArray(meta.minorLeague)){
+   const seasons=meta.minorLeague,years=Object.keys(seasons),seasonKeys=[];
+   for(const year of years){
+    const key=generation+':minorLeague:'+year;
+    await idbWrite(key,seasons[year]);
+    seasonKeys.push([year,key]);
+   }
+   delete meta.minorLeague;
+   meta.__minorLeagueKeys=seasonKeys;
+  }
   await idbWrite(generation+':meta',meta);
   // Verify all components before making the generation visible to load().
   for(const [field,key] of keys){const check=await idbRead(key);if(check===undefined)throw Error('저장 검증 실패: '+field)}
   if(await idbRead(generation+':meta')===undefined)throw Error('저장 메타 검증 실패');
+  for(const [year,key] of meta.__minorLeagueKeys||[]){if(await idbRead(key)===undefined)throw Error('2군 시즌 저장 검증 실패: '+year)}
   await idbWrite('active-split', {generation,keys,metaKey:generation+':meta'});
   state.lastSaved=stamp;
  }catch(e){try{db?.close()}catch(_){}db=await openDB();throw e}
@@ -70,6 +82,7 @@ async function load(){
    if(!meta||typeof meta!=='object')throw Error('메타 누락');
    const restored={...meta};
    for(const [field,key] of pointer.keys){const part=await idbRead(key);if(part===undefined)throw Error('누락된 저장 항목: '+field);restored[field]=part}
+   if(Array.isArray(restored.__minorLeagueKeys)){restored.minorLeague={};for(const [year,key] of restored.__minorLeagueKeys){const part=await idbRead(key);if(part===undefined)throw Error('2군 시즌 누락: '+year);restored.minorLeague[year]=part}delete restored.__minorLeagueKeys}
    return restored;
   }catch(e){console.error('분리 저장 불러오기 실패, 기존 main으로 복구 시도',e)}
  }
