@@ -362,7 +362,8 @@ function winPct(t){return (t.wins||0)/((t.wins||0)+(t.losses||0)||1)}function ga
   for(const [side,kind] of [['away','Batters'],['home','Batters'],['away','Pitchers'],['home','Pitchers']]){
    const teamId=g[side],isPitcher=kind==='Pitchers';
    for(const line of g[side+kind]||[]){
-    if(line.id==null)continue;
+    if(line.id==null||teamId==null)continue;
+    const player=state.players.find(p=>String(p.id)===String(line.id));if(!player||(line.name&&line.name!==player.name)||player.draftPending||Number(year)<Number(player.firstEligibleYear||player.joinYear||0)||(Number(year)===Number(player.firstEligibleYear||player.joinYear||0)&&Number(g.day||0)<Number(player.firstEligibleDay||1)))continue;
     const key=String(line.id)+':'+String(teamId);
     const r=byPlayer.get(key)||{id:line.id,teamId,games:0,hits:0,homeRuns:0,pitchingWins:0,saves:0,pitchingStrikeouts:0};
     r.games++;
