@@ -362,38 +362,47 @@ function simulateOverseasSeason(year){
  const years=Object.keys(store.seasons).map(Number).sort((a,b)=>b-a);
  for(const old of years.slice(3))delete store.seasons[old];
 }
+// Choose a role-balanced 28-player candidate pool without exposing ratings.
+function selectInternationalCandidates(pool){
+ const ranked=pool.slice().sort((a,b)=>b.score-a.score);
+ const selected=[],used=new Set();
+ const take=(predicate,limit)=>{
+  for(const p of ranked){if(limit<=0)break;const key=String(p.id);if(!used.has(key)&&predicate(p)){selected.push(p);used.add(key);limit--}}
+ };
+ take(p=>p.position==='P',13);
+ take(p=>p.position==='C',3);
+ take(p=>['1B','2B','3B','SS','IF'].includes(p.position),7);
+ take(p=>['LF','CF','RF','OF'].includes(p.position),5);
+ take(p=>p.position!=='P',15-selected.filter(p=>p.position!=='P').length);
+ take(p=>true,28-selected.length);
+ return selected.slice(0,28).map(({id,name,position,teamId,overseasLeague,club})=>({id,name,position,teamId,...(overseasLeague?{overseasLeague,club}:{})}));
+}
 function snapshotInternationalPool(year){
  state.international=state.international||{seasons:{}};
  state.international.seasons=state.international.seasons||{};
  if(state.international.seasons[year])return;
  const countries=['KR','JP','TW','AU','US','DO','VE','CA'];
  const groups={};for(const code of countries)groups[code]=[];
- for(const p of state.players){
+ const add=(code,item)=>{
+  const group=groups[code];if(!group)return;
+  // Maintain separate position buckets so a country cannot lose every catcher.
+  const role=item.position==='P'?'P':item.position==='C'?'C':['1B','2B','3B','SS','IF'].includes(item.position)?'IF':'OF';
+  let count=0,worst=-1;
+  for(let i=0;i<group.length;i++){const p=group[i],kind=p.position==='P'?'P':p.position==='C'?'C':['1B','2B','3B','SS','IF'].includes(p.position)?'IF':'OF';if(kind!==role)continue;count++;if(worst<0||p.score<group[worst].score)worst=i}
+  const cap=role==='P'?24:role==='C'?8:role==='IF'?20:20;
+  if(count<cap)group.push(item);else if(worst>=0&&item.score>group[worst].score)group[worst]=item;
+ };
+ for(const p of state.players||[]){
   if(p.retired||['방출','은퇴','계약종료','웨이버 대기'].includes(p.level))continue;
   const code=playerNationality(p);
-  if(!groups[code])continue;
-  const group=groups[code],score=Number(p.overall)||50;
-  const item={id:p.id,name:p.name,position:p.position,score,teamId:p.teamId};
-  if(group.length<30)group.push(item);
-  else{let min=0;for(let i=1;i<group.length;i++)if(group[i].score<group[min].score)min=i;if(score>group[min].score)group[min]=item}
+  add(code,{id:p.id,name:p.name,position:p.position,score:Number(p.overall)||50,teamId:p.teamId});
  }
- // Overseas statistics are already generated at season rollover; merge candidates without copying match logs.
  const overseas=state.international.overseas?.seasons?.[year]?.leagues||{};
  for(const [leagueId,league] of Object.entries(overseas))for(const club of league.clubs||[])for(const p of club.players||[]){
-  const code=p.nationality;if(!groups[code])continue;
   const score=p.position==='P'?Math.round(100-(Number(p.era)||5)*7):Math.round((Number(p.avg)||.22)*200+(Number(p.hr)||0)*.7);
-  const group=groups[code],item={id:p.id,name:p.name,position:p.position,score,teamId:null,overseasLeague:leagueId,club:club.name};
-  if(group.length<30)group.push(item);
-  else{let min=0;for(let i=1;i<group.length;i++)if(group[i].score<group[min].score)min=i;if(score>group[min].score)group[min]=item}
+  add(p.nationality,{id:p.id,name:p.name,position:p.position,score,teamId:null,overseasLeague:leagueId,club:club.name});
  }
- const teams={};for(const code of countries){
-  const ranked=groups[code].sort((a,b)=>b.score-a.score);
-  const pitchers=ranked.filter(p=>p.position==='P').slice(0,13);
-  const hitters=ranked.filter(p=>p.position!=='P').slice(0,15);
-  const chosen=[...pitchers,...hitters],seen=new Set(chosen.map(p=>String(p.id)));
-  for(const p of ranked){if(chosen.length>=28)break;if(!seen.has(String(p.id))){chosen.push(p);seen.add(String(p.id))}}
-  teams[code]=chosen.map(({id,name,position,teamId,overseasLeague,club})=>({id,name,position,teamId,...(overseasLeague?{overseasLeague,club}:{})}));
- }
+ const teams={};for(const code of countries)teams[code]=selectInternationalCandidates(groups[code]);
  state.international.seasons[year]={year,teams};
  const years=Object.keys(state.international.seasons).map(Number).sort((a,b)=>b-a);
  for(const old of years.slice(5))delete state.international.seasons[old];
