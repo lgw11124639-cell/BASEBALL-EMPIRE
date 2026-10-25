@@ -147,3 +147,8 @@
 #player-career-rank .profile-facts>div.career-top10{background:linear-gradient(135deg,#194a78,#23689e)!important;border-color:#23689e!important}
 #player-career-rank .profile-facts>div.career-top10 small{color:#d2e3f5!important}
 #player-career-rank .profile-facts>div.career-top10 strong{color:#fff!important}
+
+/* School and draft history are informational, never highlighted */
+.pro-profile .profile-origin-facts>div,.pro-profile .profile-origin-facts>div:first-child{background:#fff!important;background-image:none!important;border:1px solid #d9e4f0!important;color:#193957!important;box-shadow:none!important}
+.pro-profile .profile-origin-facts>div small{color:#738aa5!important}
+.pro-profile .profile-origin-facts>div strong{color:#193957!important}
