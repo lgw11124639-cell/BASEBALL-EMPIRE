@@ -432,7 +432,7 @@ function internationalOpeningGame(year,event,selected,opponentCode,round){
  return result?{opponent,homeRuns:result.homeRuns,awayRuns:result.awayRuns,homeInnings:result.homeInnings,awayInnings:result.awayInnings,homeStarter:result.homeStarter,awayStarter:result.awayStarter,homeBatters:result.homeBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),awayBatters:result.awayBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),homePitchers:result.homePitchers,awayPitchers:result.awayPitchers}:null;
 }
 function internationalTournamentSchedule(year,event,selected){
- const rivals=event==='아시안게임'?['TW','JP','CN']:['AU','TW','US'];
+ const rivals=event==='아시안게임'?['TW','JP','CN']:event==='WBC'?['JP','TW','US']:['AU','TW','US'];
  const rounds=['조별리그 1차전','조별리그 2차전','조별리그 3차전','준결승','결승'];
  const games=[];
  for(let i=0;i<rivals.length;i++){
@@ -455,7 +455,7 @@ function internationalRivalResult(year,event,round,homeCode,awayCode){
  return {round,date:null,home:homeCode,away:awayCode,homeRuns:box.homeRuns,awayRuns:box.awayRuns,homeInnings:box.homeInnings,awayInnings:box.awayInnings,winner:box.homeRuns===box.awayRuns?null:box.homeRuns>box.awayRuns?homeCode:awayCode};
 }
 function internationalGroupStandings(record){
- const rivals=record.event==='아시안게임'?['TW','JP','CN']:['AU','TW','US'];
+ const rivals=record.event==='아시안게임'?['TW','JP','CN']:record.event==='WBC'?['JP','TW','US']:['AU','TW','US'];
  const rows=new Map(['KR',...rivals].map(code=>[code,{code,wins:0,losses:0,runs:0,allowed:0}]));
  const apply=(home,away,hr,ar)=>{const h=rows.get(home),a=rows.get(away);if(!h||!a)return;h.runs+=hr;h.allowed+=ar;a.runs+=ar;a.allowed+=hr;if(hr>ar){h.wins++;a.losses++;}else if(ar>hr){a.wins++;h.losses++;}};
  for(const g of (record.matchResults||[]).slice(0,3))apply('KR',g.opponent,Number(g.homeRuns)||0,Number(g.awayRuns)||0);
@@ -464,9 +464,9 @@ function internationalGroupStandings(record){
 }
 function nationalTeamTournamentDay(){
  const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,day=now.getDate();
- const asian=(year-2026)%4===0&&month===10,olympic=(year-2028)%4===0&&month===8;
- if(!asian&&!olympic)return;
- const event=asian?'아시안게임':'올림픽',key=year+'-'+event;
+ const asian=(year-2026)%4===0&&month===10,olympic=(year-2028)%4===0&&month===8,wbc=year>=2027&&(year-2027)%4===0&&month===3;
+ if(!asian&&!olympic&&!wbc)return;
+ const event=asian?'아시안게임':olympic?'올림픽':'WBC',key=year+'-'+event;
  state.nationalTeamResults=state.nationalTeamResults||{};
  let record=state.nationalTeamResults[key];
  if(!record){
@@ -487,7 +487,7 @@ function nationalTeamTournamentDay(){
  if(record.finished||!Array.isArray(record.matchResults))return;
  record.otherMatches=Array.isArray(record.otherMatches)?record.otherMatches:[];
  const rivals=event==='아시안게임'?['TW','JP','CN']:['AU','TW','US'];
- const otherPairs=event==='아시안게임'?[['JP','CN'],['TW','CN'],['TW','JP']]:[['TW','US'],['AU','US'],['AU','TW']];
+ const otherPairs=event==='아시안게임'?[['JP','CN'],['TW','CN'],['TW','JP']]:event==='WBC'?[['TW','US'],['JP','US'],['JP','TW']]:[['TW','US'],['AU','US'],['AU','TW']];
  const days=[1,3,5,8,11],startDate=new Date(record.start+'T12:00:00'),elapsed=Math.round((now-startDate)/86400000);
  const today=now.toISOString().slice(0,10);
  const selected=()=>record.players.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);
@@ -1449,6 +1449,7 @@ function nationalTeamPanel(){
  const name=x=>names[x]||x||'—';
  const options=records.map(x=>'<option value="'+esc(x.year+'|'+x.event)+'" '+(x===selected?'selected':'')+'>'+esc(x.year+' '+x.event)+'</option>').join('');
  const standings=internationalGroupStandings(selected);
+ const hasGroupGames=matches.some(g=>String(g.round||'').startsWith('조별리그'))||other.some(g=>String(g.round||'').startsWith('조별리그'));
  const standingsRows=standings.map((x,i)=>'<tr class="'+(x.code==='KR'?'nt-korea':'')+'"><td>'+(i+1)+'</td><th>'+esc(name(x.code))+'</th><td>'+x.wins+'</td><td>'+x.losses+'</td><td>'+(x.runs-x.allowed>0?'+':'')+(x.runs-x.allowed)+'</td></tr>').join('');
  const bracket=selected.bracket?.semifinals||[];
  const medals=selected.medals||{};
@@ -1470,7 +1471,7 @@ function nationalTeamPanel(){
  const status=selected.finished===false?'대회 진행 중':selected.medal||(selected.gold?'금메달':'대회 종료');
  return '<style>.nt-page{display:grid;gap:12px}.nt-page .nt-hero{padding:16px;border:1px solid var(--line,#d5dbe3);border-radius:14px;background:var(--card,#fff)}.nt-page .nt-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.nt-page .nt-head h2{margin:0;font-size:1.15rem}.nt-page select{max-width:180px;min-width:0}.nt-page .nt-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.nt-page .nt-summary span{padding:7px 11px;border-radius:9px;background:rgba(128,128,128,.09);font-size:.88rem}.nt-page .nt-panel{border:1px solid var(--line,#d5dbe3);border-radius:12px;padding:12px;background:var(--card,#fff);min-width:0}.nt-page .nt-panel h3{margin:0 0 10px;font-size:1rem}.nt-page .nt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.nt-page .nt-match{border:1px solid var(--line,#d5dbe3);border-radius:10px;margin:7px 0;overflow:hidden}.nt-page .nt-match summary{cursor:pointer;list-style:none;padding:11px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:space-between}.nt-page .nt-match summary::-webkit-details-marker{display:none}.nt-page .nt-match-meta,.nt-page .nt-match-status{font-size:.76rem;opacity:.7}.nt-page .nt-match-main{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}.nt-page .nt-match-main strong{font-size:1.1rem;font-variant-numeric:tabular-nums}.nt-page .nt-match-detail{padding:10px;border-top:1px solid var(--line,#d5dbe3);overflow-x:auto}.nt-page .nt-korea{font-weight:800;background:rgba(48,110,220,.08)}.nt-page .table-wrap{overflow-x:auto}.nt-page table{width:100%;font-size:.84rem}.nt-page th,.nt-page td{padding:7px 6px;white-space:nowrap}.nt-page .nt-note{font-size:.83rem;opacity:.75;margin:8px 0 0} .nt-page .nt-bracket,.nt-page .nt-finals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.nt-page .nt-bracket-game,.nt-page .nt-finals>div{padding:11px;border:1px solid var(--line,#d5dbe3);border-radius:10px;min-width:0}.nt-page .nt-bracket-game small{opacity:.7}.nt-page .nt-bracket-game div{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-top:5px}.nt-page .nt-medals,.nt-page .nt-final-order{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.nt-page .nt-medals span,.nt-page .nt-final-order span{padding:7px 10px;border-radius:9px;background:rgba(128,128,128,.09)}@media(max-width:720px){.nt-page .nt-bracket,.nt-page .nt-finals{grid-template-columns:1fr}.nt-page .nt-grid{grid-template-columns:1fr}.nt-page .nt-hero{padding:12px}.nt-page .nt-match summary{align-items:flex-start;flex-direction:column}.nt-page .nt-match-main{width:100%;justify-content:space-between}.nt-page .nt-match-status{align-self:flex-end}}</style>'+
  '<div class="nt-page"><section class="nt-hero"><div class="nt-head"><h2>대한민국 국가대표</h2><select id="national-year-select">'+options+'</select></div><div class="nt-summary"><span>'+esc(selected.year+' '+selected.event)+'</span><span>'+esc(status)+'</span><span>'+esc(selected.wins||0)+'승 '+esc(selected.losses||0)+'패</span></div><p class="nt-note">감독 '+esc(staff.manager||'미정')+' · 투수코치 '+esc(staff.pitchCoach||'미정')+' · 타격코치 '+esc(staff.batCoach||'미정')+'</p></section>'+
- '<div class="nt-grid"><section class="nt-panel"><h3>조별리그 순위</h3><div class="table-wrap"><table><thead><tr><th>순위</th><th>국가</th><th>승</th><th>패</th><th>득실차</th></tr></thead><tbody>'+standingsRows+'</tbody></table></div><p class="nt-note">동률 시 득실차·득점 순서로 정렬</p></section><section class="nt-panel"><h3>다른 국가 경기</h3><div class="table-wrap"><table><thead><tr><th>라운드</th><th>대진</th><th>점수</th></tr></thead><tbody>'+(otherRows||'<tr><td colspan="3">아직 경기가 없습니다.</td></tr>')+'</tbody></table></div></section></div>'+
+ '<div class="nt-grid"><section class="nt-panel"><h3>조별리그 순위</h3>'+(hasGroupGames?'':'<p class="nt-note">이전 버전에서 생성된 대회로 조별리그 경기별 기록이 저장되지 않았습니다. 아래 순위는 확정 순위가 아닙니다.</p>')+<div class="table-wrap"><table><thead><tr><th>순위</th><th>국가</th><th>승</th><th>패</th><th>득실차</th></tr></thead><tbody>'+standingsRows+'</tbody></table></div><p class="nt-note">동률 시 득실차·득점 순서로 정렬</p></section><section class="nt-panel"><h3>다른 국가 경기</h3><div class="table-wrap"><table><thead><tr><th>라운드</th><th>대진</th><th>점수</th></tr></thead><tbody>'+(otherRows||'<tr><td colspan="3">아직 경기가 없습니다.</td></tr>')+'</tbody></table></div></section></div>'+
  knockoutHtml+'<section class="nt-panel"><h3>대한민국 경기 일정·결과</h3>'+(games||'<p class="nt-note">첫 경기 일정 대기 중</p>')+'</section>'+
  '<details class="nt-panel"><summary><b>대표팀 선수단 · 타순 및 투수진</b></summary><div class="table-wrap"><table><thead><tr><th>타순</th><th>수비</th><th>선수</th><th>소속</th></tr></thead><tbody>'+lineupRows+'</tbody></table></div><p class="nt-note">투수진 · '+esc((lineup.pitchers||[]).map(p=>p.name).join(' · ')||'기록 없음')+'</p></details></div>';
 }
