@@ -393,8 +393,8 @@ function internationalSharedGame(korea,opponent,seed){
   const pitchers=players.filter(p=>p.position==='P'),hitters=players.filter(p=>p.position!=='P');
   if(pitchers.length<2||hitters.length<9)return null;
   const lineup=chooseBattingNine(hitters,null,p=>Number(p.overall)||60);
-  const starter=pitchers[0],roles=new Map(pitchers.map(p=>[p.id,p.id===starter.id?'선발':'불펜']));
-  const plan={first:hitters,starters:pitchers,bullpen:pitchers.slice(1),roles,lineupPositions:lineup.assignedPositions,score:p=>Number(p.overall)||60};
+  const rotation=pitchers.slice().sort((a,b)=>(Number(b.overall)||0)-(Number(a.overall)||0));const starter=rotation[Math.abs(seed>>>0)%Math.min(5,rotation.length)],roles=new Map(pitchers.map(p=>[p.id,p.id===starter.id?'선발':'불펜']));
+  const plan={first:hitters,starters:rotation,bullpen:pitchers.filter(p=>p.id!==starter.id),roles,lineupPositions:lineup.assignedPositions,score:p=>Number(p.overall)||60};
   const club=createInningClub(id,lineup,plan,starter);
   club.league='amateur';club.gameDay=state.day;
   return club;
@@ -426,7 +426,7 @@ function internationalOpeningGame(year,event,selected,opponentCode,round){
  const battingBefore=new Map(participants.map(p=>[p.id,Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Number(p[k])||0]))]));
  let result=null;
  try{
-  result=internationalSharedGame(selected,rival,year*99173+event.length*101+(round||0)*811);
+  result=internationalSharedGame(selected,rival,year*99173+event.length*101+(Number(round)||String(round||'').split('').reduce((n,c)=>((n*33+c.charCodeAt(0))>>>0),5381))*811);
  }catch(err){console.warn('국제경기 공통 엔진 오류',err)}
  finally{
   restoreLeagueCounters(counters);
@@ -451,7 +451,7 @@ function internationalRivalResult(year,event,round,homeCode,awayCode){
  const home=internationalOpponentRoster(year,homeCode),away=internationalOpponentRoster(year,awayCode);
  const participants=[...home,...away],snapshot=snapshotLeagueCounters(participants),fatigue=new Map(participants.map(p=>[p.id,Number(playerBaseball(p).fatigue)||0]));
  let box=null;
- try{box=internationalSharedGame(home,away,year*11171+round*173+homeCode.charCodeAt(0)*31+awayCode.charCodeAt(0));}
+ try{box=internationalSharedGame(home,away,year*11171+String(round).split('').reduce((n,c)=>((n*33+c.charCodeAt(0))>>>0),5381)+homeCode.charCodeAt(0)*31+awayCode.charCodeAt(0));}
  catch(err){console.warn('국제대회 타국 경기 오류',err);}
  finally{restoreLeagueCounters(snapshot);for(const p of participants)playerBaseball(p).fatigue=fatigue.get(p.id);}
  if(!box)return null;
