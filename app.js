@@ -242,6 +242,7 @@ function honorRetiredPlayers(year){
  };
  const existingHall=new Set(history.hallOfFame.map(x=>String(x.playerId??x.id)));
  const existingNumbers=new Set(history.retiredNumbers.map(x=>String(x.teamId)+':'+String(x.number)));
+ const existingHonoredPlayers=new Set(history.retiredNumbers.map(x=>String(x.teamId)+':'+String(x.playerId??x.id)));
  for(const retired of state.retiredPlayers||[]){
   if(Number(retired.year)>Number(year))continue;
   const id=String(retired.id),p=playerById.get(id),r=records.get(id);
@@ -255,9 +256,10 @@ function honorRetiredPlayers(year){
    const qualified=t.years.size>=8&&honorScore(r,id,teamId)>=80;
    if(!qualified)continue;
    const number=Number(retired.teamId)===Number(teamId)?Number(retired.jerseyNumber??p.jerseyNumber):NaN;
-   if(!Number.isInteger(number)||number<0||number>999||existingNumbers.has(teamId+':'+number))continue;
+   if(!Number.isInteger(number)||number<0||number>999||existingNumbers.has(teamId+':'+number)||existingHonoredPlayers.has(teamId+':'+id))continue;
    history.retiredNumbers.push({playerId:p.id,name:p.name,teamId:Number(teamId),number,year});
    existingNumbers.add(teamId+':'+number);
+   existingHonoredPlayers.add(teamId+':'+id);
   }
  }
 }
