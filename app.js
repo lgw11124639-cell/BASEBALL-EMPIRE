@@ -216,12 +216,14 @@ function honorRetiredPlayers(year){
   if(t)r.byTeam.set(teamId,t);records.set(id,r);
  }
  for(const season of seasons)for(const x of season.teamPlayerStats||[]){
-  const r=records.get(String(x.id));if(!r||!(Number(x.games)>0))continue;
+  if(!(Number(x.games)>0))continue;
+  const id=String(x.id),r=records.get(id)||{years:new Set(),byTeam:new Map(),hits:0,homeRuns:0,wins:0,saves:0,strikeouts:0};
+  r.years.add(Number(season.year));
   const teamId=String(x.teamId),t=r.byTeam.get(teamId)||{years:new Set(),hits:0,homeRuns:0,wins:0,saves:0,strikeouts:0};
   t.years.add(Number(season.year));
   t.hits+=Number(x.hits)||0;t.homeRuns+=Number(x.homeRuns)||0;
   t.wins+=Number(x.pitchingWins)||0;t.saves+=Number(x.saves)||0;t.strikeouts+=Number(x.pitchingStrikeouts)||0;
-  r.byTeam.set(teamId,t);
+  r.byTeam.set(teamId,t);records.set(id,r);
  }
  const awardsByPlayer=new Map();
  for(const [awardYear,list] of Object.entries(state.awards||{})){
