@@ -523,7 +523,7 @@ function nationalTeamTournamentDay(){
    game={round,date:today,...box,won:box.homeRuns>box.awayRuns};
    record.matchResults.push(game);record.openingGame=record.openingGame||game;
    for(const p of selected()){
-    if(!(game.homeBatters||[]).some(x=>String(x.id)===String(p.id))&&!(game.homePitchers||[]).some(x=>String(x.id)===String(p.id)&&(Number(x.outs)||0)>0))continue;
+    if(!(game.homeBatters||[]).some(x=>String(x.id)===String(p.id)&&((Number(x.atBats)||0)+(Number(x.walks)||0)>0))&&!(game.homePitchers||[]).some(x=>String(x.id)===String(p.id)&&(Number(x.outs)||0)>0))continue;
     const b=playerBaseball(p);b.fatigue=Math.min(100,(Number(b.fatigue)||0)+(p.position==='P'?18:9));
    }
    record.games=record.matchResults.length;record.wins=record.matchResults.filter(g=>g.won).length;record.losses=record.games-record.wins;
