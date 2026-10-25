@@ -396,7 +396,10 @@ function internationalSharedGame(korea,opponent,seed){
   const lineup=chooseBattingNine(hitters,null,formScore);
   const rotation=pitchers.slice().sort((a,b)=>formScore(b)-formScore(a));const rested=rotation.filter(p=>id!==-1001||((Number(playerBaseball(p).fatigue)||0)<75&&sharedPitcherRestDays(p,false,state.day)>=3));const fallback=rotation.filter(p=>id!==-1001||sharedPitcherRestDays(p,false,state.day)>=2);const pool=rested.length?rested:fallback.length?fallback:rotation;const starter=pool[Math.abs(seed>>>0)%Math.min(5,pool.length)],roles=new Map(pitchers.map(p=>[p.id,p.id===starter.id?'선발':'불펜']));
   const relievers=pitchers.filter(p=>p.id!==starter.id).sort((a,b)=>formScore(b)-formScore(a));
-  if(relievers.length>=2){roles.set(relievers[0].id,'마무리');roles.set(relievers[1].id,'셋업');}
+  const rotationIds=new Set(rotation.slice(0,Math.min(5,rotation.length)).map(p=>p.id));
+  const reliefSpecialists=relievers.filter(p=>!rotationIds.has(p.id));
+  const lateInning=reliefSpecialists.length>=2?reliefSpecialists:relievers;
+  if(lateInning.length>=2){roles.set(lateInning[0].id,'마무리');roles.set(lateInning[1].id,'셋업');}
   const plan={first:hitters,starters:rotation,bullpen:relievers,roles,lineupPositions:lineup.assignedPositions,score:formScore};
   const club=createInningClub(id,lineup,plan,starter);
   club.league='amateur';club.gameDay=state.day;
