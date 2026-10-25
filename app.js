@@ -251,8 +251,8 @@ function honorRetiredPlayers(year){
  const existingHall=new Set(history.hallOfFame.map(x=>String(x.playerId??x.id)));
  const existingNumbers=new Set(history.retiredNumbers.map(x=>String(x.teamId)+':'+String(x.number)));
  const existingHonoredPlayers=new Set(history.retiredNumbers.map(x=>String(x.teamId)+':'+String(x.playerId??x.id)));
- for(const retired of state.retiredPlayers||[]){
-  if(Number(retired.year)>Number(year))continue;
+ const eligibleRetirees=(state.retiredPlayers||[]).filter(x=>Number(x.year)<=Number(year)&&(!existingHall.has(String(x.id))||!existingHonoredPlayers.has(String(x.teamId)+':'+String(x.id))));
+ for(const retired of eligibleRetirees){
   const id=String(retired.id),p=playerById.get(id),r=records.get(id);
   if(!p||!r)continue;
   const hallEligible=r.years.size>=10&&honorScore(r,id)>=72;
