@@ -573,12 +573,15 @@ function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
  const modal=document.createElement('div');
- modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#09182bba;display:flex;align-items:center;justify-content:center;padding:18px';
- modal.innerHTML='<article style="background:#fff;color:#172d47;border-radius:18px;max-width:600px;width:100%;max-height:85vh;overflow:auto;padding:24px;position:relative"><button type="button" class="news-close" style="float:right;background:#123c69;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:800">✕ 닫기</button><div style="clear:both;padding-top:14px"><small style="font-weight:700;color:#356a9d">BASEBALL EMPIRE SPORTS · '+esc(seasonDateLabel(n.day))+'</small><h2 style="line-height:1.4;margin:14px 0 22px">'+esc(n.title)+'</h2><p style="line-height:1.85;white-space:pre-line;font-size:16px">'+esc(n.body||'')+'</p></div></article>';
+ modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
+ const category=n.kind==='FA 특집'?'FA·이적 시장':'리그 대기록';
+ const body=String(n.body||'').trim();
+ const paragraphs=body.split(/(?<=[.!?。])\\s+(?=[가-힣A-Za-z0-9])/).reduce((arr,sentence,i)=>{if(i%2===0)arr.push(sentence);else arr[arr.length-1]+=' '+sentence;return arr},[]).filter(Boolean);
+ modal.innerHTML='<div style="position:sticky;top:0;background:#fff;border-bottom:2px solid #3476b8;z-index:2;padding:calc(env(safe-area-inset-top, 0px) + 15px) 18px 17px;display:flex;justify-content:space-between;align-items:center;gap:12px"><div style="min-width:0"><small style="display:block;color:#6383a5;font-size:12px;letter-spacing:1px">BASEBALL EMPIRE SPORTS · '+esc(seasonDateLabel(n.day))+'</small><strong style="display:block;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(n.title)+'</strong></div><button type="button" class="news-close" style="flex-shrink:0;background:#e8f1fb;color:#174674;border:0;border-radius:10px;padding:12px 14px;font-weight:800">✕ 닫기</button></div><article class="news-article-body editorial-story" style="max-width:760px;margin:0 auto;padding:36px 20px 70px"><div class="article-category">스포츠 <span>›</span> 야구 <span>›</span> '+esc(category)+'</div><h1 class="editorial-headline">'+esc(n.title)+'</h1><p class="editorial-subtitle">'+esc(paragraphs[0]||body)+'</p><div class="editorial-meta"><strong>BASEBALL EMPIRE 스포츠팀</strong><span>'+esc(seasonDateLabel(n.day))+' | '+esc(n.kind)+'</span></div><div class="editorial-copy" style="border-top:1px solid #dbe4ed;margin-top:24px;padding-top:24px">'+(paragraphs.length?paragraphs.map(p=>'<p>'+esc(p)+'</p>').join(''):'<p>기사 내용이 없습니다.</p>')+'</div><p class="article-note" style="margin-top:35px">본 기사는 게임 내 FA 계약 및 대기록 데이터를 바탕으로 작성됐습니다.</p></article>';
  document.body.appendChild(modal);
  modal.querySelector('.news-close').onclick=()=>modal.remove();
- modal.onclick=e=>{if(e.target===modal)modal.remove()};
 }
+
 document.addEventListener('click',e=>{
  const button=e.target.closest('[data-news-article]');
  if(button)openBaseballNewsArticle(button.dataset.newsArticle);
