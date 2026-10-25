@@ -567,8 +567,22 @@ function baseballNewsPanel(limit=0){
  const news=(state.clubNotices||[]).filter(n=>Number(n.year)===Number(state.year)&&(n.kind==='대기록'||n.kind==='FA 특집')).slice().reverse();
  const entries=limit?news.slice(0,limit):news;
  if(!entries.length)return '<p class="profile-note">이번 시즌에 등록된 주요 기사가 없습니다. 새 대기록이나 대형 FA 계약이 나오면 이곳에 게시됩니다.</p>';
- return '<div class="baseball-news-list">'+entries.map(n=>'<article class="dashboard-section baseball-news-article"><span class="section-kicker">BASEBALL EMPIRE SPORTS · '+esc(n.year)+'년 '+esc(seasonDateLabel(n.day))+'</span><h3>'+esc(n.title)+'</h3><p>'+esc(n.body)+'</p></article>').join('')+'</div>';
+ return '<div class="be-report-list baseball-news-list">'+entries.map(n=>'<button type="button" class="be-report-item" data-news-article="'+esc(n.id)+'"><span><small>'+esc(n.kind)+' · '+esc(seasonDateLabel(n.day))+'</small><strong>'+esc(n.title)+'</strong></span><span aria-hidden="true">›</span></button>').join('')+'</div>';
 }
+function openBaseballNewsArticle(id){
+ const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
+ if(!n)return;
+ const modal=document.createElement('div');
+ modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#09182bba;display:flex;align-items:center;justify-content:center;padding:18px';
+ modal.innerHTML='<article style="background:#fff;color:#172d47;border-radius:18px;max-width:600px;width:100%;max-height:85vh;overflow:auto;padding:24px;position:relative"><button type="button" class="news-close" style="float:right;background:#123c69;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:800">✕ 닫기</button><div style="clear:both;padding-top:14px"><small style="font-weight:700;color:#356a9d">BASEBALL EMPIRE SPORTS · '+esc(seasonDateLabel(n.day))+'</small><h2 style="line-height:1.4;margin:14px 0 22px">'+esc(n.title)+'</h2><p style="line-height:1.85;white-space:pre-line;font-size:16px">'+esc(n.body||'')+'</p></div></article>';
+ document.body.appendChild(modal);
+ modal.querySelector('.news-close').onclick=()=>modal.remove();
+ modal.onclick=e=>{if(e.target===modal)modal.remove()};
+}
+document.addEventListener('click',e=>{
+ const button=e.target.closest('[data-news-article]');
+ if(button)openBaseballNewsArticle(button.dataset.newsArticle);
+});
 let clubNewsVisibleCount=15;
 function allClubsLeagueNews(){
  const notices=state.clubNotices||[],items=[],seen=new Set();
