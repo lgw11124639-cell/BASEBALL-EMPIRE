@@ -457,11 +457,18 @@ function internationalRivalResult(year,event,round,homeCode,awayCode){
  if(!box)return null;
  return {round,date:null,home:homeCode,away:awayCode,homeRuns:box.homeRuns,awayRuns:box.awayRuns,homeInnings:box.homeInnings,awayInnings:box.awayInnings,winner:box.homeRuns===box.awayRuns?null:box.homeRuns>box.awayRuns?homeCode:awayCode};
 }
-function internationalGroupStandings(record){
- const rivals=record.event==='아시안게임'?['TW','JP','CN']:record.event==='WBC'?['JP','TW','US']:['AU','TW','US'];
- const rows=new Map(['KR',...rivals].map(code=>[code,{code,wins:0,losses:0,runs:0,allowed:0}]));
+const INTERNATIONAL_COUNTRIES={KR:'대한민국',JP:'일본',TW:'대만',CN:'중국',AU:'호주',US:'미국',DO:'도미니카공화국',VE:'베네수엘라',PR:'푸에르토리코',CU:'쿠바',MX:'멕시코',CA:'캐나다',PA:'파나마',CO:'콜롬비아',NI:'니카라과',IT:'이탈리아',NL:'네덜란드',GB:'영국',CZ:'체코',IL:'이스라엘',PH:'필리핀',TH:'태국',HK:'홍콩',PK:'파키스탄',IN:'인도',ID:'인도네시아',SG:'싱가포르'};
+function internationalTournamentGroups(event){
+ if(event==='WBC')return [['JP','KR','AU','CZ','CN'],['US','MX','IT','GB','CA'],['DO','VE','NL','IL','NI'],['PR','CU','PA','CO','TW']];
+ if(event==='아시안게임')return [['KR','TW','TH','HK'],['JP','CN','PH','PK']];
+ return [['KR','JP','TW'],['US','DO','AU']];
+}
+function internationalGroupStandings(record,groupIndex){
+ const groups=record.groups||[record.event==='아시안게임'?['KR','TW','JP','CN']:record.event==='WBC'?['KR','JP','TW','US']:['KR','AU','TW','US']];
+ const codes=groupIndex==null?groups.flat():groups[groupIndex]||[];
+ const rows=new Map(codes.map(code=>[code,{code,wins:0,losses:0,runs:0,allowed:0}]));
  const apply=(home,away,hr,ar)=>{const h=rows.get(home),a=rows.get(away);if(!h||!a)return;h.runs+=hr;h.allowed+=ar;a.runs+=ar;a.allowed+=hr;if(hr>ar){h.wins++;a.losses++;}else if(ar>hr){a.wins++;h.losses++;}};
- for(const g of (record.matchResults||[]).slice(0,3))apply('KR',g.opponent,Number(g.homeRuns)||0,Number(g.awayRuns)||0);
+ for(const g of record.matchResults||[])if(String(g.round).startsWith('조별리그'))apply('KR',g.opponent,Number(g.homeRuns)||0,Number(g.awayRuns)||0);
  for(const g of record.otherMatches||[])if(String(g.round).startsWith('조별리그'))apply(g.home,g.away,Number(g.homeRuns)||0,Number(g.awayRuns)||0);
  return [...rows.values()].sort((a,b)=>b.wins-a.wins||(b.runs-b.allowed)-(a.runs-a.allowed)||b.runs-a.runs||a.code.localeCompare(b.code));
 }
@@ -478,7 +485,7 @@ function nationalTeamTournamentDay(){
   const pitchers=scored.filter(x=>x.p.position==='P').slice(0,12).map(x=>x.p),batters=scored.filter(x=>x.p.position!=='P').slice(0,12).map(x=>x.p),selected=[...pitchers,...batters];
   if(pitchers.length<9||batters.length<9)return;
   const staff=nationalTeamStaff(year,event),lineup=nationalTeamLineup(selected);
-  const finish=new Date(now);finish.setDate(finish.getDate()+13);
+  const finish=new Date(now);finish.setDate(finish.getDate()+(event==='WBC'?22:17));
   const end=finish.toISOString().slice(0,10);
   record={year,event,gold:false,finished:false,staff,lineup,openingGame:null,players:selected.map(p=>p.id),start:now.toISOString().slice(0,10),end,games:0,wins:0,losses:0,matchResults:[]};
   record.otherMatches=[];
@@ -489,89 +496,68 @@ function nationalTeamTournamentDay(){
 
  if(record.finished||!Array.isArray(record.matchResults))return;
  record.otherMatches=Array.isArray(record.otherMatches)?record.otherMatches:[];
- const rivals=event==='아시안게임'?['TW','JP','CN']:['AU','TW','US'];
- const otherPairs=event==='아시안게임'?[['JP','CN'],['TW','CN'],['TW','JP']]:event==='WBC'?[['TW','US'],['JP','US'],['JP','TW']]:[['TW','US'],['AU','US'],['AU','TW']];
- const days=[1,3,5,8,11],startDate=new Date(record.start+'T12:00:00'),elapsed=Math.round((now-startDate)/86400000);
- const today=now.toISOString().slice(0,10);
+ record.groups=record.groups||internationalTournamentGroups(event);
+ const today=now.toISOString().slice(0,10),elapsed=Math.round((now-new Date(record.start+'T12:00:00'))/86400000);
  const selected=()=>record.players.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);
- const otherGame=(round,home,away)=>{
-  if(!home||!away||home===away)return null;
-  const prior=record.otherMatches.find(g=>g.round===round&&((g.home===home&&g.away===away)||(g.home===away&&g.away===home)));
-  if(prior)return prior;
-  const game=internationalRivalResult(year,event,round,home,away);
-  if(!game||!game.winner)return null;
-  game.date=today;record.otherMatches.push(game);return game;
- };
- const koreaGame=(round,opponent,seed)=>{
-  const prior=record.matchResults.find(g=>g.round===round)|| (round==='3위 결정전'?record.bronzeMatch:null);
-  if(prior)return prior;
-  const box=internationalOpeningGame(year,event,selected(),opponent,seed);
-  if(!box||box.homeRuns===box.awayRuns)return null;
-  const game={round,date:today,...box,won:box.homeRuns>box.awayRuns};
-  if(round==='3위 결정전')record.bronzeMatch=game;
-  else{record.matchResults.push(game);record.openingGame=record.openingGame||game;}
-  const participants=selected();
-  for(const p of participants){
-   const appeared=(game.homeBatters||[]).some(x=>String(x.id)===String(p.id))||(game.homePitchers||[]).some(x=>String(x.id)===String(p.id));
-   if(!appeared)continue;
-   const b=playerBaseball(p);b.fatigue=Math.min(100,(Number(b.fatigue)||0)+(p.position==='P'?18:9));
-   const risk=rng(((Number(p.id)||0)*31337+year*7919+seed*997)>>>0);
-   if(!(p.profile?.injury?.days>0)&&risk()<.008){
-    const days=3+Math.floor(risk()*12);
-    ensureProfile(p).injury={type:'국가대표 경기 중 근육 부상',days,occurredDay:state.day};
-    clubNotice('국가대표 부상',p.name+' 국가대표 경기 중 부상',round+' 경기에서 부상을 입어 '+days+'일간 재활이 필요합니다.',[p.teamId],[p.id]);
+ const play=(round,home,away,seed)=>{
+  const korean=home==='KR'||away==='KR',list=korean?record.matchResults:record.otherMatches;
+  const prior=list.find(g=>g.round===round&&(korean?g.opponent===(home==='KR'?away:home):(g.home===home&&g.away===away)));
+  if(prior)return {game:prior,winner:korean?(prior.won?'KR':prior.opponent):prior.winner};
+  let game;
+  if(korean){
+   const opponent=home==='KR'?away:home,box=internationalOpeningGame(year,event,selected(),opponent,seed);
+   if(!box||box.homeRuns===box.awayRuns)return null;
+   game={round,date:today,...box,won:box.homeRuns>box.awayRuns};
+   record.matchResults.push(game);record.openingGame=record.openingGame||game;
+   for(const p of selected()){
+    if(!(game.homeBatters||[]).some(x=>String(x.id)===String(p.id))&&!(game.homePitchers||[]).some(x=>String(x.id)===String(p.id)))continue;
+    const b=playerBaseball(p);b.fatigue=Math.min(100,(Number(b.fatigue)||0)+(p.position==='P'?18:9));
    }
+   record.games=record.matchResults.length;record.wins=record.matchResults.filter(g=>g.won).length;record.losses=record.games-record.wins;
+   clubNotice('국가대표',year+' '+event+' '+round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
+   return {game,winner:game.won?'KR':opponent};
   }
-  record.games=record.matchResults.length+(record.bronzeMatch?1:0);
-  record.wins=record.matchResults.filter(g=>g.won).length+(record.bronzeMatch?.won?1:0);
-  record.losses=record.games-record.wins;
-  clubNotice('국가대표',year+' '+event+' '+round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
-  return game;
+  game=internationalRivalResult(year,event,round,home,away);
+  if(!game||!game.winner)return null;
+  game.date=today;record.otherMatches.push(game);return {game,winner:game.winner};
  };
- for(let i=0;i<3;i++){
-  if(elapsed<days[i]-1)break;
-  const round='조별리그 '+(i+1)+'차전';
-  const [home,away]=otherPairs[i];
-  if(!otherGame(round,home,away))return;
-  if(!koreaGame(round,rivals[i],i+1))return;
+ const groupFixtures=[];
+ for(let gi=0;gi<record.groups.length;gi++){
+  const group=record.groups[gi];
+  for(let i=0;i<group.length;i++)for(let j=i+1;j<group.length;j++)groupFixtures.push({group:gi,home:group[i],away:group[j],round:'조별리그 '+String.fromCharCode(65+gi)+'조 '+(i+1)+'-'+(j+1),day:1+Math.floor((groupFixtures.filter(x=>x.group===gi).length)/2)});
  }
- if(record.matchResults.filter(g=>String(g.round).startsWith('조별리그')).length<3||elapsed<days[3]-1)return;
- const standings=internationalGroupStandings(record);
- const top=standings.slice(0,4).map(x=>x.code);
- if(top.length!==4)return;
- // The same bracket is used whether or not Korea advances: first vs fourth, second vs third.
- record.bracket=record.bracket||{semifinals:[[top[0],top[3]],[top[1],top[2]]]};
- const semis=record.bracket.semifinals;
- if(!Array.isArray(semis)||semis.length!==2)return;
- const semiResults=[];
- for(let i=0;i<2;i++){
-  const [home,away]=semis[i],round='준결승';
-  const game=home==='KR'?koreaGame(round,away,4):away==='KR'?koreaGame(round,home,4):otherGame(round,home,away);
-  if(!game)return;
-  const winner=home==='KR'||away==='KR'?(game.won?'KR':home==='KR'?away:home):game.winner;
-  if(!winner)return;
-  semiResults.push({winner,loser:winner===home?away:home});
+ const groupLast=Math.max(...groupFixtures.map(g=>g.day));
+ for(let i=0;i<groupFixtures.length;i++){
+  const f=groupFixtures[i];if(elapsed<f.day-1)continue;
+  if(!play(f.round,f.home,f.away,i+1))return;
  }
- if(elapsed<days[4]-1)return;
- const finalists=semiResults.map(x=>x.winner),bronzeTeams=semiResults.map(x=>x.loser);
- const final=finalists.includes('KR')?koreaGame('결승',finalists.find(x=>x!=='KR'),5):otherGame('결승',finalists[0],finalists[1]);
- const bronze=bronzeTeams.includes('KR')?koreaGame('3위 결정전',bronzeTeams.find(x=>x!=='KR'),6):otherGame('3위 결정전',bronzeTeams[0],bronzeTeams[1]);
+ if(elapsed<groupLast-1||groupFixtures.some(f=>!(record.matchResults.some(g=>g.round===f.round)||record.otherMatches.some(g=>g.round===f.round))))return;
+ if(!record.bracket){
+  const ranked=record.groups.map((g,i)=>internationalGroupStandings(record,i).map(x=>x.code));
+  const qualifiers=record.groups.length===4?[ranked[0][0],ranked[1][1],ranked[2][0],ranked[3][1],ranked[1][0],ranked[0][1],ranked[3][0],ranked[2][1]]:record.groups.length===2?[ranked[0][0],ranked[1][1],ranked[1][0],ranked[0][1]]:ranked.map(x=>x[0]).concat(ranked.map(x=>x[1]));
+  record.bracket={quarterfinals:qualifiers.length===8?[[qualifiers[0],qualifiers[1]],[qualifiers[2],qualifiers[3]],[qualifiers[4],qualifiers[5]],[qualifiers[6],qualifiers[7]]]:[],semifinals:[]};
+  if(!record.bracket.quarterfinals.length)record.bracket.semifinals=[[qualifiers[0],qualifiers[1]],[qualifiers[2],qualifiers[3]]];
+ }
+ let semifinalPairs=record.bracket.semifinals;
+ if(record.bracket.quarterfinals.length){
+  if(elapsed<groupLast+1)return;
+  const winners=[];
+  for(let i=0;i<4;i++){const pair=record.bracket.quarterfinals[i],result=play('8강 '+(i+1),pair[0],pair[1],100+i);if(!result)return;winners.push(result.winner);}
+  semifinalPairs=[[winners[0],winners[1]],[winners[2],winners[3]]];record.bracket.semifinals=semifinalPairs;
+ }
+ if(elapsed<groupLast+3)return;
+ const semi=[];
+ for(let i=0;i<2;i++){const pair=semifinalPairs[i],result=play('준결승 '+(i+1),pair[0],pair[1],200+i);if(!result)return;semi.push({winner:result.winner,loser:pair.find(x=>x!==result.winner)});}
+ if(elapsed<groupLast+5)return;
+ const final=play('결승',semi[0].winner,semi[1].winner,301),bronze=play('3위 결정전',semi[0].loser,semi[1].loser,302);
  if(!final||!bronze)return;
- const champion=finalists.includes('KR')?(final.won?'KR':finalists.find(x=>x!=='KR')):final.winner;
- const third=bronzeTeams.includes('KR')?(bronze.won?'KR':bronzeTeams.find(x=>x!=='KR')):bronze.winner;
- if(!champion||!third)return;
- const runnerUp=finalists.find(x=>x!==champion),fourth=bronzeTeams.find(x=>x!==third);
- record.finalStandings=[champion,runnerUp,third,fourth];
- record.medals={gold:champion,silver:runnerUp,bronze:third};
- record.medal=champion==='KR'?'금메달':runnerUp==='KR'?'은메달':third==='KR'?'동메달':'4위';
+ const champion=final.winner,runnerUp=[semi[0].winner,semi[1].winner].find(x=>x!==champion),third=bronze.winner,fourth=[semi[0].loser,semi[1].loser].find(x=>x!==third);
+ record.finalStandings=[champion,runnerUp,third,fourth];record.medals={gold:champion,silver:runnerUp,bronze:third};
+ record.medal=champion==='KR'?'금메달':runnerUp==='KR'?'은메달':third==='KR'?'동메달':fourth==='KR'?'4위':'본선 탈락';
  record.gold=champion==='KR';record.finished=true;
- for(const id of record.players){
-  const p=state.players.find(x=>x.id===id);if(!p)continue;
-  const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);
-  if(history){history.games=record.games;history.result=record.medal;}
-  if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);
- }
- clubNotice('국가대표',year+' '+event+' 대회 종료 · '+record.medal,'최종 '+record.wins+'승 '+record.losses+'패 · 금 '+champion+' / 은 '+runnerUp+' / 동 '+third,state.teams.map(t=>t.id),record.players);
+ for(const id of record.players){const p=state.players.find(x=>x.id===id);if(!p)continue;const history=(p.nationalTeamHistory||[]).findLast(x=>x.year===year&&x.event===event);if(history){history.games=record.games;history.result=record.medal;}if(record.gold)awardNationalTeamServicePoints(p,year,event,event==='올림픽'?60:20);}
+ clubNotice('국가대표',year+' '+event+' 대회 종료 · '+record.medal,'대한민국 '+record.wins+'승 '+record.losses+'패 · 금 '+champion+' / 은 '+runnerUp+' / 동 '+third,state.teams.map(t=>t.id),record.players);
+
 }
 function nationalTeamReturnDay(){
  const today=seasonDate(state.day).toISOString().slice(0,10);
@@ -1450,7 +1436,7 @@ function nationalTeamPanel(){
  if(!records.length)return '<section class="dashboard-section"><h2>국가대표</h2><p>아직 국제대회가 개최되지 않았습니다. 대회가 시작되면 일정과 경기 결과가 표시됩니다.</p></section>';
  const selected=records.find(x=>x.year===Number(window.beNationalYear)&&x.event===window.beNationalEvent)||records[0];
  const staff=selected.staff||{},lineup=selected.lineup||{},matches=selected.matchResults||[],other=selected.otherMatches||[];
- const names={KR:'대한민국',JP:'일본',TW:'대만',CN:'중국',AU:'호주',US:'미국'};
+ const names=INTERNATIONAL_COUNTRIES;
  const name=x=>names[x]||x||'—';
  const options=records.map(x=>'<option value="'+esc(x.year+'|'+x.event)+'" '+(x===selected?'selected':'')+'>'+esc(x.year+' '+x.event)+'</option>').join('');
  const standings=internationalGroupStandings(selected);
