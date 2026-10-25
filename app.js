@@ -594,33 +594,31 @@ function newsPlayerSeasonFeature(n){
  const ids=Array.isArray(n.players)?n.players:[];
  if(!ids.length)return '';
  const year=Number(n.year)||Number(state.year);
- const blocks=ids.slice(0,2).map(id=>{
+ return ids.slice(0,2).map(id=>{
   const p=(state.players||[]).find(x=>String(x.id)===String(id));
   if(!p)return '';
-  let stats=null;
-  if(year===Number(state.year))stats=currentSeasonBoxStats(p);
-  else{
-   const records=state.careerRecords?.[p.id]||[];
-   stats=records.find(x=>Number(x.year)===year)||state.history?.seasons?.[year]?.players?.find(x=>String(x.id)===String(p.id));
-  }
-  const isPitcher=p.position==='P';
-  const number=(key)=>Number(stats?.[key])||0;
-  const fmt3=v=>Number.isFinite(v)?v.toFixed(3).replace(/^0/,''):'—';
-  const ab=number('atBats'),hits=number('hits'),bb=number('walks'),hbp=number('hitByPitch'),sf=number('sacrificeFlies');
-  const avg=ab?fmt3(hits/ab):'—';
-  const obp=ab+bb+hbp+sf?fmt3((hits+bb+hbp)/(ab+bb+hbp+sf)):'—';
-  const slg=ab?hits+number('doubles')+2*number('triples')+3*number('homeRuns'):0;
-  const ops=ab&&obp!=='—'?fmt3((hits+bb+hbp)/(ab+bb+hbp+sf)+slg/ab):'—';
-  const ip=number('inningsPitched');
-  const cells=!stats?[]:isPitcher?[['등판',number('games')],['이닝',ip?baseballIP(Math.round(ip*3)):'—'],['ERA',ip?(number('earnedRuns')*9/ip).toFixed(2):'—'],['승-패',number('pitchingWins')+'-'+number('pitchingLosses')],['탈삼진',number('pitchingStrikeouts')]]:[['경기',number('games')],['타율',avg],['홈런',number('homeRuns')],['타점',number('runsBattedIn')],['OPS',ops]];
-  const rows=(state.careerRecords?.[p.id]||[]).filter(x=>Number(x.year)<=year&&hasPlayedFirstTeamSeason(x));
-  if(year===Number(state.year)&&stats&&hasPlayedFirstTeamSeason(stats)&&!rows.some(x=>Number(x.year)===year))rows.push(stats);
-  const sum=k=>rows.reduce((v,x)=>v+(Number(x[k])||0),0);
-  const career=rows.length?(isPitcher?[['통산 경기',sum('games')],['통산 승',sum('pitchingWins')],['통산 세이브',sum('saves')],['통산 탈삼진',sum('pitchingStrikeouts')]]:[['통산 경기',sum('games')],['통산 안타',sum('hits')],['통산 홈런',sum('homeRuns')],['통산 타점',sum('runsBattedIn')],['통산 도루',sum('stolenBases')]]):[];
-  const careerHtml=career.length?'<div style="border-top:1px solid #d6e3f0;margin-top:18px;padding-top:16px"><strong>기사 시점 통산 1군 기록</strong><div style="display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:12px">'+career.map(([k,v])=>'<div><small style="display:block;color:#68809a">'+esc(k)+'</small><strong>'+esc(v)+'</strong></div>').join('')+'</div></div>':'';
-  return '<section style="margin:26px 0;padding:22px 18px;border:1px solid #d8e4f0;border-radius:14px;background:#f6f9fd"><div style="font-size:13px;font-weight:800;color:#3573b0;letter-spacing:.5px">'+esc(year+'시즌 1군 성적')+'</div><h3 style="font-size:22px;margin:10px 0 16px">'+esc(p.name)+'</h3>'+(cells.length?'<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:10px">'+cells.map(([label,value])=>'<div style="min-width:0"><div style="font-size:12px;color:#68809a">'+esc(label)+'</div><strong style="font-size:19px;color:#163758">'+esc(value)+'</strong></div>').join('')+'</div>':'<p style="margin:0;color:#71849a">해당 시즌 1군 기록이 없습니다.</p>')+careerHtml+'</section>';
- }).filter(Boolean);
- return blocks.join('');
+  const archived=(state.careerRecords?.[p.id]||[]).filter(x=>Number(x.year)<=year&&hasPlayedFirstTeamSeason(x));
+  let stats=archived.find(x=>Number(x.year)===year);
+  if(!stats&&year===Number(state.year)){const current=currentSeasonBoxStats(p);if(hasPlayedFirstTeamSeason(current))stats=current}
+  const pitcher=p.position==='P';
+  const num=(row,key)=>Number(row?.[key])||0;
+  const fmt=v=>Number(v).toFixed(3).replace(/^0/,'');
+  const line=row=>{
+   const games=num(row,'games');
+   if(pitcher){
+    const ip=num(row,'inningsPitched'),wins=num(row,'pitchingWins'),losses=num(row,'pitchingLosses'),so=num(row,'pitchingStrikeouts');
+    return games+'경기에 등판해 '+wins+'승 '+losses+'패'+(ip?', '+baseballIP(Math.round(ip*3))+'이닝':'')+(ip?', 평균자책점 '+(num(row,'earnedRuns')*9/ip).toFixed(2):'')+', 탈삼진 '+so+'개를 기록했다.';
+   }
+   const ab=num(row,'atBats'),hits=num(row,'hits'),hr=num(row,'homeRuns'),rbi=num(row,'runsBattedIn');
+   return games+'경기에서 '+hits+'안타, '+hr+'홈런, '+rbi+'타점'+(ab?', 타율 '+fmt(hits/ab):'')+'을 기록했다.';
+  };
+  const seasons=archived.slice();
+  if(stats&&!seasons.some(x=>Number(x.year)===year))seasons.push({...stats,year});
+  const total=k=>seasons.reduce((v,x)=>v+num(x,k),0);
+  const totalText=seasons.length?(pitcher?'통산 '+total('games')+'경기에 등판해 '+total('pitchingWins')+'승, '+total('saves')+'세이브, '+total('pitchingStrikeouts')+'탈삼진을 기록 중이다.':'통산 '+total('games')+'경기에서 '+total('hits')+'안타, '+total('homeRuns')+'홈런, '+total('runsBattedIn')+'타점을 기록 중이다.'):'';
+  const seasonText=stats?year+'시즌에는 '+line(stats):year+'시즌 1군 공식 출전 기록은 확인되지 않는다.';
+  return '<section style="margin:28px 0;padding:22px 0;border-top:1px solid #dce5ef"><h2 style="font-size:21px;line-height:1.4;margin:0 0 16px;color:#17375a">'+esc(p.name)+'의 기록</h2><p style="margin:0 0 17px;line-height:1.85;word-break:keep-all">'+esc(seasonText)+'</p>'+(totalText?'<p style="margin:0;line-height:1.85;word-break:keep-all">'+esc(totalText)+'</p>':'')+'</section>';
+ }).filter(Boolean).join('');
 }
 function newsAwardFeature(n){
  if(n.kind!=='시즌 시상'||!Array.isArray(n.players)||!n.players.length)return '';
