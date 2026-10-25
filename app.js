@@ -42,6 +42,24 @@ function compactRetiredPlayerTraining(data){
 const SAVE_PARTS=['players','gameResults','history','careerRecords','teams','retiredPlayers'];
 function idbRead(key){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readonly');const req=tx.objectStore('saves').get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 function idbWrite(key,value){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite');let finished=false;const timer=setTimeout(()=>{if(finished)return;finished=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): '+key.split(':').slice(-1)[0]))},12000);const settle=(error)=>{if(finished)return;finished=true;clearTimeout(timer);if(error)reject(error);else resolve()};tx.oncomplete=()=>settle();tx.onerror=()=>settle(tx.error||Error('IndexedDB 저장 실패'));tx.onabort=()=>settle(tx.error||Error('IndexedDB 저장 취소'));try{tx.objectStore('saves').put(value,key)}catch(e){settle(e)}})}
+let splitSaveCount=0;
+function cleanupSplitSaveKeys(active,previous){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');
+  let removed=0;
+  tx.oncomplete=()=>resolve(removed);
+  tx.onerror=()=>reject(tx.error||Error('정리 실패'));
+  tx.onabort=()=>reject(tx.error||Error('정리 중단'));
+  const request=store.openKeyCursor();
+  request.onerror=()=>reject(request.error||Error('정리 검색 실패'));
+  request.onsuccess=()=>{
+   const cursor=request.result;if(!cursor||removed>=30)return;
+   const key=cursor.key;
+   if(typeof key==='string'&&key.startsWith('v2-')&&key.includes(':')&&!key.startsWith(active+':')&&(!previous||!key.startsWith(previous+':'))){store.delete(key);removed++}
+   cursor.continue();
+  };
+ });
+}
 async function save(){
  if(!state)return;
  const stamp=new Date().toISOString(),generation='v2-'+Date.now()+'-'+Math.floor(Math.random()*1000000);
@@ -76,12 +94,14 @@ async function save(){
   }
   meta.__extraKeys=extraKeys;
   await idbWrite(generation+':meta',meta);
-  // Verify all components before making the generation visible to load().
-  for(const [field,key] of keys){const check=await idbRead(key);if(check===undefined)throw Error('저장 검증 실패: '+field)}
-  if(await idbRead(generation+':meta')===undefined)throw Error('저장 메타 검증 실패');
-  for(const [year,key] of meta.__minorLeagueKeys||[]){if(await idbRead(key)===undefined)throw Error('2군 시즌 저장 검증 실패: '+year)}
-  for(const [field,key] of meta.__extraKeys||[]){if(await idbRead(key)===undefined)throw Error('기타 저장 검증 실패: '+field)}
-  await idbWrite('active-split', {generation,keys,metaKey:generation+':meta'});
+  // Each idbWrite resolves only after transaction commit. Avoid re-reading every
+  // large record: the active pointer is published last, after all writes commit.
+  const previous=await idbRead('active-split');
+  await idbWrite('active-split', {generation,keys,metaKey:generation+':meta',previousGeneration:previous?.generation||previous?.previousGeneration||null});
+  // Reclaim abandoned snapshots in small batches; never touch legacy 'main',
+  // the active generation, or the previous known-good generation.
+  splitSaveCount++;
+  if(splitSaveCount%5===0)setTimeout(()=>cleanupSplitSaveKeys(generation,previous?.generation||previous?.previousGeneration||null).catch(e=>console.warn('저장 정리 보류',e)),1500);
   state.lastSaved=stamp;
  }catch(e){try{db?.close()}catch(_){}db=await openDB();throw e}
 }
