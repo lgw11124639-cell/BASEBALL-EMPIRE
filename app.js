@@ -108,7 +108,7 @@ async function save(){
    delete meta[field];
   }
   // Reduce transaction overhead while keeping large archives in separate writes.
-  for(let i=0;i<smallWrites.length;i+=8)await idbWriteSmallBatch(smallWrites.slice(i,i+8));
+  await idbWriteSmallBatch(smallWrites);
   meta.__extraKeys=extraKeys;
   await idbWrite(generation+':meta',meta);
   // Each idbWrite resolves only after transaction commit. Avoid re-reading every
