@@ -255,8 +255,9 @@ function honorRetiredPlayers(year){
   for(const [teamId,t] of r.byTeam){
    const qualified=t.years.size>=8&&honorScore(r,id,teamId)>=80;
    if(!qualified)continue;
-   const number=Number(retired.teamId)===Number(teamId)?Number(retired.jerseyNumber??p.jerseyNumber):NaN;
+   const number=Number(retired.teamId)===Number(teamId)&&retired.jerseyNumber!=null?Number(retired.jerseyNumber):NaN;
    if(!Number.isInteger(number)||number<0||number>999||existingNumbers.has(teamId+':'+number)||existingHonoredPlayers.has(teamId+':'+id))continue;
+   if(state.players.some(x=>String(x.teamId)===teamId&&String(x.id)!==id&&!x.retired&&!['방출','은퇴','계약종료'].includes(x.level)&&Number(x.jerseyNumber)===number))continue;
    history.retiredNumbers.push({playerId:p.id,name:p.name,teamId:Number(teamId),number,year});
    existingNumbers.add(teamId+':'+number);
    existingHonoredPlayers.add(teamId+':'+id);
