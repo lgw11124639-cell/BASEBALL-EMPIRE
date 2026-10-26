@@ -496,8 +496,8 @@ function nationalTeamTournamentDay(){
   if(pitchers.length<9||batters.length<9)return;
   const staff=nationalTeamStaff(year,event),lineup=nationalTeamLineup(selected);
   const finish=new Date(now);finish.setDate(finish.getDate()+(event==='WBC'?22:17));
-  const end=finish.toISOString().slice(0,10);
-  record={year,event,gold:false,finished:false,staff,lineup,openingGame:null,players:selected.map(p=>p.id),start:now.toISOString().slice(0,10),end,games:0,wins:0,losses:0,matchResults:[]};
+  const end=[finish.getFullYear(),String(finish.getMonth()+1).padStart(2,'0'),String(finish.getDate()).padStart(2,'0')].join('-');
+  record={year,event,gold:false,finished:false,staff,lineup,openingGame:null,players:selected.map(p=>p.id),start:[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'),end,games:0,wins:0,losses:0,matchResults:[]};
   record.otherMatches=[];
   state.nationalTeamResults[key]=record;
   for(const p of selected){p.nationalDutyUntil=end;p.nationalTeamHistory=p.nationalTeamHistory||[];p.nationalTeamHistory.push({year,event,games:0,result:'대회 진행 중'});}
