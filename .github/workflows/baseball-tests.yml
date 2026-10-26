@@ -25,3 +25,5 @@ jobs:
         run: node tests/national-return.test.cjs
       - name: International tournament progression
         run: node tests/international-tournament-flow.test.cjs
+      - name: Thirty-year calendar progression
+        run: node tests/long-calendar.test.cjs
