@@ -578,7 +578,9 @@ function nationalTeamTournamentDay(){
   // Permit recovery within the scheduled tournament month if opening day was missed.
   if(day<1)return;
   const scored=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form);
-  const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const pitchers=chosen?chosen.filter(p=>p.position==='P'):scored.filter(x=>x.p.position==='P').slice(0,12).map(x=>x.p),batters=chosen?chosen.filter(p=>p.position!=='P'):scored.filter(x=>x.p.position!=='P').slice(0,12).map(x=>x.p),selected=[...pitchers,...batters];
+  const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const available=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&p.position&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).sort((a,b)=>nationalTeamFormScore(b)-nationalTeamFormScore(a));
+  const fill=(position)=>{const primary=(chosen||[]).filter(p=>position==='P'?p.position==='P':p.position!=='P');const existing=new Set(primary.map(p=>String(p.id)));return primary.concat(available.filter(p=>(position==='P'?p.position==='P':p.position!=='P')&&!existing.has(String(p.id))).slice(0,Math.max(0,12-primary.length))).slice(0,12);};
+  const pitchers=fill('P'),batters=fill('B'),selected=[...pitchers,...batters];
   if(pitchers.length<9||batters.length<9){clubNotice('국가대표',year+' '+event+' 대표팀 구성 실패','출전 가능한 투수 또는 야수가 부족하여 대회 진행이 보류됐습니다.',state.teams.map(t=>t.id),selected.map(p=>p.id));return;}
   const staff=prep?.staff||nationalTeamStaff(year,event),lineup=nationalTeamLineup(selected);
   const finish=new Date(now);finish.setDate(finish.getDate()+(event==='WBC'?22:17));
@@ -1800,7 +1802,7 @@ function nationalTeamUpcomingSchedule(){
   if(y>=2027&&(y-2027)%4===0)events.push({year:y,month:3,event:'WBC'});
  }
  const ordered=events.sort((a,b)=>a.year-b.year||a.month-b.month),past=ordered.filter(x=>Date.UTC(x.year,x.month-1,1)<today),future=ordered.filter(x=>Date.UTC(x.year,x.month-1,1)>=today);
- const shown=[...past.filter(x=>state.nationalTeamResults?.[x.year+'-'+x.event]&&Array.isArray(state.nationalTeamResults[x.year+'-'+x.event].matchResults)&&state.nationalTeamResults[x.year+'-'+x.event].matchResults.length).slice(-1),...future.slice(0,4)];
+ const shown=[...past.filter(x=>x.year===now.getFullYear()||state.nationalTeamResults?.[x.year+'-'+x.event]).slice(-2),...future.slice(0,4)];
  const rows=shown.map(x=>{
   const key=x.year+'-'+x.event,prep=state.nationalTeamPreparations?.[key],stages=prep?.stages||[],record=state.nationalTeamResults?.[key],remaining=Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000);
   const stage=record?(record.finished?'대회 종료 · '+(record.medal||'결과 확인'):'대회 진행 중'):remaining<0?'개최일 경과 · 대회 기록 없음':remaining>60?'예비 명단 발표 예정':remaining>30?'예비 명단 '+(stages.includes(60)?'발표 완료':'발표 예정'):remaining>14?'최종 명단 '+(stages.includes(30)?'확정':'확정 예정'):'대표팀 '+(stages.includes(14)?'소집 완료':'소집 예정');
@@ -1811,7 +1813,7 @@ function nationalTeamUpcomingSchedule(){
 }
 function nationalTeamPanel(){
  const records=Object.values(state.nationalTeamResults||{}).filter(x=>Array.isArray(x.matchResults)&&x.matchResults.length>0).sort((a,b)=>b.year-a.year);
- if(!records.length)return nationalTeamUpcomingSchedule()+'<section class="dashboard-section"><h2>대한민국 국가대표</h2><p>실제로 진행된 국제대회 경기 기록이 아직 없습니다.</p></section>';
+ if(!records.length){const current=Object.values(state.nationalTeamResults||{}).find(x=>x.year===seasonDate(state.day).getFullYear()&&!x.finished),prep=state.nationalTeamPreparations?.[seasonDate(state.day).getFullYear()+'-WBC'];return nationalTeamUpcomingSchedule()+'<section class="dashboard-section"><h2>대한민국 국가대표</h2><p>'+(current?'대회 등록 완료 · 출전 선수 '+(current.players||[]).length+'명 · 경기 '+(current.matchResults||[]).length+'회': '대회 경기 기록이 아직 없습니다.')+'</p>'+(current?.lastError?'<p class="profile-note">진행 오류: '+esc(current.lastError)+'</p>':'')+(prep?.lastError?'<p class="profile-note">명단 오류: '+esc(prep.lastError)+'</p>':'')+'</section>';}
  const selected=records.find(x=>x.year===Number(window.beNationalYear)&&x.event===window.beNationalEvent)||records[0];
  const staff=selected.staff||{},lineup=selected.lineup||{},matches=selected.matchResults||[],other=selected.otherMatches||[];
  const names=INTERNATIONAL_COUNTRIES;
