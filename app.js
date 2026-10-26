@@ -585,7 +585,7 @@ function nationalTeamTournamentDay(){
 
 }
 function nationalTeamReturnDay(){
- const today=seasonDate(state.day).toISOString().slice(0,10);
+ const now=seasonDate(state.day),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
  for(const p of state.players){
   if(!p.nationalDutyUntil||p.nationalDutyUntil>=today||p.nationalReturnNotified===p.nationalDutyUntil)continue;
   p.nationalReturnNotified=p.nationalDutyUntil;
