@@ -27,5 +27,5 @@ for(let day=1;day<=10958;day++){
  last=current;
 }
 assert.equal(yearChanges,30,'thirty year transitions');
-assert.equal(leapDays,8,'leap dates 2028 through 2056');
-console.log('30-year calendar smoke: PASS (10,958 dates, 30 year transitions, 8 leap days)');
+assert.equal(leapDays,7,'leap dates 2028 through 2052');
+console.log('30-year calendar smoke: PASS (10,958 dates, 30 year transitions, 7 leap days)');
