@@ -454,7 +454,7 @@ function internationalOpeningGame(year,event,selected,opponentCode,round){
  let result=null;
  try{
   result=internationalSharedGame(selected,rival,year*99173+event.length*101+(Number(round)||String(round||'').split('').reduce((n,c)=>((n*33+c.charCodeAt(0))>>>0),5381))*811);
- }catch(err){console.warn('국제경기 공통 엔진 오류',err)}
+ }catch(err){console.error('국제경기 공통 엔진 오류',err);throw err;}
  finally{
   restoreLeagueCounters(counters);
   for(const p of participants)playerBaseball(p).fatigue=fatigue.get(p.id);
@@ -606,7 +606,7 @@ function nationalTeamTournamentDay(){
   if(korean){
    const opponent=home==='KR'?away:home,roster=selected(),pitchDays=record.internationalPitchDays||(record.internationalPitchDays={}),priorDays=new Map(roster.filter(p=>p.position==='P').map(p=>[p.id,p.lastAppearance]));
    for(const p of roster.filter(p=>p.position==='P')){const last=pitchDays[p.id];if(Number.isFinite(Number(last))&&last!=null)p.lastAppearance=Math.max(Number(p.lastAppearance)||-999,Number(last));}
-   let box;try{box=internationalOpeningGame(year,event,roster,opponent,seed);}finally{for(const p of roster.filter(p=>p.position==='P'))p.lastAppearance=priorDays.get(p.id);}
+   let box;try{box=internationalOpeningGame(year,event,roster,opponent,seed);}catch(err){record.lastError='대한민국 경기 엔진 예외 · '+today+' · '+round+' · '+String(err?.message||err).slice(0,220);clubNotice('국가대표',year+' '+event+' 경기 진행 오류',record.lastError,state.teams.map(t=>t.id),record.players);return null;}finally{for(const p of roster.filter(p=>p.position==='P'))p.lastAppearance=priorDays.get(p.id);}
    if(!box){record.lastError='대한민국 경기 엔진 결과 생성 실패 · '+today+' · '+round;clubNotice('국가대표',year+' '+event+' 경기 진행 오류',record.lastError,state.teams.map(t=>t.id),record.players);return null;}
    if(box.homeRuns===box.awayRuns){
     // International elimination and group games must have a winner; extend the simulated game.
