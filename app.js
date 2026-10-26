@@ -508,7 +508,7 @@ function nationalTeamTournamentDay(){
  record.otherMatches=Array.isArray(record.otherMatches)?record.otherMatches:[];
  record.groups=record.groups||internationalTournamentGroups(event);
  const today=now.toISOString().slice(0,10),elapsed=Math.round((now-new Date(record.start+'T12:00:00'))/86400000);
- const selected=()=>record.players.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean);
+ const nationalRosterById=new Map(state.players.map(p=>[String(p.id),p]));const selected=()=>record.players.map(id=>nationalRosterById.get(String(id))).filter(Boolean);
  const play=(round,home,away,seed)=>{
   const korean=home==='KR'||away==='KR',list=korean?record.matchResults:record.otherMatches;
   const prior=list.find(g=>g.round===round&&(korean?g.opponent===(home==='KR'?away:home):(g.home===home&&g.away===away)));
