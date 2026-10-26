@@ -1155,11 +1155,28 @@ function performanceOpinion(p){
  return '확인된 공식 경기 표본이 부족합니다. 실전 성적 평가를 보류하며, 스카우트 의견과 잠재력 평가는 경기 기록을 대신하지 않습니다.';
 }
 function scoutingSummary(p){
- const position=p.position==='P'?'투수':'야수';
- const youth=Number(p.age)<=23;
- const draft=p.draftRound?'드래프트 '+p.draftRound+'라운드 지명 선수입니다. ':'';
- const focus=p.position==='P'?'구위·제구·변화구와 실전 이닝 소화':'타격 정확성·장타 생산·선구안·수비';
- return draft+position+'로서 '+focus+'를 중점 관찰해야 합니다. '+(youth?'성장 단계에 있어 충분한 출전 표본과 장기적인 추적 평가가 필요합니다.':'최근 출전 기록과 역할 적합성을 함께 확인해야 합니다.')+' 기록이 없는 항목에 대해서는 우수 또는 부진으로 단정하지 않습니다.';
+ const age=Number(p.age)||0,isP=p.position==='P',year=Number(state.year);
+ const current=currentSeasonBoxStats(p);
+ const archive=Object.values(state.history?.seasons||{}).filter(y=>Number(y.year)<year).sort((a,b)=>Number(b.year)-Number(a.year));
+ const previous=archive.map(y=>({year:Number(y.year),stats:(y.players||[]).find(x=>String(x.id)===String(p.id))})).find(x=>x.stats&&hasPlayedFirstTeamSeason(x.stats));
+ const games=Number(current.games)||0,ip=Number(current.inningsPitched)||0,ab=Number(current.atBats)||0;
+ const hasCurrent=hasPlayedFirstTeamSeason(current);
+ const amateur=p.careerId?(state.amateurCareerArchive?.[p.careerId]||[]):[];
+ const amateurGames=amateur.reduce((n,x)=>n+(Number(x.games)||0),0);
+ const phase=age>=35?'베테랑':age>=28?'전성기 연령대':age>=24?'성장·정착기':'유망주 단계';
+ const role=isP?'선발·불펜 적합성, 투구 효율과 회복력':'타격 생산성, 출루 능력, 수비 포지션 적합성';
+ const notes=[];
+ if(hasCurrent){
+  if(isP&&ip>0){const era=(Number(current.earnedRuns)||0)*9/ip;notes.push('이번 시즌 '+games+'경기 '+baseballIP(Math.round(ip*3))+'이닝, 평균자책점 '+era.toFixed(2)+'를 기록했습니다. '+(ip<25?'등판 표본이 적어 판단을 유보합니다.':era<3.5?'현재 실점 억제 지표가 양호합니다.':era<5?'실점 억제 지표는 보통 수준입니다.':'실점 억제 지표에 개선 여지가 있습니다.'))}
+  else if(!isP&&ab>0){const avg=(Number(current.hits)||0)/ab;const obp=(Number(current.hits)||0)+(Number(current.walks)||0)+(Number(current.hitByPitch)||0);notes.push('이번 시즌 '+games+'경기 '+ab+'타수, 타율 '+avg.toFixed(3).replace(/^0/,'')+', '+(Number(current.homeRuns)||0)+'홈런을 기록했습니다. '+(ab<80?'표본이 적어 타격 수준을 단정하기 어렵습니다.':avg>=.3?'현재 안타 생산 지표가 양호합니다.':avg>=.24?'현재 타격 성적은 보통 수준입니다.':'현재 타격 성적은 개선이 필요합니다.'))}
+  else notes.push('이번 시즌 출전 기록이 있으나 평가 가능한 주요 지표가 부족합니다.');
+ }else if(previous)notes.push('이번 시즌 1군 출전 기록이 없습니다. 최근 확인된 1군 기록은 '+previous.year+'시즌이며, 현재 기량을 단정할 수 없습니다.');
+ else if(amateurGames>0)notes.push('프로 1군 출전 기록이 없습니다. 아마추어 '+amateurGames+'경기 기록을 확인했으며, 프로 적응력은 아직 검증되지 않았습니다.');
+ else notes.push('확인된 1군 및 아마추어 경기 표본이 부족합니다. 지명 순위나 내부 잠재력만으로 실전 경쟁력을 확정하지 않습니다.');
+ if(previous&&hasCurrent){const old=previous.stats;const oldMetric=isP?(Number(old.inningsPitched)>0?(Number(old.earnedRuns)||0)*9/Number(old.inningsPitched):null):(Number(old.atBats)>0?(Number(old.hits)||0)/Number(old.atBats):null);const nowMetric=isP?(ip>0?(Number(current.earnedRuns)||0)*9/ip:null):(ab>0?(Number(current.hits)||0)/ab:null);if(oldMetric!=null&&nowMetric!=null)notes.push('지난 '+previous.year+'시즌과 비교할 수 있지만, 시즌별 출전량과 표본 차이를 함께 고려해야 합니다.');}
+ notes.push(phase+'입니다. '+role+'을 중심으로 다음 시즌까지 관찰합니다.');
+ if(p.profile?.injury&&Number(p.profile.injury.days)>0)notes.push('현재 부상 회복 상태를 고려해야 하며, 복귀 직후 성적만으로 기량을 판단하지 않습니다.');
+ return notes.join(' ');
 }
 function profileMarkup(p){const x=ensureProfile(p),b=playerBaseball(p);return '<section class="card"><h3>체력 및 출전 관리</h3><p>현재 상태: '+conditionText(p)+'</p><p>'+(p.position==='P'?'투구 이닝과 최근 등판 간격에 따라 피로가 누적되며, 감독이 회복 상태를 고려해 등판을 결정합니다.':'경기 출전량에 따라 피로가 쌓이고 휴식으로 회복됩니다.')+'</p><p class="muted">피로 누적과 회복은 경기 진행 시 반영됩니다.</p></section>'+'<section class="card"><h3>스카우트별 평가</h3><p class="muted">서로 다른 관점을 가진 구단 스카우트의 잠정 평가입니다. 능력치 숫자는 공개하지 않습니다.</p>'+SCOUTS.map(s=>scoutReport(p,s)).join('')+'</section><section class="card"><h3>실제 경기 성적에 따른 평가</h3><p>'+esc(performanceOpinion(p))+'</p><p class="muted">경기 결과가 기록되면 현재 누적 성적을 기준으로 의견이 달라집니다.</p></section><section class="card"><h3>성향 · 계약 · 몸 상태</h3><p>선수 성향: '+esc(x.trait)+'</p><p>계약 잔여 기간: '+x.contractYears+'년</p><p>부상 상태: '+esc(x.injury.status)+'</p></section><section class="card"><h3>성장 기록</h3>'+(x.growth.length?x.growth.map(g=>'<p>'+esc(g.season)+'시즌 · '+esc(g.note)+'</p>').join(''):'<p class="muted">아직 관찰된 성장 기록이 없습니다.</p>')+'</section>'}
 function playerBaseball(p){const x=ensureProfile(p);if(!x.baseball){const r=rng((p.id*11939)>>>0);x.baseball={throwHand:r()<.75?'우투':'좌투',batHand:r()<.68?'우타':'좌타',delivery:p.position==='P'?((v)=>v<.64?'오버핸드':v<.92?'쓰리쿼터':v<.985?'사이드암':'언더핸드')(r()):null,role:p.position==='P'?(r()<.48?'선발':'불펜'):null,fatigue:0,recovery:ri(r,8,17),lastAppearance:null}}return x.baseball}
