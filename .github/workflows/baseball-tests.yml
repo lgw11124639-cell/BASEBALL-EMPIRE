@@ -29,3 +29,5 @@ jobs:
         run: node tests/long-calendar.test.cjs
       - name: Thirty-year season transitions
         run: node tests/season-transition.test.cjs
+      - name: Season snapshot history isolation
+        run: node tests/season-snapshot.test.cjs
