@@ -32,5 +32,10 @@ vm.runInContext('recordPlayerRelease',ctx)(newlyReleased,'계약 종료');
 assert.equal(newlyReleased.releaseYear,2028,'null legacy release year stamped');
 vm.runInContext('recordPlayerRelease',ctx)(newlyReleased,'계약 종료');
 assert.equal(state.releaseNotices.length,1,'release notice not duplicated');
+const rereleased={id:102,teamId:0,level:'방출',releaseYear:2026};
+vm.runInContext('recordPlayerRelease',ctx)(rereleased,'재방출');
+assert.equal(rereleased.releaseYear,2028,'new release resets unsigned clock');
+assert.equal(state.releaseNotices.length,2,'new release notice archived');
+
 
 console.log('Unsigned player retirement after two seasons: PASS');
