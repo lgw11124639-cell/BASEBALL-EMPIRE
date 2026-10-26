@@ -631,6 +631,8 @@ function nationalTeamTournamentDay(){
    const roundLabel=String(round).replace(/([A-Z])조\s*\d+-\d+/,'$1조').replace(/(준결승|결승|8강|4강)\s*\d+$/,'$1');
    const topHitter=(game.homeBatters||[]).filter(p=>(Number(p.atBats)||0)+(Number(p.walks)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0))[0];
    const topPitcher=(game.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0).sort((a,b)=>(Number(b.outs)||0)-(Number(a.outs)||0))[0];
+   const sameNameDifferentPlayer=topHitter&&topPitcher&&topHitter.name===topPitcher.name&&String(topHitter.id)!==String(topPitcher.id);
+   const pitcherForNews=sameNameDifferentPlayer?null:topPitcher;
    const krInnings=Array.isArray(game.homeInnings)?game.homeInnings:[];
    const rivalInnings=Array.isArray(game.awayInnings)?game.awayInnings:[];
    const validInnings=krInnings.length>0&&rivalInnings.length>0&&krInnings.every(Number.isFinite)&&rivalInnings.every(Number.isFinite);
@@ -647,7 +649,7 @@ function nationalTeamTournamentDay(){
    const lead='대한민국 야구대표팀이 '+newsDate+' 열린 '+year+' '+event+' '+roundLabel+'에서 '+rivalName+'을 상대로 '+game.homeRuns+'대'+game.awayRuns+'로 '+(game.won?'승리했다.':'패했다.');
    const gameFlow=lateTurnaround?'경기 막판까지 뒤지던 한국은 마지막 공격에서 승부를 뒤집었다.':comeback?'경기 도중 리드를 내줬던 한국은 다시 앞서며 승리를 거뒀다.':shutout?'한국 투수진은 상대 타선을 무실점으로 막아냈다.':'';
    const hitterLine=topHitter?'타선에서는 '+topHitter.name+'이 '+(Number(topHitter.hits)||0)+'안타'+((Number(topHitter.homeRuns)||0)?' '+topHitter.homeRuns+'홈런':'')+', '+(Number(topHitter.runsBattedIn)||0)+'타점을 기록했다.':'';
-   const pitcherLine=topPitcher?'마운드에서는 '+topPitcher.name+'이 '+baseballIP(topPitcher.outs)+'이닝을 소화하며 삼진 '+(Number(topPitcher.strikeouts)||0)+'개를 잡았다.':'';
+   const pitcherLine=pitcherForNews?'마운드에서는 '+pitcherForNews.name+'이 '+baseballIP(pitcherForNews.outs)+'이닝을 소화하며 삼진 '+(Number(pitcherForNews.strikeouts)||0)+'개를 잡았다.':'';
    const mvpCandidates=[
     ...(game.homeBatters||[]).map(p=>({id:p.id??p.playerId??null,name:p.name,side:'KR',score:(Number(p.hits)||0)*2+(Number(p.homeRuns)||0)*3+(Number(p.runsBattedIn)||0)*2+(Number(p.walks)||0)*.5,reason:(Number(p.hits)||0)+'안타 '+(Number(p.runsBattedIn)||0)+'타점'})),
     ...(game.awayBatters||[]).map(p=>({id:p.id??p.playerId??null,name:p.name,side:game.opponent,score:(Number(p.hits)||0)*2+(Number(p.homeRuns)||0)*3+(Number(p.runsBattedIn)||0)*2+(Number(p.walks)||0)*.5,reason:(Number(p.hits)||0)+'안타 '+(Number(p.runsBattedIn)||0)+'타점'})),
@@ -1753,7 +1755,7 @@ function nationalArchivedArticleText(n){
  const lines=['대한민국이 '+event[1]+' '+event[2]+' '+round[1].replace(/\s*\d+$/,'')+'에서 '+name(g.opponent)+'을 상대로 '+g.homeRuns+'대'+g.awayRuns+'로 '+(g.won?'승리했다.':'패했다.')];
  if(Number(g.awayRuns)===0)lines.push('한국 투수진은 상대 타선을 무실점으로 막았다.');
  if(bat)lines.push('타선에서는 '+bat.name+'이 '+(Number(bat.hits)||0)+'안타 '+(Number(bat.runsBattedIn)||0)+'타점을 기록했다.');
- if(pitch&&(!bat||String(pitch.id)!==String(bat.id)))lines.push('마운드에서는 '+pitch.name+'이 '+baseballIP(pitch.outs)+'이닝 동안 삼진 '+(Number(pitch.strikeouts)||0)+'개를 잡았다.');
+ if(pitch&&(!bat||String(pitch.id)!==String(bat.id))&&(!bat||pitch.name!==bat.name))lines.push('마운드에서는 '+pitch.name+'이 '+baseballIP(pitch.outs)+'이닝 동안 삼진 '+(Number(pitch.strikeouts)||0)+'개를 잡았다.');
  return lines.join(' ');
 }
 function openBaseballNewsArticle(id){
@@ -1777,8 +1779,10 @@ function openBaseballNewsArticle(id){
  
  const articleBody=isNational?body.replace(/금\s+KR\s*\/\s*은\s+MX\s*\/\s*동\s+PA/g,'금 대한민국 / 은 멕시코 / 동 파나마').split('소속 구단별 명단:')[0].replace(/감독은 국가대표 감독이며/g,'감독 선임 정보 확인 중이며').replace(/(\d{4})-(\d{2})-(\d{2}) 열린/g,(_,y,m,d)=>y+'년 '+Number(m)+'월 '+Number(d)+'일 열린'):body;
  const cleanArticleTitle=isNational?String(n.title).replace(/([A-Z])조\s*\d+-\d+/g,'$1조').replace(/(준결승|8강|4강|결승)\s*\d+(?=\s*[·…]|$)/g,'$1').replace(/\b(KR|MX|PA)\b/g,code=>({KR:'대한민국',MX:'멕시코',PA:'파나마'}[code]||code)):String(n.title);
+ const nationalNameCollisions=new Set();
+ for(const p of nationalRoster){if(nationalRoster.some(q=>String(q.id)!==String(p.id)&&q.name===p.name))nationalNameCollisions.add(p.name);}
  const seenNationalNames=new Set();
- const articleMentions=nationalRoster.filter(p=>{if(!p.name||!articleBody.includes(p.name)||seenNationalNames.has(p.name))return false;seenNationalNames.add(p.name);return true;}).slice(0,5);
+ const articleMentions=nationalRoster.filter(p=>{if(!p.name||!articleBody.includes(p.name)||seenNationalNames.has(p.name)||nationalNameCollisions.has(p.name))return false;seenNationalNames.add(p.name);return true;}).slice(0,5);
  const nationalLinks=isNational&&articleMentions.length?'<details style="margin-top:22px;border-top:1px solid #dbe4ed;padding-top:14px"><summary style="font-weight:800;cursor:pointer">기사에 등장한 선수 '+articleMentions.length+'명</summary><div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:12px">'+articleMentions.map(p=>'<button type="button" data-article-player="'+esc(String(p.id))+'" style="border:1px solid #dbe4ed;border-radius:9px;padding:9px 12px;background:#f4f8fc;color:#17375a;font-weight:700">'+esc(p.name)+'</button>').join('')+'</div></details>':'';
  const paragraphs=articleBody.split(/(?<=[.!?。])\s+(?=[가-힣A-Za-z0-9])/).reduce((arr,sentence,i)=>{if(i%2===0)arr.push(sentence);else arr[arr.length-1]+=' '+sentence;return arr},[]).filter(Boolean);
  modal.innerHTML='<div style="position:sticky;top:0;background:#fff;border-bottom:2px solid #3476b8;z-index:2;padding:calc(env(safe-area-inset-top, 0px) + 15px) 18px 17px;display:flex;justify-content:space-between;align-items:center;gap:12px"><div style="min-width:0"><small style="display:block;color:#6383a5;font-size:12px;letter-spacing:1px">BASEBALL EMPIRE SPORTS · '+esc(seasonDateLabel(n.day))+'</small></div><button type="button" class="news-close" style="flex-shrink:0;background:#e8f1fb;color:#174674;border:0;border-radius:10px;padding:12px 14px;font-weight:800">✕ 닫기</button></div><article class="news-article-body editorial-story" style="max-width:760px;margin:0 auto;padding:24px 20px 70px"><div class="article-category">스포츠 <span>›</span> 야구 <span>›</span> '+esc(category)+'</div><h1 class="editorial-headline">'+esc(cleanArticleTitle)+'</h1><div class="editorial-meta"><strong>BASEBALL EMPIRE 스포츠팀</strong><span>'+esc(seasonDateLabel(n.day))+' | '+esc(n.kind)+'</span></div>'+(isNational?nationalFlagFeature:logoFeature)+'<div class="editorial-copy" style="border-top:1px solid #dbe4ed;margin-top:24px;padding-top:24px">'+(paragraphs.length?paragraphs.map(p=>'<p style="margin:0 0 22px;line-height:1.85;overflow-wrap:anywhere;word-break:keep-all">'+articleLinkedText(p,n)+'</p>').join(''):'<p>기사 내용이 없습니다.</p>')+'</div>'+nationalLinks+nationalRosterFeature+awardFeature+seasonStatsFeature+'<p class="article-note" style="margin-top:35px">본 기사는 게임 내 공식 발표 및 기록 데이터를 바탕으로 작성됐습니다.</p></article>';
