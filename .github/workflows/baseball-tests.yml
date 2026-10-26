@@ -35,3 +35,5 @@ jobs:
         run: node tests/player-history-render.test.cjs
       - name: Career records across transfers
         run: node tests/career-transfer-history.test.cjs
+      - name: Offseason retirement archive
+        run: node tests/offseason-retirement.test.cjs
