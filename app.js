@@ -1565,6 +1565,15 @@ document.addEventListener('click',e=>{
  if(button)openBaseballNewsArticle(button.dataset.newsArticle);
 });
 let clubNewsVisibleCount=15;
+function faNoticeDisplayTitle(n){
+ if(!['FA 계약','FA 보상'].includes(n.kind))return n.title;
+ const ids=Array.isArray(n.teams)?n.teams:[];
+ const from=state.teams.find(t=>String(t.id)===String(ids[0]))?.name;
+ const to=state.teams.find(t=>String(t.id)===String(ids[1]))?.name;
+ if(!to)return n.title;
+ const route=from&&String(ids[0])!==String(ids[1])?from+' → '+to:to+' 잔류';
+ return route+' · '+n.title;
+}
 function allClubsLeagueNews(){
  const notices=state.clubNotices||[],items=[],seen=new Set();
  const noisy=new Set(['육성 보고','월간 운영보고','재정 보고','스카우트 보고','프런트 특별 투자','프런트 보고']);
@@ -1581,7 +1590,7 @@ function allClubsLeagueNews(){
   }else if(n.kind==='신인 드래프트'){
    const key='draft:'+draftClassYear(n);if(seen.has(key))continue;seen.add(key);
    items.push({...n,title:draftClassYear(n)+'시즌 신인 드래프트 결과'});
-  }else items.push(n.kind==='시즌 시상'?{...n,title:awardNoticeTitle(n)}:n);
+  }else items.push(n.kind==='시즌 시상'?{...n,title:awardNoticeTitle(n)}:{...n,title:faNoticeDisplayTitle(n)});
   if(items.length>=250)break;
  }
  const visible=items.slice(0,clubNewsVisibleCount);
