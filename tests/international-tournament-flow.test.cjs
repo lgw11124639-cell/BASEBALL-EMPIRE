@@ -34,6 +34,9 @@ for(let day=1;day<=20;day++){
  if(record.finished)break;
 }
 assert.equal(record.finished,true,'tournament finishes');
+assert.equal(record.matchResults.length+record.otherMatches.length,groups.reduce((sum,g)=>sum+g.length*(g.length-1)/2,0)+4,'all group and knockout games completed');
+assert.ok(record.matchResults.every(g=>g.date&&g.date<=record.end),'Korean games dated no later than final');
+assert.ok(record.otherMatches.every(g=>g.date&&g.date<=record.end),'other games dated no later than final');
 assert.equal(record.finalStandings.length,4,'final standings');
 assert.equal(record.medals.gold,record.finalStandings[0],'medal order');
 assert.equal(new Set(record.matchResults.map(g=>g.round)).size,record.matchResults.length,'no duplicated Korean games');
