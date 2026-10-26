@@ -1566,10 +1566,11 @@ document.addEventListener('click',e=>{
 });
 let clubNewsVisibleCount=15;
 function faNoticeDisplayTitle(n){
- if(!['FA 계약','FA 보상'].includes(n.kind))return n.title;
+ if(!['FA 계약','FA 보상','은퇴','방출'].includes(n.kind))return n.title;
  const ids=Array.isArray(n.teams)?n.teams:[];
  const from=state.teams.find(t=>String(t.id)===String(ids[0]))?.name;
  const to=state.teams.find(t=>String(t.id)===String(ids[1]))?.name;
+ if(['은퇴','방출'].includes(n.kind)){const club=from||to;return club?club+' · '+n.title:n.title;}
  if(!to)return n.title;
  const route=from&&String(ids[0])!==String(ids[1])?from+' → '+to:to+' 잔류';
  return route+' · '+n.title;
