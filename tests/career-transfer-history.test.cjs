@@ -11,7 +11,7 @@ const state={year:2027,careerRecords:{7:[{year:2025,teamId:0,games:90,hits:85},{
 let calls=0;
 const context=vm.createContext({state,Number,Map,Date,
  hasPlayedFirstTeamSeason:r=>Number(r.games)>0,
- currentSeasonBoxStats:()=>{calls++;return {games:140,hits:999}},
+ currentSeasonBoxStats:p=>{calls++;return p.retired?{games:0,hits:0}:{games:140,hits:999}},
 });
 vm.runInContext(source.slice(start,end),context);
 const rows=()=>Array.from(vm.runInContext('careerSeasonRows(player)',vm.createContext({...context,player})));
