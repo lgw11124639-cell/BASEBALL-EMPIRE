@@ -55,3 +55,5 @@ jobs:
         run: node tests/plate-appearance-scenarios.test.cjs
       - name: Comprehensive game engine regression
         run: node tests/comprehensive-game-engine.test.cjs
+      - name: Performance-based retirement regression
+        run: node tests/retirement-probability.test.cjs
