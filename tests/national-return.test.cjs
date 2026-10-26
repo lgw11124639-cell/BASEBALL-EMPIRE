@@ -4,8 +4,8 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../app.js'),'utf8');
 const begin=source.indexOf('function nationalTeamReturnDay(){');
-const end=source.indexOf('\nfunction ',begin+10);
-assert.ok(begin>=0&&end>begin,'nationalTeamReturnDay exists');
+const end=source.indexOf('function countDailyFaRegistration(',begin+10);
+assert.ok(begin>=0&&end>begin,'nationalTeamReturnDay boundaries exist');
 const notices=[];
 const players=[
  {id:1,name:'선수 A',teamId:1,nationalDutyUntil:'2048-08-19',profile:{injury:{days:0}}},
