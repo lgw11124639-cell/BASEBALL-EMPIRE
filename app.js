@@ -647,8 +647,18 @@ function nationalTeamTournamentDay(){
    const gameFlow=lateTurnaround?'경기 막판까지 뒤지던 한국은 마지막 공격에서 승부를 뒤집었다.':comeback?'경기 도중 리드를 내줬던 한국은 다시 앞서며 승리를 거뒀다.':shutout?'한국 투수진은 상대 타선을 무실점으로 막아냈다.':'';
    const hitterLine=topHitter?'타선에서는 '+topHitter.name+'이 '+(Number(topHitter.hits)||0)+'안타'+((Number(topHitter.homeRuns)||0)?' '+topHitter.homeRuns+'홈런':'')+', '+(Number(topHitter.runsBattedIn)||0)+'타점을 기록했다.':'';
    const pitcherLine=topPitcher?'마운드에서는 '+topPitcher.name+'이 '+baseballIP(topPitcher.outs)+'이닝을 소화하며 삼진 '+(Number(topPitcher.strikeouts)||0)+'개를 잡았다.':'';
+   const mvpCandidates=[
+    ...(game.homeBatters||[]).map(p=>({name:p.name,side:'KR',score:(Number(p.hits)||0)*2+(Number(p.homeRuns)||0)*3+(Number(p.runsBattedIn)||0)*2+(Number(p.walks)||0)*.5,reason:(Number(p.hits)||0)+'안타 '+(Number(p.runsBattedIn)||0)+'타점'})),
+    ...(game.awayBatters||[]).map(p=>({name:p.name,side:game.opponent,score:(Number(p.hits)||0)*2+(Number(p.homeRuns)||0)*3+(Number(p.runsBattedIn)||0)*2+(Number(p.walks)||0)*.5,reason:(Number(p.hits)||0)+'안타 '+(Number(p.runsBattedIn)||0)+'타점'})),
+    ...(game.homePitchers||[]).map(p=>({name:p.name,side:'KR',score:(Number(p.outs)||0)*.65+(Number(p.strikeouts)||0)*1.2-(Number(p.earnedRuns)||0)*2,reason:baseballIP(p.outs)+'이닝 '+(Number(p.strikeouts)||0)+'탈삼진'})),
+    ...(game.awayPitchers||[]).map(p=>({name:p.name,side:game.opponent,score:(Number(p.outs)||0)*.65+(Number(p.strikeouts)||0)*1.2-(Number(p.earnedRuns)||0)*2,reason:baseballIP(p.outs)+'이닝 '+(Number(p.strikeouts)||0)+'탈삼진'}))
+   ].filter(p=>p.name&&Number.isFinite(p.score)).sort((a,b)=>b.score-a.score);
+   const mvp=mvpCandidates[0];
+   const mvpLine=mvp?'경기 주요 선수로는 '+mvp.name+'('+ (INTERNATIONAL_COUNTRIES[mvp.side]||mvp.side)+')이 꼽힌다. '+mvp.reason+'을 기록했다.':'';
+   const flowDetails=inningVerified?krInnings.map((runs,i)=>({inning:i+1,korea:runs,opponent:rivalInnings[i]||0})).filter(x=>x.korea>0||x.opponent>0).map(x=>x.inning+'회 한국 '+x.korea+'점·'+rivalName+' '+x.opponent+'점').slice(0,5).join(', '):'';
+   const inningLine=flowDetails?'이닝별 주요 득점은 '+flowDetails+'이었다.':'';
    const scoreLine='대표팀의 이번 대회 성적은 '+record.wins+'승 '+record.losses+'패다.';
-   clubNotice('국가대표 기사',headline,[lead,gameFlow,hitterLine,pitcherLine,scoreLine].filter(Boolean).join(' '),state.teams.map(t=>t.id),record.players);
+   clubNotice('국가대표 기사',headline,[lead,gameFlow,inningLine,hitterLine,pitcherLine,mvpLine,scoreLine].filter(Boolean).join(' '),state.teams.map(t=>t.id),record.players);
    return {game,winner:game.won?'KR':opponent};
   }
   game=internationalRivalResult(year,event,round,home,away);
