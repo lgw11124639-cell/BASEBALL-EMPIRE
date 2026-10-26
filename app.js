@@ -631,12 +631,24 @@ function nationalTeamTournamentDay(){
    const roundLabel=String(round).replace(/([A-Z])조\\s*\\d+-\\d+/,'$1조');
    const topHitter=(game.homeBatters||[]).filter(p=>(Number(p.atBats)||0)+(Number(p.walks)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0))[0];
    const topPitcher=(game.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0).sort((a,b)=>(Number(b.outs)||0)-(Number(a.outs)||0))[0];
-   const headline=year+' '+event+' '+roundLabel+' · '+(game.won?'대한민국, '+rivalName+' 꺾고 ':'대한민국, '+rivalName+'에 패배…')+game.homeRuns+'대'+game.awayRuns;
+   const krInnings=Array.isArray(game.homeInnings)?game.homeInnings:[];
+   const rivalInnings=Array.isArray(game.awayInnings)?game.awayInnings:[];
+   const validInnings=krInnings.length>0&&rivalInnings.length>0&&krInnings.every(Number.isFinite)&&rivalInnings.every(Number.isFinite);
+   const krTotal=krInnings.reduce((s,n)=>s+n,0),rivalTotal=rivalInnings.reduce((s,n)=>s+n,0);
+   const inningVerified=validInnings&&krTotal===Number(game.homeRuns)&&rivalTotal===Number(game.awayRuns);
+   const beforeLast=inningVerified?krInnings.slice(0,-1).reduce((s,n)=>s+n,0)-rivalInnings.slice(0,-1).reduce((s,n)=>s+n,0):0;
+   const comeback=inningVerified&&game.won&&krInnings.some((_,i)=>krInnings.slice(0,i+1).reduce((s,n)=>s+n,0)<rivalInnings.slice(0,i+1).reduce((s,n)=>s+n,0));
+   const lateTurnaround=inningVerified&&game.won&&beforeLast<0;
+   const shutout=game.won&&Number(game.awayRuns)===0;
+   const completeGame=(game.homePitchers||[]).length===1&&(Number(game.homePitchers[0].outs)||0)>=27;
+   const hero=topHitter&&((Number(topHitter.runsBattedIn)||0)>=2||(Number(topHitter.homeRuns)||0)>0)?topHitter.name:null;
+   const headline=year+' '+event+' '+roundLabel+' · '+(shutout&&completeGame?'한국, '+rivalName+' 상대 완봉승':lateTurnaround?'한국, '+rivalName+'에 짜릿한 역전승':comeback?'한국, '+rivalName+'에 역전승':game.won&&hero?hero+' 활약…한국, '+rivalName+' 제압':game.won?'한국, '+rivalName+' 꺾고 승리':'한국, '+rivalName+'에 아쉬운 패배')+' '+game.homeRuns+'대'+game.awayRuns;
    const lead='대한민국 야구대표팀이 '+today+' 열린 '+year+' '+event+' '+roundLabel+'에서 '+rivalName+'을 상대로 '+game.homeRuns+'대'+game.awayRuns+'로 '+(game.won?'승리했다.':'패했다.');
+   const gameFlow=lateTurnaround?'경기 막판까지 뒤지던 한국은 마지막 공격에서 승부를 뒤집었다.':comeback?'경기 도중 리드를 내줬던 한국은 다시 앞서며 승리를 거뒀다.':shutout?'한국 투수진은 상대 타선을 무실점으로 막아냈다.':'';
    const hitterLine=topHitter?'타선에서는 '+topHitter.name+'이 '+(Number(topHitter.hits)||0)+'안타'+((Number(topHitter.homeRuns)||0)?' '+topHitter.homeRuns+'홈런':'')+', '+(Number(topHitter.runsBattedIn)||0)+'타점을 기록했다.':'';
    const pitcherLine=topPitcher?'마운드에서는 '+topPitcher.name+'이 '+baseballIP(topPitcher.outs)+'이닝을 소화하며 삼진 '+(Number(topPitcher.strikeouts)||0)+'개를 잡았다.':'';
    const scoreLine='대표팀의 이번 대회 성적은 '+record.wins+'승 '+record.losses+'패다.';
-   clubNotice('국가대표 기사',headline,[lead,hitterLine,pitcherLine,scoreLine].filter(Boolean).join(' '),state.teams.map(t=>t.id),record.players);
+   clubNotice('국가대표 기사',headline,[lead,gameFlow,hitterLine,pitcherLine,scoreLine].filter(Boolean).join(' '),state.teams.map(t=>t.id),record.players);
    return {game,winner:game.won?'KR':opponent};
   }
   game=internationalRivalResult(year,event,round,home,away);
