@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const path=require('node:path');
+const src=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
+const start=src.indexOf('function playerRetirementProbability('),end=src.indexOf('function runOffseasonContracts(',start);
+assert.ok(start>=0&&end>start,'real retirement model present');
+const ctx=vm.createContext({Math,Number});
+vm.runInContext(src.slice(start,end),ctx);
+const chance=vm.runInContext('playerRetirementProbability',ctx);
+const hitter=(age,overrides={})=>({age,position:'OF',overall:65,games:120,atBats:420,hits:110,homeRuns:12,walks:30,...overrides});
+const pitcher=(age,overrides={})=>({age,position:'P',overall:65,games:30,inningsPitched:145,earnedRuns:58,...overrides});
+assert.equal(chance(hitter(34)),0,'no early age-only retirement');
+assert.ok(chance(hitter(40,{overall:85,hits:145,homeRuns:35}))<chance(hitter(40,{overall:45,hits:65,homeRuns:2})),'star veteran plays longer');
+assert.ok(chance(pitcher(40,{overall:80,earnedRuns:38}))<chance(pitcher(40,{overall:48,earnedRuns:115})),'pitcher ERA and ability matter');
+assert.ok(chance(hitter(40,{injured:true}))>chance(hitter(40)),'injury raises retirement risk');
+assert.ok(chance(hitter(43))>chance(hitter(37)),'age still matters');
+assert.ok(chance(hitter(45,{overall:90,hits:150,homeRuns:35}))<chance(hitter(45,{overall:40,hits:40})),'elite 45-year-old can continue');
+for(let age=18;age<=55;age++)for(const p of [hitter(age),pitcher(age)]){const c=chance(p);assert.ok(Number.isFinite(c)&&c>=0&&c<=.97,'valid probability')}
+console.log('Performance-based retirement: hitters, pitchers, injuries, aging, elite veterans PASS');
