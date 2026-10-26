@@ -426,6 +426,18 @@ function internationalSharedGame(korea,opponent,seed){
   club.league='amateur';club.gameDay=state.day;
   return club;
  };
+ const validateRoster=(players,side)=>{
+  const ids=new Set(),invalid=[];
+  for(const p of players){
+   if(!p||p.id==null){invalid.push('missing ID');continue;}
+   const id=String(p.id);
+   if(ids.has(id))invalid.push('duplicate ID '+id);
+   ids.add(id);
+  }
+  if(invalid.length)throw new Error('국제경기 '+side+' 선수 명단 오류: '+invalid.join(', '));
+ };
+ validateRoster(korea,'대한민국');
+ validateRoster(opponent,'상대국');
  const home=makeClub(-1001,korea),away=makeClub(-1002,opponent);
  if(!home||!away)return null;
  home.internationalTiebreak=true;away.internationalTiebreak=true;
@@ -450,6 +462,12 @@ function internationalOpeningGame(year,event,selected,opponentCode,round){
  const opponent=opponentCode||(event==='아시안게임'?'JP':'US');
  const rival=internationalOpponentRoster(year,opponent);
  const participants=[...selected,...rival];
+ const allIds=new Set();
+ for(const p of participants){
+  const id=String(p.id);
+  if(allIds.has(id))throw new Error('국제경기 양 팀 선수 ID 충돌: '+id);
+  allIds.add(id);
+ }
  const counters=snapshotLeagueCounters(participants);
  const fatigue=new Map(participants.map(p=>[p.id,Number(playerBaseball(p).fatigue)||0]));
  const battingBefore=new Map(participants.map(p=>[p.id,Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Number(p[k])||0]))]));
