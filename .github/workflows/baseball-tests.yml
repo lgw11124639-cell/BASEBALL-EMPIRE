@@ -37,3 +37,5 @@ jobs:
         run: node tests/career-transfer-history.test.cjs
       - name: Offseason retirement archive
         run: node tests/offseason-retirement.test.cjs
+      - name: Offseason FA transfer and settlement
+        run: node tests/offseason-fa-transfer.test.cjs
