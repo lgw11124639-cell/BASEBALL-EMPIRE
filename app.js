@@ -518,17 +518,22 @@ function nationalTeamPreparationDay(){
    const prep=state.nationalTeamPreparations[key]||(state.nationalTeamPreparations[key]={year,event:e.event,stages:[]});
    if(prep.stages.includes(days))continue;
    const candidates=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form||String(a.p.id).localeCompare(String(b.p.id)));
-   const size=days===60?36:24;
-   const chosen=days===60?candidates.filter(x=>x.p.position==='P').slice(0,18).concat(candidates.filter(x=>x.p.position!=='P').slice(0,18)):candidates.filter(x=>x.p.position==='P').slice(0,12).concat(candidates.filter(x=>x.p.position!=='P').slice(0,12));
-   if(chosen.length<size)continue;
+   const eligible=days===60?candidates:candidates.filter(x=>Array.isArray(prep.preliminary)&&prep.preliminary.some(id=>String(id)===String(x.p.id)));
+   const desired=days===60?18:12;
+   const chosen=eligible.filter(x=>x.p.position==='P').slice(0,desired).concat(eligible.filter(x=>x.p.position!=='P').slice(0,desired));
+   if(days!==14&&chosen.length<desired*2)continue;
    const ids=chosen.map(x=>x.p.id);
    if(days===60)prep.preliminary=ids;
    if(days===30){prep.final=ids;prep.staff=nationalTeamStaff(year,e.event);}
    if(days===14){
-    const finalIds=Array.isArray(prep.final)?prep.final:ids;
-    const available=finalIds.filter(id=>state.players.some(p=>String(p.id)===String(id)&&!p.retired));
+    if(!Array.isArray(prep.final)||prep.final.length<18)continue;
+    const finalIds=prep.final;
+    const available=finalIds.filter(id=>state.players.some(p=>String(p.id)===String(id)&&!p.retired&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)));
     prep.summoned=available;
     prep.staff=prep.staff||nationalTeamStaff(year,e.event);
+    const finish=new Date(Date.UTC(year,e.month-1,1));finish.setUTCDate(finish.getUTCDate()+(e.event==='WBC'?22:17));
+    const until=finish.toISOString().slice(0,10);
+    for(const id of available){const p=state.players.find(x=>String(x.id)===String(id));if(p)p.nationalDutyUntil=until;}
    }
    prep.stages.push(days);
    const label=days===60?'예비 명단 발표':days===30?'최종 명단 확정':'대표팀 소집';
