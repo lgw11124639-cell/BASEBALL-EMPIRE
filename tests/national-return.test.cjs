@@ -18,5 +18,8 @@ assert.equal(notices.length,0,'no early return on final day');
 context.seasonDate=()=>new Date('2048-08-20T12:00:00Z');
 vm.runInContext('nationalTeamReturnDay();nationalTeamReturnDay()',context);
 assert.equal(notices.length,2,'return notice emitted exactly once per player');
+assert.equal(players[0].nationalReturnNotified,'2048-08-19','return notification persisted on player');
+assert.equal(players[1].nationalReturnNotified,'2048-08-19','injured player return notification persisted');
+assert.ok(notices[0][2].includes('소속 구단에 복귀'),'healthy player returned to club');
 assert.ok(notices[1][2].includes('부상 재활 5일'),'injured player cannot immediately play');
 console.log('National return day, duplicate notices and injury notice: PASS');
