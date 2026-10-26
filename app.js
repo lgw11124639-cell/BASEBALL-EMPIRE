@@ -441,6 +441,8 @@ function internationalOpponentRoster(year,country){
  const seed=rng((year*70139+country.split('').reduce((n,c)=>n*31+c.charCodeAt(0),0))>>>0);
  const pools={JP:[['Sato','Suzuki','Tanaka','Yamamoto'],['Haruto','Kaito','Takumi','Ryota']],TW:[['Chen','Lin','Huang','Wang'],['Wei-Lun','Yu-Cheng','Chih-Hao','Chia-Hao']],CN:[['Wang','Li','Zhang','Liu'],['Wei','Jun','Hao','Ming']],US:[['Smith','Johnson','Miller','Davis'],['James','Michael','Ryan','Daniel']],AU:[['Smith','Jones','Wilson','Taylor'],['Jack','Liam','Oliver','Cooper']],CZ:[['Novak','Svoboda','Dvorak','Cerny'],['Jan','Petr','Tomas','Jakub']],DO:[['Rodriguez','Martinez','Ramirez'],['Juan','Luis','Jose']],VE:[['Garcia','Gonzalez','Perez'],['Carlos','Andres','Luis']],MX:[['Hernandez','Lopez','Garcia'],['Diego','Javier','Carlos']],CA:[['Martin','Wilson','Tremblay'],['Liam','Noah','Ethan']],IT:[['Rossi','Romano','Bianchi'],['Luca','Marco','Matteo']],GB:[['Smith','Williams','Taylor'],['Oliver','George','Harry']],NL:[['De Jong','Van Dijk','Bakker'],['Daan','Lars','Bram']],IL:[['Cohen','Levi','Mizrahi'],['Noam','Eitan','Ariel']],NI:[['Lopez','Martinez','Castillo'],['Carlos','Jose','Javier']],HK:[['Chan','Wong','Cheung'],['Ka Ming','Wing Ho','Chi Ho']],TH:[['Srisuk','Wongchai','Saetang'],['Niran','Anan','Krit']],IN:[['Sharma','Patel','Singh'],['Arjun','Rohan','Rahul']],PK:[['Khan','Ahmed','Malik'],['Hamza','Bilal','Usman']],ID:[['Santoso','Wijaya','Pratama'],['Budi','Rizky','Dimas']],SG:[['Tan','Lim','Ng'],['Wei Jie','Jun Hao','Kai Wen']]};
  const names=pools[country]||[['Smith','Brown','Wilson','Martin'],['Alex','Daniel','David','Ryan']];
+ // Keep the original roster generator deterministic so saved player IDs and game box scores remain linked.
+
  const positions=['P','P','P','P','P','P','P','P','P','P','P','P','C','C','1B','2B','3B','SS','LF','CF','RF','DH','LF','1B'];
  return positions.map((position,i)=>({id:-(year*100000000+country.split('').reduce((n,c)=>n*128+c.charCodeAt(0),0)*100+i),name:names[0][Math.floor(seed()*names[0].length)]+' '+names[1][Math.floor(seed()*names[1].length)],position,overall:48+Math.floor(seed()*37),age:20+Math.floor(seed()*15),level:'1군',nationality:country}));
 }
@@ -646,6 +648,17 @@ function nationalTeamTournamentDay(){
    slots.splice(1,0,slots.pop());
   }
   for(let i=0;i<group.length;i++)for(let j=i+1;j<group.length;j++)groupFixtures.push({group:gi,home:group[i],away:group[j],round:'조별리그 '+String.fromCharCode(65+gi)+'조 '+(i+1)+'-'+(j+1),day:days.get(i+'-'+j)});
+ }
+ // Each country must have at most one fixture per calendar day. Keep existing fixture IDs/round labels stable.
+ const occupiedByCountry=new Map();
+ for(const fixture of groupFixtures){
+  let scheduled=Math.max(1,Number(fixture.day)||1);
+  while((occupiedByCountry.get(fixture.home)||new Set()).has(scheduled)||(occupiedByCountry.get(fixture.away)||new Set()).has(scheduled))scheduled++;
+  fixture.day=scheduled;
+  for(const code of [fixture.home,fixture.away]){
+   if(!occupiedByCountry.has(code))occupiedByCountry.set(code,new Set());
+   occupiedByCountry.get(code).add(scheduled);
+  }
  }
  const groupLast=Math.max(...groupFixtures.map(g=>g.day));
  for(let i=0;i<groupFixtures.length;i++){
