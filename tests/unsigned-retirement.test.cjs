@@ -22,4 +22,15 @@ assert.equal(notices,2,'two retirement notices');
 vm.runInContext('retireUnsignedReleasedPlayers()',ctx);
 assert.equal(state.retiredPlayers.length,2,'no duplicate retirement');
 assert.equal(notices,2,'no duplicate notices');
+const releaseStart=src.indexOf('function recordPlayerRelease('),releaseEnd=src.indexOf('function publishReserveRoster(',releaseStart);
+assert.ok(releaseStart>=0&&releaseEnd>releaseStart,'release recorder exists');
+state.releaseNotices=[];
+state.day=100;
+vm.runInContext(src.slice(releaseStart,releaseEnd),ctx);
+const newlyReleased={id:101,teamId:0,level:'방출',releaseYear:null};
+vm.runInContext('recordPlayerRelease',ctx)(newlyReleased,'계약 종료');
+assert.equal(newlyReleased.releaseYear,2028,'null legacy release year stamped');
+vm.runInContext('recordPlayerRelease',ctx)(newlyReleased,'계약 종료');
+assert.equal(state.releaseNotices.length,1,'release notice not duplicated');
+
 console.log('Unsigned player retirement after two seasons: PASS');
