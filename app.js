@@ -1995,14 +1995,14 @@ function nationalTeamUpcomingSchedule(){
   if(y>=2027&&(y-2027)%4===0)events.push({year:y,month:3,event:'WBC'});
  }
  const ordered=events.sort((a,b)=>a.year-b.year||a.month-b.month),past=ordered.filter(x=>Date.UTC(x.year,x.month-1,1)<today),future=ordered.filter(x=>Date.UTC(x.year,x.month-1,1)>=today);
- const shown=[...past.filter(x=>x.year===now.getFullYear()||state.nationalTeamResults?.[x.year+'-'+x.event]).slice(-2),...future.slice(0,4)];
+ const shown=[...past.filter(x=>{const record=state.nationalTeamResults?.[x.year+'-'+x.event];return record&&!record.finished;}).slice(-1),...future.slice(0,5)];
  const rows=shown.map(x=>{
   const key=x.year+'-'+x.event,prep=state.nationalTeamPreparations?.[key],stages=prep?.stages||[],record=state.nationalTeamResults?.[key],remaining=Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000);
   const stage=record?(record.finished?'대회 종료 · '+(record.medal||'결과 확인'):'대회 진행 중'):remaining<0?'개최일 경과 · 대회 기록 없음':remaining>60?'예비 명단 발표 예정':remaining>30?'예비 명단 '+(stages.includes(60)?'발표 완료':'발표 예정'):remaining>14?'최종 명단 '+(stages.includes(30)?'확정':'확정 예정'):'대표팀 '+(stages.includes(14)?'소집 완료':'소집 예정');
   const countdown=remaining<0?'개최일 경과':remaining===0?'D-DAY':'D-'+remaining;
   return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #dce5f0"><div><strong>'+esc(x.year+' '+x.event)+'</strong><div style="font-size:13px;color:#61758b;margin-top:4px">'+x.year+'.'+String(x.month).padStart(2,'0')+'.01 · '+esc(stage)+'</div></div><strong style="white-space:nowrap;color:#24639a">'+countdown+'</strong></div>';
  }).join('');
- return '<section class="dashboard-section" style="margin-bottom:16px"><h2>국제대회 개최 일정</h2><p class="profile-note">최근 대회와 향후 일정 · 예비 명단 D-60 / 최종 명단 D-30 / 대표팀 소집 D-14</p>'+rows+'</section>';
+ return '<section class="dashboard-section" style="margin-bottom:16px"><h2>국제대회 개최 일정</h2><p class="profile-note">진행 중인 대회와 향후 일정 · 예비 명단 D-60 / 최종 명단 D-30 / 대표팀 소집 D-14</p>'+rows+'</section>';
 }
 function nationalTeamPanel(){
  const records=Object.values(state.nationalTeamResults||{}).filter(x=>Array.isArray(x.matchResults)&&x.matchResults.length>0).sort((a,b)=>b.year-a.year);
