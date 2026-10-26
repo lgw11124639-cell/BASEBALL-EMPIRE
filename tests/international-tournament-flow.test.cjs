@@ -40,4 +40,14 @@ assert.equal(new Set(record.matchResults.map(g=>g.round)).size,record.matchResul
 assert.equal(new Set(record.otherMatches.map(g=>g.round+g.home+g.away)).size,record.otherMatches.length,'no duplicated other games');
 assert.equal(players[0].nationalDutyUntil,record.end,'release date matches final');
 assert.equal(players[0].nationalTeamHistory[0].result,record.medal,'career history finalized');
-console.log('International tournament full progression: PASS');
+const returnStart=source.indexOf('function nationalTeamReturnDay()',end);
+const returnEnd=source.indexOf('function countDailyFaRegistration(',returnStart);
+assert.ok(returnStart>=0&&returnEnd>returnStart,'return controller exists');
+vm.runInContext(source.slice(returnStart,returnEnd),context);
+vm.runInContext('nationalTeamReturnDay()',context);
+assert.equal(notices.filter(n=>n[0]==='국가대표 복귀').length,0,'not released on final day');
+current=new Date(current.getFullYear(),current.getMonth(),current.getDate()+1,12);
+state.day++;
+vm.runInContext('nationalTeamReturnDay();nationalTeamReturnDay()',context);
+assert.equal(notices.filter(n=>n[0]==='국가대표 복귀').length,1,'return notified once on next day');
+console.log('International tournament full progression and return: PASS');
