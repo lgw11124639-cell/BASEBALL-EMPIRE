@@ -527,13 +527,23 @@ function nationalTeamPreparationDay(){
    if(days===30){prep.final=ids;prep.staff=nationalTeamStaff(year,e.event);}
    if(days===14){
     if(!Array.isArray(prep.final)||prep.final.length<18)continue;
-    const finalIds=prep.final;
-    const available=finalIds.filter(id=>state.players.some(p=>String(p.id)===String(id)&&!p.retired&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)));
-    prep.summoned=available;
+    const eligiblePlayer=id=>state.players.find(p=>String(p.id)===String(id)&&!p.retired&&!p.foreignPlayer&&!(p.profile?.injury?.days>0));
+    const current=prep.final.map(id=>eligiblePlayer(id)).filter(Boolean);
+    const replacements=[];
+    for(const position of ['P','B']){
+     const isPosition=p=>position==='P'?p.position==='P':p.position!=='P';
+     const target=prep.final.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(p=>p&&isPosition(p)).length;
+     const have=current.filter(isPosition).length;
+     const reserves=(prep.preliminary||[]).filter(id=>!prep.final.some(fid=>String(fid)===String(id))).map(id=>eligiblePlayer(id)).filter(p=>p&&isPosition(p)).sort((x,y)=>nationalTeamFormScore(y)-nationalTeamFormScore(x));
+     for(const p of reserves.slice(0,Math.max(0,target-have))){current.push(p);replacements.push(p);}
+    }
+    prep.summoned=current.map(p=>p.id);
+    prep.replacements=replacements.map(p=>p.id);
     prep.staff=prep.staff||nationalTeamStaff(year,e.event);
     const finish=new Date(Date.UTC(year,e.month-1,1));finish.setUTCDate(finish.getUTCDate()+(e.event==='WBC'?22:17));
     const until=finish.toISOString().slice(0,10);
-    for(const id of available){const p=state.players.find(x=>String(x.id)===String(id));if(p)p.nationalDutyUntil=until;}
+    for(const p of current)p.nationalDutyUntil=until;
+    if(replacements.length)clubNotice('국가대표',year+' '+e.event+' 대표팀 대체 선발','부상·결원에 따라 예비 명단에서 '+replacements.length+'명 대체 선발',state.teams.map(t=>t.id),prep.replacements);
    }
    prep.stages.push(days);
    const label=days===60?'예비 명단 발표':days===30?'최종 명단 확정':'대표팀 소집';
