@@ -502,8 +502,43 @@ function internationalGroupStandings(record,groupIndex){
  const headToHead=(a,b)=>{const game=games.find(g=>(g.home===a.code&&g.away===b.code)||(g.home===b.code&&g.away===a.code));if(!game||game.hr===game.ar)return 0;const winner=game.hr>game.ar?game.home:game.away;return winner===a.code?-1:1;};
  return [...rows.values()].sort((a,b)=>b.wins-a.wins||headToHead(a,b)||(b.runs-b.allowed)-(a.runs-a.allowed)||b.runs-a.runs||a.code.localeCompare(b.code));
 }
+function nationalTeamPreparationDay(){
+ const now=seasonDate(state.day),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
+ state.nationalTeamPreparations=state.nationalTeamPreparations||{};
+ for(let year=now.getFullYear();year<=now.getFullYear()+1;year++){
+  const events=[];
+  if((year-2026)%4===0)events.push({event:'아시안게임',month:10});
+  if((year-2028)%4===0)events.push({event:'올림픽',month:8});
+  if(year>=2027&&(year-2027)%4===0)events.push({event:'WBC',month:3});
+  for(const e of events){
+   const days=Math.round((Date.UTC(year,e.month-1,1)-today)/86400000);
+   if(![60,30,14].includes(days))continue;
+   const key=year+'-'+e.event;
+   if(state.nationalTeamResults?.[key])continue;
+   const prep=state.nationalTeamPreparations[key]||(state.nationalTeamPreparations[key]={year,event:e.event,stages:[]});
+   if(prep.stages.includes(days))continue;
+   const candidates=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form||String(a.p.id).localeCompare(String(b.p.id)));
+   const size=days===60?36:24;
+   const chosen=days===60?candidates.filter(x=>x.p.position==='P').slice(0,18).concat(candidates.filter(x=>x.p.position!=='P').slice(0,18)):candidates.filter(x=>x.p.position==='P').slice(0,12).concat(candidates.filter(x=>x.p.position!=='P').slice(0,12));
+   if(chosen.length<size)continue;
+   const ids=chosen.map(x=>x.p.id);
+   if(days===60)prep.preliminary=ids;
+   if(days===30){prep.final=ids;prep.staff=nationalTeamStaff(year,e.event);}
+   if(days===14){
+    const finalIds=Array.isArray(prep.final)?prep.final:ids;
+    const available=finalIds.filter(id=>state.players.some(p=>String(p.id)===String(id)&&!p.retired));
+    prep.summoned=available;
+    prep.staff=prep.staff||nationalTeamStaff(year,e.event);
+   }
+   prep.stages.push(days);
+   const label=days===60?'예비 명단 발표':days===30?'최종 명단 확정':'대표팀 소집';
+   clubNotice('국가대표',year+' '+e.event+' '+label,'대한민국 대표팀 '+(days===14?prep.summoned.length:ids.length)+'명 · '+label+' · 개최 '+year+'년 '+e.month+'월 1일',state.teams.map(t=>t.id),days===14?prep.summoned:ids);
+  }
+ }
+}
 function nationalTeamTournamentDay(){
  const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,day=now.getDate();
+ nationalTeamPreparationDay();
  const asian=(year-2026)%4===0&&month===10,olympic=(year-2028)%4===0&&month===8,wbc=year>=2027&&(year-2027)%4===0&&month===3;
  if(!asian&&!olympic&&!wbc)return;
  const event=asian?'아시안게임':olympic?'올림픽':'WBC',key=year+'-'+event;
@@ -512,16 +547,16 @@ function nationalTeamTournamentDay(){
  if(!record){
   if(day!==1)return;
   const scored=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form);
-  const pitchers=scored.filter(x=>x.p.position==='P').slice(0,12).map(x=>x.p),batters=scored.filter(x=>x.p.position!=='P').slice(0,12).map(x=>x.p),selected=[...pitchers,...batters];
+  const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const pitchers=chosen?chosen.filter(p=>p.position==='P'):scored.filter(x=>x.p.position==='P').slice(0,12).map(x=>x.p),batters=chosen?chosen.filter(p=>p.position!=='P'):scored.filter(x=>x.p.position!=='P').slice(0,12).map(x=>x.p),selected=[...pitchers,...batters];
   if(pitchers.length<9||batters.length<9)return;
-  const staff=nationalTeamStaff(year,event),lineup=nationalTeamLineup(selected);
+  const staff=prep?.staff||nationalTeamStaff(year,event),lineup=nationalTeamLineup(selected);
   const finish=new Date(now);finish.setDate(finish.getDate()+(event==='WBC'?22:17));
   const end=[finish.getFullYear(),String(finish.getMonth()+1).padStart(2,'0'),String(finish.getDate()).padStart(2,'0')].join('-');
   record={year,event,gold:false,finished:false,staff,lineup,openingGame:null,players:selected.map(p=>p.id),start:[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'),end,games:0,wins:0,losses:0,matchResults:[]};
   record.otherMatches=[];
   state.nationalTeamResults[key]=record;
   for(const p of selected){p.nationalDutyUntil=end;p.nationalTeamHistory=p.nationalTeamHistory||[];p.nationalTeamHistory.push({year,event,games:0,result:'대회 진행 중'});}
-  clubNotice('국가대표',year+' '+event+' 대한민국 야구 대표팀 소집','감독 '+staff.manager+' · 대표팀 '+selected.length+'명 선발 · 대회 경기는 일정에 따라 진행됩니다.',state.teams.map(t=>t.id),record.players);
+  clubNotice('국가대표',year+' '+event+' 대회 개막','감독 '+staff.manager+' · 대한민국 대표팀 '+selected.length+'명 출전 · 대회 경기는 일정에 따라 진행됩니다.',state.teams.map(t=>t.id),record.players);
  }
 
  if(record.finished||!Array.isArray(record.matchResults))return;
