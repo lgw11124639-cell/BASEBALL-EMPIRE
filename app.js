@@ -605,7 +605,15 @@ function nationalTeamTournamentDay(){
    const opponent=home==='KR'?away:home,roster=selected(),pitchDays=record.internationalPitchDays||(record.internationalPitchDays={}),priorDays=new Map(roster.filter(p=>p.position==='P').map(p=>[p.id,p.lastAppearance]));
    for(const p of roster.filter(p=>p.position==='P')){const last=pitchDays[p.id];if(Number.isFinite(Number(last))&&last!=null)p.lastAppearance=Math.max(Number(p.lastAppearance)||-999,Number(last));}
    let box;try{box=internationalOpeningGame(year,event,roster,opponent,seed);}finally{for(const p of roster.filter(p=>p.position==='P'))p.lastAppearance=priorDays.get(p.id);}
-   if(!box||box.homeRuns===box.awayRuns)return null;
+   if(!box){record.lastError='대한민국 경기 엔진 결과 생성 실패 · '+today+' · '+round;clubNotice('국가대표',year+' '+event+' 경기 진행 오류',record.lastError,state.teams.map(t=>t.id),record.players);return null;}
+   if(box.homeRuns===box.awayRuns){
+    // International elimination and group games must have a winner; extend the simulated game.
+    const extraSeed=year*31+seed*17+record.games*13;
+    const koreanWins=(extraSeed>>>0)%2===0;
+    if(koreanWins)box.homeRuns+=1;else box.awayRuns+=1;
+    box.homeInnings=[...(box.homeInnings||[]),koreanWins?1:0];
+    box.awayInnings=[...(box.awayInnings||[]),koreanWins?0:1];
+   }
    for(const p of box.homePitchers||[])if((Number(p.outs)||0)>0)pitchDays[p.id]=state.day;
    game={round,date:today,...box,won:box.homeRuns>box.awayRuns};
    record.matchResults.push(game);record.openingGame=record.openingGame||game;
@@ -615,6 +623,7 @@ function nationalTeamTournamentDay(){
    }
    record.games=record.matchResults.length;record.wins=record.matchResults.filter(g=>g.won).length;record.losses=record.games-record.wins;
    clubNotice('국가대표',year+' '+event+' '+round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
+   clubNotice('국가대표 기사',year+' '+event+' '+round+' · 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+(INTERNATIONAL_COUNTRIES[game.opponent]||game.opponent),year+' '+event+' '+round+'에서 대한민국 대표팀이 '+(INTERNATIONAL_COUNTRIES[game.opponent]||game.opponent)+'을 상대로 '+game.homeRuns+'대'+game.awayRuns+'로 '+(game.won?'승리':'패배')+'했다. 현재 대표팀 성적은 '+record.wins+'승 '+record.losses+'패다.',state.teams.map(t=>t.id),record.players);
    return {game,winner:game.won?'KR':opponent};
   }
   game=internationalRivalResult(year,event,round,home,away);
