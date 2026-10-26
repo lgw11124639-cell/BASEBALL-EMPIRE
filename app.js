@@ -81,23 +81,26 @@ async function save(){
  const snapshot={...state,lastSaved:stamp};
  const meta={...snapshot},keys=[];
  try{
+  // Commit large state partitions together to avoid one IndexedDB transaction per field.
+  // The active pointer is still published only after all writes have committed.
+  const largeWrites=[];
   for(const field of SAVE_PARTS){
    if(!Object.prototype.hasOwnProperty.call(meta,field))continue;
    const key=generation+':'+field;
-   await idbWrite(key,meta[field]);
+   largeWrites.push([key,meta[field]]);
    keys.push([field,key]);delete meta[field];
   }
-  // Split the large second-division archive by year without removing any season.
   if(meta.minorLeague&&typeof meta.minorLeague==='object'&&!Array.isArray(meta.minorLeague)){
-   const seasons=meta.minorLeague,years=Object.keys(seasons),seasonKeys=[];
-   for(const year of years){
+   const seasons=meta.minorLeague,seasonKeys=[];
+   for(const year of Object.keys(seasons)){
     const key=generation+':minorLeague:'+year;
-    await idbWrite(key,seasons[year]);
+    largeWrites.push([key,seasons[year]]);
     seasonKeys.push([year,key]);
    }
    delete meta.minorLeague;
    meta.__minorLeagueKeys=seasonKeys;
   }
+  await idbWriteSmallBatch(largeWrites);
   // Store remaining state fields separately to avoid a single oversized meta write.
   const extraKeys=[],smallWrites=[];
   for(const field of Object.keys(meta)){
