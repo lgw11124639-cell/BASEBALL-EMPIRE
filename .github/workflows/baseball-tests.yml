@@ -43,3 +43,5 @@ jobs:
         run: node tests/fa-compensation-failure.test.cjs
       - name: FA rollback integration
         run: node tests/fa-rollback-integration.test.cjs
+      - name: Thirty-year real league scheduling
+        run: node tests/long-league-schedule.test.cjs
