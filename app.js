@@ -1943,13 +1943,37 @@ function internationalMatchMvp(g){
 function nationalGameMvpTotal(playerId){
  return Object.values(state.nationalTeamResults||{}).reduce((count,t)=>count+[...(t.matchResults||[]),...(t.bronzeMatch?[t.bronzeMatch]:[])].filter(g=>{const m=internationalMatchMvp(g);return m?.playerId!=null&&String(m.playerId)===String(playerId)&&m.country==='KR';}).length,0);
 }
+function internationalGameIdentityReport(g){
+ const sides=[['home','대한민국'],['away',INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대']];
+ const issues=[],seenGlobal=new Map();
+ for(const [side,label] of sides){
+  const entries=[...(g[side+'Batters']||[]).map(p=>({...p,role:'타자'})),...(g[side+'Pitchers']||[]).map(p=>({...p,role:'투수'}))];
+  const byId=new Map(),byName=new Map();
+  for(const p of entries){
+   const id=p.id??p.playerId,name=String(p.name||'').trim();
+   if(id==null){issues.push(label+' '+p.role+' 기록에 선수 ID 없음: '+(name||'이름 없음'));continue;}
+   const key=String(id),prior=byId.get(key);
+   if(prior&&prior.name!==name)issues.push(label+' 동일 ID '+key+'에 서로 다른 이름: '+prior.name+' / '+name);
+   if(prior&&prior.role!==p.role)issues.push(label+' '+name+' (ID '+key+')이 타자·투수 기록에 모두 등장');
+   if(!prior)byId.set(key,{name,role:p.role});
+   if(!byName.has(name))byName.set(name,new Set());
+   byName.get(name).add(key);
+   if(seenGlobal.has(key)&&seenGlobal.get(key)!==side)issues.push('양 팀에 동일 선수 ID '+key+' 등장');
+   seenGlobal.set(key,side);
+  }
+  for(const [name,ids] of byName)if(name&&ids.size>1)issues.push(label+' 동명이인 '+name+' · 서로 다른 ID '+[...ids].join(', '));
+ }
+ return [...new Set(issues)];
+}
 function internationalMatchDetails(g){
  const home=Array.isArray(g.homeInnings)?g.homeInnings:[],away=Array.isArray(g.awayInnings)?g.awayInnings:[];
  if(!home.length&&!away.length)return '<p>이닝별 기록이 저장되지 않은 경기입니다.</p>';
  const innings=Array.from({length:Math.max(9,home.length,away.length)},(_,i)=>i);
  const row=(name,values,total)=>'<tr><th>'+esc(name)+'</th>'+innings.map(i=>'<td>'+esc(values[i]===null?'—':values[i]??'—')+'</td>').join('')+'<td><b>'+esc(total)+'</b></td></tr>';
  const matchMvp=internationalMatchMvp(g);
- return (matchMvp?'<p class="article-note"><strong>경기 MVP · '+esc(matchMvp.name)+'</strong> ('+esc(INTERNATIONAL_COUNTRIES[matchMvp.country]||matchMvp.country)+') · '+esc(matchMvp.reason||'')+'</p>':'')+'<div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>팀</th>'+innings.map(i=>'<th>'+(i+1)+'</th>').join('')+'<th>R</th></tr></thead><tbody>'+row(g.opponent||'상대',away,g.awayRuns)+row('대한민국',home,g.homeRuns)+'</tbody></table></div><p class="article-note">선발투수 · 대한민국 '+esc(g.homeStarter||'기록 없음')+' / 상대 '+esc(g.awayStarter||'기록 없음')+'</p>'+(['home','away'].map(side=>{const batters=g[side+'Batters'],pitchers=g[side+'Pitchers'];if(!Array.isArray(batters)&&!Array.isArray(pitchers))return '';const name=side==='home'?'대한민국':g.opponent||'상대';const bats=(batters||[]).filter(p=>p.atBats||p.walks).map(p=>'<tr><th>'+esc(p.name)+'</th><td>'+p.atBats+'</td><td>'+p.hits+'</td><td>'+p.homeRuns+'</td><td>'+p.runsBattedIn+'</td><td>'+p.walks+'</td></tr>').join('');const arms=(pitchers||[]).map(p=>'<tr><th>'+esc(p.name)+'</th><td>'+baseballIP(p.outs)+'</td><td>'+p.strikeouts+'</td><td>'+p.hits+'</td><td>'+p.walks+'</td><td>'+p.earnedRuns+'</td></tr>').join('');return '<details class="national-match-team"><summary><strong>'+esc(name)+'</strong> · 타자 '+(batters||[]).length+'명 / 투수 '+(pitchers||[]).length+'명 · 상세 기록</summary><h4>'+esc(name)+' 타자 기록</h4><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>타수</th><th>안타</th><th>홈런</th><th>타점</th><th>볼넷</th></tr></thead><tbody>'+bats+'</tbody></table></div><h4>'+esc(name)+' 투수 기록</h4><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>이닝</th><th>삼진</th><th>피안타</th><th>볼넷</th><th>자책</th></tr></thead><tbody>'+arms+'</tbody></table></div></details>'}).join(''));
+ const identityIssues=internationalGameIdentityReport(g);
+ const identityNote=identityIssues.length?'<details class="national-match-team"><summary>선수 기록 ID 점검 · 확인 사항 '+identityIssues.length+'건</summary><ul>'+identityIssues.map(issue=>'<li>'+esc(issue)+'</li>').join('')+'</ul></details>':'';
+ return identityNote+(matchMvp?'<p class="article-note"><strong>경기 MVP · '+esc(matchMvp.name)+'</strong> ('+esc(INTERNATIONAL_COUNTRIES[matchMvp.country]||matchMvp.country)+') · '+esc(matchMvp.reason||'')+'</p>':'')+'<div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>팀</th>'+innings.map(i=>'<th>'+(i+1)+'</th>').join('')+'<th>R</th></tr></thead><tbody>'+row(g.opponent||'상대',away,g.awayRuns)+row('대한민국',home,g.homeRuns)+'</tbody></table></div><p class="article-note">선발투수 · 대한민국 '+esc(g.homeStarter||'기록 없음')+' / 상대 '+esc(g.awayStarter||'기록 없음')+'</p>'+(['home','away'].map(side=>{const batters=g[side+'Batters'],pitchers=g[side+'Pitchers'];if(!Array.isArray(batters)&&!Array.isArray(pitchers))return '';const name=side==='home'?'대한민국':g.opponent||'상대';const bats=(batters||[]).filter(p=>p.atBats||p.walks).map(p=>'<tr><th>'+esc(p.name)+'</th><td>'+p.atBats+'</td><td>'+p.hits+'</td><td>'+p.homeRuns+'</td><td>'+p.runsBattedIn+'</td><td>'+p.walks+'</td></tr>').join('');const arms=(pitchers||[]).map(p=>'<tr><th>'+esc(p.name)+'</th><td>'+baseballIP(p.outs)+'</td><td>'+p.strikeouts+'</td><td>'+p.hits+'</td><td>'+p.walks+'</td><td>'+p.earnedRuns+'</td></tr>').join('');return '<details class="national-match-team"><summary><strong>'+esc(name)+'</strong> · 타자 '+(batters||[]).length+'명 / 투수 '+(pitchers||[]).length+'명 · 상세 기록</summary><h4>'+esc(name)+' 타자 기록</h4><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>타수</th><th>안타</th><th>홈런</th><th>타점</th><th>볼넷</th></tr></thead><tbody>'+bats+'</tbody></table></div><h4>'+esc(name)+' 투수 기록</h4><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>이닝</th><th>삼진</th><th>피안타</th><th>볼넷</th><th>자책</th></tr></thead><tbody>'+arms+'</tbody></table></div></details>'}).join(''));
 }
 function nationalTeamUpcomingSchedule(){
  const now=seasonDate(state.day),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),events=[];
