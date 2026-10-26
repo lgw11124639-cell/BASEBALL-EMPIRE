@@ -16,7 +16,7 @@ const context=vm.createContext({state,Math,Number,Map,Set,
  faCompensationGrade:()=> 'B',
  financeTeam:id=>state.teams[id],
  financeEntry:(id,amount,kind)=>{if(state.teams[id].budget+amount<0)return false;state.teams[id].budget+=amount;ledger.push({id,amount,kind});return true},
- faCompensationTransfer:(p,from,to,grade,salary)=>{const amount=salary*2;state.teams[to].budget-=amount;state.teams[from].budget+=amount;state.faCompensations=[{from,to,grade,amount}]},
+ faCompensationTransfer:(p,from,to,grade,salary)=>{const amount=salary*2;state.teams[to].budget-=amount;state.teams[from].budget+=amount;state.faCompensations=[{from,to,grade,amount}];return true},
  publishMajorFaArticle:()=>{},honorRetiredPlayers:()=>{},publishReserveRoster:()=>{},clubNotice:()=>{},money:x=>String(x),
 });
 vm.runInContext(source.slice(start,end),context);
