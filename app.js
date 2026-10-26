@@ -581,8 +581,25 @@ function nationalTeamTournamentDay(){
   if(day<1)return;
   const scored=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form);
   const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const available=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&p.position&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).sort((a,b)=>nationalTeamFormScore(b)-nationalTeamFormScore(a));
-  const fill=(position)=>{const primary=(chosen||[]).filter(p=>position==='P'?p.position==='P':p.position!=='P');const existing=new Set(primary.map(p=>String(p.id)));return primary.concat(available.filter(p=>(position==='P'?p.position==='P':p.position!=='P')&&!existing.has(String(p.id))).slice(0,Math.max(0,12-primary.length))).slice(0,12);};
-  const pitchers=fill('P'),batters=fill('B'),selected=[...pitchers,...batters];
+  const fill=(position)=>{
+   const isEligible=p=>p&&p.id!=null&&(position==='P'?p.position==='P':p.position!=='P');
+   const result=[],usedIds=new Set(),usedNames=new Set();
+   const add=p=>{
+    if(!isEligible(p))return false;
+    const id=String(p.id),name=String(p.name||'').trim();
+    if(usedIds.has(id)||!name||usedNames.has(name))return false;
+    usedIds.add(id);usedNames.add(name);result.push(p);return true;
+   };
+   for(const p of chosen||[]){if(result.length>=12)break;add(p);}
+   for(const p of available){if(result.length>=12)break;add(p);}
+   return result;
+  };
+  const pitchers=fill('P'),batters=fill('B');
+  const selected=[...pitchers,...batters.filter(p=>!pitchers.some(q=>String(q.id)===String(p.id)))];
+  const duplicateNames=new Set();
+  const seenNames=new Set();
+  for(const p of selected){const name=String(p.name||'').trim();if(seenNames.has(name))duplicateNames.add(name);seenNames.add(name);}
+  if(duplicateNames.size)console.warn('국가대표 명단에 동명이인 존재:',[...duplicateNames]);
   if(pitchers.length<9||batters.length<9){clubNotice('국가대표',year+' '+event+' 대표팀 구성 실패','출전 가능한 투수 또는 야수가 부족하여 대회 진행이 보류됐습니다.',state.teams.map(t=>t.id),selected.map(p=>p.id));return;}
   const staff=prep?.staff||nationalTeamStaff(year,event),lineup=nationalTeamLineup(selected);
   const finish=new Date(now);finish.setDate(finish.getDate()+(event==='WBC'?22:17));
