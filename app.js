@@ -482,7 +482,7 @@ function internationalRivalResult(year,event,round,homeCode,awayCode){
  catch(err){console.warn('국제대회 타국 경기 오류',err);}
  finally{restoreLeagueCounters(snapshot);for(const p of participants)playerBaseball(p).fatigue=fatigue.get(p.id);}
  if(!box)return null;
- return {round,date:null,home:homeCode,away:awayCode,homeRuns:box.homeRuns,awayRuns:box.awayRuns,homeInnings:box.homeInnings,awayInnings:box.awayInnings,winner:box.homeRuns===box.awayRuns?null:box.homeRuns>box.awayRuns?homeCode:awayCode};
+ return {round,date:null,home:homeCode,away:awayCode,homeRuns:box.homeRuns,awayRuns:box.awayRuns,homeInnings:box.homeInnings,awayInnings:box.awayInnings,winner:box.homeRuns===box.awayRuns?(((year+homeCode.charCodeAt(0)+awayCode.charCodeAt(0)+String(round).length)%2)?homeCode:awayCode):box.homeRuns>box.awayRuns?homeCode:awayCode};
 }
 const INTERNATIONAL_COUNTRIES={KR:'대한민국',JP:'일본',TW:'대만',CN:'중국',AU:'호주',US:'미국',DO:'도미니카공화국',VE:'베네수엘라',PR:'푸에르토리코',CU:'쿠바',MX:'멕시코',CA:'캐나다',PA:'파나마',CO:'콜롬비아',NI:'니카라과',IT:'이탈리아',NL:'네덜란드',GB:'영국',CZ:'체코',IL:'이스라엘',PH:'필리핀',TH:'태국',HK:'홍콩',PK:'파키스탄',IN:'인도',ID:'인도네시아',SG:'싱가포르'};
 function internationalTournamentGroups(event){
@@ -627,7 +627,8 @@ function nationalTeamTournamentDay(){
    return {game,winner:game.won?'KR':opponent};
   }
   game=internationalRivalResult(year,event,round,home,away);
-  if(!game||!game.winner)return null;
+  if(!game||!game.winner){record.lastError='타국 경기 결과 생성 실패 · '+today+' · '+round;return null;}
+  if(game.homeRuns===game.awayRuns){if(game.winner===home)game.homeRuns++;else game.awayRuns++;}
   game.date=today;record.otherMatches.push(game);return {game,winner:game.winner};
  };
  const groupFixtures=[];
