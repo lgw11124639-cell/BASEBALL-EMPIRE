@@ -1709,8 +1709,8 @@ function nationalTeamUpcomingSchedule(){
   if(y>=2027&&(y-2027)%4===0)events.push({year:y,month:3,event:'WBC'});
  }
  const next=events.filter(x=>Date.UTC(x.year,x.month-1,1)>=today).sort((a,b)=>a.year-b.year||a.month-b.month).slice(0,5);
- const rows=next.map(x=>'<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #dce5f0"><div><strong>'+esc(x.year+' '+x.event)+'</strong><div style="font-size:13px;color:#61758b;margin-top:4px">개최 예정 · '+x.year+'.'+String(x.month).padStart(2,'0')+'.01</div></div><strong style="white-space:nowrap;color:#24639a">D-'+Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000)+'</strong></div>').join('');
- return '<section class="dashboard-section" style="margin-bottom:16px"><h2>국제대회 개최 일정</h2><p class="profile-note">게임 일정 기준 · 현재 대표팀 소집은 개최일에 진행됩니다.</p>'+rows+'</section>';
+ const rows=next.map(x=>{const key=x.year+'-'+x.event,prep=state.nationalTeamPreparations?.[key],stages=prep?.stages||[],remaining=Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000),stage=remaining>60?'예비 명단 발표 예정':remaining>30?'예비 명단 발표'+(stages.includes(60)?' 완료':' 예정'):remaining>14?'최종 명단 '+(stages.includes(30)?'확정':'확정 예정'):'대표팀 '+(stages.includes(14)?'소집 완료':'소집 예정');return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #dce5f0"><div><strong>'+esc(x.year+' '+x.event)+'</strong><div style="font-size:13px;color:#61758b;margin-top:4px">개최 예정 · '+x.year+'.'+String(x.month).padStart(2,'0')+'.01 · '+esc(stage)+'</div></div><strong style="white-space:nowrap;color:#24639a">D-'+Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000)+'</strong></div>'}).join('');
+ return '<section class="dashboard-section" style="margin-bottom:16px"><h2>국제대회 개최 일정</h2><p class="profile-note">게임 일정 기준 · 예비 명단 D-60 / 최종 명단 D-30 / 대표팀 소집 D-14</p>'+rows+'</section>';
 }
 function nationalTeamPanel(){
  const records=Object.values(state.nationalTeamResults||{}).sort((a,b)=>b.year-a.year);
