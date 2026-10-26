@@ -57,3 +57,5 @@ jobs:
         run: node tests/comprehensive-game-engine.test.cjs
       - name: Performance-based retirement regression
         run: node tests/retirement-probability.test.cjs
+      - name: Unsigned released player retirement regression
+        run: node tests/unsigned-retirement.test.cjs
