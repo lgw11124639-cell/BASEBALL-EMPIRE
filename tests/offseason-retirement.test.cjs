@@ -17,6 +17,7 @@ const context=vm.createContext({state,Math,Number,Map,Set,
  creditFaSeason:()=>faCredits++,honorRetiredPlayers:()=>{},publishReserveRoster:()=>{},
  clubNotice:(...args)=>notices.push(args),
 });
+vm.runInContext(source.slice(source.indexOf('function playerRetirementProbability('),source.indexOf('function runOffseasonContracts(')),context);
 vm.runInContext(source.slice(start,end),context);
 vm.runInContext('runOffseasonContracts()',context);
 assert.equal(player.retired,true,'veteran retires');
