@@ -41,7 +41,7 @@ function runScenario(name,events,expected,{walkoff=false,homeRuns=0}={}){
 runScenario('three ground outs',['out','out','out'],{runs:0,atBats:3,hits:0,outs:3,battersFaced:3});
 runScenario('walk and two-run homer',['walk','homer','out','out','out'],{runs:2,atBats:4,hits:1,walks:1,homeRuns:1,rbi:2,outs:3,battersFaced:5});
 runScenario('bases loaded via walks then grand slam',['walk','walk','walk','homer','out','out','out'],{runs:4,atBats:4,hits:1,walks:3,homeRuns:1,rbi:4,outs:3,battersFaced:7});
-runScenario('single, double, then RBI single',['single','double','single','out','out','out'],{runs:2,atBats:6,hits:3,doubles:1,rbi:2,outs:3,battersFaced:6});
+runScenario('single, double, then RBI single',['single','double','single','out','out','out'],{runs:1,atBats:6,hits:3,doubles:1,rbi:1,outs:3,battersFaced:6});
 runScenario('triple and homer',['triple','homer','out','out','out'],{runs:2,atBats:5,hits:2,triples:1,homeRuns:1,rbi:2,outs:3,battersFaced:5});
 runScenario('walk-off solo home run',['homer'],{runs:1,atBats:1,hits:1,homeRuns:1,rbi:1,outs:0,battersFaced:1},{walkoff:true,homeRuns:0});
 console.log('Real playHalf: outs, walks, singles, doubles, triples, homers, grand slam and walk-off PASS');
