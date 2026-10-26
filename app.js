@@ -907,7 +907,23 @@ function resolveOverseasNegotiations(year){
 // Keep the decision deterministic within the offseason's seeded random stream.
 function playerRetirementProbability(p){
  const age=Number(p.age)||0;
- if(age<35)return 0;
+ if(age<35){
+  // Young players retire mainly when professional opportunities disappear.
+  // Do not force promising prospects or productive starters out solely by age.
+  const overall=Number(p.overall)||60;
+  const games=Number(p.games)||0,atBats=Number(p.atBats)||0,innings=Number(p.inningsPitched)||0;
+  const productive=p.position==='P'?innings>=60:atBats>=180;
+  const injured=Boolean(p.injured||p.injury?.active||p.injury?.status==='부상');
+  const released=p.level==='방출'||p.level==='FA대기'||p.level==='웨이버 대기';
+  if(age<23)return released&&overall<42?.012:0;
+  let risk=released?.035:age>=29?.004:.001;
+  if(overall<42)risk+=.045;
+  else if(overall<50)risk+=.018;
+  if(!productive&&games<15)risk+=.008;
+  if(injured)risk+=.015;
+  if(overall>=70||productive)risk*=.12;
+  return Math.min(.12,Math.max(0,risk));
+ }
  const overall=Number(p.overall)||60;
  const isPitcher=p.position==='P';
  const games=Number(p.games)||0;
