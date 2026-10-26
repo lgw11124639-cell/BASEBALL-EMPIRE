@@ -691,7 +691,7 @@ function nationalTeamTournamentDay(){
     ...(game.homePitchers||[]).map(p=>({id:p.id??p.playerId??null,name:p.name,side:'KR',score:(Number(p.outs)||0)*.65+(Number(p.strikeouts)||0)*1.2-(Number(p.earnedRuns)||0)*2,reason:baseballIP(p.outs)+'이닝 '+(Number(p.strikeouts)||0)+'탈삼진'})),
     ...(game.awayPitchers||[]).map(p=>({id:p.id??p.playerId??null,name:p.name,side:game.opponent,score:(Number(p.outs)||0)*.65+(Number(p.strikeouts)||0)*1.2-(Number(p.earnedRuns)||0)*2,reason:baseballIP(p.outs)+'이닝 '+(Number(p.strikeouts)||0)+'탈삼진'}))
    ].filter(p=>p.name&&Number.isFinite(p.score)).sort((a,b)=>b.score-a.score);
-   const mvp=mvpCandidates[0];
+   const mvp=mvpCandidates.find(p=>p.id!=null&&Number.isFinite(p.score));
    // Persist the selection on the match itself; historical totals are derived from matches.
    if(mvp&&!game.mvp)game.mvp={playerId:mvp.id??null,name:mvp.name,country:mvp.side,reason:mvp.reason};
    const mvpLine=mvp?'경기 주요 선수로는 '+mvp.name+'('+ (INTERNATIONAL_COUNTRIES[mvp.side]||mvp.side)+')이 꼽힌다. '+mvp.reason+'을 기록했다.':'';
@@ -1809,9 +1809,12 @@ function openBaseballNewsArticle(id){
   if(!p||articlePlayerIds.has(String(p.id)))return false;
   articlePlayerIds.add(String(p.id));return true;
  });
+ const nationalNameCounts=new Map();
+ for(const p of nationalRoster)nationalNameCounts.set(p.name,(nationalNameCounts.get(p.name)||0)+1);
+ const nationalPlayerLabel=p=>nationalNameCounts.get(p.name)>1?p.name+' ('+(p.position==='P'?'투수':'야수')+' · #'+String(p.id)+')':p.name;
  const nationalGroups=new Map();
- for(const player of nationalRoster){const team=state.teams.find(t=>String(t.id)===String(player.teamId));const club=team?team.city+' '+team.name:'소속 미확인';if(!nationalGroups.has(club))nationalGroups.set(club,{pitchers:[],batters:[]});nationalGroups.get(club)[player.position==='P'?'pitchers':'batters'].push(player.name);}
- const nationalRosterFeature=isNational&&nationalRoster.length&&/명단 공개|대표팀 소집|대회 개막/.test(n.title)?'<section style="margin-top:26px"><h2 style="font-size:21px;margin:0 0 16px">소속 구단별 대표팀 명단</h2>'+[...nationalGroups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([club,group])=>'<div style="padding:14px 0;border-bottom:1px solid #dbe4ed"><strong style="display:block;margin-bottom:8px">'+esc(club)+'</strong>'+(group.pitchers.length?'<div style="line-height:1.7"><b>투수</b> · '+group.pitchers.map(name=>{const p=nationalRoster.find(p=>p.name===name);return p?articlePlayerLink(p.id,name):esc(name)}).join(', ')+'</div>':'')+(group.batters.length?'<div style="line-height:1.7"><b>야수</b> · '+group.batters.map(name=>{const p=nationalRoster.find(p=>p.name===name);return p?articlePlayerLink(p.id,name):esc(name)}).join(', ')+'</div>':'')+'</div>').join('')+'</section>':'';
+ for(const player of nationalRoster){const team=state.teams.find(t=>String(t.id)===String(player.teamId));const club=team?team.city+' '+team.name:'소속 미확인';if(!nationalGroups.has(club))nationalGroups.set(club,{pitchers:[],batters:[]});nationalGroups.get(club)[player.position==='P'?'pitchers':'batters'].push(player);}
+ const nationalRosterFeature=isNational&&nationalRoster.length&&/명단 공개|대표팀 소집|대회 개막/.test(n.title)?'<section style="margin-top:26px"><h2 style="font-size:21px;margin:0 0 16px">소속 구단별 대표팀 명단</h2>'+[...nationalGroups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([club,group])=>'<div style="padding:14px 0;border-bottom:1px solid #dbe4ed"><strong style="display:block;margin-bottom:8px">'+esc(club)+'</strong>'+(group.pitchers.length?'<div style="line-height:1.7"><b>투수</b> · '+group.pitchers.map(p=>articlePlayerLink(p.id,nationalPlayerLabel(p))).join(', ')+'</div>':'')+(group.batters.length?'<div style="line-height:1.7"><b>야수</b> · '+group.batters.map(p=>articlePlayerLink(p.id,nationalPlayerLabel(p))).join(', ')+'</div>':'')+'</div>').join('')+'</section>':'';
  const logoFeature=!isNational&&articleClubs.length?'<figure style="margin:24px 0 28px;border-radius:12px;overflow:hidden;background:#152e4e;padding:32px 15px 20px;text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap">'+articleClubs.slice(0,2).map(team=>'<div style="min-width:110px;color:#fff;font-weight:800"><div style="display:flex;justify-content:center;align-items:center;margin-bottom:12px">'+teamLogo(team,true)+'</div>'+esc(team.city+' '+team.name)+'</div>').join('<span style="color:#fff;font-size:24px;font-weight:800">→</span>')+'</div><figcaption style="color:#d7e7f6;font-size:13px;margin-top:20px">'+esc(n.kind==='FA 특집'?'FA 계약 구단':'관련 구단')+' · BASEBALL EMPIRE SPORTS</figcaption></figure>':'';
  const seasonStatsFeature=isNational?'':newsPlayerSeasonFeature(n);
  const awardFeature=newsAwardFeature(n);
