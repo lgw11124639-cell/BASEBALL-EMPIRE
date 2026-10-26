@@ -1395,6 +1395,8 @@ function baseballNewsPanel(limit=0){
  return '<div class="be-report-list baseball-news-list">'+entries.map(n=>'<button type="button" class="be-report-item" data-news-article="'+esc(n.id)+'"><span><small>'+esc(n.kind)+' · '+esc(seasonDateLabel(n.day))+'</small><strong>'+esc(n.title)+'</strong></span><span aria-hidden="true">›</span></button>').join('')+'</div>';
 }
 function newsPlayerSeasonFeature(n){
+ // A dated injury/roster article must not display later season totals as if known on its publication date.
+ if(['부상 복귀','부상자 명단','1군 등록','1군 말소','1군 콜업','웨이버','방출','영입'].includes(String(n.kind)))return '';
  const ids=Array.isArray(n.players)?n.players:[];
  if(!ids.length)return '';
  const year=Number(n.year)||Number(state.year);
