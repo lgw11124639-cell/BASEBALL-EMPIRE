@@ -1403,8 +1403,8 @@ function newsPlayerSeasonFeature(n){
  return ids.slice(0,2).map(id=>{
   const p=(state.players||[]).find(x=>String(x.id)===String(id));
   if(!p)return '';
-  const archived=(state.careerRecords?.[p.id]||[]).filter(x=>Number(x.year)<=year&&hasPlayedFirstTeamSeason(x));
-  let stats=archived.find(x=>Number(x.year)===year);
+  const archived=Object.values(state.history?.seasons||{}).filter(season=>Number(season.year)<=year&&Number(season.year)!==Number(state.year)).map(season=>({...season.players?.find(x=>String(x.id)===String(p.id)),year:Number(season.year)})).filter(x=>x.id!=null&&hasPlayedFirstTeamSeason(x));
+  let stats=year===Number(state.year)?null:(state.history?.seasons?.[year]?.players||[]).find(x=>String(x.id)===String(p.id));
   if(!stats&&year===Number(state.year)){const current=currentSeasonBoxStats(p);if(hasPlayedFirstTeamSeason(current))stats=current}
   const pitcher=p.position==='P';
   const num=(row,key)=>Number(row?.[key])||0;
