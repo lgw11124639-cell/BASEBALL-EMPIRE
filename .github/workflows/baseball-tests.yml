@@ -49,3 +49,5 @@ jobs:
         run: node tests/long-innings-controller.test.cjs
       - name: Season batting and pitching box-score totals
         run: node tests/season-boxscore-aggregation.test.cjs
+      - name: Real plate appearance and inning accounting
+        run: node tests/plate-appearance-engine.test.cjs
