@@ -507,7 +507,7 @@ function nationalTeamTournamentDay(){
  if(record.finished||!Array.isArray(record.matchResults))return;
  record.otherMatches=Array.isArray(record.otherMatches)?record.otherMatches:[];
  record.groups=record.groups||internationalTournamentGroups(event);
- const today=now.toISOString().slice(0,10),elapsed=Math.round((now-new Date(record.start+'T12:00:00'))/86400000);
+ const today=now.toISOString().slice(0,10),elapsed=Math.round((Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())-Date.UTC(Number(record.start.slice(0,4)),Number(record.start.slice(5,7))-1,Number(record.start.slice(8,10))))/86400000);
  const nationalRosterById=new Map(state.players.map(p=>[String(p.id),p]));const selected=()=>record.players.map(id=>nationalRosterById.get(String(id))).filter(Boolean);
  const play=(round,home,away,seed)=>{
   const korean=home==='KR'||away==='KR',list=korean?record.matchResults:record.otherMatches;
