@@ -53,4 +53,9 @@ current=new Date(current.getFullYear(),current.getMonth(),current.getDate()+1,12
 state.day++;
 vm.runInContext('nationalTeamReturnDay();nationalTeamReturnDay()',context);
 assert.equal(notices.filter(n=>n[0]==='국가대표 복귀').length,1,'return notified once on next day');
+const finishedCount=record.matchResults.length+record.otherMatches.length;
+const noticeCount=notices.length;
+vm.runInContext('nationalTeamTournamentDay();nationalTeamReturnDay()',context);
+assert.equal(record.matchResults.length+record.otherMatches.length,finishedCount,'no extra games after tournament end');
+assert.equal(notices.length,noticeCount,'no duplicate notifications after tournament end');
 console.log('International tournament full progression and return: PASS');
