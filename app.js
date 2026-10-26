@@ -479,7 +479,7 @@ function internationalRivalResult(year,event,round,homeCode,awayCode){
  const participants=[...home,...away],snapshot=snapshotLeagueCounters(participants),fatigue=new Map(participants.map(p=>[p.id,Number(playerBaseball(p).fatigue)||0]));
  let box=null;
  try{box=internationalSharedGame(home,away,year*11171+String(round).split('').reduce((n,c)=>((n*33+c.charCodeAt(0))>>>0),5381)+homeCode.charCodeAt(0)*31+awayCode.charCodeAt(0));}
- catch(err){console.warn('국제대회 타국 경기 오류',err);}
+ catch(err){console.error('국제대회 타국 경기 오류',err);return {error:String(err?.stack||err?.message||err).slice(0,350)};}
  finally{restoreLeagueCounters(snapshot);for(const p of participants)playerBaseball(p).fatigue=fatigue.get(p.id);}
  if(!box)return null;
  return {round,date:null,home:homeCode,away:awayCode,homeRuns:box.homeRuns,awayRuns:box.awayRuns,homeInnings:box.homeInnings,awayInnings:box.awayInnings,winner:box.homeRuns===box.awayRuns?(((year+homeCode.charCodeAt(0)+awayCode.charCodeAt(0)+String(round).length)%2)?homeCode:awayCode):box.homeRuns>box.awayRuns?homeCode:awayCode};
@@ -629,7 +629,7 @@ function nationalTeamTournamentDay(){
    return {game,winner:game.won?'KR':opponent};
   }
   game=internationalRivalResult(year,event,round,home,away);
-  if(!game||!game.winner){record.lastError='타국 경기 결과 생성 실패 · '+today+' · '+round;return null;}
+  if(!game||!game.winner){record.lastError='타국 경기 결과 생성 실패 · '+today+' · '+round+(game?.error?' · '+game.error:' · 경기 엔진이 결과를 반환하지 않음');return null;}
   if(game.homeRuns===game.awayRuns){if(game.winner===home)game.homeRuns++;else game.awayRuns++;}
   game.date=today;record.otherMatches.push(game);return {game,winner:game.winner};
  };
