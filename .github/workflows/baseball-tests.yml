@@ -45,3 +45,5 @@ jobs:
         run: node tests/fa-rollback-integration.test.cjs
       - name: Thirty-year real league scheduling
         run: node tests/long-league-schedule.test.cjs
+      - name: Thirty-year innings controller stress
+        run: node tests/long-innings-controller.test.cjs
