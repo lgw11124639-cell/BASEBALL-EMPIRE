@@ -7,7 +7,7 @@ const start=source.indexOf('function runOffseasonContracts(){');
 const end=source.indexOf('function ',start+30);
 assert.ok(start>=0&&end>start);
 const player={id:7,name:'Free Agent',age:29,position:'OF',teamId:0,level:'1군',overall:85,salary:40000000,profile:{contractYears:1},faService:{creditedSeasons:8,carryDays:0,faUses:0},careerStats:{hits:800}};
-const state={year:2026,day:350,teamId:0,players:[player],teams:[{id:0,name:'Old',budget:200000000},{id:1,name:'New',budget:900000000}],postseasons:{2026:{finished:true}},history:{seasons:{2026:{complete:true,players:[{id:7,hits:100}]}}}};
+const state={year:2026,day:350,teamId:0,players:[player],teams:[{id:0,name:'Old',budget:10000000},{id:1,name:'New',budget:900000000}],postseasons:{2026:{finished:true}},history:{seasons:{2026:{complete:true,players:[{id:7,hits:100}]}}}};
 const ledger=[];
 const context=vm.createContext({state,Math,Number,Map,Set,
  awardsFinished:()=>true,snapshotOverseasInterest:()=>{},processOverseasPosting:()=>{},resolveOverseasNegotiations:()=>{},saveSeasonSnapshot:()=>{},renewStaffContracts:()=>{},hireRetiredCoaches:()=>{},
