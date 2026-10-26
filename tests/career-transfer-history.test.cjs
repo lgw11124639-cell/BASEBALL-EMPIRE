@@ -26,4 +26,18 @@ assert.equal(calls,1,'live season computed only for active year');
 assert.equal(result[0].year,2028,'live year shown first');
 assert.equal(result[0].hits,999,'live stats shown for active year');
 assert.deepEqual(result.slice(1).map(x=>x.hits),[130,120,85],'previous clubs and years remain unchanged');
-console.log('Career season rows after transfers and completed season: PASS');
+// FA transfer must not rewrite the team recorded for previous seasons.
+player.teamId=3;
+player.faService={faUses:1,creditedSeasons:8};
+result=rows();
+assert.deepEqual(result.slice(1).map(x=>x.teamId),[2,1,0],'FA transfer preserves previous clubs');
+assert.equal(result[0].teamId,3,'new season belongs to destination club');
+// Retirement must preserve all archived seasons and never fabricate a new active year.
+player.retired=true;
+state.year=2029;
+state.history.seasons[2029]={complete:false};
+result=rows();
+assert.deepEqual(result.map(x=>x.year),[2027,2026,2025],'retired player has no fabricated season');
+assert.deepEqual(result.map(x=>x.hits),[130,120,85],'retirement preserves career stats');
+assert.deepEqual(result.map(x=>x.teamId),[2,1,0],'retirement preserves team history');
+console.log('Career season rows after FA transfer and retirement: PASS');
