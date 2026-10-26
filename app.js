@@ -456,7 +456,19 @@ function internationalOpponentRoster(year,country){
  // Keep the original roster generator deterministic so saved player IDs and game box scores remain linked.
 
  const positions=['P','P','P','P','P','P','P','P','P','P','P','P','C','C','1B','2B','3B','SS','LF','CF','RF','DH','LF','1B'];
- return positions.map((position,i)=>({id:-(year*100000000+country.split('').reduce((n,c)=>n*128+c.charCodeAt(0),0)*100+i),name:names[0][Math.floor(seed()*names[0].length)]+' '+names[1][Math.floor(seed()*names[1].length)],position,overall:48+Math.floor(seed()*37),age:20+Math.floor(seed()*15),level:'1군',nationality:country}));
+ const usedNames=new Set();
+ return positions.map((position,i)=>{
+  const surname=names[0][Math.floor(seed()*names[0].length)];
+  const given=names[1][Math.floor(seed()*names[1].length)];
+  let playerName=surname+' '+given;
+  if(usedNames.has(playerName)){
+   const combinations=[];
+   for(const family of names[0])for(const first of names[1])combinations.push(family+' '+first);
+   playerName=combinations.find(candidate=>!usedNames.has(candidate))||playerName+' '+(i+1);
+  }
+  usedNames.add(playerName);
+  return {id:-(year*100000000+country.split('').reduce((n,c)=>n*128+c.charCodeAt(0),0)*100+i),name:playerName,position,overall:48+Math.floor(seed()*37),age:20+Math.floor(seed()*15),level:'1군',nationality:country};
+ });
 }
 function internationalOpeningGame(year,event,selected,opponentCode,round){
  const opponent=opponentCode||(event==='아시안게임'?'JP':'US');
