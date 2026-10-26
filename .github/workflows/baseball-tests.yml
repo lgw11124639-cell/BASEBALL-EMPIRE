@@ -39,3 +39,5 @@ jobs:
         run: node tests/offseason-retirement.test.cjs
       - name: Offseason FA transfer and settlement
         run: node tests/offseason-fa-transfer.test.cjs
+      - name: FA compensation failure recovery
+        run: node tests/fa-compensation-failure.test.cjs
