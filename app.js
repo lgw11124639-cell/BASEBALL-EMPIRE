@@ -1175,15 +1175,29 @@ function performanceOpinion(p){
  return '확인된 공식 경기 표본이 부족합니다. 실전 성적 평가를 보류하며, 스카우트 의견과 잠재력 평가는 경기 기록을 대신하지 않습니다.';
 }
 function scoutingCeiling(p){
- const age=Number(p.age)||25,potential=Number(p.potential),overall=Number(p.overall),isP=p.position==='P';
- const valid=Number.isFinite(potential)&&Number.isFinite(overall);
- if(!valid)return {level:'판단 보류',comment:'스카우트 기초 자료가 없어 장기 성장 전망을 확정할 수 없습니다.'};
- const years=Math.max(0,Math.min(8,30-age)),growth=Math.max(0,potential-overall);
- const projection=Math.min(100,overall+growth*(age>=35?.12:age>=30?.3:age>=26?.55:.85));
+ const age=Number(p.age)||25,potential=Number(p.potential),overall=Number(p.overall);
+ if(!Number.isFinite(potential)||!Number.isFinite(overall))return {level:'판단 보류',comment:'평가에 필요한 자료가 부족합니다.',heading:'선수 전망'};
+ const year=Number(state.year),now=currentSeasonBoxStats(p);
+ const past=Object.values(state.history?.seasons||{}).filter(x=>Number(x.year)<year).sort((x,y)=>Number(y.year)-Number(x.year)).map(x=>(x.players||[]).find(v=>String(v.id)===String(p.id))).find(hasPlayedFirstTeamSeason);
+ const recent=hasPlayedFirstTeamSeason(now)?now:past;
+ const isP=p.position==='P',sample=recent&&(isP?(Number(recent.inningsPitched)||0)>=25:(Number(recent.atBats)||0)>=80);
+ if(age>=33){
+  if(!sample)return {heading:'베테랑 경쟁력 평가',level:'현재 기량 검증 필요',comment:'최근 1군 출전 표본이 부족해 기량 유지 여부를 단정하기 어렵습니다. 향후 등판·출전 기록과 건강 상태를 우선 확인해야 합니다.'};
+  const ip=Number(recent.inningsPitched)||0,ab=Number(recent.atBats)||0;
+  const metric=isP?(Number(recent.earnedRuns)||0)*9/ip:(Number(recent.hits)||0)/ab;
+  const strong=isP?metric<3.5:metric>=.3,weak=isP?metric>=5:metric<.24;
+  return {heading:age>=37?'잔여 경쟁력 및 현역 지속 전망':'현재 기량 및 유지 전망',level:strong?'주전급 경쟁력 유지':weak?'기량 재점검 필요':'1군 전력 활용 가능',comment:(strong?'최근 공식 기록에서는 경쟁력 있는 경기력이 확인됩니다. ':weak?'최근 공식 성적에서 개선이 필요한 지표가 확인됩니다. ':'최근 공식 기록을 기준으로 1군 활용 가능성을 검토할 수 있습니다. ')+(age>=37?'출전 부담과 회복 상태를 고려해 현역 지속 여부를 판단해야 합니다.':'다음 시즌 기량 유지 여부와 출전량 변화를 지속적으로 관찰해야 합니다.')};
+ }
+ if(age>=28){
+  if(!sample)return {heading:'현재 경쟁력 평가',level:'1군 경쟁력 검증 필요',comment:'최근 공식 출전 표본이 충분하지 않아 현재 리그 내 위상을 확정할 수 없습니다.'};
+  const ip=Number(recent.inningsPitched)||0,ab=Number(recent.atBats)||0;
+  const metric=isP?(Number(recent.earnedRuns)||0)*9/ip:(Number(recent.hits)||0)/ab;
+  return {heading:'현재 경쟁력 평가',level:(isP?metric<3.5:metric>=.3)?'리그 상위권 경기력':(isP?metric>=5:metric<.24)?'경쟁력 개선 필요':'1군 전력 활용 가능',comment:'전성기 연령대 선수로, 최근 공식 성적을 중심으로 평가합니다. 경기 표본과 시즌 간 지속성에 따라 판단이 달라질 수 있습니다.'};
+ }
+ const growth=Math.max(0,potential-overall),projection=Math.min(100,overall+growth*(age>=24?.55:.85));
  const grade=projection>=86?'국가대표급 잠재력':projection>=78?'리그 정상급 잠재력':projection>=68?'1군 주전급 잠재력':projection>=58?'1군 로테이션·백업급':'장기 육성 대상';
  const future=projection>=86?'성장이 순조롭다면 국가대표 선발 경쟁까지 기대할 수 있는 재목입니다.':projection>=78?'전성기에 리그 상위권 선수로 자리 잡을 가능성이 있습니다.':projection>=68?'향후 1군에서 안정적인 역할을 맡을 가능성이 있습니다.':projection>=58?'특정 보직에서 1군 전력으로 활용할 여지가 있습니다.':'기량 발전과 실전 경험 축적이 우선 과제입니다.';
- const caution=age>=35?'베테랑 연령대이므로 장기적인 성장보다 현재 기량 유지와 하락 위험을 우선 고려해야 합니다.':growth>=18?'잠재력과 현재 완성도의 차이가 커 성장 변동성이 높습니다.':'실제 출전 성적과 부상 이력에 따라 전망은 달라질 수 있습니다.';
- return {level:grade,comment:future+' '+caution};
+ return {heading:'장기 성장 전망',level:grade,comment:future+(growth>=18?' 현재 완성도와 성장 기대치의 차이가 커 변동성이 높습니다.':' 실전 성적과 부상 이력에 따라 전망이 달라질 수 있습니다.')};
 }
 function scoutingReportPanel(p){
  const isP=p.position==='P',now=currentSeasonBoxStats(p),yr=Number(state.year),n=(x,k)=>Number(x?.[k])||0;
@@ -1202,7 +1216,7 @@ function scoutingReportPanel(p){
  const ceiling=scoutingCeiling(p);
  const card=(title,body)=>'<section class="card" style="margin:12px 0;padding:16px"><h4 style="margin:0 0 10px;color:#17375a">'+title+'</h4>'+body+'</section>';
  const metrics='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">'+stats.map(x=>'<div style="background:#eef3fa;border-radius:9px;padding:9px 4px;text-align:center;min-width:0"><small style="display:block;font-size:11px;color:#60748c">'+esc(x[0])+'</small><strong style="font-size:16px">'+esc(x[1])+'</strong></div>').join('')+'</div>';
- return '<div style="font-size:12px;color:#60748c;margin:8px 0">PRO SCOUTING REPORT · '+esc(origin)+' · '+(adequate?'기록 기반 분석':'제한적 표본')+'</div>'+card('핵심 경기 지표',metrics)+card('장기 성장 전망','<strong style="font-size:20px;color:#17375a">'+esc(ceiling.level)+'</strong><p style="line-height:1.7;margin:8px 0">'+esc(ceiling.comment)+'</p><small style="color:#64748b">스카우트 전망이며 국가대표 선발이나 수상을 보장하지 않습니다.</small>')+card('종합 평가','<p style="line-height:1.75;margin:0">'+esc(scoutingSummary(p))+'</p>')+card('강점 및 보완점','<p style="margin:0 0 9px"><strong>확인된 강점</strong> · '+esc(strengths.join(', ')||'충분한 경기 기록이 없어 판단 유보')+'</p><p style="margin:0"><strong>중점 관찰</strong> · '+esc(risks.join(', ')||'장기적인 경기력 유지')+'</p>')+card('육성 및 운용 방향','<p style="line-height:1.75;margin:0">'+esc(isP?'탈삼진, 실점 억제, 이닝 소화와 등판 간 회복 상태를 추적합니다. 선발·불펜 적합성은 실제 등판 내용을 통해 판단합니다.':'타격 정확성, 장타 생산과 출루 능력을 추적합니다. 수비와 주루는 별도 실전 기록을 확인한 뒤 평가합니다.')+'</p>')+'<details class="profile-extra"><summary>체격에 따른 경기 보정 상세</summary>'+(isP?pitcherChart(p):batterPhysicalPanel(p))+'</details>';
+ return '<div style="font-size:12px;color:#60748c;margin:8px 0">PRO SCOUTING REPORT · '+esc(origin)+' · '+(adequate?'기록 기반 분석':'제한적 표본')+'</div>'+card('핵심 경기 지표',metrics)+card(esc(ceiling.heading),' <strong style="font-size:20px;color:#17375a">'+esc(ceiling.level)+'</strong><p style="line-height:1.7;margin:8px 0">'+esc(ceiling.comment)+'</p><small style="color:#64748b">스카우트 전망이며 국가대표 선발이나 수상을 보장하지 않습니다.</small>')+card('종합 평가','<p style="line-height:1.75;margin:0">'+esc(scoutingSummary(p))+'</p>')+card('강점 및 보완점','<p style="margin:0 0 9px"><strong>확인된 강점</strong> · '+esc(strengths.join(', ')||'충분한 경기 기록이 없어 판단 유보')+'</p><p style="margin:0"><strong>중점 관찰</strong> · '+esc(risks.join(', ')||'장기적인 경기력 유지')+'</p>')+card('육성 및 운용 방향','<p style="line-height:1.75;margin:0">'+esc(isP?'탈삼진, 실점 억제, 이닝 소화와 등판 간 회복 상태를 추적합니다. 선발·불펜 적합성은 실제 등판 내용을 통해 판단합니다.':'타격 정확성, 장타 생산과 출루 능력을 추적합니다. 수비와 주루는 별도 실전 기록을 확인한 뒤 평가합니다.')+'</p>')+'<details class="profile-extra"><summary>체격에 따른 경기 보정 상세</summary>'+(isP?pitcherChart(p):batterPhysicalPanel(p))+'</details>';
 }
 function scoutingSummary(p){
  const age=Number(p.age)||0,isP=p.position==='P',year=Number(state.year);
