@@ -31,3 +31,5 @@ jobs:
         run: node tests/season-transition.test.cjs
       - name: Season snapshot history isolation
         run: node tests/season-snapshot.test.cjs
+      - name: Player history and career total rendering
+        run: node tests/player-history-render.test.cjs
