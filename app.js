@@ -522,21 +522,22 @@ function nationalTeamPreparationDay(){
   if(year>=2027&&(year-2027)%4===0)events.push({event:'WBC',month:3});
   for(const e of events){
    const days=Math.round((Date.UTC(year,e.month-1,1)-today)/86400000);
-   if(![60,30,14].includes(days))continue;
+   if(days<0||days>60)continue;
    const key=year+'-'+e.event;
    if(state.nationalTeamResults?.[key])continue;
    const prep=state.nationalTeamPreparations[key]||(state.nationalTeamPreparations[key]={year,event:e.event,stages:[]});
-   if(prep.stages.includes(days))continue;
-   const candidates=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form||String(a.p.id).localeCompare(String(b.p.id)));
+   const daysToProcess=[60,30,14].filter(stage=>days<=stage&&!prep.stages.includes(stage));
+   for(const days of daysToProcess){
+   const candidates=state.players.filter(p=>!p.retired&&['1군','2군'].includes(p.level)&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form||String(a.p.id).localeCompare(String(b.p.id)));
    const eligible=days===60?candidates:candidates.filter(x=>Array.isArray(prep.preliminary)&&prep.preliminary.some(id=>String(id)===String(x.p.id)));
    const desired=days===60?18:12;
    const chosen=eligible.filter(x=>x.p.position==='P').slice(0,desired).concat(eligible.filter(x=>x.p.position!=='P').slice(0,desired));
-   if(days!==14&&chosen.length<desired*2)continue;
+   if(days!==14&&(chosen.filter(x=>x.p.position==='P').length<9||chosen.filter(x=>x.p.position!=='P').length<9)){prep.lastError='선발 가능한 투수 또는 야수 부족';continue;}
    const ids=chosen.map(x=>x.p.id);
    if(days===60)prep.preliminary=ids;
    if(days===30){prep.final=ids;prep.staff=nationalTeamStaff(year,e.event);}
    if(days===14){
-    if(!Array.isArray(prep.final)||prep.final.length<18)continue;
+    if(!Array.isArray(prep.final)||prep.final.length<18){prep.lastError='최종 명단 미확정';continue;}
     const eligiblePlayer=id=>state.players.find(p=>String(p.id)===String(id)&&!p.retired&&!p.foreignPlayer&&!(p.profile?.injury?.days>0));
     const current=prep.final.map(id=>eligiblePlayer(id)).filter(Boolean);
     const replacements=[];
@@ -559,6 +560,7 @@ function nationalTeamPreparationDay(){
    const label=days===60?'예비 명단 발표':days===30?'최종 명단 확정':'대표팀 소집';
    clubNotice('국가대표',year+' '+e.event+' '+label,'대한민국 대표팀 '+(days===14?prep.summoned.length:ids.length)+'명 · '+label+' · 개최 '+year+'년 '+e.month+'월 1일',state.teams.map(t=>t.id),days===14?prep.summoned:ids);
    nationalTeamFeatureArticle(year,e.event,label,days===14?prep.summoned:ids,prep.staff);
+   }
   }
  }
 }
