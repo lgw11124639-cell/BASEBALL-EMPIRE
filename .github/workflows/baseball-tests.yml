@@ -51,3 +51,5 @@ jobs:
         run: node tests/season-boxscore-aggregation.test.cjs
       - name: Real plate appearance and inning accounting
         run: node tests/plate-appearance-engine.test.cjs
+      - name: Comprehensive plate appearance scoring scenarios
+        run: node tests/plate-appearance-scenarios.test.cjs
