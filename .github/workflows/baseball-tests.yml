@@ -53,3 +53,5 @@ jobs:
         run: node tests/plate-appearance-engine.test.cjs
       - name: Comprehensive plate appearance scoring scenarios
         run: node tests/plate-appearance-scenarios.test.cjs
+      - name: Comprehensive game engine regression
+        run: node tests/comprehensive-game-engine.test.cjs
