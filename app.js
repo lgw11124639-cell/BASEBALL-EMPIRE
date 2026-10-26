@@ -571,7 +571,8 @@ function nationalTeamTournamentDay(){
  state.nationalTeamResults=state.nationalTeamResults||{};
  let record=state.nationalTeamResults[key];
  if(!record){
-  if(day!==1)return;
+  // Permit recovery within the scheduled tournament month if opening day was missed.
+  if(day<1)return;
   const scored=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form);
   const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const pitchers=chosen?chosen.filter(p=>p.position==='P'):scored.filter(x=>x.p.position==='P').slice(0,12).map(x=>x.p),batters=chosen?chosen.filter(p=>p.position!=='P'):scored.filter(x=>x.p.position!=='P').slice(0,12).map(x=>x.p),selected=[...pitchers,...batters];
   if(pitchers.length<9||batters.length<9)return;
@@ -1714,14 +1715,20 @@ function internationalMatchDetails(g){
 }
 function nationalTeamUpcomingSchedule(){
  const now=seasonDate(state.day),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),events=[];
- for(let y=now.getFullYear();y<=now.getFullYear()+8;y++){
+ for(let y=now.getFullYear()-1;y<=now.getFullYear()+8;y++){
   if((y-2026)%4===0)events.push({year:y,month:10,event:'아시안게임'});
   if((y-2028)%4===0)events.push({year:y,month:8,event:'올림픽'});
   if(y>=2027&&(y-2027)%4===0)events.push({year:y,month:3,event:'WBC'});
  }
- const next=events.filter(x=>Date.UTC(x.year,x.month-1,1)>=today).sort((a,b)=>a.year-b.year||a.month-b.month).slice(0,5);
- const rows=next.map(x=>{const key=x.year+'-'+x.event,prep=state.nationalTeamPreparations?.[key],stages=prep?.stages||[],remaining=Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000),stage=remaining>60?'예비 명단 발표 예정':remaining>30?'예비 명단 발표'+(stages.includes(60)?' 완료':' 예정'):remaining>14?'최종 명단 '+(stages.includes(30)?'확정':'확정 예정'):'대표팀 '+(stages.includes(14)?'소집 완료':'소집 예정');return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #dce5f0"><div><strong>'+esc(x.year+' '+x.event)+'</strong><div style="font-size:13px;color:#61758b;margin-top:4px">개최 예정 · '+x.year+'.'+String(x.month).padStart(2,'0')+'.01 · '+esc(stage)+'</div></div><strong style="white-space:nowrap;color:#24639a">D-'+Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000)+'</strong></div>'}).join('');
- return '<section class="dashboard-section" style="margin-bottom:16px"><h2>국제대회 개최 일정</h2><p class="profile-note">게임 일정 기준 · 예비 명단 D-60 / 최종 명단 D-30 / 대표팀 소집 D-14</p>'+rows+'</section>';
+ const ordered=events.sort((a,b)=>a.year-b.year||a.month-b.month),past=ordered.filter(x=>Date.UTC(x.year,x.month-1,1)<today),future=ordered.filter(x=>Date.UTC(x.year,x.month-1,1)>=today);
+ const shown=[...past.slice(-1),...future.slice(0,5)];
+ const rows=shown.map(x=>{
+  const key=x.year+'-'+x.event,prep=state.nationalTeamPreparations?.[key],stages=prep?.stages||[],record=state.nationalTeamResults?.[key],remaining=Math.round((Date.UTC(x.year,x.month-1,1)-today)/86400000);
+  const stage=record?(record.finished?'대회 종료 · '+(record.medal||'결과 확인'):'대회 진행 중'):remaining<0?'개최일 경과 · 대회 기록 없음':remaining>60?'예비 명단 발표 예정':remaining>30?'예비 명단 '+(stages.includes(60)?'발표 완료':'발표 예정'):remaining>14?'최종 명단 '+(stages.includes(30)?'확정':'확정 예정'):'대표팀 '+(stages.includes(14)?'소집 완료':'소집 예정');
+  const countdown=remaining<0?'개최일 경과':remaining===0?'D-DAY':'D-'+remaining;
+  return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #dce5f0"><div><strong>'+esc(x.year+' '+x.event)+'</strong><div style="font-size:13px;color:#61758b;margin-top:4px">'+x.year+'.'+String(x.month).padStart(2,'0')+'.01 · '+esc(stage)+'</div></div><strong style="white-space:nowrap;color:#24639a">'+countdown+'</strong></div>';
+ }).join('');
+ return '<section class="dashboard-section" style="margin-bottom:16px"><h2>국제대회 개최 일정</h2><p class="profile-note">최근 대회와 향후 일정 · 예비 명단 D-60 / 최종 명단 D-30 / 대표팀 소집 D-14</p>'+rows+'</section>';
 }
 function nationalTeamPanel(){
  const records=Object.values(state.nationalTeamResults||{}).sort((a,b)=>b.year-a.year);
