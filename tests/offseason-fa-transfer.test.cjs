@@ -19,6 +19,7 @@ const context=vm.createContext({state,Math,Number,Map,Set,
  faCompensationTransfer:(p,from,to,grade,salary)=>{const amount=salary*2;state.teams[to].budget-=amount;state.teams[from].budget+=amount;state.faCompensations=[{from,to,grade,amount}];return true},
  publishMajorFaArticle:()=>{},honorRetiredPlayers:()=>{},publishReserveRoster:()=>{},clubNotice:()=>{},money:x=>String(x),
 });
+vm.runInContext(source.slice(source.indexOf('function playerRetirementProbability('),source.indexOf('function runOffseasonContracts(')),context);
 vm.runInContext(source.slice(start,end),context);
 vm.runInContext('runOffseasonContracts()',context);
 assert.equal(player.teamId,1,'FA signs with new club');
