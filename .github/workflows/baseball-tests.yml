@@ -41,3 +41,5 @@ jobs:
         run: node tests/offseason-fa-transfer.test.cjs
       - name: FA compensation failure recovery
         run: node tests/fa-compensation-failure.test.cjs
+      - name: FA rollback integration
+        run: node tests/fa-rollback-integration.test.cjs
