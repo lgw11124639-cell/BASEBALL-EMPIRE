@@ -628,7 +628,7 @@ function nationalTeamTournamentDay(){
    record.games=record.matchResults.length;record.wins=record.matchResults.filter(g=>g.won).length;record.losses=record.games-record.wins;
    clubNotice('국가대표',year+' '+event+' '+round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
    const rivalName=INTERNATIONAL_COUNTRIES[game.opponent]||game.opponent;
-   const roundLabel=String(round).replace(/([A-Z])조\\s*\\d+-\\d+/,'$1조');
+   const roundLabel=String(round).replace(/([A-Z])조\s*\d+-\d+/,'$1조').replace(/(준결승|결승|8강|4강)\s*\d+$/,'$1');
    const topHitter=(game.homeBatters||[]).filter(p=>(Number(p.atBats)||0)+(Number(p.walks)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0))[0];
    const topPitcher=(game.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0).sort((a,b)=>(Number(b.outs)||0)-(Number(a.outs)||0))[0];
    const krInnings=Array.isArray(game.homeInnings)?game.homeInnings:[];
@@ -1729,13 +1729,40 @@ function bindArticlePlayerLinks(modal){
   if(overlay){modal.dataset.articleBehindPlayer='1';modal.style.visibility='hidden';overlay.style.position='fixed';overlay.style.zIndex='2147483647';}
  });
 }
+function nationalArchivedArticleText(n){
+ const body=String(n.body||'').trim(),title=String(n.title||'');
+ const event=title.match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
+ if(!event)return body;
+ const records=Object.values(state.nationalTeamResults||{});
+ const rec=records.find(r=>Number(r.year)===Number(event[1])&&r.event===event[2]);
+ if(!rec)return body;
+ const name=code=>INTERNATIONAL_COUNTRIES[code]||code;
+ const games=rec.matchResults||[];
+ if(/대회 종료/.test(title)){
+  const final=games.find(g=>g.round==='결승');
+  const summary='대한민국 대표팀이 '+event[1]+' '+event[2]+'를 '+(rec.medal||'대회 종료')+'로 마무리했다. '+games.filter(g=>g.won).length+'승 '+games.filter(g=>!g.won).length+'패를 기록했다.';
+  const result=final?' 결승전에서 '+name(final.opponent)+'을 '+final.homeRuns+'대'+final.awayRuns+'로 '+(final.won?'꺾었다.':'상대해 패했다.'):'';
+  return summary+result;
+ }
+ const round=title.match(/(준결승\s*\d*|결승\s*\d*|조별리그\s*[A-Z]조\s*\d+-\d+)/);
+ if(!round)return body;
+ const found=games.filter(g=>g.round===round[1]);
+ if(found.length!==1)return body;
+ const g=found[0],bat=(g.homeBatters||[]).filter(p=>(Number(p.atBats)||0)>0).sort((x,y)=>(Number(y.runsBattedIn)||0)-(Number(x.runsBattedIn)||0)||(Number(y.hits)||0)-(Number(x.hits)||0))[0];
+ const pitch=(g.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0).sort((x,y)=>(Number(y.outs)||0)-(Number(x.outs)||0))[0];
+ const lines=['대한민국이 '+event[1]+' '+event[2]+' '+round[1].replace(/\s*\d+$/,'')+'에서 '+name(g.opponent)+'을 상대로 '+g.homeRuns+'대'+g.awayRuns+'로 '+(g.won?'승리했다.':'패했다.')];
+ if(Number(g.awayRuns)===0)lines.push('한국 투수진은 상대 타선을 무실점으로 막았다.');
+ if(bat)lines.push('타선에서는 '+bat.name+'이 '+(Number(bat.hits)||0)+'안타 '+(Number(bat.runsBattedIn)||0)+'타점을 기록했다.');
+ if(pitch&&(!bat||String(pitch.id)!==String(bat.id)))lines.push('마운드에서는 '+pitch.name+'이 '+baseballIP(pitch.outs)+'이닝 동안 삼진 '+(Number(pitch.strikeouts)||0)+'개를 잡았다.');
+ return lines.join(' ');
+}
 function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
  const modal=document.createElement('div');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
  const category=(n.kind==='국가대표'||n.kind==='국가대표 기사')?'국가대표·국제대회':n.kind==='FA 특집'?'FA·이적 시장':n.kind==='국가대표 기사'?'국가대표·국제대회':n.kind==='시즌 시상'?'시즌 타이틀·수상':'리그 대기록';
- const body=String(n.body||'').trim();
+ const body=(n.kind==='국가대표'||n.kind==='국가대표 기사')?nationalArchivedArticleText(n):String(n.body||'').trim();
  const clubIds=(Array.isArray(n.teams)?n.teams:[]).map(Number).filter(Number.isFinite);
  const articleClubs=clubIds.map(id=>state.teams.find(t=>Number(t.id)===id)).filter(Boolean);
  const isNational=n.kind==='국가대표 기사'||(n.kind==='국가대표'&&/대회 종료|WBC|결승|준결승|조별리그|8강|3위 결정전/.test(n.title||''));
@@ -1749,8 +1776,9 @@ function openBaseballNewsArticle(id){
  const awardFeature=newsAwardFeature(n);
  
  const articleBody=isNational?body.replace(/금\s+KR\s*\/\s*은\s+MX\s*\/\s*동\s+PA/g,'금 대한민국 / 은 멕시코 / 동 파나마').split('소속 구단별 명단:')[0].replace(/감독은 국가대표 감독이며/g,'감독 선임 정보 확인 중이며').replace(/(\d{4})-(\d{2})-(\d{2}) 열린/g,(_,y,m,d)=>y+'년 '+Number(m)+'월 '+Number(d)+'일 열린'):body;
- const cleanArticleTitle=isNational?String(n.title).replace(/([A-Z])조\s*\d+-\d+/g,'$1조').replace(/(준결승|8강|4강|결승)\s*\d+(?=\s*[·…]|$)/g,'$1'):String(n.title);
- const articleMentions=nationalRoster.filter(p=>p.name&&articleBody.includes(p.name)).slice(0,5);
+ const cleanArticleTitle=isNational?String(n.title).replace(/([A-Z])조\s*\d+-\d+/g,'$1조').replace(/(준결승|8강|4강|결승)\s*\d+(?=\s*[·…]|$)/g,'$1').replace(/\b(KR|MX|PA)\b/g,code=>({KR:'대한민국',MX:'멕시코',PA:'파나마'}[code]||code)):String(n.title);
+ const seenNationalNames=new Set();
+ const articleMentions=nationalRoster.filter(p=>{if(!p.name||!articleBody.includes(p.name)||seenNationalNames.has(p.name))return false;seenNationalNames.add(p.name);return true;}).slice(0,5);
  const nationalLinks=isNational&&articleMentions.length?'<details style="margin-top:22px;border-top:1px solid #dbe4ed;padding-top:14px"><summary style="font-weight:800;cursor:pointer">기사에 등장한 선수 '+articleMentions.length+'명</summary><div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:12px">'+articleMentions.map(p=>'<button type="button" data-article-player="'+esc(String(p.id))+'" style="border:1px solid #dbe4ed;border-radius:9px;padding:9px 12px;background:#f4f8fc;color:#17375a;font-weight:700">'+esc(p.name)+'</button>').join('')+'</div></details>':'';
  const paragraphs=articleBody.split(/(?<=[.!?。])\s+(?=[가-힣A-Za-z0-9])/).reduce((arr,sentence,i)=>{if(i%2===0)arr.push(sentence);else arr[arr.length-1]+=' '+sentence;return arr},[]).filter(Boolean);
  modal.innerHTML='<div style="position:sticky;top:0;background:#fff;border-bottom:2px solid #3476b8;z-index:2;padding:calc(env(safe-area-inset-top, 0px) + 15px) 18px 17px;display:flex;justify-content:space-between;align-items:center;gap:12px"><div style="min-width:0"><small style="display:block;color:#6383a5;font-size:12px;letter-spacing:1px">BASEBALL EMPIRE SPORTS · '+esc(seasonDateLabel(n.day))+'</small></div><button type="button" class="news-close" style="flex-shrink:0;background:#e8f1fb;color:#174674;border:0;border-radius:10px;padding:12px 14px;font-weight:800">✕ 닫기</button></div><article class="news-article-body editorial-story" style="max-width:760px;margin:0 auto;padding:24px 20px 70px"><div class="article-category">스포츠 <span>›</span> 야구 <span>›</span> '+esc(category)+'</div><h1 class="editorial-headline">'+esc(cleanArticleTitle)+'</h1><div class="editorial-meta"><strong>BASEBALL EMPIRE 스포츠팀</strong><span>'+esc(seasonDateLabel(n.day))+' | '+esc(n.kind)+'</span></div>'+(isNational?nationalFlagFeature:logoFeature)+'<div class="editorial-copy" style="border-top:1px solid #dbe4ed;margin-top:24px;padding-top:24px">'+(paragraphs.length?paragraphs.map(p=>'<p style="margin:0 0 22px;line-height:1.85;overflow-wrap:anywhere;word-break:keep-all">'+articleLinkedText(p,n)+'</p>').join(''):'<p>기사 내용이 없습니다.</p>')+'</div>'+nationalLinks+nationalRosterFeature+awardFeature+seasonStatsFeature+'<p class="article-note" style="margin-top:35px">본 기사는 게임 내 공식 발표 및 기록 데이터를 바탕으로 작성됐습니다.</p></article>';
