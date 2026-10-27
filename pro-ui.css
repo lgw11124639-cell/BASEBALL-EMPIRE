@@ -175,3 +175,22 @@
 .be-home-main .be-fixture-chip{display:inline-flex!important;align-items:center;gap:5px;max-width:100%;min-width:0;padding:7px 10px!important;border:1px solid #d4e3f3!important;border-radius:8px!important;background:#fff!important;color:#24496e!important;font-size:12px!important;line-height:1.35;overflow-wrap:anywhere}
 .be-home-main .be-fixture-chip b{color:#1767ac;white-space:nowrap}
 @media(max-width:760px){.be-home-main .be-fixture-chip{font-size:11px!important;padding:6px 8px!important}}
+
+.be-home-main .be-season-compact{padding:14px!important;margin:0!important}
+.be-home-main .be-compact-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.be-home-main .be-compact-head>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.be-home-main .be-compact-head small{font-size:10px;color:#67819c}
+.be-home-main .be-compact-head strong{font-size:16px;color:#173a60}
+.be-home-main .be-compact-stat{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.be-home-main .be-compact-stat b{font-size:21px;color:#2468a8}
+.be-home-main .be-compact-stat span{font-size:12px;color:#6a8096}
+.be-home-main .be-compact-agenda{margin-top:12px;padding:10px 13px;border:1px solid #dbe6f1;border-radius:10px;background:#fff}
+.be-home-main .be-compact-agenda h3{font-size:14px;margin:0 0 8px}
+.be-home-main .be-compact-agenda h3 small{font-size:11px;font-weight:400;color:#71869d}
+.be-home-main .be-agenda-line{display:grid;grid-template-columns:90px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #e8edf3}
+.be-home-main .be-agenda-date{font-size:12px;color:#55718e;white-space:nowrap}
+.be-home-main .be-agenda-detail{display:flex;flex-direction:column;gap:3px;min-width:0}
+.be-home-main .be-agenda-detail b{font-size:13px;overflow-wrap:anywhere}
+.be-home-main .be-agenda-detail small{font-size:11px;color:#70859c}
+.be-home-main .be-agenda-line em{font-size:11px;font-style:normal;color:#2468a8}
+@media(max-width:760px){.be-home-main .be-season-compact{padding:10px!important}.be-home-main .be-compact-head strong{font-size:14px}.be-home-main .be-compact-stat{flex-direction:column;gap:0;align-items:end}.be-home-main .be-compact-stat span{font-size:10px}.be-home-main .be-agenda-line{grid-template-columns:66px minmax(0,1fr) auto;gap:6px}.be-home-main .be-agenda-date{font-size:11px}.be-home-main .be-agenda-detail b{font-size:12px}}
