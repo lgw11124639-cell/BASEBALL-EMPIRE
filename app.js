@@ -603,12 +603,12 @@ function nationalTeamPreparationDay(){
  }
 }
 function nationalTeamTournamentDay(){
- const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,day=now.getDate();
+ const now=seasonDate(state.day),month=now.getMonth()+1,day=now.getDate();
  nationalTeamPreparationDay();
- const asian=(year-2026)%4===0&&month===10,olympic=(year-2028)%4===0&&month===8,wbc=year>=2027&&(year-2027)%4===0&&month===3;
+ const asian=(now.getFullYear()-2026)%4===0&&month===10,olympic=(now.getFullYear()-2028)%4===0&&month===8,wbc=now.getFullYear()>=2027&&(now.getFullYear()-2027)%4===0&&month===3;
  const pending=Object.entries(state.nationalTeamResults||{}).find(([k,v])=>v&&!v.finished&&v.start&&Date.parse(v.start+'T00:00:00')<=now.getTime()&&Date.parse(v.start+'T00:00:00')>=now.getTime()-50*86400000);
  if(!asian&&!olympic&&!wbc&&!pending)return;
- const event=pending?pending[1].event:(asian?'아시안게임':olympic?'올림픽':'WBC'),key=pending?pending[0]:year+'-'+event;
+ const event=pending?pending[1].event:(asian?'아시안게임':olympic?'올림픽':'WBC'),year=pending?Number(pending[1].year):now.getFullYear(),key=pending?pending[0]:year+'-'+event;
  state.nationalTeamResults=state.nationalTeamResults||{};
  let record=state.nationalTeamResults[key];
  if(!record){
