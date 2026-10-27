@@ -1300,6 +1300,52 @@ function seasonProgressPanel(){
    add(iso(base),competition.event,competition.event+' · 대회 개막 기준일','실제 경기 일정은 대회 엔진 기록 기준',-1);
   }
  }
+ // Mirror the tournament engine's group round-robin so Korea's opponents appear on exact calendar days.
+ for(let y=d.getFullYear()-1;y<=d.getFullYear()+1;y++){
+  const tournaments=[];
+  if(y>=2027&&(y-2027)%4===0)tournaments.push({event:'WBC',month:3});
+  if((y-2028)%4===0)tournaments.push({event:'올림픽',month:8});
+  if((y-2026)%4===0)tournaments.push({event:'아시안게임',month:10});
+  for(const {event,month} of tournaments){
+   const record=state.nationalTeamResults?.[y+'-'+event];
+   const groups=record?.groups||internationalTournamentGroups(event);
+   const group=groups.find(g=>g.includes('KR'));
+   if(!group)continue;
+   const start=record?.start||y+'-'+String(month).padStart(2,'0')+'-01';
+   const startDate=new Date(start+'T12:00:00');
+   const fixtures=[];
+   for(let gi=0;gi<groups.length;gi++){
+    const codes=groups[gi],slots=codes.map((_,i)=>i);
+    if(slots.length%2)slots.push(-1);
+    const days=new Map();
+    for(let round=0;round<slots.length-1;round++){
+     for(let k=0;k<slots.length/2;k++){const x=slots[k],z=slots[slots.length-1-k];if(x>=0&&z>=0)days.set(Math.min(x,z)+'-'+Math.max(x,z),round+1)}
+     slots.splice(1,0,slots.pop());
+    }
+    for(let i=0;i<codes.length;i++)for(let j=i+1;j<codes.length;j++)fixtures.push({home:codes[i],away:codes[j],round:'조별리그 '+String.fromCharCode(65+gi)+'조 '+(i+1)+'-'+(j+1),day:days.get(i+'-'+j)});
+   }
+   const occupied=new Map();
+   for(const f of fixtures){
+    let scheduled=Math.max(1,Number(f.day)||1);
+    while((occupied.get(f.home)||new Set()).has(scheduled)||(occupied.get(f.away)||new Set()).has(scheduled))scheduled++;
+    f.day=scheduled;
+    for(const code of [f.home,f.away]){if(!occupied.has(code))occupied.set(code,new Set());occupied.get(code).add(scheduled)}
+   }
+   for(const f of fixtures.filter(x=>x.home==='KR'||x.away==='KR')){
+    const opponent=f.home==='KR'?f.away:f.home;
+    const playedGame=(record?.matchResults||[]).find(g=>g.round===f.round&&g.opponent===opponent);
+    const fixtureDate=new Date(startDate);fixtureDate.setDate(fixtureDate.getDate()+f.day-1);
+    const date=playedGame?.date||iso(fixtureDate);
+    const score=playedGame?' · '+playedGame.homeRuns+':'+playedGame.awayRuns:'';
+    add(date,event,'대한민국 vs '+(INTERNATIONAL_COUNTRIES[opponent]||opponent)+score,f.round+(playedGame?' · 경기 종료':' · 예정'),-5);
+   }
+   // Knockout opponents are only confirmed after the tournament bracket is decided.
+   for(const game of record?.matchResults||[]){
+    if(String(game.round||'').startsWith('조별리그')||!game.date)continue;
+    add(game.date,event,'대한민국 vs '+(INTERNATIONAL_COUNTRIES[game.opponent]||game.opponent)+' · '+game.homeRuns+':'+game.awayRuns,game.round+' · 경기 종료',-5);
+   }
+  }
+ }
  const ordered=events.sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
  const viewMonth=beCalendarMonth||current.slice(0,7),[cy,cm]=viewMonth.split('-').map(Number),first=new Date(cy,cm-1,1,12),days=new Date(cy,cm,0).getDate(),pad=first.getDay();
  const selected=beCalendarSelected&&beCalendarSelected.startsWith(viewMonth)?beCalendarSelected:current.startsWith(viewMonth)?current:'';
