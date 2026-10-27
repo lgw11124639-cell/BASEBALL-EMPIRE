@@ -342,6 +342,7 @@ function openClubNotice(id){
  const playerLinks=players.map(p=>'<button type="button" data-notice-player="'+esc(p.id)+'" style="display:block;width:100%;padding:14px;margin:8px 0;text-align:left;border:1px solid #dce7f1;border-radius:10px;background:#f2f7fc;color:#173e6c;font-weight:700">'+esc(p.name)+' · 선수 프로필 보기 →</button>').join('');
  const draftHtml=isDraft&&draft?.length?'<h2>라운드별 지명 결과</h2>'+Array.from({length:11},(_,i)=>'<section><h3>'+(i+1)+'라운드</h3>'+draft.filter(x=>Number(x.round)===i+1).map(x=>'<button type="button" data-notice-player="'+esc(x.playerId)+'" style="display:block;width:100%;text-align:left;padding:12px;border:0;border-bottom:1px solid #dce7f1;background:transparent;color:#173e6c">'+esc(x.pick+'순위 · '+(state.teams[x.teamId]?.name||'구단')+' · '+x.name+' ('+x.position+')')+'</button>').join('')+'</section>').join(''):'';
  const modal=document.createElement('div');
+ modal.classList.add('be-editorial-modal');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
  const report=!isDraft&&['연봉협상','육성 보고','재정 보고','월간 운영보고','스카우트 보고'].includes(n.kind);
  const subtitle=report?'구단 운영 보고서':'스포츠 › 야구 › 구단 소식';
