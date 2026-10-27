@@ -135,3 +135,13 @@
 .nt-page .nt-earlier-rounds .nt-bracket-game .nt-semi-away{text-align:right!important}
 .nt-page .nt-earlier-rounds .nt-bracket-game .nt-semi-score{display:block!important;min-width:0!important;width:76px!important;justify-self:center!important;text-align:center!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important;font-weight:800!important}
 @media(max-width:760px){.nt-page .nt-earlier-rounds .nt-bracket{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}.nt-page .nt-earlier-rounds .nt-bracket-game{padding:12px 14px!important}}
+
+/* Unified national-team match layout: quarterfinal, semifinal, final, bronze, Korea fixtures */
+.nt-page .nt-finals-featured>div>p{margin:12px 0 0!important}
+.nt-page .nt-finals-featured .nt-semi-scoreline,.nt-page .nt-match .nt-match-main{display:grid!important;grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important;align-items:center!important;gap:6px!important;width:100%!important;max-width:none!important;min-width:0!important;text-align:initial!important}
+.nt-page .nt-finals-featured .nt-semi-team{display:block!important;min-width:0!important;word-break:keep-all!important;overflow-wrap:anywhere!important;line-height:1.4!important}
+.nt-page .nt-finals-featured .nt-semi-home,.nt-page .nt-match-main>b:first-child{text-align:left!important}
+.nt-page .nt-finals-featured .nt-semi-away,.nt-page .nt-match-main>b:last-child{text-align:right!important}
+.nt-page .nt-finals-featured .nt-semi-score,.nt-page .nt-match-main>strong{width:76px!important;justify-self:center!important;text-align:center!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important}
+.nt-page .nt-match-main>b{min-width:0!important;word-break:keep-all!important;overflow-wrap:anywhere!important}
+@media(max-width:760px){.nt-page .nt-finals-featured .nt-semi-scoreline,.nt-page .nt-match .nt-match-main{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important}}
