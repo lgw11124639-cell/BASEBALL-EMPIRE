@@ -606,8 +606,9 @@ function nationalTeamTournamentDay(){
  const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,day=now.getDate();
  nationalTeamPreparationDay();
  const asian=(year-2026)%4===0&&month===10,olympic=(year-2028)%4===0&&month===8,wbc=year>=2027&&(year-2027)%4===0&&month===3;
- if(!asian&&!olympic&&!wbc)return;
- const event=asian?'아시안게임':olympic?'올림픽':'WBC',key=year+'-'+event;
+ const pending=Object.entries(state.nationalTeamResults||{}).find(([k,v])=>v&&!v.finished&&v.start&&Date.parse(v.start+'T00:00:00')<=now.getTime()&&Date.parse(v.start+'T00:00:00')>=now.getTime()-50*86400000);
+ if(!asian&&!olympic&&!wbc&&!pending)return;
+ const event=pending?pending[1].event:(asian?'아시안게임':olympic?'올림픽':'WBC'),key=pending?pending[0]:year+'-'+event;
  state.nationalTeamResults=state.nationalTeamResults||{};
  let record=state.nationalTeamResults[key];
  if(!record){
