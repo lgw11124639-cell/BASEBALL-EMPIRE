@@ -66,3 +66,47 @@
  .nt-page .nt-match-status { text-align: left !important; }
  .nt-page .nt-panel table th,.nt-page .nt-panel table td { padding: 7px 6px !important; }
 }
+
+/* Unified detail surfaces: desktop modal sizing, typography, single scroll area. */
+@media (min-width: 900px) {
+  body .be-editorial-modal {
+    inset: 4vh max(24px,calc((100vw - 1160px)/2)) !important;
+    width: auto !important; height: 92vh !important;
+    border: 1px solid #d6e2f0 !important; border-radius: 18px !important;
+    box-shadow: 0 24px 85px #142d4d40 !important;
+    background: #fff !important; overscroll-behavior: contain !important;
+    z-index: 999999 !important;
+  }
+  body .be-editorial-modal > header {
+    padding: 15px 26px !important; border-bottom: 1px solid #d8e4f0 !important;
+    background: #f9fbfe !important; border-radius: 18px 18px 0 0 !important;
+  }
+  body .be-editorial-modal .editorial-story {
+    width: min(100% - 56px, 880px) !important; max-width: 880px !important;
+    box-sizing: border-box !important; padding: 32px 16px 70px !important;
+    margin: 0 auto !important; font-size: 15px !important;
+    line-height: 1.85 !important;
+  }
+  body .player-overlay {
+    padding: 3vh 24px !important; align-items: center !important;
+    overflow: hidden !important; z-index: 999990 !important;
+  }
+  body .player-overlay .player-panel.pro-profile {
+    width: min(94vw, 1380px) !important; max-width: 1380px !important;
+    height: 94vh !important; max-height: 94vh !important;
+    border-radius: 18px !important; overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    box-shadow: 0 24px 80px #061b3540 !important;
+  }
+  body .player-overlay .profile-top {
+    position: sticky !important; top: 0 !important; z-index: 8 !important;
+  }
+  body .player-overlay .profile-content { padding: 22px 28px 48px !important; }
+  body .player-overlay .profile-facts { grid-template-columns: repeat(4,minmax(0,1fr)) !important; }
+  body .player-overlay .profile-banner { padding: 24px 28px !important; }
+  body .player-overlay .profile-art { max-width: 210px !important; }
+  body .player-overlay .profile-name { font-size: 32px !important; }
+}
+@media (min-width: 900px) and (max-width: 1199px) {
+  body .player-overlay .profile-facts { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+}
