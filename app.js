@@ -2052,7 +2052,7 @@ function nationalTeamPanel(){
   const korean=pair.includes('KR');
   const game=korean?matches.find(g=>String(g.round).startsWith('준결승')&&pair.includes(g.opponent)):other.find(g=>String(g.round).startsWith('준결승')&&pair.includes(g.home)&&pair.includes(g.away));
   const score=game?(korean?(pair[0]==='KR'?game.homeRuns+' : '+game.awayRuns:game.awayRuns+' : '+game.homeRuns):game.home===pair[0]?game.homeRuns+' : '+game.awayRuns:game.awayRuns+' : '+game.homeRuns):'예정';
-  return '<div class="nt-bracket-game"><small>준결승 '+(i+1)+'</small><div>'+esc(name(pair[0]))+' <strong>'+esc(score)+'</strong> '+esc(name(pair[1]))+'</div></div>';
+  return '<div class="nt-bracket-game"><small>준결승 '+(i+1)+'</small><div class="nt-semi-scoreline"><span class="nt-semi-team nt-semi-home">'+esc(name(pair[0]))+'</span><strong class="nt-semi-score">'+esc(score)+'</strong><span class="nt-semi-team nt-semi-away">'+esc(name(pair[1]))+'</span></div></div>';
  }).join('');
  const medalHtml=!legacyUnverified&&selected.finished&&medals.gold?'<div class="nt-medals"><span>🥇 '+esc(name(medals.gold))+'</span><span>🥈 '+esc(name(medals.silver))+'</span><span>🥉 '+esc(name(medals.bronze))+'</span></div>':'<p class="nt-note">메달은 결승 및 3위 결정전 종료 후 확정됩니다.</p>';
  const finals=finalOrder.length===4?'<div class="nt-final-order">'+finalOrder.map((code,i)=>'<span>'+(i+1)+'위 '+esc(name(code))+'</span>').join('')+'</div>':'';
