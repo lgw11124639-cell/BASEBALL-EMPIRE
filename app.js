@@ -1225,10 +1225,30 @@ function seasonProgressPanel(){
    add(iso(date),event,title,'완료된 대표팀 일정',2);
   }
  }
+ // Non-league milestones use the same dates and conditions as the simulation engine.
+ const year=d.getFullYear(),draftYear=year+1;
+ const draftDone=state.lastOfficeDraftYear===draftYear||!!state.draftResults?.[draftYear]?.length;
+ if(!draftDone)add(year+'-09-15','신인드래프트',draftYear+' 신인드래프트','프런트 자동 지명 · 9월 15일부터',-2);
+ if(done){
+  if(ps&&!ps.finished){
+   const stages=['와일드카드 결정전','준플레이오프','플레이오프','한국시리즈'];
+   const stage=stages[Math.min(3,Math.max(0,Number(ps.stage)||0))];
+   add(current,'가을야구',stage+(ps.series?' · 진행 중':' · 대진 준비'),'포스트시즌 · 하루 진행 시 다음 경기',-3);
+  }else if(!ps){
+   add(current,'가을야구','포스트시즌 대진 확정 대기','정규시즌 종료 · 하루 진행 시 시작',-3);
+  }else{
+   add(current,'가을야구','한국시리즈 종료','포스트시즌 종료',-3);
+  }
+ }
+ if(!state.offseasonContractsDone?.[state.year]){
+  const faStart=year+'-11-10';
+  if(faStart>=current)add(faStart,'FA·연봉협상','FA·연봉협상 처리 시작','한국시리즈 종료 후 진행 · 일정은 조건부',-1);
+  else if(done&&ps?.finished)add(current,'FA·연봉협상','FA·연봉협상 처리 대기','11월 10일 이후 · 한국시리즈 종료 조건',-1);
+ }
  const ordered=events.sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
- const visible=ordered.slice(0,6);
+ const visible=ordered.filter(x=>x.date>=current).slice(0,8);
  const render=x=>'<div class="be-agenda-line"><span class="be-agenda-date">'+esc(label(new Date(x.date+'T12:00:00')))+'</span><span class="be-agenda-detail"><b>'+esc(x.title)+'</b><small>'+esc(x.kind==='KBO'?'정규시즌 · '+x.detail:x.kind+' · '+x.detail)+'</small></span>'+(x.date===current?'<em>오늘</em>':'')+'</div>';
- return '<div class="be-season-progress be-season-unified be-season-compact"><div class="be-compact-head"><div><small>SEASON '+esc(state.year)+'</small><strong>'+esc(seasonDateLabel(state.day))+' · '+esc(calendarPhase(d))+'</strong></div><div class="be-compact-stat"><b>'+pct+'%</b><span>'+played+' / 144경기</span></div></div><div class="be-progress-track"><div style="width:'+pct+'%"></div></div><div class="be-compact-agenda"><h3>경기 일정 <small>오늘부터 · 최대 6건</small></h3>'+(visible.length?visible.map(render).join(''):'<p>현재 확인된 경기 일정이 없습니다.</p>')+'</div></div>';
+ return '<div class="be-season-progress be-season-unified be-season-compact"><div class="be-compact-head"><div><small>SEASON '+esc(state.year)+'</small><strong>'+esc(seasonDateLabel(state.day))+' · '+esc(calendarPhase(d))+'</strong></div><div class="be-compact-stat"><b>'+pct+'%</b><span>'+played+' / 144경기</span></div></div><div class="be-progress-track"><div style="width:'+pct+'%"></div></div><div class="be-compact-agenda"><h3>경기 일정 <small>주요 일정 포함 · 최대 8건</small></h3>'+(visible.length?visible.map(render).join(''):'<p>현재 확인된 경기 일정이 없습니다.</p>')+'</div></div>';
 }
 function publicNoticeBody(n){let body=String(n?.body||'');if(n?.kind==='월간 운영보고'&&/정규시즌|1군 0경기/.test(body)){const m=String(n.title||'').match(/(\d{4})년\s*(\d{1,2})월/),y=Number(m?.[1]),month=Number(m?.[2]),id=n.teams?.[0];if(y&&month&&id!=null){const ps=(state.postseasons?.[y]?.games||[]).filter(g=>{const d=g.date?new Date(g.date+'T12:00:00'):seasonDate(g.day);return d.getFullYear()===y&&d.getMonth()+1===month&&(Number(g.home)===Number(id)||Number(g.away)===Number(id))});if(ps.length&&!body.includes('포스트시즌 ')){const wins=ps.filter(g=>Number(g.winner)===Number(id)).length;body+='\n\n포스트시즌 별도 집계: '+ps.length+'경기 '+wins+'승 '+(ps.length-wins)+'패. 기존 1군 경기 수는 정규시즌만 집계한 값입니다.'}}}if(n?.kind==='육성 보고'){const match=body.match(/선수별 변동:\s*(.*)$/);const names=match?.[1]?.split(/,\s*/).map(x=>x.replace(/\s*\(\s*\d+\s*→\s*\d+\s*\)/g,'').replace(/\s*\d+\s*→\s*\d+/g,'').trim()).filter(Boolean)||[];body=body.replace(/\s*선수별 변동:.*$/,'').replace(/\s*성장:\s*.*$/,'');return body+(names.length?'\n\n대상 선수: '+names.join(', '):'\n\n대상 선수 상세 기록은 남아 있지 않습니다.')+'\n선수 능력치 수치는 비공개입니다.'}return body}
 function homeReportsPanel(){const notices=(state.clubNotices||[]).filter(n=>Number(n.year)===Number(state.year)&&(n.teams||[]).some(id=>Number(id)===Number(state.teamId))).slice(-120).reverse();const chosen=notices.filter(n=>['월간 운영보고','육성 보고','FA','연봉협상','지도자','시즌 시상','포스트시즌','트레이드','영입','방출','신인 드래프트','1군 콜업','1군 말소'].some(k=>String(n.kind).includes(k))).filter(n=>n.kind!=='육성 보고'||!(state.clubNotices||[]).some(x=>x.kind==='월간 운영보고'&&x.year===n.year&&(x.teams||[]).includes(state.teamId)&&seasonDate(x.day)>seasonDate(n.day))).slice(0,6);return '<section class="dashboard-section be-reports"><div class="section-title"><div><span class="section-kicker">CLUB REPORTS</span><h2>구단 주요 보고</h2></div></div><div class="be-report-list">'+(chosen.length?chosen.map(n=>'<button type="button" class="be-report-item" data-club-notice="'+n.id+'"><span><small>'+esc(n.kind)+' · '+esc(seasonDateLabel(n.day))+'</small><strong>'+esc(n.kind==='육성 보고'?'선수 육성 현황 보고':n.kind==='시즌 시상'?awardNoticeTitle(n):n.title)+'</strong></span><span aria-hidden="true">›</span></button>').join(''):'<p>아직 주요 보고가 없습니다.</p>')+'</div></section>'}
