@@ -124,3 +124,11 @@
 .be-season-dated-events>span{display:inline-flex;gap:5px;align-items:center;background:#fff;border:1px solid #d8e4f0;border-radius:7px;padding:5px 8px;font-size:11px;color:#476584;white-space:nowrap}
 .be-season-dated-events b{color:#1d548b;font-variant-numeric:tabular-nums}
 @media(max-width:760px){.be-season-phase-header{display:block}.be-season-dated-events{justify-content:flex-start;min-width:0;margin-top:7px;gap:5px}.be-season-dated-events>span{font-size:10px;padding:5px 7px}}
+
+/* National tournament: consistent semifinal cards on desktop and mobile */
+.nt-page .nt-earlier-rounds .nt-bracket{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;align-items:stretch!important}
+.nt-page .nt-earlier-rounds .nt-bracket-game{box-sizing:border-box;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:9px!important;min-width:0!important;width:100%!important;height:100%!important;margin:0!important;padding:14px 16px!important;text-align:center!important}
+.nt-page .nt-earlier-rounds .nt-bracket-game>small{display:block;line-height:1.4!important}
+.nt-page .nt-earlier-rounds .nt-bracket-game>div{display:flex!important;align-items:center!important;justify-content:center!important;flex-wrap:wrap!important;gap:8px!important;min-width:0!important;line-height:1.55!important;overflow-wrap:anywhere!important}
+.nt-page .nt-earlier-rounds .nt-bracket-game>div>strong{white-space:nowrap!important;font-variant-numeric:tabular-nums!important}
+@media(max-width:760px){.nt-page .nt-earlier-rounds .nt-bracket{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}.nt-page .nt-earlier-rounds .nt-bracket-game{padding:12px 14px!important}}
