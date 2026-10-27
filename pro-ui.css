@@ -99,3 +99,20 @@
 .be-home-main .be-home-integrated-agenda .schedule-match{font-size:12px;line-height:1.45}
 .be-home-main .be-season-controls{margin-top:10px!important}
 @media(max-width:760px){.be-home-main .be-home-integrated-agenda{padding:9px 10px}.be-home-main .be-home-agenda-title{margin-bottom:6px}.be-home-main .be-home-integrated-agenda .next-schedule{padding:9px 10px!important}}
+
+/* National team: final result takes priority over earlier knockout rounds */
+.nt-page .nt-knockout-panel{display:flex;flex-direction:column;gap:12px}
+.nt-page .nt-knockout-panel>h3{margin:0!important}
+.nt-page .nt-finals-featured{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)!important;gap:12px!important;margin:0!important}
+.nt-page .nt-finals-featured>div{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:20px 22px!important;border:1px solid #dbe5f0!important;border-radius:12px!important;background:#f7faff!important}
+.nt-page .nt-finals-featured .nt-final-champ{background:#eff6ff!important;border-color:#a9c9ec!important}
+.nt-page .nt-finals-featured b{display:block;color:#365b7f;font-size:13px!important;margin-bottom:9px}
+.nt-page .nt-finals-featured .nt-final-champ b{font-size:16px!important;color:#15518b}
+.nt-page .nt-finals-featured p{margin:0!important;font-size:clamp(15px,1.25vw,23px)!important;font-weight:800!important;line-height:1.5;overflow-wrap:anywhere;color:#142f4d}
+.nt-page .nt-finals-featured .nt-final-champ p{font-size:clamp(19px,1.55vw,28px)!important}
+.nt-page .nt-earlier-rounds{border-top:1px solid #dbe5f0;padding-top:12px}
+.nt-page .nt-earlier-rounds>summary{cursor:pointer;color:#2b5d90;font-weight:700;font-size:13px;padding:8px 0}
+.nt-page .nt-earlier-rounds .nt-bracket{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+.nt-page .nt-earlier-rounds .nt-bracket-game{min-width:0;margin:0!important}
+.nt-page .nt-earlier-rounds h4{margin:12px 0 8px!important}
+@media(max-width:760px){.nt-page .nt-finals-featured{grid-template-columns:1fr!important}.nt-page .nt-finals-featured>div{padding:14px 15px!important}.nt-page .nt-earlier-rounds .nt-bracket{grid-template-columns:1fr!important}}
