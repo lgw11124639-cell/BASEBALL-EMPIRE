@@ -1225,23 +1225,30 @@ function seasonProgressPanel(){
    add(iso(date),event,title,'완료된 대표팀 일정',2);
   }
  }
- // Non-league milestones use the same dates and conditions as the simulation engine.
+ // Show offseason milestones for the current calendar year only when relevant.
  const year=d.getFullYear(),draftYear=year+1;
  const draftDone=state.lastOfficeDraftYear===draftYear||!!state.draftResults?.[draftYear]?.length;
- if(!draftDone)add(year+'-09-15','신인드래프트',draftYear+' 신인드래프트','프런트 자동 지명 · 9월 15일부터',-2);
+ if(m>=8&&!draftDone)add(year+'-09-15','신인드래프트',draftYear+' 신인드래프트','9월 15일부터 · 프런트 자동 지명',-2);
  if(done){
   if(ps&&!ps.finished){
    const stages=['와일드카드 결정전','준플레이오프','플레이오프','한국시리즈'];
    const stage=stages[Math.min(3,Math.max(0,Number(ps.stage)||0))];
-   add(current,'가을야구',stage+(ps.series?' · 진행 중':' · 대진 준비'),'포스트시즌 · 하루 진행 시 다음 경기',-3);
+   add(current,'가을야구',stage+(ps.series?' · 진행 중':' · 대진 준비'),'포스트시즌 · 다음 경기 진행 대기',-3);
   }else if(!ps){
-   add(current,'가을야구','포스트시즌 대진 확정 대기','정규시즌 종료 · 하루 진행 시 시작',-3);
+   add(current,'가을야구','포스트시즌 대진 확정 대기','정규시즌 종료 후 시작',-3);
   }
  }
- if(!state.offseasonContractsDone?.[state.year]){
+ if(m>=9&&!state.offseasonContractsDone?.[state.year]){
   const faStart=year+'-11-10';
-  if(faStart>=current)add(faStart,'FA·연봉협상','FA·연봉협상 처리 시작','한국시리즈 종료 후 진행 · 일정은 조건부',-1);
+  if(faStart>=current)add(faStart,'FA·연봉협상','FA·연봉협상 처리 시작','11월 10일 이후 · 한국시리즈 종료 조건',-1);
   else if(done&&ps?.finished)add(current,'FA·연봉협상','FA·연봉협상 처리 대기','11월 10일 이후 · 한국시리즈 종료 조건',-1);
+ }
+ if(m<=3){
+  const training=m===1?'동계 개인 훈련':m===2?'스프링캠프':m===3?'시범경기 대비 훈련':'시즌 준비';
+  add(current,'훈련',training+' 진행','감독·코치진 자동 운영',-3);
+  if(m===1)add(year+'-02-01','훈련','스프링캠프 시작','2월 훈련 단계 전환',-2);
+  if(m<=2)add(year+'-03-01','훈련','시범경기 대비 훈련','3월 훈련 단계 전환',-1);
+  if(m<=3)add(year+'-03-20','KBO','정규시즌 개막 기준일','경기 편성은 리그 일정 엔진 기준',0);
  }
  const ordered=events.sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
  const visible=ordered.filter(x=>x.date>=current).slice(0,8);
