@@ -110,3 +110,36 @@
 @media (min-width: 900px) and (max-width: 1199px) {
   body .player-overlay .profile-facts { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
 }
+
+/* Full-window PC detail dialogs and three-up lineup cards. */
+@media (min-width: 1100px) {
+  body .lineup-columns.lineup-grid-columns {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+  body .lineup-columns.lineup-grid-columns > .lineup-grid-section {
+    min-width: 0 !important; width: 100% !important; margin: 0 !important;
+  }
+  body .lineup-columns.lineup-grid-columns .lineup-grid-cell {
+    font-size: clamp(10px, .75vw, 13px) !important;
+  }
+  body .player-overlay { inset: 0 !important; padding: 0 !important; }
+  body .player-overlay .player-panel.pro-profile {
+    width: 100vw !important; max-width: none !important;
+    height: 100dvh !important; max-height: 100dvh !important;
+    border-radius: 0 !important; border: 0 !important;
+  }
+  body .be-editorial-modal {
+    inset: 0 !important; width: 100vw !important; height: 100dvh !important;
+    max-width: none !important; border: 0 !important;
+    border-radius: 0 !important; box-shadow: none !important;
+  }
+  body .be-editorial-modal > header { border-radius: 0 !important; }
+  body .be-editorial-modal .editorial-story {
+    width: min(calc(100% - 64px), 1360px) !important;
+    max-width: 1360px !important; padding: 30px 24px 90px !important;
+  }
+}
