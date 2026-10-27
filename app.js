@@ -1206,7 +1206,7 @@ function seasonProgressPanel(){
  for(let offset=0;offset<9;offset++){
   const day=state.day+offset,date=seasonDate(day),pairs=scheduledPairs(day),mine=pairs.find(([a,b])=>a===state.teamId||b===state.teamId);
   if(mine){const away=state.teams[mine[0]],home=state.teams[mine[1]];add(iso(date),'KBO',away.city+' '+away.name+' vs '+home.city+' '+home.name,(mine[1]===state.teamId?'홈':'원정')+' · 정규시즌',0)}
-  else if(offset===0&&date.getDay()===1)add(iso(date),'KBO','월요일 휴식일','정규시즌 경기 없음',3);
+  else if(offset===0&&date.getDay()===1&&!awardsFinished())add(iso(date),'KBO','월요일 휴식일','정규시즌 경기 없음',3);
  }
  for(const record of Object.values(state.nationalTeamResults||{})){
   for(const g of [...(record.matchResults||[]),...(record.otherMatches||[])]){
@@ -1236,8 +1236,6 @@ function seasonProgressPanel(){
    add(current,'가을야구',stage+(ps.series?' · 진행 중':' · 대진 준비'),'포스트시즌 · 하루 진행 시 다음 경기',-3);
   }else if(!ps){
    add(current,'가을야구','포스트시즌 대진 확정 대기','정규시즌 종료 · 하루 진행 시 시작',-3);
-  }else{
-   add(current,'가을야구','한국시리즈 종료','포스트시즌 종료',-3);
   }
  }
  if(!state.offseasonContractsDone?.[state.year]){
