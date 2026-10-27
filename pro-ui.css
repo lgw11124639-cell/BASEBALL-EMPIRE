@@ -65,3 +65,26 @@
   .be-news-surface { padding: 8px 12px !important; border-radius: 12px !important; }
   .be-news-surface .be-report-item { min-height: 60px !important; padding: 10px 3px !important; }
 }
+
+/* 2026-10-27: compact, real-date home overview across PC and mobile */
+.be-home-main .be-home-schedule-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px;margin:12px 0;align-items:stretch}
+.be-home-main .be-home-schedule-grid>.next-schedule{min-width:0;margin:0!important;padding:14px 16px!important;border:1px solid #dbe5f0;border-radius:12px;background:#f8fbff}
+.be-home-main .be-home-schedule-grid>.next-schedule>strong{display:block;margin-bottom:8px;color:#15395d}
+.be-home-main .be-national-upcoming summary{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;list-style:none}
+.be-home-main .be-national-upcoming summary::-webkit-details-marker{display:none}
+.be-home-main .be-national-upcoming summary span{color:#607b98;font-size:12px}
+.be-home-main .be-national-milestones{padding-top:8px;margin-top:10px;border-top:1px solid #dbe5f0}
+.be-home-main .be-national-milestones .schedule-match{padding:8px 0!important}
+.be-home-main .be-season-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.be-home-main .be-season-progress{margin-bottom:0}
+@media(max-width:760px){.be-home-main .be-home-schedule-grid{grid-template-columns:minmax(0,1fr);gap:8px}.be-home-main .be-home-schedule-grid>.next-schedule{padding:11px 12px!important}.be-home-main .be-season-controls button{min-height:40px}}
+/* National-team scores: consistent row alignment and compact full-width results */
+.nt-page .nt-match summary{display:grid!important;grid-template-columns:minmax(140px,1fr) minmax(240px,1.4fr) minmax(160px,1fr);align-items:center!important;gap:12px!important}
+.nt-page .nt-match-main{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);width:100%;gap:12px!important;align-items:center}
+.nt-page .nt-match-main b:first-child{text-align:right}
+.nt-page .nt-match-main b:last-child{text-align:left}
+.nt-page .nt-match-main strong{text-align:center;font-variant-numeric:tabular-nums}
+.nt-page .nt-match-status{text-align:right}
+.nt-page .nt-match{margin:0!important;border:0!important;border-bottom:1px solid #e1e9f2!important;border-radius:0!important}
+.nt-page .nt-match:last-child{border-bottom:0!important}
+@media(max-width:760px){.nt-page .nt-match summary{grid-template-columns:minmax(0,1fr)!important;gap:7px!important}.nt-page .nt-match-main{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.nt-page .nt-match-status{text-align:left}.nt-page .nt-match-main strong{font-size:1.1rem!important}}
