@@ -116,3 +116,11 @@
 .nt-page .nt-earlier-rounds .nt-bracket-game{min-width:0;margin:0!important}
 .nt-page .nt-earlier-rounds h4{margin:12px 0 8px!important}
 @media(max-width:760px){.nt-page .nt-finals-featured{grid-template-columns:1fr!important}.nt-page .nt-finals-featured>div{padding:14px 15px!important}.nt-page .nt-earlier-rounds .nt-bracket{grid-template-columns:1fr!important}}
+
+/* Date-by-date event ribbon immediately beside the current season phase */
+.be-season-phase-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:9px}
+.be-season-phase-header>strong{font-size:15px;line-height:1.7;white-space:nowrap}
+.be-season-dated-events{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px;flex:1;min-width:260px}
+.be-season-dated-events>span{display:inline-flex;gap:5px;align-items:center;background:#fff;border:1px solid #d8e4f0;border-radius:7px;padding:5px 8px;font-size:11px;color:#476584;white-space:nowrap}
+.be-season-dated-events b{color:#1d548b;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.be-season-phase-header{display:block}.be-season-dated-events{justify-content:flex-start;min-width:0;margin-top:7px;gap:5px}.be-season-dated-events>span{font-size:10px;padding:5px 7px}}
