@@ -213,3 +213,32 @@
 .be-home-main .be-cal-legend span{color:#b07827}
 .be-home-main .be-cal-next-title{margin-top:16px!important}
 @media(max-width:800px){.be-home-main .be-calendar-layout{grid-template-columns:minmax(0,1fr)}.be-home-main .be-cal-day{min-height:44px}.be-home-main .be-calendar-panel,.be-home-main .be-calendar-layout .be-compact-agenda{padding:9px}}
+
+/* Calendar usability refresh: readable dates, strong hierarchy, balanced desktop layout */
+.be-home-main .be-season-compact{padding:18px!important}
+.be-home-main .be-compact-head strong{font-size:18px!important;line-height:1.5}
+.be-home-main .be-compact-stat b{font-size:24px!important}
+.be-home-main .be-calendar-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:16px!important;margin-top:16px!important}
+.be-home-main .be-calendar-panel,.be-home-main .be-calendar-layout .be-compact-agenda{padding:18px!important;border-radius:14px!important;box-shadow:0 2px 8px rgba(20,60,110,.035)}
+.be-home-main .be-cal-header{margin-bottom:15px!important;gap:10px!important}
+.be-home-main .be-cal-header strong{font-size:19px!important;letter-spacing:-.4px}
+.be-home-main .be-cal-header button{min-width:38px!important;height:36px!important;font-size:15px!important}
+.be-home-main .be-cal-grid{gap:6px!important}
+.be-home-main .be-cal-weekday{font-size:13px!important;font-weight:700!important;padding:7px 0!important}
+.be-home-main .be-cal-weekday:nth-child(1){color:#cf5261!important}
+.be-home-main .be-cal-weekday:nth-child(7){color:#3475b3!important}
+.be-home-main .be-cal-day{min-height:65px!important;padding:9px 4px!important;border-radius:9px!important;font-size:15px!important;justify-content:center!important;transition:background .12s,border-color .12s}
+.be-home-main .be-cal-day:hover{background:#edf5ff;border-color:#96bce2}
+.be-home-main .be-cal-day b{font-size:15px!important}
+.be-home-main .be-cal-day small{font-size:11px!important;font-weight:600!important}
+.be-home-main .be-cal-dot{width:6px!important;height:6px!important}
+.be-home-main .be-cal-legend{font-size:12px!important;margin-top:13px!important}
+.be-home-main .be-compact-agenda h3{font-size:16px!important;margin:0 0 10px!important;color:#183c63}
+.be-home-main .be-cal-next-title{padding-top:13px;border-top:1px solid #e4ebf3}
+.be-home-main .be-agenda-line{grid-template-columns:90px minmax(0,1fr) auto!important;gap:12px!important;padding:13px 0!important}
+.be-home-main .be-agenda-date{font-size:13px!important;font-weight:650!important}
+.be-home-main .be-agenda-detail b{font-size:15px!important;line-height:1.4}
+.be-home-main .be-agenda-detail small{font-size:12px!important;line-height:1.45}
+.be-home-main .be-agenda-line em{font-size:12px!important}
+@media(max-width:900px){.be-home-main .be-calendar-layout{grid-template-columns:minmax(0,1fr)!important}.be-home-main .be-cal-day{min-height:58px!important}}
+@media(max-width:600px){.be-home-main .be-season-compact{padding:12px!important}.be-home-main .be-compact-head strong{font-size:14px!important}.be-home-main .be-compact-stat b{font-size:20px!important}.be-home-main .be-calendar-layout{gap:10px!important;margin-top:12px!important}.be-home-main .be-calendar-panel,.be-home-main .be-calendar-layout .be-compact-agenda{padding:11px!important}.be-home-main .be-cal-header strong{font-size:17px!important}.be-home-main .be-cal-grid{gap:3px!important}.be-home-main .be-cal-day{min-height:49px!important;padding:5px 1px!important;font-size:13px!important}.be-home-main .be-cal-day b{font-size:13px!important}.be-home-main .be-cal-day small{font-size:9px!important}.be-home-main .be-agenda-line{grid-template-columns:65px minmax(0,1fr) auto!important;gap:7px!important;padding:10px 0!important}.be-home-main .be-agenda-date{font-size:11px!important}.be-home-main .be-agenda-detail b{font-size:13px!important}.be-home-main .be-agenda-detail small{font-size:11px!important}}
