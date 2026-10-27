@@ -31,3 +31,37 @@
 .lineup-grid-columns .lineup-grid-section:nth-child(3) .lineup-grid-head span:nth-child(2),.lineup-grid-columns .lineup-grid-section:nth-child(3) .lineup-grid-row .lineup-grid-cell:nth-child(2){text-align:center!important;font-weight:400!important}
 .lineup-grid-columns .lineup-grid-head,.lineup-grid-columns .lineup-grid-row{column-gap:0!important}
 .lineup-grid-columns .lineup-grid-section .lineup-grid-row{min-height:40px}
+
+/* Shared mobile/desktop league news surface: match all-club news card. */
+.be-news-surface {
+  background: #fff !important;
+  border: 1px solid #dbe5f0 !important;
+  border-radius: 15px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 4px 16px rgba(20,49,85,.035) !important;
+}
+.be-news-surface .be-report-list,
+.be-news-surface .baseball-news-list {
+  display: flex !important; flex-direction: column !important;
+  gap: 0 !important; width: 100% !important;
+  background: #fff !important; border: 0 !important;
+}
+.be-news-surface .be-report-item {
+  display: flex !important; align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important; min-height: 58px !important;
+  margin: 0 !important; padding: 11px 6px !important;
+  background: #fff !important; color: #17375a !important;
+  border: 0 !important; border-bottom: 1px solid #e3eaf3 !important;
+  border-radius: 0 !important; text-align: left !important;
+  box-shadow: none !important; cursor: pointer !important;
+}
+.be-news-surface .be-report-item:last-child { border-bottom: 0 !important; }
+.be-news-surface .be-report-item > span:first-child { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.be-news-surface .be-report-item small { font-size: 11px !important; color: #7a91aa !important; }
+.be-news-surface .be-report-item strong { font-size: 13px !important; line-height: 1.45 !important; color: #17375a !important; }
+.be-news-surface .be-report-item:hover { background: #f5f9fe !important; }
+@media(max-width:650px) {
+  .be-news-surface { padding: 8px 12px !important; border-radius: 12px !important; }
+  .be-news-surface .be-report-item { min-height: 60px !important; padding: 10px 3px !important; }
+}
