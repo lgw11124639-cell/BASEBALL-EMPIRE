@@ -1232,8 +1232,8 @@ function seasonProgressPanel(){
  const iso=date=>date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
  const label=date=>String(date.getMonth()+1).padStart(2,'0')+'.'+String(date.getDate()).padStart(2,'0')+' ('+['일','월','화','수','목','금','토'][date.getDay()]+')';
  const current=iso(d),events=[];
- const add=(date,kind,title,detail,priority=2)=>{if(!date||date<current)return;events.push({date,kind,title,detail,priority})};
- for(let offset=0;offset<9;offset++){
+ const add=(date,kind,title,detail,priority=2)=>{if(!date)return;events.push({date,kind,title,detail,priority})};
+ for(let offset=0;offset<40;offset++){
   const day=state.day+offset,date=seasonDate(day),pairs=scheduledPairs(day),mine=pairs.find(([a,b])=>a===state.teamId||b===state.teamId);
   if(played<144&&!done&&mine){const away=state.teams[mine[0]],home=state.teams[mine[1]];add(iso(date),'KBO',away.city+' '+away.name+' vs '+home.city+' '+home.name,(mine[1]===state.teamId?'홈':'원정')+' · 정규시즌',0)}
   else if(played<144&&!done&&offset===0&&date.getDay()===1&&date.getMonth()>=2&&date.getMonth()<=9)add(iso(date),'KBO','월요일 휴식일','정규시즌 경기 없음',3);
