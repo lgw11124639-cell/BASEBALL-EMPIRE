@@ -10,7 +10,19 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 function rng(seed){let x=seed>>>0;return()=>((x=(Math.imul(x,1664525)+1013904223)>>>0)/4294967296)}
 function ri(r,a,b){return a+Math.floor(r()*(b-a+1))}
 function person(r){return FAMILY[ri(r,0,FAMILY.length-1)]+GIVEN[ri(r,0,GIVEN.length-1)]}
-function world(teamId){const r=rng(20271001);const teams=TEAMS.map((t,id)=>({id,city:t[0],name:t[1],color:t[2],trait:t[3],budget:ri(r,75,140)*1e8,fans:ri(r,20000,85000),stadium:ri(r,11000,24000),wins:0,losses:0,draws:0,staff:{president:{name:person(r),skill:ri(r,40,90)},gm:{name:person(r),skill:ri(r,40,90)},manager:{name:person(r),skill:ri(r,40,90)}}}));let id=1;const players=[];for(const t of teams)for(let i=0;i<70;i++)players.push({id:id++,teamId:t.id,name:person(r),age:ri(r,18,38),position:(i<35?['P','C','1B','2B','3B','SS','LF','CF','RF'][i%9]:['P','P','C','IF','OF'][i%5]),overall:ri(r,38,83),potential:ri(r,55,97),salary:ri(r,3,140)*1e7,level:i<28?'1군':i<60?'2군':'육성',games:0,atBats:0,hits:0,homeRuns:0,inningsPitched:0,earnedRuns:0});return {schema:1,created:new Date().toISOString(),year:2027,seasonStartDate:'2027-01-01',careerRecords:{},day:1,teamId,teams,players,events:[{day:1,title:'신생 프로야구 리그 출범',body:'10개 구단이 참가하는 BASEBALL EMPIRE 리그가 출범했습니다.'}],history:{champions:[],retiredNumbers:[],hallOfFame:[]},lastSaved:null}}
+function world(teamId){const r=rng(20271001);const teams=TEAMS.map((t,id)=>({id,city:t[0],name:t[1],color:t[2],trait:t[3],budget:ri(r,75,140)*1e8,fans:ri(r,20000,85000),stadium:ri(r,11000,24000),wins:0,losses:0,draws:0,staff:{president:{name:person(r),skill:ri(r,40,90)},gm:{name:person(r),skill:ri(r,40,90)},manager:{name:person(r),skill:ri(r,40,90)}}}));let id=1;const players=[];for(const t of teams)for(let i=0;i<70;i++)players.push({id:id++,teamId:t.id,name:person(r),age:ri(r,18,38),position:(i<35?['P','C','1B','2B','3B','SS','LF','CF','RF'][i%9]:['P','P','C','IF','OF'][i%5]),overall:ri(r,38,83),potential:ri(r,55,97),salary:ri(r,3,140)*1e7,level:i<28?'1군':i<60?'2군':'육성',games:0,atBats:0,hits:0,homeRuns:0,inningsPitched:0,earnedRuns:0});// Initial fictional draft histories are generated once, only for a newly created world.
+ // Entry age varies by high-school / college route and must never exceed current age.
+ for(const p of players){
+  const entryAge=p.age>=23&&r()<0.38?ri(r,21,Math.min(23,p.age)):ri(r,18,Math.min(20,p.age));
+  const draftYear=2027-(p.age-entryAge);
+  const round=ri(r,1,Math.min(11,1+Math.floor((p.overall-38)/5)+3));
+  const pick=ri(r,1,10);
+  const draftTeam=teams[ri(r,0,teams.length-1)];
+  p.draftYear=draftYear;p.joinYear=draftYear;p.draftRound=round;p.draftPick=pick;
+  p.draftOverallPick=(round-1)*10+pick;p.draftTeamId=draftTeam.id;
+  p.proStatsStartYear=draftYear;
+ }
+ return {schema:1,created:new Date().toISOString(),year:2027,seasonStartDate:'2027-01-01',careerRecords:{},day:1,teamId,teams,players,events:[{day:1,title:'신생 프로야구 리그 출범',body:'10개 구단이 참가하는 BASEBALL EMPIRE 리그가 출범했습니다.'}],history:{champions:[],retiredNumbers:[],hallOfFame:[]},lastSaved:null}}
 function openDB(){return new Promise((ok,no)=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains('saves'))q.result.createObjectStore('saves')};q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
 // Stage a new-format save without changing the legacy main record.
 async function stageSplitSave(data){
