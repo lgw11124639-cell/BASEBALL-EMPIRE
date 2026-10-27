@@ -88,3 +88,14 @@
 .nt-page .nt-match{margin:0!important;border:0!important;border-bottom:1px solid #e1e9f2!important;border-radius:0!important}
 .nt-page .nt-match:last-child{border-bottom:0!important}
 @media(max-width:760px){.nt-page .nt-match summary{grid-template-columns:minmax(0,1fr)!important;gap:7px!important}.nt-page .nt-match-main{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.nt-page .nt-match-status{text-align:left}.nt-page .nt-match-main strong{font-size:1.1rem!important}}
+
+/* One unified season dashboard: progress + game + national milestones. */
+.be-home-main .be-season-progress{border-radius:12px 12px 0 0!important;border-bottom:0!important;margin-bottom:0!important;padding-bottom:12px!important}
+.be-home-main .be-home-integrated-agenda{background:#f3f7fc;border:1px solid #dbe5f0;border-top:1px solid #dce6f1;border-radius:0 0 12px 12px;padding:11px 14px 12px;margin-top:-1px}
+.be-home-main .be-home-agenda-title{font-size:12px;font-weight:800;letter-spacing:.025em;color:#607b98;margin-bottom:8px}
+.be-home-main .be-home-integrated-agenda .be-home-schedule-grid{margin:0!important;gap:10px!important}
+.be-home-main .be-home-integrated-agenda .next-schedule{background:#fff!important;border:1px solid #e1e9f2!important;padding:10px 13px!important;border-radius:9px!important}
+.be-home-main .be-home-integrated-agenda .next-schedule>strong{font-size:13px;margin-bottom:4px!important}
+.be-home-main .be-home-integrated-agenda .schedule-match{font-size:12px;line-height:1.45}
+.be-home-main .be-season-controls{margin-top:10px!important}
+@media(max-width:760px){.be-home-main .be-home-integrated-agenda{padding:9px 10px}.be-home-main .be-home-agenda-title{margin-bottom:6px}.be-home-main .be-home-integrated-agenda .next-schedule{padding:9px 10px!important}}
