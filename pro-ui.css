@@ -150,3 +150,22 @@
 .nt-page .nt-finals-featured .nt-semi-team{font-size:clamp(1.08rem,2.3vw,1.38rem)!important;font-weight:800!important;letter-spacing:-.025em!important;line-height:1.35!important}
 .nt-page .nt-finals-featured .nt-semi-score{font-size:clamp(1.22rem,2.5vw,1.55rem)!important;font-weight:900!important}
 @media(max-width:760px){.nt-page .nt-finals-featured .nt-semi-team{font-size:1.15rem!important}.nt-page .nt-finals-featured .nt-semi-score{font-size:1.3rem!important}}
+
+/* Unified home season dashboard */
+.be-home-main .be-season-unified{padding:16px!important}
+.be-home-main .be-unified-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.be-home-main .be-unified-heading>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.be-home-main .be-unified-heading small{font-size:11px;color:#67819c;font-weight:800;letter-spacing:.08em}
+.be-home-main .be-unified-heading strong{font-size:17px;color:#173a60;line-height:1.4}
+.be-home-main .be-unified-pct{font-size:23px;font-weight:900;color:#235e9d;font-variant-numeric:tabular-nums}
+.be-home-main .be-season-unified .be-season-count{margin:10px 0 6px!important}
+.be-home-main .be-unified-agenda{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:14px}
+.be-home-main .be-unified-agenda>div{min-width:0;padding:12px;border:1px solid #dbe6f1;border-radius:12px;background:#fff}
+.be-home-main .be-unified-agenda h3{font-size:14px;margin:0 0 8px;color:#173a60}
+.be-home-main .be-unified-agenda p{font-size:13px;margin:6px 0;color:#72849a}
+.be-home-main .be-unified-event{display:grid;grid-template-columns:74px minmax(0,1fr);gap:10px;align-items:start;padding:9px 0;border-top:1px solid #e8edf3}
+.be-home-main .be-unified-event-date{font-size:12px;color:#55718e;font-weight:700;white-space:nowrap}
+.be-home-main .be-unified-event-body{min-width:0;display:flex;flex-direction:column;gap:3px}
+.be-home-main .be-unified-event-body strong{font-size:13px;line-height:1.4;overflow-wrap:anywhere;color:#203e60}
+.be-home-main .be-unified-event-body small{font-size:11px;color:#70859c}
+@media(max-width:760px){.be-home-main .be-season-unified{padding:12px!important}.be-home-main .be-unified-agenda{grid-template-columns:minmax(0,1fr);gap:8px}.be-home-main .be-unified-heading strong{font-size:15px}.be-home-main .be-unified-event{grid-template-columns:72px minmax(0,1fr)}}
