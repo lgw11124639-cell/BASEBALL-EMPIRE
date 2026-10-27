@@ -1226,6 +1226,10 @@ let beCalendarMonth='',beCalendarSelected='';
 function beCalendarMove(delta){const now=seasonDate(state.day),base=beCalendarMonth?new Date(beCalendarMonth+'-01T12:00:00'):new Date(now.getFullYear(),now.getMonth(),1,12);base.setMonth(base.getMonth()+delta);beCalendarMonth=base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0');beCalendarSelected='';render()}
 function beCalendarPick(date){beCalendarSelected=date;render()}
 function beCalendarToday(){const d=seasonDate(state.day);beCalendarMonth=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');beCalendarSelected='';render()}
+// Inline calendar controls are rendered inside a module; explicitly expose handlers.
+window.beCalendarMove=beCalendarMove;
+window.beCalendarPick=beCalendarPick;
+window.beCalendarToday=beCalendarToday;
 function seasonProgressPanel(){
  const d=seasonDate(state.day),m=d.getMonth()+1,done=awardsFinished(),ps=state.postseasons?.[state.year];
  const played=Math.min(144,Math.max(0,...state.teams.map(t=>(t.wins||0)+(t.losses||0)+(t.draws||0)))),pct=Math.round(played/144*100);
