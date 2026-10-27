@@ -169,3 +169,9 @@
 .be-home-main .be-unified-event-body strong{font-size:13px;line-height:1.4;overflow-wrap:anywhere;color:#203e60}
 .be-home-main .be-unified-event-body small{font-size:11px;color:#70859c}
 @media(max-width:760px){.be-home-main .be-season-unified{padding:12px!important}.be-home-main .be-unified-agenda{grid-template-columns:minmax(0,1fr);gap:8px}.be-home-main .be-unified-heading strong{font-size:15px}.be-home-main .be-unified-event{grid-template-columns:72px minmax(0,1fr)}}
+
+/* Actual dated fixtures replace generic season status chips */
+.be-home-main .be-real-fixture-timeline{display:flex!important;flex-wrap:wrap!important;gap:7px!important;margin:12px 0!important}
+.be-home-main .be-fixture-chip{display:inline-flex!important;align-items:center;gap:5px;max-width:100%;min-width:0;padding:7px 10px!important;border:1px solid #d4e3f3!important;border-radius:8px!important;background:#fff!important;color:#24496e!important;font-size:12px!important;line-height:1.35;overflow-wrap:anywhere}
+.be-home-main .be-fixture-chip b{color:#1767ac;white-space:nowrap}
+@media(max-width:760px){.be-home-main .be-fixture-chip{font-size:11px!important;padding:6px 8px!important}}
