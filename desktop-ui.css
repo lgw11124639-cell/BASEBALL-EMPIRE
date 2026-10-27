@@ -27,3 +27,42 @@
 }
 
 @media(min-width:1100px){body #app .wrap{width:calc(100vw - 32px)!important;max-width:none!important;padding-left:20px!important;padding-right:20px!important}body .nav{width:100%!important;max-width:none!important;left:0!important;right:0!important;transform:none!important;bottom:0!important;border-radius:0!important}}
+
+/* Desktop navigation: override legacy fixed-width nav rules and prevent clipping. */
+@media (min-width: 1100px) {
+  body nav.nav, html body #app ~ nav.nav {
+    position: fixed !important; inset: auto 0 0 0 !important;
+    left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100vw !important; max-width: 100vw !important; min-width: 0 !important;
+    transform: none !important; margin: 0 !important;
+    display: grid !important; grid-template-columns: repeat(7,minmax(0,1fr)) !important;
+    gap: 8px !important; box-sizing: border-box !important;
+    padding: 8px 20px !important; background: #fff !important;
+    border-radius: 0 !important; overflow: visible !important;
+  }
+  body nav.nav button[data-tab] { width: 100% !important; min-width: 0 !important; margin: 0 !important; }
+  body .game-shell { padding-bottom: 110px !important; }
+}
+/* National team: clean score columns, visible table grid and orderly match list. */
+.nt-page .nt-panel table { border-collapse: collapse !important; border-spacing: 0 !important; width: 100% !important; }
+.nt-page .nt-panel table th, .nt-page .nt-panel table td {
+  border: 1px solid #dce5ef !important; padding: 9px 11px !important;
+  vertical-align: middle !important; text-align: center !important;
+  font-variant-numeric: tabular-nums;
+}
+.nt-page .nt-panel table thead th { background: #edf3fa !important; font-weight: 750 !important; }
+.nt-page .nt-panel table tbody tr:nth-child(even) { background: #f7fafd !important; }
+.nt-page .nt-panel table tbody tr:hover { background: #edf5ff !important; }
+.nt-page .nt-match { margin: 0 !important; border: 0 !important; border-bottom: 1px solid #dce5ef !important; border-radius: 0 !important; }
+.nt-page .nt-match:first-of-type { border-top: 1px solid #dce5ef !important; }
+.nt-page .nt-match summary { display: grid !important; grid-template-columns: minmax(155px,1fr) minmax(260px,2fr) minmax(175px,1fr) !important; gap: 12px !important; padding: 13px 12px !important; align-items: center !important; }
+.nt-page .nt-match-main { display: grid !important; grid-template-columns: minmax(0,1fr) 85px minmax(0,1fr) !important; text-align: center !important; align-items: center !important; gap: 8px !important; }
+.nt-page .nt-match-main strong { font-size: 1.2rem !important; }
+.nt-page .nt-match-status { text-align: right !important; }
+.nt-page .nt-match[open] { background: #f7faff !important; }
+@media (max-width: 720px) {
+ .nt-page .nt-match summary { grid-template-columns: 1fr !important; gap: 6px !important; }
+ .nt-page .nt-match-main { grid-template-columns: minmax(0,1fr) 75px minmax(0,1fr) !important; }
+ .nt-page .nt-match-status { text-align: left !important; }
+ .nt-page .nt-panel table th,.nt-page .nt-panel table td { padding: 7px 6px !important; }
+}
