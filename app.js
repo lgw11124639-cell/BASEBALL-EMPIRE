@@ -1813,6 +1813,7 @@ function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
  const modal=document.createElement('div');
+ modal.classList.add('be-editorial-modal');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
  const category=(n.kind==='국가대표'||n.kind==='국가대표 기사')?'국가대표·국제대회':n.kind==='FA 특집'?'FA·이적 시장':n.kind==='국가대표 기사'?'국가대표·국제대회':n.kind==='시즌 시상'?'시즌 타이틀·수상':'리그 대기록';
  const body=(n.kind==='국가대표'||n.kind==='국가대표 기사')?nationalArchivedArticleText(n):String(n.body||'').trim();
