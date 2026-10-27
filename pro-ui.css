@@ -194,3 +194,22 @@
 .be-home-main .be-agenda-detail small{font-size:11px;color:#70859c}
 .be-home-main .be-agenda-line em{font-size:11px;font-style:normal;color:#2468a8}
 @media(max-width:760px){.be-home-main .be-season-compact{padding:10px!important}.be-home-main .be-compact-head strong{font-size:14px}.be-home-main .be-compact-stat{flex-direction:column;gap:0;align-items:end}.be-home-main .be-compact-stat span{font-size:10px}.be-home-main .be-agenda-line{grid-template-columns:66px minmax(0,1fr) auto;gap:6px}.be-home-main .be-agenda-date{font-size:11px}.be-home-main .be-agenda-detail b{font-size:12px}}
+
+/* Home calendar: compact month grid + selected day agenda */
+.be-home-main .be-calendar-layout{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr);gap:12px;margin-top:12px;align-items:start}
+.be-home-main .be-calendar-panel,.be-home-main .be-calendar-layout .be-compact-agenda{margin:0;background:#fff;border:1px solid #dbe6f1;border-radius:11px;padding:12px;min-width:0}
+.be-home-main .be-cal-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.be-home-main .be-cal-header strong{flex:1;text-align:center;font-size:15px;color:#183e64}
+.be-home-main .be-cal-header button{border:1px solid #d6e3f0;border-radius:7px;background:#f4f8fd;color:#275d91;min-width:30px;height:29px;cursor:pointer;font-weight:700}
+.be-home-main .be-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.be-home-main .be-cal-weekday{text-align:center;font-size:11px;color:#66819c;padding:4px 0}
+.be-home-main .be-cal-day{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;min-height:49px;padding:5px 1px;border:1px solid #e4ebf3;border-radius:7px;background:#fff;color:#203d5b;cursor:pointer;font-size:12px}
+.be-home-main .be-cal-day.is-today{border-color:#3b83c6;background:#eff6ff}
+.be-home-main .be-cal-day.is-selected{background:#2769a7;color:#fff;border-color:#2769a7}
+.be-home-main .be-cal-day small{font-size:9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.be-home-main .be-cal-dot{height:5px;width:5px;background:#3c88cc;border-radius:50%}
+.be-home-main .be-cal-dot.is-national{background:#e29b36}
+.be-home-main .be-cal-legend{font-size:10px;color:#6c8299;margin-top:9px}
+.be-home-main .be-cal-legend span{color:#b07827}
+.be-home-main .be-cal-next-title{margin-top:16px!important}
+@media(max-width:800px){.be-home-main .be-calendar-layout{grid-template-columns:minmax(0,1fr)}.be-home-main .be-cal-day{min-height:44px}.be-home-main .be-calendar-panel,.be-home-main .be-calendar-layout .be-compact-agenda{padding:9px}}
