@@ -145,3 +145,8 @@
 .nt-page .nt-finals-featured .nt-semi-score,.nt-page .nt-match-main>strong{width:76px!important;justify-self:center!important;text-align:center!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important}
 .nt-page .nt-match-main>b{min-width:0!important;word-break:keep-all!important;overflow-wrap:anywhere!important}
 @media(max-width:760px){.nt-page .nt-finals-featured .nt-semi-scoreline,.nt-page .nt-match .nt-match-main{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important}}
+
+/* Medal matches: emphasize finalist country names without changing other rounds */
+.nt-page .nt-finals-featured .nt-semi-team{font-size:clamp(1.08rem,2.3vw,1.38rem)!important;font-weight:800!important;letter-spacing:-.025em!important;line-height:1.35!important}
+.nt-page .nt-finals-featured .nt-semi-score{font-size:clamp(1.22rem,2.5vw,1.55rem)!important;font-weight:900!important}
+@media(max-width:760px){.nt-page .nt-finals-featured .nt-semi-team{font-size:1.15rem!important}.nt-page .nt-finals-featured .nt-semi-score{font-size:1.3rem!important}}
