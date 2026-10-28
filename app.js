@@ -97,8 +97,41 @@ function cleanupSplitSaveKeys(active,previous){
   };
  });
 }
+async function reclaimOrphanedSnapshots(){
+ // Only v2 generation records are eligible. Preserve active, rollback and legacy main.
+ const pointer=await idbRead('active-split');
+ const protectedPrefixes=[pointer?.generation,pointer?.previousGeneration].filter(Boolean).map(x=>x+':');
+ let total=0;
+ for(let pass=0;pass<40;pass++){
+  const removed=await new Promise((resolve,reject)=>{
+   const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');
+   let count=0;
+   tx.oncomplete=()=>resolve(count);
+   tx.onerror=()=>reject(tx.error||Error('저장 공간 정리 실패'));
+   tx.onabort=()=>reject(tx.error||Error('저장 공간 정리 중단'));
+   const request=store.openKeyCursor();
+   request.onerror=()=>reject(request.error||Error('저장 공간 검색 실패'));
+   request.onsuccess=()=>{
+    const cursor=request.result;
+    if(!cursor||count>=400)return;
+    const key=cursor.key;
+    if(typeof key==='string'&&key.startsWith('v2-')&&key.includes(':')&&!protectedPrefixes.some(prefix=>key.startsWith(prefix))){
+     cursor.delete();count++;
+    }
+    cursor.continue();
+   };
+  });
+  total+=removed;
+  if(removed<400)break;
+ }
+ return total;
+}
 async function save(){
  if(!state)return;
+ // Recover space occupied by abandoned/failed generations before staging a new save.
+ // Never delete the active or rollback generation.
+ try{await reclaimOrphanedSnapshots()}catch(e){console.warn('안전 저장 정리 보류',e)}
+
  const stamp=new Date().toISOString(),generation='v2-'+Date.now()+'-'+Math.floor(Math.random()*1000000);
  // IndexedDB clones values on put; avoid an extra full-state copy per day.
  const snapshot={...state,lastSaved:stamp};
