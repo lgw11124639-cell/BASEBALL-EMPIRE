@@ -44,16 +44,33 @@ function idbRead(key){return new Promise((resolve,reject)=>{const tx=db.transact
 function idbWrite(key,value){return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite');let finished=false;const timer=setTimeout(()=>{if(finished)return;finished=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): '+key.split(':').slice(-1)[0]))},12000);const settle=(error)=>{if(finished)return;finished=true;clearTimeout(timer);if(error)reject(error);else resolve()};tx.oncomplete=()=>settle();tx.onerror=()=>settle(tx.error||Error('IndexedDB 저장 실패'));tx.onabort=()=>settle(tx.error||Error('IndexedDB 저장 취소'));try{tx.objectStore('saves').put(value,key)}catch(e){settle(e)}})}
 function idbWriteSmallBatch(entries){
  if(!entries.length)return Promise.resolve();
- return new Promise((resolve,reject)=>{
-  const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');
-  let settled=false;
-  const timer=setTimeout(()=>{if(settled)return;settled=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): 소형 데이터 묶음'))},12000);
-  const finish=e=>{if(settled)return;settled=true;clearTimeout(timer);e?reject(e):resolve()};
-  tx.oncomplete=()=>finish();
-  tx.onerror=()=>finish(tx.error||Error('묶음 저장 실패'));
-  tx.onabort=()=>finish(tx.error||Error('묶음 저장 취소'));
-  try{for(const [key,value] of entries)store.put(value,key)}catch(e){try{tx.abort()}catch(_){}finish(e)}
- });
+ // A large structured-clone transaction can abort on iOS Safari. Commit each
+ // partition independently; the active snapshot pointer is published only later.
+ const writeRange=async (items)=>{
+  try{
+   await new Promise((resolve,reject)=>{
+    const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');
+    let settled=false;
+    const timer=setTimeout(()=>{if(settled)return;settled=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): '+items.map(x=>x[0]).join(', ')))},12000);
+    const finish=e=>{if(settled)return;settled=true;clearTimeout(timer);e?reject(e):resolve()};
+    tx.oncomplete=()=>finish();
+    tx.onerror=()=>finish(tx.error||Error('묶음 저장 실패'));
+    tx.onabort=()=>finish(tx.error||Error('묶음 저장 취소'));
+    try{for(const [key,value] of items)store.put(value,key)}
+    catch(e){try{tx.abort()}catch(_){}finish(e)}
+   });
+  }catch(e){
+   if(items.length>1){
+    const mid=Math.floor(items.length/2);
+    await writeRange(items.slice(0,mid));
+    await writeRange(items.slice(mid));
+    return;
+   }
+   const key=items[0][0],cause=e?.name||'Error';
+   throw Error('저장 항목 '+key+' 실패 ('+cause+'): '+(e?.message||String(e)));
+  }
+ };
+ return writeRange(entries);
 }
 let splitSaveCount=0;
 function cleanupSplitSaveKeys(active,previous){
