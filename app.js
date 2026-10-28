@@ -122,9 +122,29 @@ async function save(){
   if(meta.minorLeague&&typeof meta.minorLeague==='object'&&!Array.isArray(meta.minorLeague)){
    const seasons=meta.minorLeague,seasonKeys=[];
    for(const year of Object.keys(seasons)){
-    const key=generation+':minorLeague:'+year;
-    largeWrites.push([key,seasons[year]]);
-    seasonKeys.push([year,key]);
+    const value=seasons[year];
+    // Split oversized historical 2nd-league seasons without changing their shape.
+    // Each object field is stored independently; nested arrays are chunked too.
+    if(value&&typeof value==='object'&&!Array.isArray(value)){
+     const fieldRefs=[];
+     for(const [field,part] of Object.entries(value)){
+      if(Array.isArray(part)){
+       const chunks=[];
+       for(let i=0;i<part.length;i+=100){
+        const key=generation+':minorLeague:'+year+':'+field+':'+Math.floor(i/100);
+        largeWrites.push([key,part.slice(i,i+100)]);chunks.push(key);
+       }
+       fieldRefs.push([field,{chunks}]);
+      }else{
+       const key=generation+':minorLeague:'+year+':'+field;
+       largeWrites.push([key,part]);fieldRefs.push([field,{key}]);
+      }
+     }
+     seasonKeys.push([year,{fields:fieldRefs}]);
+    }else{
+     const key=generation+':minorLeague:'+year;
+     largeWrites.push([key,value]);seasonKeys.push([year,key]);
+    }
    }
    delete meta.minorLeague;
    meta.__minorLeagueKeys=seasonKeys;
@@ -164,7 +184,16 @@ async function load(){
    if(Array.isArray(restored.__extraKeys)){for(const [field,key] of restored.__extraKeys){const value=await idbRead(key);if(value===undefined)throw Error('기타 데이터 누락: '+field);restored[field]=value}delete restored.__extraKeys}
    for(const [field,key] of pointer.keys){const part=await idbRead(key);if(part===undefined)throw Error('누락된 저장 항목: '+field);restored[field]=part}
    if(Array.isArray(restored.__playerChunkKeys)){restored.players=[];for(const key of restored.__playerChunkKeys){const chunk=await idbRead(key);if(!Array.isArray(chunk))throw Error('선수 데이터 조각 누락: '+key);restored.players.push(...chunk)}delete restored.__playerChunkKeys}
-   if(Array.isArray(restored.__minorLeagueKeys)){restored.minorLeague={};for(const [year,key] of restored.__minorLeagueKeys){const part=await idbRead(key);if(part===undefined)throw Error('2군 시즌 누락: '+year);restored.minorLeague[year]=part}delete restored.__minorLeagueKeys}
+   if(Array.isArray(restored.__minorLeagueKeys)){restored.minorLeague={};for(const [year,ref] of restored.__minorLeagueKeys){
+    if(typeof ref==='string'){const part=await idbRead(ref);if(part===undefined)throw Error('2군 시즌 누락: '+year);restored.minorLeague[year]=part;continue}
+    if(!ref||!Array.isArray(ref.fields))throw Error('2군 시즌 메타 누락: '+year);
+    const season={};
+    for(const [field,info] of ref.fields){
+     if(Array.isArray(info.chunks)){const items=[];for(const key of info.chunks){const chunk=await idbRead(key);if(!Array.isArray(chunk))throw Error('2군 기록 조각 누락: '+key);items.push(...chunk)}season[field]=items}
+     else{const part=await idbRead(info.key);if(part===undefined)throw Error('2군 기록 누락: '+info.key);season[field]=part}
+    }
+    restored.minorLeague[year]=season;
+   }delete restored.__minorLeagueKeys}
    return restored;
   }catch(e){console.error('분리 저장 불러오기 실패, 기존 main으로 복구 시도',e)}
  }
