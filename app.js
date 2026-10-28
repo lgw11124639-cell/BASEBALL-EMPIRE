@@ -1498,10 +1498,22 @@ function beTodayGamesPanel(){
   const a=state.teams[away],h=state.teams[home],g=played.find(x=>Number(x.away)===Number(away)&&Number(x.home)===Number(home));
   if(!a||!h)return '';
   const mine=away===state.teamId||home===state.teamId;
-  return '<div class="be-today-match'+(mine?' be-today-mine':'')+'"><div class="be-today-teams"><strong>'+esc(a.city+' '+a.name)+'</strong><span>'+(g?g.awayRuns+' : '+g.homeRuns:'VS')+'</span><strong>'+esc(h.city+' '+h.name)+'</strong></div><div class="be-today-actions"><small>'+(mine?'우리 구단 · ':'')+(g?'경기 종료':'경기 예정')+'</small>'+(g?'<button type="button" onclick="beOpenGameReplay('+Number(day)+','+Number(away)+')">경기 다시보기</button>':'<span>하루 진행 후 다시보기</span>')+'</div></div>';
+  return '<div class="be-today-match'+(mine?' be-today-mine':'')+'"><div class="be-today-teams"><strong>'+esc(a.city+' '+a.name)+'</strong><span>'+(g?g.awayRuns+' : '+g.homeRuns:'VS')+'</span><strong>'+esc(h.city+' '+h.name)+'</strong></div><div class="be-today-actions"><small>'+(mine?'우리 구단 · ':'')+(g?'경기 종료':'경기 예정')+'</small>'+(g?'<button type="button" onclick="beOpenGameReplay('+Number(day)+','+Number(away)+')">경기 다시보기</button>':'<button type="button" onclick="beWatchGame('+Number(day)+','+Number(away)+')">▶ 경기 관전하기</button>')+'</div></div>';
  }).join('');
  return '<section class="dashboard-section be-today-games"><div class="section-title"><div><span class="section-kicker">KBO LEAGUE</span><h2>오늘의 경기</h2></div></div>'+(rows||'<p class="support-text">오늘 예정된 정규시즌 경기가 없습니다.</p>')+'</section>';
 }
+async function beWatchGame(day,away){
+ if(seasonStepBusy)return;
+ if(Number(state.day)!==Number(day))return;
+ const existing=(state.gameResults||[]).find(g=>Number(g.day)===Number(day)&&Number(g.away)===Number(away));
+ if(existing){beOpenGameReplay(day,away);return}
+ const ok=await advanceSeason();
+ if(!ok)return;
+ const game=(state.gameResults||[]).find(g=>Number(g.day)===Number(day)&&Number(g.away)===Number(away));
+ if(game)beOpenGameReplay(day,away);
+ else alert('해당 경기 결과가 생성되지 않았습니다.');
+}
+window.beWatchGame=beWatchGame;
 function beOpenGameReplay(day,away){
  const g=(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));
  if(!g)return;
