@@ -101,6 +101,18 @@ async function save(){
   // Commit large state partitions together to avoid one IndexedDB transaction per field.
   // The active pointer is still published only after all writes have committed.
   const largeWrites=[];
+  // Split the growing player archive into bounded records. Older snapshots
+  // remain readable and the active pointer changes only after all chunks commit.
+  if(Array.isArray(meta.players)){
+   const playerKeys=[],chunkSize=100;
+   for(let start=0;start<meta.players.length;start+=chunkSize){
+    const key=generation+':players:'+Math.floor(start/chunkSize);
+    largeWrites.push([key,meta.players.slice(start,start+chunkSize)]);
+    playerKeys.push(key);
+   }
+   meta.__playerChunkKeys=playerKeys;
+   delete meta.players;
+  }
   for(const field of SAVE_PARTS){
    if(!Object.prototype.hasOwnProperty.call(meta,field))continue;
    const key=generation+':'+field;
@@ -151,6 +163,7 @@ async function load(){
    const restored={...meta};
    if(Array.isArray(restored.__extraKeys)){for(const [field,key] of restored.__extraKeys){const value=await idbRead(key);if(value===undefined)throw Error('기타 데이터 누락: '+field);restored[field]=value}delete restored.__extraKeys}
    for(const [field,key] of pointer.keys){const part=await idbRead(key);if(part===undefined)throw Error('누락된 저장 항목: '+field);restored[field]=part}
+   if(Array.isArray(restored.__playerChunkKeys)){restored.players=[];for(const key of restored.__playerChunkKeys){const chunk=await idbRead(key);if(!Array.isArray(chunk))throw Error('선수 데이터 조각 누락: '+key);restored.players.push(...chunk)}delete restored.__playerChunkKeys}
    if(Array.isArray(restored.__minorLeagueKeys)){restored.minorLeague={};for(const [year,key] of restored.__minorLeagueKeys){const part=await idbRead(key);if(part===undefined)throw Error('2군 시즌 누락: '+year);restored.minorLeague[year]=part}delete restored.__minorLeagueKeys}
    return restored;
   }catch(e){console.error('분리 저장 불러오기 실패, 기존 main으로 복구 시도',e)}
