@@ -1373,15 +1373,7 @@ function seasonProgressPanel(){
    add(date,record.event||'국가대표',String(g.round||'국제경기')+' · '+left+' '+score+' '+right,'기록된 경기',1);
   }
  }
- for(const [key,prep] of Object.entries(state.nationalTeamPreparations||{})){
-  const match=key.match(/^(\d{4})-(WBC|올림픽|아시안게임)$/);if(!match)continue;
-  const year=Number(match[1]),event=match[2],month=event==='WBC'?3:event==='올림픽'?8:10;
-  for(const [offset,title] of [[60,'예비 명단 발표'],[30,'최종 명단 확정'],[14,'대표팀 소집']]){
-   if(!(prep?.stages||[]).includes(offset))continue;
-   const date=new Date(year,month-1,1,12);date.setDate(date.getDate()-offset);
-   add(iso(date),event,title,'완료된 대표팀 일정',2);
-  }
- }
+ // National preparation milestones are rendered once by the engine-derived calendar below.
  // Show offseason milestones for the current calendar year only when relevant.
  const year=d.getFullYear(),draftYear=year+1;
  const draftDone=state.lastOfficeDraftYear===draftYear||!!state.draftResults?.[draftYear]?.length;
