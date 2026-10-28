@@ -54,9 +54,13 @@ function idbWriteSmallBatch(entries){
     const timer=setTimeout(()=>{if(settled)return;settled=true;try{tx.abort()}catch(_){}reject(Error('저장 지연(12초): '+items.map(x=>x[0]).join(', ')))},12000);
     const finish=e=>{if(settled)return;settled=true;clearTimeout(timer);e?reject(e):resolve()};
     tx.oncomplete=()=>finish();
-    tx.onerror=()=>finish(tx.error||Error('묶음 저장 실패'));
-    tx.onabort=()=>finish(tx.error||Error('묶음 저장 취소'));
-    try{for(const [key,value] of items)store.put(value,key)}
+    let requestError=null;
+    tx.onerror=()=>finish(requestError||tx.error||Error('묶음 저장 실패'));
+    tx.onabort=()=>finish(requestError||tx.error||Error('묶음 저장 취소'));
+    try{for(const [key,value] of items){
+     const request=store.put(value,key);
+     request.onerror=()=>{requestError=request.error||Error('IndexedDB put 실패: '+key)};
+    }}
     catch(e){try{tx.abort()}catch(_){}finish(e)}
    });
   }catch(e){
@@ -67,7 +71,9 @@ function idbWriteSmallBatch(entries){
     return;
    }
    const key=items[0][0],cause=e?.name||'Error';
-   throw Error('저장 항목 '+key+' 실패 ('+cause+'): '+(e?.message||String(e)));
+   let storage='';
+   try{const estimate=await navigator.storage?.estimate?.();if(estimate)storage=' · 사용 '+Math.round((estimate.usage||0)/1048576)+'MB / 할당 '+Math.round((estimate.quota||0)/1048576)+'MB'}catch(_){}
+   throw Error('저장 항목 '+key+' 실패 ('+cause+'): '+(e?.message||String(e))+storage);
   }
  };
  return writeRange(entries);
