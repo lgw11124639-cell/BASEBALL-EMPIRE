@@ -636,7 +636,7 @@ function internationalOpeningGame(year,event,selected,opponentCode,round){
   restoreLeagueCounters(counters);
   for(const p of participants)playerBaseball(p).fatigue=fatigue.get(p.id);
  }
- return result?{opponent,homeRuns:result.homeRuns,awayRuns:result.awayRuns,homeInnings:result.homeInnings,awayInnings:result.awayInnings,homeStarter:result.homeStarter,awayStarter:result.awayStarter,homeBatters:result.homeBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),awayBatters:result.awayBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),homePitchers:result.homePitchers,awayPitchers:result.awayPitchers}:null;
+ return result?{opponent,homeRuns:result.homeRuns,awayRuns:result.awayRuns,homeInnings:result.homeInnings,awayInnings:result.awayInnings,homeStarter:result.homeStarter,awayStarter:result.awayStarter,homeBatters:result.homeBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),awayBatters:result.awayBatters.map(p=>({...p,...Object.fromEntries(['atBats','hits','homeRuns','runsBattedIn','walks'].map(k=>[k,Math.max(0,p[k]-(battingBefore.get(p.id)?.[k]||0))]))})),homePitchers:result.homePitchers,awayPitchers:result.awayPitchers,broadcastEvents:Array.isArray(result.broadcastEvents)?result.broadcastEvents:[]}:null;
 }
 function internationalTournamentSchedule(year,event,selected){
  const rivals=event==='아시안게임'?['TW','JP','CN']:event==='WBC'?['JP','TW','US']:['AU','TW','US'];
@@ -1603,6 +1603,28 @@ async function bePrepareTodayScores(){
  if((state.gameResults||[]).some(g=>Number(g.day)===Number(day)))return;
  await advanceSeason(true);
 }
+function beInternationalTodayPanel(){
+ const today=seasonDate(state.day),iso=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+ const games=[];
+ for(const [key,record] of Object.entries(state.nationalTeamResults||{})){
+  for(const [i,g] of (record.matchResults||[]).entries())if(String(g.date||'').slice(0,10)===iso)games.push({key,i,record,g});
+ }
+ if(!games.length)return '';
+ return '<section class="dashboard-section be-today-games"><div class="section-title"><div><span class="section-kicker">INTERNATIONAL</span><h2>오늘의 국가대표 경기</h2></div></div>'+games.map(({key,i,record,g})=>'<div class="be-today-match"><div class="be-today-teams"><strong>대한민국</strong><span>'+Number(g.homeRuns)+' : '+Number(g.awayRuns)+'</span><strong>'+esc(INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국')+'</strong></div><div class="be-today-actions"><small>'+esc(record.event||'국제대회')+' · '+esc(g.round||'경기')+'</small><button type="button" onclick="beOpenInternationalReplay('+JSON.stringify(key)+','+i+')">경기 다시보기</button></div></div>').join('')+'</section>';
+}
+function beOpenInternationalReplay(key,index){
+ const record=state.nationalTeamResults?.[key],g=record?.matchResults?.[index];if(!g)return;
+ const old=state.gameResults;
+ // Replay uses the existing readonly KBO renderer with temporary display-only teams.
+ const away={city:'',name:INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국'},home={city:'',name:'대한민국'};
+ const originalTeams=state.teams;
+ const replay={...g,day:-987654,away:0,home:1,awayRuns:g.awayRuns,homeRuns:g.homeRuns,broadcastEvents:g.broadcastEvents||[]};
+ try{
+  state.teams=[away,home];state.gameResults=[replay];
+  beOpenGameReplay(-987654,0);
+ }finally{state.teams=originalTeams;state.gameResults=old}
+}
+window.beOpenInternationalReplay=beOpenInternationalReplay;
 function beTodayGamesPanel(){
  const day=state.day, played=(state.gameResults||[]).filter(g=>Number(g.day)===Number(day));
  const fixtures=scheduledPairs(day,true);
@@ -1654,7 +1676,7 @@ function beOpenGameReplay(day,away){
 }
 function beCloseGameReplay(){window.beBroadcastStop?.();document.querySelector('#be-replay-overlay')?.remove()}
 window.beOpenGameReplay=beOpenGameReplay;window.beCloseGameReplay=beCloseGameReplay;
-function home(){nationalTeamRecoverMissedPreparation();const t=state.teams[state.teamId],rank=[...state.teams].sort((a,b)=>b.wins-a.wins).findIndex(x=>x.id===t.id)+1;return '<section class="dashboard-section be-home-main">'+seasonProgressPanel()+'<div class="be-season-controls"><button id="advance-day">하루 진행</button><button id="auto-season">'+(autoSeasonRunning?'자동진행 정지':'자동 진행')+'</button><select id="auto-season-speed"><option value="1000">보통</option><option value="300">빠르게</option><option value="2000">느리게</option></select></div>'+(window.beLastStepTiming?'<p class="support-text" style="font-size:12px;margin-top:8px">최근 하루 진행 '+(window.beLastStepTiming.total/1000).toFixed(1)+'초 · 경기/운영 '+(window.beLastStepTiming.simulation/1000).toFixed(1)+'초 · 저장 '+(window.beLastStepTiming.save/1000).toFixed(1)+'초 · 준비 '+(window.beLastStepTiming.backup/1000).toFixed(1)+'초</p>':'')+'</section>'+beTodayGamesPanel()+'<section class="dashboard-section be-club-summary"><div class="section-title"><div><span class="section-kicker">MY CLUB</span><h2>구단 현황</h2></div></div><div class="be-summary-grid"><div><small>리그 순위</small><strong>'+rank+'위</strong></div><div><small>시즌 성적</small><strong>'+t.wins+'승 '+t.losses+'패</strong></div><div><small>구단 자금</small><strong>'+money(t.budget)+'</strong></div></div></section>'+homeReportsPanel()+'<section class="dashboard-section"><div class="section-title"><div><span class="section-kicker">BASEBALL EMPIRE SPORTS</span><h2>오늘의 야구 뉴스</h2></div></div>'+baseballNewsPanel(3)+'</section><section class="dashboard-section save-section"><details><summary>저장 · 백업 관리</summary><p class="save-date">마지막 저장 · '+(state.lastSaved?new Date(state.lastSaved).toLocaleString('ko-KR'):'기록 없음')+'</p><div class="save-actions"><button id="save">지금 저장</button><button id="backup" class="secondary">백업 다운로드</button><label class="restore-label">백업 파일 불러오기 <input id="restore" type="file" accept="application/json,.json"></label></div></details></section>'}
+function home(){nationalTeamRecoverMissedPreparation();const t=state.teams[state.teamId],rank=[...state.teams].sort((a,b)=>b.wins-a.wins).findIndex(x=>x.id===t.id)+1;return '<section class="dashboard-section be-home-main">'+seasonProgressPanel()+'<div class="be-season-controls"><button id="advance-day">하루 진행</button><button id="auto-season">'+(autoSeasonRunning?'자동진행 정지':'자동 진행')+'</button><select id="auto-season-speed"><option value="1000">보통</option><option value="300">빠르게</option><option value="2000">느리게</option></select></div>'+(window.beLastStepTiming?'<p class="support-text" style="font-size:12px;margin-top:8px">최근 하루 진행 '+(window.beLastStepTiming.total/1000).toFixed(1)+'초 · 경기/운영 '+(window.beLastStepTiming.simulation/1000).toFixed(1)+'초 · 저장 '+(window.beLastStepTiming.save/1000).toFixed(1)+'초 · 준비 '+(window.beLastStepTiming.backup/1000).toFixed(1)+'초</p>':'')+'</section>'+beTodayGamesPanel()+beInternationalTodayPanel()+'<section class="dashboard-section be-club-summary"><div class="section-title"><div><span class="section-kicker">MY CLUB</span><h2>구단 현황</h2></div></div><div class="be-summary-grid"><div><small>리그 순위</small><strong>'+rank+'위</strong></div><div><small>시즌 성적</small><strong>'+t.wins+'승 '+t.losses+'패</strong></div><div><small>구단 자금</small><strong>'+money(t.budget)+'</strong></div></div></section>'+homeReportsPanel()+'<section class="dashboard-section"><div class="section-title"><div><span class="section-kicker">BASEBALL EMPIRE SPORTS</span><h2>오늘의 야구 뉴스</h2></div></div>'+baseballNewsPanel(3)+'</section><section class="dashboard-section save-section"><details><summary>저장 · 백업 관리</summary><p class="save-date">마지막 저장 · '+(state.lastSaved?new Date(state.lastSaved).toLocaleString('ko-KR'):'기록 없음')+'</p><div class="save-actions"><button id="save">지금 저장</button><button id="backup" class="secondary">백업 다운로드</button><label class="restore-label">백업 파일 불러오기 <input id="restore" type="file" accept="application/json,.json"></label></div></details></section>'}
 function batterSkill(p,key){const skills=ensureProfile(p).skills||{};if(Number.isFinite(Number(skills[key])))return Math.max(20,Math.min(99,Number(skills[key])));const o=Number(p.overall)||50,offset=((p.id*131+(key==='speed'?17:key==='power'?41:67))%31)-15;return Math.max(20,Math.min(99,o+offset))}
 function batterForm(p,key){const ab=Number(p.atBats)||0,prior=batterSkill(p,key),weight=Math.min(.65,ab/(ab+140));if(!ab)return prior;let observed=prior;if(key==='contact')observed=Math.min(99,Math.max(20,50+((Number(p.hits)||0)/ab-.255)*170));if(key==='power')observed=Math.min(99,Math.max(20,45+((Number(p.homeRuns)||0)/ab-.035)*520));if(key==='speed')observed=Math.min(99,Math.max(20,45+((Number(p.stolenBases)||0)/Math.max(1,Number(p.games)||1)-.12)*100));return prior*(1-weight)+observed*weight}
 function managerPhilosophy(manager){
