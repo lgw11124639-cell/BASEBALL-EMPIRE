@@ -1519,7 +1519,7 @@ window.beWatchGame=beWatchGame;
 function beOpenGameReplay(day,away){
  const g=(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));if(!g)return;
  const a=state.teams[g.away],h=state.teams[g.home],ai=g.awayInnings||[],hi=g.homeInnings||[],n=Math.max(ai.length,hi.length,9);
- const events=Array.isArray(g.broadcastEvents)?g.broadcastEvents:[],detailed=events.length>0;
+ const events=Array.isArray(g.broadcastEvents)?g.broadcastEvents:[],detailed=events.length>0;const playerNames=new Map([...(g.awayBatters||[]),...(g.homeBatters||[])].filter(p=>p.id!=null).map(p=>[String(p.id),p.name]));const runnerName=id=>id==null?'없음':playerNames.get(String(id))||'주자';const describe=e=>e.batter+' 선수 '+(e.outcome||'타격 완료')+(e.runs?' · '+e.runs+'점 득점!':'')+(e.outsAfter>e.outsBefore?' · '+e.outsAfter+'아웃':'');
  const all=(state.gameResults||[]).filter(x=>Number(x.day)===Number(day));
  const lineup=side=>(g[side+'Batters']||[]).filter(p=>!p.subIn).sort((u,v)=>(u.battingOrder||99)-(v.battingOrder||99)).slice(0,9).map(p=>'<li><b>'+(p.battingOrder||'–')+'</b> '+esc(p.name)+' <small>'+esc(p.position||'')+'</small></li>').join('');
  const scores=all.map(x=>'<div class="be-replay-score-row"><span>'+esc(state.teams[x.away]?.name||'원정')+'</span><strong>'+x.awayRuns+' : '+x.homeRuns+'</strong><span>'+esc(state.teams[x.home]?.name||'홈')+'</span></div>').join('');
@@ -1532,18 +1532,18 @@ function beOpenGameReplay(day,away){
   if(detailed){
    const e=events[index],name=e.side==='away'?a.name:h.name,runner=(e.afterBases||[]).map(id=>id?'◆':'◇');
    if(e.side==='away')ar=e.score;else hr=e.score;
-   inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');count.textContent=(e.outsAfter||0)+'아웃';bases.textContent=(runner[2]||'◇')+' '+(runner[1]||'◇')+' '+(runner[0]||'◇');batter.textContent=e.batter+' · 상대 투수 '+e.pitcher;pitchLabel.textContent=e.pitch?(e.pitch+(e.velocity?' · 최고구속 '+e.velocity+'km/h':'')):'구종 기록 없음';pitchCount.textContent='해당 타석 '+(e.pitches||0)+'구 · '+e.outcome;
+   inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');count.textContent=(e.outsAfter||0)+'아웃';bases.textContent=(runner[2]||'◇')+' '+(runner[1]||'◇')+' '+(runner[0]||'◇');batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher+' | 1루 '+runnerName(e.afterBases?.[0])+' · 2루 '+runnerName(e.afterBases?.[1])+' · 3루 '+runnerName(e.afterBases?.[2]);pitchLabel.textContent=e.pitch?(e.pitch+(e.velocity?' · 최고구속 '+e.velocity+'km/h':'')):'구종 기록 없음';pitchCount.textContent='해당 타석 '+(e.pitches||0)+'구 · '+e.outcome;
    const pitch=e.pitch?'<small>대표 구종 '+esc(e.pitch)+(e.velocity?' · 최고구속 기준 '+e.velocity+'km/h':'')+' · 타석 투구 '+e.pitches+'개</small>':'';
-   out.insertAdjacentHTML('beforeend','<div class="be-replay-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+'</small><strong>'+esc(e.batter)+' · '+esc(e.outcome)+'</strong>'+pitch+(e.runs?'<b>+'+e.runs+'점</b>':'')+'</div>');
+   out.insertAdjacentHTML('beforeend','<div class="be-replay-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+'</small><strong>'+esc(describe(e))+'</strong>'+pitch+(e.runs?'<b>+'+e.runs+'점</b>':'')+'</div>');
   }else{
    const x=Number(ai[index])||0,y=Number(hi[index])||0;ar+=x;hr+=y;
    inningLabel.textContent=(index+1)+'회 종료';out.insertAdjacentHTML('beforeend','<div class="be-replay-line"><b>'+(index+1)+'회</b><span>'+esc(a.name)+' '+x+'점 · '+esc(h.name)+' '+y+'점</span><strong>'+ar+' : '+hr+'</strong></div>');
   }
   index++;score.textContent=ar+' : '+hr;status.textContent=index>=total?'경기 종료 · 최종 점수':detailed?'타석 '+index+' / '+total:'이닝 '+index+' / '+total;
-  if(index>=total){if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계'}score.textContent=g.awayRuns+' : '+g.homeRuns;finish.hidden=false;btn.textContent='경기 종료';btn.disabled=true;skip.hidden=true}else btn.textContent='▶ '+(detailed?'다음 타석':(index+1)+'회 진행');
+  if(index>=total){if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계'}autoBtn.disabled=true;score.textContent=g.awayRuns+' : '+g.homeRuns;finish.hidden=false;btn.textContent='경기 종료';btn.disabled=true;skip.hidden=true}else btn.textContent='▶ '+(detailed?'다음 타석':(index+1)+'회 진행');
   if(out.children.length>7)out.lastElementChild.scrollIntoView({block:'nearest'});
  };
- btn.onclick=step;autoBtn.onclick=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계';return}autoBtn.textContent='Ⅱ 일시정지';autoTimer=setInterval(step,Number(speedSelect.value)||1400)};speedSelect.onchange=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.click()}};skip.onclick=()=>{while(index<total)step();finish.scrollIntoView({block:'nearest'})};
+ btn.onclick=step;autoBtn.onclick=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계';return}autoBtn.textContent='Ⅱ 일시정지';autoTimer=setInterval(step,Number(speedSelect.value)||1400)};speedSelect.onchange=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=setInterval(step,Number(speedSelect.value)||1400)}};skip.onclick=()=>{while(index<total)step();finish.scrollIntoView({block:'nearest'})};
  document.querySelector('#be-replay-overlay').addEventListener('click',e=>{if(e.target.id==='be-replay-overlay')beCloseGameReplay()});window.beBroadcastStop=()=>{if(autoTimer)clearInterval(autoTimer)};
 }
 function beCloseGameReplay(){window.beBroadcastStop?.();document.querySelector('#be-replay-overlay')?.remove()}
