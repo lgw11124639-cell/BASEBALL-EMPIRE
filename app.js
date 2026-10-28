@@ -1515,16 +1515,14 @@ async function beWatchGame(day,away){
 }
 window.beWatchGame=beWatchGame;
 function beOpenGameReplay(day,away){
- const g=(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));
- if(!g)return;
- const a=state.teams[g.away],h=state.teams[g.home],ai=g.awayInnings||[],hi=g.homeInnings||[];
- let ar=0,hr=0;
- const lines=Array.from({length:Math.max(ai.length,hi.length,9)},(_,i)=>{
-  const x=Number(ai[i])||0,y=Number(hi[i])||0;ar+=x;hr+=y;
-  return '<div class="be-replay-line"><b>'+(i+1)+'회</b><span>'+esc(a.name)+' '+x+'점 · '+esc(h.name)+' '+y+'점</span><strong>'+ar+' : '+hr+'</strong></div>';
- }).join('');
+ const g=(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));if(!g)return;
+ const a=state.teams[g.away],h=state.teams[g.home],ai=g.awayInnings||[],hi=g.homeInnings||[],n=Math.max(ai.length,hi.length,9);
+ const all=(state.gameResults||[]).filter(x=>Number(x.day)===Number(day));
+ const scores=all.map(x=>'<div class="be-replay-line"><span>'+esc(state.teams[x.away]?.name||'원정')+' vs '+esc(state.teams[x.home]?.name||'홈')+'</span><strong>'+x.awayRuns+' : '+x.homeRuns+'</strong></div>').join('');
  document.querySelector('#be-replay-overlay')?.remove();
- document.body.insertAdjacentHTML('beforeend','<div id="be-replay-overlay" class="be-replay-overlay"><section class="be-replay-dialog" role="dialog" aria-modal="true" aria-label="경기 다시보기"><header><div><small>BASEBALL EMPIRE · 경기 다시보기</small><h2>'+esc(a.city+' '+a.name)+' '+g.awayRuns+' : '+g.homeRuns+' '+esc(h.city+' '+h.name)+'</h2></div><button type="button" onclick="beCloseGameReplay()">✕ 닫기</button></header><p class="be-replay-note">저장된 실제 이닝별 득점 기록입니다. 과거 경기에 저장되지 않은 투구별 중계는 생성하지 않습니다.</p><div class="be-replay-lines">'+lines+'</div></section></div>');
+ document.body.insertAdjacentHTML('beforeend','<div id="be-replay-overlay" class="be-replay-overlay"><section class="be-replay-dialog" role="dialog" aria-modal="true" aria-label="경기 관전"><header><div><small>BASEBALL EMPIRE · 경기 문자중계</small><h2>'+esc(a.city+' '+a.name)+' vs '+esc(h.city+' '+h.name)+'</h2></div><button type="button" onclick="beCloseGameReplay()">✕ 닫기</button></header><p class="be-replay-note">저장된 이닝별 실제 득점 기록으로 진행합니다. 투구별 기록은 아직 지원하지 않습니다.</p><div id="be-replay-lines" class="be-replay-lines"></div><div id="be-replay-finish" hidden><h3>경기 종료 · 당일 전체 경기 최종 점수</h3>'+scores+'</div><button type="button" id="be-replay-next" class="be-replay-next">▶ 다음 이닝</button></section></div>');
+ const out=document.querySelector('#be-replay-lines'),btn=document.querySelector('#be-replay-next'),finish=document.querySelector('#be-replay-finish');let inning=0,ar=0,hr=0;
+ btn.onclick=()=>{if(inning>=n)return;const x=Number(ai[inning])||0,y=Number(hi[inning])||0;ar+=x;hr+=y;out.insertAdjacentHTML('beforeend','<div class="be-replay-line"><b>'+(inning+1)+'회</b><span>'+esc(a.name)+' '+x+'점 · '+esc(h.name)+' '+y+'점</span><strong>'+ar+' : '+hr+'</strong></div>');inning++;if(inning>=n){finish.hidden=false;btn.textContent='경기 종료';btn.disabled=true}else btn.textContent='▶ '+(inning+1)+'회 진행'};
  document.querySelector('#be-replay-overlay').addEventListener('click',e=>{if(e.target.id==='be-replay-overlay')beCloseGameReplay()});
 }
 function beCloseGameReplay(){document.querySelector('#be-replay-overlay')?.remove()}
