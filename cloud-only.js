@@ -74,10 +74,10 @@ async function unpackReplayResults(state){
 // Split the two frequently updated archives into independently replaceable top-level
 // gzip shards. The server's existing revision-checked top-level PATCH needs no changes.
 // Old saves remain readable; new saves reconstruct identical arrays on load.
-// Larger player shards reduce gzip stream startup overhead on each save.
-// Existing manifests retain their original size/count and remain readable.
-// Manifest lengths/counts make previous 24-game shards fully readable.
-const shardArrayFields={players:128,gameResults:24};
+// Keep player shards large, but split daily game-result updates into smaller chunks.
+// Existing manifests carry their original size/count, so legacy 24-game shards remain readable.
+// First save after migration rewrites game-result shards; later PATCH saves can send fewer bytes.
+const shardArrayFields={players:128,gameResults:8};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
