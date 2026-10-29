@@ -678,3 +678,15 @@
 .pro-profile .profile-extra{border:1px solid #dce5ef!important;border-radius:8px!important;overflow:hidden}
 .pro-profile .profile-extra summary{font-weight:700!important}
 @media(max-width:650px){.pro-profile .profile-section-label{margin-top:17px}.pro-profile .profile-section-label span{font-size:9px}.pro-profile .profile-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}.pro-profile .profile-facts>div{padding:10px!important}}
+
+/* Fix white-on-light first player fact and desktop oversized empty modal */
+.player-overlay .player-panel.pro-profile .profile-facts>div,
+.player-overlay .player-panel.pro-profile .profile-facts>div:first-child{color:#193653!important}
+.player-overlay .player-panel.pro-profile .profile-facts>div:first-child strong,
+.player-overlay .player-panel.pro-profile .profile-facts>div:first-child small{color:#193653!important;text-shadow:none!important}
+.player-overlay .player-panel.pro-profile .profile-facts>div:first-child small{color:#71839a!important}
+@media(min-width:651px){
+ .player-overlay .player-panel.pro-profile{height:fit-content!important;max-height:calc(100dvh - 32px)!important;min-height:0!important;display:block!important;flex-grow:0!important;flex-shrink:1!important}
+ .player-overlay .player-panel.pro-profile .profile-content{height:fit-content!important;min-height:0!important;display:block!important;flex-grow:0!important}
+ .player-overlay .player-panel.pro-profile [data-profile-pane]:not([hidden]){height:auto!important;min-height:0!important;flex-grow:0!important}
+}
