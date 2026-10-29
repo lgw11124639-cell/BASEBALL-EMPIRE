@@ -211,7 +211,10 @@ export async function cloudSave(state){
  let result;
  try{
   const packStarted=performance.now();
-  const replayPacked=await packReplayResults(state);
+  // gameResults is already losslessly gzip-packed by packAuxiliaryFields.
+  // Avoid individually gzipping every broadcast and then gzipping the entire archive again.
+  // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
+  const replayPacked=state;
   const replayPackedAt=performance.now();
   const payload=await packAuxiliaryFields(replayPacked);
   const auxiliaryPackedAt=performance.now();
