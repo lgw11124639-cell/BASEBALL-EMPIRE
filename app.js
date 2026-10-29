@@ -1866,15 +1866,27 @@ function beInternationalTodayPanel(){
 }
 function beOpenInternationalGameArticle(key,index){
  const record=state.nationalTeamResults?.[key],g=record?.matchResults?.[index];if(!g)return;
- const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국';
- const title='대한민국 '+g.homeRuns+' : '+g.awayRuns+' '+opponent+' · '+(g.round||'국제대회');
- const bats=(g.homeBatters||[]).filter(p=>(Number(p.hits)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)).slice(0,5);
- const pitchers=(g.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0);
- const items=(list,fmt)=>list.map(p=>'<li>'+esc(p.name||'선수')+' · '+fmt(p)+'</li>').join('');
- const rows=(name,values,total)=>'<tr><th>'+esc(name)+'</th>'+Array.from({length:Math.max(9,(g.homeInnings||[]).length,(g.awayInnings||[]).length)},(_,i)=>'<td>'+(values?.[i]??'-')+'</td>').join('')+'<td>'+total+'</td></tr>';
- const body='<div class="editorial-copy"><p>대한민국 대표팀이 '+esc(opponent)+'과의 '+esc(g.round||'국제대회 경기')+'에서 '+g.homeRuns+'대'+g.awayRuns+'를 기록했다.</p><h3>주요 타자</h3><ul>'+items(bats,p=>(p.hits||0)+'안타 '+(p.runsBattedIn||0)+'타점')+'</ul><h3>주요 투수</h3><ul>'+items(pitchers,p=>baseballIP(p.outs||0)+'이닝 '+(p.strikeouts||0)+'탈삼진')+'</ul><h3>이닝별 점수</h3><div class="scoreboard-scroll"><table class="scoreboard-table"><tbody>'+rows(opponent,g.awayInnings,g.awayRuns)+rows('대한민국',g.homeInnings,g.homeRuns)+'</tbody></table></div></div>';
+ const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국',kr=Number(g.homeRuns)||0,opp=Number(g.awayRuns)||0;
+ const win=kr>opp,draw=kr===opp,round=String(g.round||'국제대회'),winner=draw?'무승부':win?'대한민국':opponent;
+ const bats=(g.homeBatters||[]).slice().sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0));
+ const best=bats.find(p=>(Number(p.hits)||0)>0),pitchers=g.homePitchers||[],starter=pitchers.find(p=>p.role==='선발')||pitchers[0];
+ const h=g.homeInnings||[],a=g.awayInnings||[],n=Math.max(9,h.length,a.length),innings=Array.from({length:n},(_,i)=>i);
+ const scoring=innings.map(i=>({i,k:Number(h[i])||0,o:Number(a[i])||0})).filter(x=>x.k||x.o),turn=scoring.slice().sort((x,y)=>(y.k+y.o)-(x.k+x.o))[0];
+ const title=/결승/.test(round)?(win?'한국, '+opponent+' 꺾고 정상…'+kr+'대'+opp+' 우승':'한국, '+opponent+'에 '+kr+'대'+opp+'…'+(draw?'결승 무승부':'결승 준우승')):(win?'한국, '+opponent+' 제압 '+kr+'대'+opp:draw?'한국, '+opponent+'와 '+kr+'대'+opp+' 무승부':'한국, '+opponent+'에 '+kr+'대'+opp+' 패배');
+ const intro='대한민국 야구 대표팀이 '+opponent+'과의 '+round+' 경기에서 '+kr+'대'+opp+'로 '+(draw?'비겼다.':win?'승리했다.':'패했다.');
+ const paragraphs=[intro];
+ if(scoring.length)paragraphs.push('경기 득점은 '+scoring.map(x=>(x.i+1)+'회 한국 '+x.k+'점·'+opponent+' '+x.o+'점').join(', ')+'으로 기록됐다.');
+ if(turn)paragraphs.push('가장 많은 점수가 나온 '+(turn.i+1)+'회에는 한국이 '+turn.k+'점, '+opponent+'이 '+turn.o+'점을 올렸다.');
+ if(best)paragraphs.push('한국 타선에서는 '+best.name+'이 '+(Number(best.hits)||0)+'안타 '+(Number(best.runsBattedIn)||0)+'타점으로 활약했다.');
+ if(starter)paragraphs.push('한국 선발 '+starter.name+'은 '+baseballIP(Number(starter.outs)||0)+'이닝 '+(Number(starter.strikeouts)||0)+'탈삼진 '+(Number(starter.earnedRuns)||0)+'자책을 기록했다.');
+ if(/결승/.test(round)&&!draw)paragraphs.push((win?'대한민국':'상대 '+opponent)+'이 우승을 차지했고 '+(win?opponent:'대한민국')+'은 준우승으로 대회를 마쳤다.');
+ const row=(name,values,total,players)=>'<tr><th>'+esc(name)+'</th>'+innings.map(i=>'<td>'+(values[i]??'-')+'</td>').join('')+'<td><b>'+total+'</b></td><td>'+players.reduce((s,p)=>s+(Number(p.hits)||0),0)+'</td></tr>';
+ const batTable=(name,players)=>'<h3>'+esc(name)+' 타자 기록</h3><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>타수</th><th>안타</th><th>홈런</th><th>타점</th><th>볼넷</th></tr></thead><tbody>'+players.map(p=>'<tr><th>'+esc(p.name||'선수')+'</th><td>'+(p.atBats??'-')+'</td><td>'+(p.hits??'-')+'</td><td>'+(p.homeRuns??'-')+'</td><td>'+(p.runsBattedIn??'-')+'</td><td>'+(p.walks??'-')+'</td></tr>').join('')+'</tbody></table></div>';
+ const pitchTable=(name,players)=>'<h3>'+esc(name)+' 투수 기록</h3><ul>'+players.map(p=>'<li>'+esc(p.name||'투수')+' · '+baseballIP(Number(p.outs)||0)+'이닝 · '+(p.strikeouts??0)+'탈삼진 · '+(p.earnedRuns??0)+'자책</li>').join('')+'</ul>';
+ const hero='<div class="editorial-hero"><div class="editorial-stadium"><div class="editorial-winner-logo"><span>WINNER · '+esc(winner)+'</span></div><div class="editorial-hero-title">'+esc(opponent)+' <b>'+opp+' : '+kr+'</b> 대한민국</div></div><div class="editorial-caption">BASEBALL EMPIRE · 국제대회 경기 결과</div></div>';
+ const body='<div class="news-article-body editorial-story"><div class="article-category">스포츠 › 야구 › '+esc(round)+'</div><h1 class="editorial-headline">'+esc(title)+'</h1><p class="editorial-subtitle">'+esc(intro)+'</p><div class="editorial-meta"><strong>BASEBALL EMPIRE 스포츠팀</strong><span>'+esc(g.date||'')+' · 경기 종료</span></div>'+hero+'<div class="editorial-copy">'+paragraphs.map(p=>'<p>'+esc(p)+'</p>').join('')+'</div><div class="editorial-points"><h3>주요 포인트</h3><ul><li>최종 점수 · '+esc(opponent)+' '+opp+' : '+kr+' 대한민국</li>'+(turn?'<li>주요 득점 이닝 · '+(turn.i+1)+'회, 합계 '+(turn.k+turn.o)+'점</li>':'')+(best?'<li>한국 주요 타자 · '+esc(best.name)+' '+(best.hits||0)+'안타</li>':'')+'</ul></div><h3>이닝별 점수</h3><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>국가</th>'+innings.map(i=>'<th>'+(i+1)+'</th>').join('')+'<th>R</th><th>H</th></tr></thead><tbody>'+row(opponent,a,opp,g.awayBatters||[])+row('대한민국',h,kr,g.homeBatters||[])+'</tbody></table></div>'+batTable(opponent,g.awayBatters||[])+batTable('대한민국',g.homeBatters||[])+pitchTable(opponent,g.awayPitchers||[])+pitchTable('대한민국',pitchers)+'</div>';
  closeGameArticle();
- document.body.insertAdjacentHTML('beforeend','<div id="game-news-overlay" class="game-news-overlay"><article class="game-news-dialog" role="dialog" aria-modal="true"><header><div><small>BASEBALL EMPIRE SPORTS · '+esc(g.date||'')+'</small><h2>'+esc(title)+'</h2></div><button id="close-game-news">× 닫기</button></header><div class="be-article-replay"><button id="national-replay-from-article">▶ 경기 다시보기</button></div>'+body+'</article></div>');
+ document.body.insertAdjacentHTML('beforeend','<div id="game-news-overlay" class="game-news-overlay"><article class="game-news-dialog" role="dialog" aria-modal="true"><header><div><small>BASEBALL EMPIRE SPORTS · '+esc(g.date||'')+'</small><h2>'+esc(opponent)+' vs 대한민국 · '+esc(round)+'</h2></div><button id="close-game-news" type="button">× 닫기</button></header><div class="be-article-replay"><button id="national-replay-from-article" type="button">▶ 경기 다시보기</button></div>'+body+'</article></div>');
  document.querySelector('#close-game-news').onclick=closeGameArticle;
  document.querySelector('#national-replay-from-article').onclick=()=>beOpenInternationalReplay(key,index);
  document.querySelector('#game-news-overlay').onclick=e=>{if(e.target.id==='game-news-overlay')closeGameArticle()};
