@@ -129,7 +129,7 @@ async function unpackCloudShards(state){
  return state;
 }
 // Versioned league archive shards; legacy whole-field gzip remains supported.
-const leagueShardFields=['highSchoolBaseball','collegeBaseball','minorLeague'];
+const leagueShardFields=['highSchoolBaseball','collegeBaseball','minorLeague','independentBaseball'];
 // Twenty-four players per chunk; the manifest records array lengths and chunk counts for backward compatibility.
 const leagueShardSize=24;
 function leagueShardName(field,season,name,i){return 'beLeaguePart_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+i}
@@ -488,7 +488,7 @@ window.beVerifyCloudServer=async()=>{
  const restored=await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save))))));
  const current=baseline?.save;
  if(!current)throw Error('비교할 현재 게임 저장 상태가 없습니다');
- const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
+ const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),...leagueShardFields,'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
  const mismatches=keys.filter(k=>canonicalCloudValue(current[k])!==canonicalCloudValue(restored[k]));
  const result={ok:serverRevision===revision&&mismatches.length===0,revisionMatches:serverRevision===revision,serverRevision,localRevision:revision,checked:keys,mismatches,gameResultsCount:Array.isArray(restored.gameResults)?restored.gameResults.length:null,ms:Math.round(performance.now()-start),note:'Read-only server GET; current game state unchanged'};
  window.beCloudServerAudit=result;
@@ -553,7 +553,7 @@ export async function cloudSave(state){
    const start=performance.now();
    const snapshot=JSON.parse(JSON.stringify(payload));
    await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(snapshot)))));
-   const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields)])];
+   const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),...leagueShardFields,'amateurCareerArchive'])];
    // Compare canonical JSON semantics, not object insertion order. Packed replay
    // events are restored after the auxiliary archive, changing property order.
    const canonical=value=>JSON.stringify(value, function(key,v){
