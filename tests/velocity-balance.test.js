@@ -13,8 +13,9 @@ assert(slow.hit>border.hit&&border.hit>normal.hit&&normal.hit>elite.hit,'low vel
 assert(slow.strikeout<border.strikeout&&border.strikeout<normal.strikeout&&normal.strikeout<elite.strikeout,'low velocity must reduce strikeouts');
 assert(slow.homer>normal.homer,'low velocity must increase home runs');
 for(const v of [125,130,135,140,141,145,155,160,165]){const m=match(v);for(const key of ['hit','walk','strikeout','homer'])assert(Number.isFinite(m[key]),v+' '+key)}
-assert(source.includes('Math.min(165,fast)'), 'velocity ceiling must be 165');
+assert(!source.includes('Math.min(165,fast)'), 'velocity must not have a fixed 165 km/h ceiling');
 assert(source.includes('velocityPeak'), 'velocity growth must persist');
-assert(source.includes('arsenal.velocity=Math.min(165,peak,v+1)'), 'velocity growth must apply');
-assert(source.includes('arsenal.velocity=v-1'), 'age decline must apply');
-console.log('Velocity regression: hit/K/homer ordering, boundaries, 165 cap, growth and decline OK');
+assert(source.includes('arsenal.velocity=v+delta'), 'velocity growth must apply without a fixed cap');
+assert(source.includes('velocityLog.gained<3'), 'velocity growth must retain an annual safety limit');
+assert(source.includes('arsenal.velocity=v-delta'), 'age decline must apply');
+console.log('Velocity regression: hit/K/homer ordering, boundaries, uncapped but rate-limited growth and decline OK');
