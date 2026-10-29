@@ -81,6 +81,8 @@ const shardArrayFields={players:128,gameResults:8};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
+// Only reuse game-result JSON when the simulation explicitly reports no game-result mutations.
+let gameShardFastCache=null;
 // Limit simultaneous gzip streams. Do not change the wire format or skip JSON
 // comparisons: both are required for lossless revision-checked cloud saves.
 const shardGzipConcurrency=6;
@@ -138,7 +140,8 @@ async function packCloudShards(state){
   let cacheHits=0,changed=0,rawBytes=0,serializeMs=0,gzipMs=0;
   const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
    const serializeStart=performance.now();
-   const raw=JSON.stringify(array.slice(i*size,(i+1)*size));
+   const gameFast=key==='gameResults'&&gameShardFastCache&&gameShardFastCache.array===array&&gameShardFastCache.version===window.beGameResultsRevision&&Number.isSafeInteger(window.beGameResultsRevision)&&gameShardFastCache.size===size;
+   const raw=gameFast&&gameShardFastCache.parts[i]!==undefined?gameShardFastCache.parts[i]:JSON.stringify(array.slice(i*size,(i+1)*size));
    serializeMs+=performance.now()-serializeStart;
    const cacheKey=`${key}:${i}`;
    rawBytes+=raw.length;
@@ -148,6 +151,9 @@ async function packCloudShards(state){
    gzipMs+=performance.now()-gzipStart;
    return [`beShard_${key}_${i}`,encoded];
   }));
+  if(key==='gameResults'&&Number.isSafeInteger(window.beGameResultsRevision)){
+   gameShardFastCache={array,version:window.beGameResultsRevision,size,parts:entries.map((_,i)=>shardGzipCache.get('gameResults:'+i)?.raw)};
+  }else if(key==='gameResults')gameShardFastCache=null;
   return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
  }));
  window.beCloudArrayShardTiming=packed.map(x=>x.diagnostic);
