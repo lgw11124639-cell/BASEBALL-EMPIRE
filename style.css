@@ -402,3 +402,9 @@
 .pro-profile .profile-art,.pro-profile .player-photo-upload{display:none!important}
 .pro-profile .profile-banner{display:block!important}
 .pro-profile .profile-identity{width:100%!important;max-width:none!important}
+
+/* Replay strike-zone card: reserve space for outside pitches. */
+.be-replay-dialog .be-broadcast-zone{grid-template-columns:210px minmax(0,1fr)!important;min-height:185px!important;align-items:center!important;padding:18px 24px!important;column-gap:22px!important}
+.be-replay-dialog .be-broadcast-zone>div:first-child{min-width:0!important;overflow:visible!important}
+.be-replay-dialog .be-broadcast-zone-grid{width:108px!important;height:108px!important;margin:20px auto!important}
+@media(max-width:600px){.be-replay-dialog .be-broadcast-zone{grid-template-columns:156px minmax(0,1fr)!important;min-height:160px!important;padding:16px 12px!important;column-gap:12px!important}.be-replay-dialog .be-broadcast-zone-grid{width:88px!important;height:88px!important;margin:18px auto!important}}
