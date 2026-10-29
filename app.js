@@ -299,7 +299,7 @@ if(appearance&&arsenalInfo&&Array.isArray(arsenalInfo.usage)&&arsenalInfo.usage.
   const fast=/직구|패스트볼|투심|싱커|커터/.test(actual.name),offset=fast?0:/슬라이더|포크|스플리터/.test(actual.name)?-8:/커브/.test(actual.name)?-17:-11;
   const velocity=Math.max(85,Math.min(arsenalInfo.velocity,Math.round(arsenalInfo.velocity+offset+ri(r,-3,0))));
   const z={type:actual.name,number:pitchIndex+1,velocity,...simulatePitchLocation(pitcher,p,actual.name,r,calling),catcher:calling.catcher?.name||'포수',lead:calling.preference};
-  const inside=z.zoneX>=18&&z.zoneX<=82&&z.zoneY>=18&&z.zoneY<=82,zoneFactor=batterZoneFactor(p,z),chase=Math.max(.07,Math.min(.39,.24-(eye-60)*.003+(zoneFactor-1)*.4));
+  const framing=(calling.skill-55)*.055,inside=z.zoneX>=18-framing&&z.zoneX<=82+framing&&z.zoneY>=18-framing&&z.zoneY<=82+framing,zoneFactor=batterZoneFactor(p,z),chase=Math.max(.07,Math.min(.39,.24-(eye-60)*.003+(zoneFactor-1)*.4));
   const swing=r()<(inside?Math.max(.38,Math.min(.77,.59+(zoneFactor-1)*1.3)):chase);
   let call;
   if(!swing)call=inside?'루킹 스트라이크':'볼';
