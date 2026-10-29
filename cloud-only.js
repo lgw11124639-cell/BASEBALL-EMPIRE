@@ -31,8 +31,9 @@ async function call(path,method='GET',data,rev){
   response=await fetch(API+path,{method,headers,body:json,cache:'no-store'});
  }
  const receivedAt=measure?performance.now():0;
+ const serverMs=measure?response.headers.get('Server-Timing'):null;
  let result={};try{result=await response.json()}catch(_){}
- if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed};}
+ if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed,serverMs};}
  if(!response.ok){if(response.status===401){token=null;username='';verified=false;remember()}const err=Error(result.error||'HTTP '+response.status);err.status=response.status;throw err}
  return result;
 }
