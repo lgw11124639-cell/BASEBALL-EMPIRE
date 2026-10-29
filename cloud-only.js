@@ -62,8 +62,63 @@ async function unpackReplayResults(state){
   game.broadcastEvents=events;delete game.bePackedBroadcastGzip;
  }));return state;
 }
+// Split the two frequently updated archives into independently replaceable top-level
+// gzip shards. The server's existing revision-checked top-level PATCH needs no changes.
+// Old saves remain readable; new saves reconstruct identical arrays on load.
+const shardArrayFields={players:64,gameResults:24};
+const shardGzipCache=new Map();
+async function encodeCloudShard(raw,cacheKey){
+ const prior=shardGzipCache.get(cacheKey);
+ if(prior?.raw===raw)return prior.encoded;
+ const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+ let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
+ const encoded=btoa(binary);
+ shardGzipCache.set(cacheKey,{raw,encoded});
+ return encoded;
+}
+async function packCloudShards(state){
+ if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
+ const targets=Object.entries(shardArrayFields).filter(([key])=>Array.isArray(state?.[key]));
+ if(!targets.length)return state;
+ const copy={...state},manifest={version:1,fields:{}};
+ for(const [key,size] of targets){
+  const array=state[key],count=Math.ceil(array.length/size);
+  manifest.fields[key]={count,length:array.length,size};
+  const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
+   const raw=JSON.stringify(array.slice(i*size,(i+1)*size));
+   return [`beShard_${key}_${i}`,await encodeCloudShard(raw,`${key}:${i}`)];
+  }));
+  for(const [name,encoded] of entries)copy[name]=encoded;
+  delete copy[key];
+ }
+ copy.beShardManifest=manifest;
+ return copy;
+}
+async function unpackCloudShards(state){
+ const manifest=state?.beShardManifest;
+ if(!manifest)return state;
+ if(manifest.version!==1||!manifest.fields||typeof manifest.fields!=='object')throw Error('클라우드 분할 저장 형식이 올바르지 않습니다');
+ if(typeof DecompressionStream!=='function')throw Error('클라우드 분할 저장을 해제할 수 없는 브라우저입니다');
+ for(const [key,meta] of Object.entries(manifest.fields)){
+  if(!Object.prototype.hasOwnProperty.call(shardArrayFields,key)||!Number.isSafeInteger(meta.count)||meta.count<0||meta.count>100000||!Number.isSafeInteger(meta.length)||meta.length<0)throw Error('클라우드 분할 저장 메타데이터가 올바르지 않습니다');
+  const pieces=await Promise.all(Array.from({length:meta.count},async(_,i)=>{
+   const name=`beShard_${key}_${i}`,encoded=state[name];
+   if(typeof encoded!=='string')throw Error('클라우드 저장 데이터 일부가 누락되었습니다: '+name);
+   const binary=atob(encoded),bytes=new Uint8Array(binary.length);
+   for(let j=0;j<binary.length;j++)bytes[j]=binary.charCodeAt(j);
+   const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+   const decoded=JSON.parse(raw);
+   if(!Array.isArray(decoded))throw Error('클라우드 저장 배열 형식 오류: '+name);
+   delete state[name];return decoded;
+  }));
+  state[key]=pieces.flat();
+  if(state[key].length!==meta.length)throw Error('클라우드 저장 배열 길이가 일치하지 않습니다: '+key);
+ }
+ delete state.beShardManifest;
+ return state;
+}
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players'];
+const auxiliarySaveFields=['highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive' ];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
@@ -234,7 +289,7 @@ window.beVerifyCloudServer=async()=>{
  const remote=await snapshot();
  if(!remote?.save)throw Error('서버에 저장된 게임이 없습니다');
  const serverRevision=revisionOf(remote);
- const restored=await unpackReplayResults(await unpackAuxiliaryFields(remote.save));
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(remote.save)));
  const current=baseline?.save;
  if(!current)throw Error('비교할 현재 게임 저장 상태가 없습니다');
  const keys=[...new Set([...auxiliarySaveFields,'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
@@ -243,7 +298,7 @@ window.beVerifyCloudServer=async()=>{
  window.beCloudServerAudit=result;
  return result;
 };
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;acknowledgedWireSave=s?.save||null;return s?.save?await unpackReplayResults(await unpackAuxiliaryFields(s.save)):null}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;acknowledgedWireSave=s?.save||null;return s?.save?await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(s.save))):null}
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
@@ -259,14 +314,14 @@ export async function cloudSave(state){
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
   const replayPacked=state;
   const replayPackedAt=performance.now();
-  payload=await packAuxiliaryFields(replayPacked);
+  payload=await packAuxiliaryFields(await packCloudShards(replayPacked));
   const auxiliaryPackedAt=performance.now();
   // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
   window.beVerifyCloudPacking=async()=>{
    const start=performance.now();
    const snapshot=JSON.parse(JSON.stringify(payload));
-   await unpackReplayResults(await unpackAuxiliaryFields(snapshot));
-   const keys=[...new Set([...auxiliarySaveFields,'gameResults'])];
+   await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(snapshot)));
+   const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields)])];
    // Compare canonical JSON semantics, not object insertion order. Packed replay
    // events are restored after the auxiliary archive, changing property order.
    const canonical=value=>JSON.stringify(value, function(key,v){
