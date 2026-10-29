@@ -2597,11 +2597,11 @@ function bindArticlePlayerLinks(modal){
 }
 function beArchivedNationalMatchArticle(n){
  const title=String(n?.title||'');
- const event=title.match(/(\\d{4})\\s*(WBC|올림픽|아시안게임)/);
+ const event=title.match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
  if(!event)return null;
  const rec=Object.values(state.nationalTeamResults||{}).find(r=>Number(r.year)===Number(event[1])&&r.event===event[2]);
  if(!rec)return null;
- const round=title.match(/(준결승\\s*\\d*|결승\\s*\\d*|조별리그\\s*[A-Z]조\\s*\\d+-\\d+)/);
+ const round=title.match(/(준결승\s*\d*|결승\s*\d*|조별리그\s*[A-Z]조\s*\d+-\d+)/);
  if(!round)return null;
  const games=(rec.matchResults||[]).filter(g=>g.round===round[1]);
  if(games.length!==1)return null;
