@@ -128,6 +128,46 @@ async function unpackCloudShards(state){
  delete state.beShardManifest;
  return state;
 }
+// Stable, independently compressed amateur-career buckets. Old saves remain readable.
+const amateurBucketCount=32;
+function amateurBucket(key){let h=2166136261;for(let i=0;i<key.length;i++){h^=key.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0)%amateurBucketCount}
+async function packAmateurBuckets(state){
+ const data=state?.amateurCareerArchive;
+ if(!data||typeof data!=='object'||Array.isArray(data)||typeof CompressionStream!=='function')return state;
+ const buckets=Array.from({length:amateurBucketCount},()=>({}));
+ for(const [key,value] of Object.entries(data))buckets[amateurBucket(key)][key]=value;
+ const encoded=await Promise.all(buckets.map((bucket,i)=>encodeCloudShard(JSON.stringify(bucket),'amateur:'+i)));
+ const copy={...state};
+ encoded.forEach((value,i)=>{copy['beAmateurBucket_'+i]=value});
+ copy.beAmateurBucketManifest={version:1,count:amateurBucketCount,entries:Object.keys(data).length};
+ delete copy.amateurCareerArchive;
+ return copy;
+}
+async function unpackAmateurBuckets(state){
+ const meta=state?.beAmateurBucketManifest;
+ if(!meta)return state;
+ if(meta.version!==1||meta.count!==amateurBucketCount||!Number.isSafeInteger(meta.entries)||meta.entries<0)throw Error('아마추어 경력 메타데이터 오류');
+ if(typeof DecompressionStream!=='function')throw Error('아마추어 경력 압축 해제 불가');
+ const chunks=await Promise.all(Array.from({length:meta.count},async(_,i)=>{
+  const name='beAmateurBucket_'+i,encoded=state[name];
+  if(typeof encoded!=='string')throw Error('아마추어 경력 묶음 누락: '+name);
+  const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+  const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  const obj=JSON.parse(raw);
+  if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error('아마추어 경력 묶음 오류');
+  return obj;
+ }));
+ const restored={};
+ for(const chunk of chunks)for(const [key,value] of Object.entries(chunk)){
+  if(Object.prototype.hasOwnProperty.call(restored,key))throw Error('아마추어 경력 중복 기록');
+  restored[key]=value;
+ }
+ if(Object.keys(restored).length!==meta.entries)throw Error('아마추어 경력 기록 개수 불일치');
+ chunks.forEach((_,i)=>delete state['beAmateurBucket_'+i]);
+ delete state.beAmateurBucketManifest;
+ state.amateurCareerArchive=restored;
+ return state;
+}
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
 const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
@@ -326,7 +366,7 @@ window.beVerifyCloudServer=async()=>{
  const remote=await snapshot();
  if(!remote?.save)throw Error('서버에 저장된 게임이 없습니다');
  const serverRevision=revisionOf(remote);
- const restored=await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(structuredClone(remote.save))));
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save)))));
  const current=baseline?.save;
  if(!current)throw Error('비교할 현재 게임 저장 상태가 없습니다');
  const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
@@ -335,7 +375,7 @@ window.beVerifyCloudServer=async()=>{
  window.beCloudServerAudit=result;
  return result;
 };
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(structuredClone(s.save)))):null;baseline={save:restored,revision:rev};return restored}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(s.save))))):null;baseline={save:restored,revision:rev};return restored}
 // Read-only cloud consistency audit. Never overwrites game state or save revision.
 window.beAuditCloudConsistency=async function(){
  if(!token||!verified)throw Error('클라우드 로그인이 필요합니다');
@@ -344,7 +384,7 @@ window.beAuditCloudConsistency=async function(){
  const serverRev=revisionOf(remote);
  const local=baseline?.save;
  if(!local)return {ok:false,reason:'local baseline unavailable',serverRev,clientRev:revision};
- const restored=await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(structuredClone(remote.save))));
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save)))));
  const fields=['date','year','season','teams','players','gameResults','minorLeague','nationalTeamResults'];
  const canonical=value=>JSON.stringify(value,function(k,v){
   if(v&&typeof v==='object'&&!Array.isArray(v)){
@@ -376,13 +416,13 @@ export async function cloudSave(state){
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
   const replayPacked=state;
   const replayPackedAt=performance.now();
-  payload=await packAuxiliaryFields(await packCloudShards(replayPacked));
+  payload=await packAuxiliaryFields(await packAmateurBuckets(await packCloudShards(replayPacked)));
   const auxiliaryPackedAt=performance.now();
   // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
   window.beVerifyCloudPacking=async()=>{
    const start=performance.now();
    const snapshot=JSON.parse(JSON.stringify(payload));
-   await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(snapshot)));
+   await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(snapshot))));
    const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields)])];
    // Compare canonical JSON semantics, not object insertion order. Packed replay
    // events are restored after the auxiliary archive, changing property order.
