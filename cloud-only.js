@@ -189,6 +189,17 @@ export async function cloudSave(state){
   const replayPackedAt=performance.now();
   const payload=await packAuxiliaryFields(replayPacked);
   const auxiliaryPackedAt=performance.now();
+  // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
+  window.beVerifyCloudPacking=async()=>{
+   const start=performance.now();
+   const snapshot=JSON.parse(JSON.stringify(payload));
+   await unpackReplayResults(await unpackAuxiliaryFields(snapshot));
+   const keys=[...new Set([...auxiliarySaveFields,'gameResults'])];
+   const mismatches=keys.filter(key=>JSON.stringify(snapshot[key])!==JSON.stringify(state[key]));
+   const result={ok:mismatches.length===0,checked:keys.filter(key=>state[key]!==undefined),mismatches,ms:Math.round(performance.now()-start),source:'latest in-memory save payload; does not test server reload'};
+   window.beCloudRoundTripAudit=result;
+   return result;
+  };
   result=await call('/v2/saves/main','PUT',payload,revision);
   window.beCloudPackingTiming={replay:Math.round((replayPackedAt-packStarted)*10)/10,auxiliary:Math.round((auxiliaryPackedAt-replayPackedAt)*10)/10,total:Math.round((auxiliaryPackedAt-packStarted)*10)/10};
  }
