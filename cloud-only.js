@@ -87,13 +87,16 @@ async function packCloudShards(state){
  const targets=Object.entries(shardArrayFields).filter(([key])=>Array.isArray(state?.[key]));
  if(!targets.length)return state;
  const copy={...state},manifest={version:1,fields:{}};
- for(const [key,size] of targets){
+ const packed=await Promise.all(targets.map(async([key,size])=>{
   const array=state[key],count=Math.ceil(array.length/size);
-  manifest.fields[key]={count,length:array.length,size};
   const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
    const raw=JSON.stringify(array.slice(i*size,(i+1)*size));
    return [`beShard_${key}_${i}`,await encodeCloudShard(raw,`${key}:${i}`)];
   }));
+  return {key,size,length:array.length,count,entries};
+ }));
+ for(const {key,size,length,count,entries} of packed){
+  manifest.fields[key]={count,length,size};
   for(const [name,encoded] of entries)copy[name]=encoded;
   delete copy[key];
  }
