@@ -76,7 +76,7 @@ async function unpackReplayResults(state){
 // Old saves remain readable; new saves reconstruct identical arrays on load.
 // Larger replay shards reduce gzip stream startup overhead on cold loads.
 // Manifest lengths/counts make previous 24-game shards fully readable.
-const shardArrayFields={players:64,gameResults:48};
+const shardArrayFields={players:64,gameResults:24};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
