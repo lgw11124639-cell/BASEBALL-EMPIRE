@@ -18,7 +18,7 @@ async function packReplayResults(state){
   const prior=replayCompressionCache.get(events);
   if(prior&&prior.count===events.length&&prior.first===events[0]&&prior.last===events[events.length-1]){
    if(!prior.encoded)return game;
-   changed=true;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=prior.encoded;return copy;
+   changed=true;if(prior.game===game&&prior.packedGame)return prior.packedGame;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=prior.encoded;prior.game=game;prior.packedGame=copy;return copy;
   }
   const raw=JSON.stringify(events);
   if(raw.length<1500)return game;
@@ -28,9 +28,9 @@ async function packReplayResults(state){
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
    const useful=encoded.length<raw.length*.85;
-   replayCompressionCache.set(events,{count:events.length,first:events[0],last:events[events.length-1],encoded:useful?encoded:null});
-   if(!useful)return game;
-   changed=true;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=encoded;return copy;
+   if(!useful){replayCompressionCache.set(events,{count:events.length,first:events[0],last:events[events.length-1],encoded:null});return game;}
+   changed=true;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=encoded;
+   replayCompressionCache.set(events,{count:events.length,first:events[0],last:events[events.length-1],encoded,game,packedGame:copy});return copy;
   }catch(_){return game}
  }));
  return changed?{...state,gameResults:packed}:state;
