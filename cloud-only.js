@@ -579,9 +579,21 @@ export async function cloudSave(state){
   const useDelta=!!deltaJson&&deltaJson.length<fullJsonLength*.85;
   // Record what actually changes; the full snapshot size is not the upload size.
   // Field-level diagnostics identify whether a finer-grained protocol is worthwhile.
+  // A field-by-field breakdown of the actual PATCH payload. Avoid re-stringifying
+  // already-encoded shards; the size of their JSON value is length + two quotes.
   const changedFields=delta?Object.entries(delta.set).map(([key,value])=>({
    key,bytes:typeof value==='string'?value.length+2:JSON.stringify(value)?.length||0
   })).sort((a,b)=>b.bytes-a.bytes):[];
+  const changedGroups=Object.create(null);
+  for(const {key,bytes} of changedFields){
+   const group=key.startsWith('beLeaguePart_')?'league archive':
+    key.startsWith('beShard_')?'player/game shards':
+    key.startsWith('beAmateur')?'amateur archive':
+    key.startsWith('bePackedAux_')?'auxiliary archive':'other state';
+   const entry=changedGroups[group]||(changedGroups[group]={fields:0,bytes:0});
+   entry.fields++;entry.bytes+=bytes;
+  }
+  window.beCloudPatchBreakdown=Object.entries(changedGroups).map(([group,value])=>({group,...value})).sort((a,b)=>b.bytes-a.bytes);
   window.beCloudDeltaTiming={compareMs:+(performance.now()-deltaStarted).toFixed(1),
    fullBytes:fullJsonLength,deltaBytes:deltaJson?.length||0,used:useDelta,
    changedFieldCount:changedFields.length,changedFields:changedFields.slice(0,12),
