@@ -1984,8 +1984,11 @@ function performanceOpinion(p){
  return '확인된 공식 경기 표본이 부족합니다. 실전 성적 평가를 보류하며, 스카우트 의견과 잠재력 평가는 경기 기록을 대신하지 않습니다.';
 }
 function scoutingCeiling(p){
- const age=Number(p.age)||25,potential=Number(p.potential),overall=bePlayerEvaluation(p);
- if(!Number.isFinite(potential)||!Number.isFinite(overall))return {level:'판단 보류',comment:'평가에 필요한 자료가 부족합니다.',heading:'선수 전망'};
+ const age=Number(p.age)||25,skills=ensureProfile(p).skills||{},isPitcher=p.position==='P';
+ const keys=isPitcher?['stuff','control','stamina']:['contact','power','eye','speed'];
+ const values=keys.map(k=>Number(skills[k])).filter(Number.isFinite);
+ if(values.length!==keys.length)return {level:'판단 보류',comment:'평가에 필요한 자료가 부족합니다.',heading:'선수 전망'};
+ const strength=Math.max(...values),breadth=values.filter(n=>n>=65).length;
  const year=Number(state.year),now=currentSeasonBoxStats(p);
  const past=Object.values(state.history?.seasons||{}).filter(x=>Number(x.year)<year).sort((x,y)=>Number(y.year)-Number(x.year)).map(x=>(x.players||[]).find(v=>String(v.id)===String(p.id))).find(hasPlayedFirstTeamSeason);
  const recent=hasPlayedFirstTeamSeason(now)?now:past;
@@ -2003,10 +2006,13 @@ function scoutingCeiling(p){
   const metric=isP?(Number(recent.earnedRuns)||0)*9/ip:(Number(recent.hits)||0)/ab;
   return {heading:'현재 경쟁력 평가',level:(isP?metric<3.5:metric>=.3)?'리그 상위권 경기력':(isP?metric>=5:metric<.24)?'경쟁력 개선 필요':'1군 전력 활용 가능',comment:'전성기 연령대 선수로, 최근 공식 성적을 중심으로 평가합니다. 경기 표본과 시즌 간 지속성에 따라 판단이 달라질 수 있습니다.'};
  }
- const growth=Math.max(0,potential-overall),projection=overall+growth*(age>=24?.55:.85);
+ const talent=ensureProfile(p).development?.talentTier||'ordinary';
+ const promise=talent==='historic'?3:talent==='elite'?2:talent==='promising'?1:0;
+ const projection=strength+(age<24?promise*4:promise*2)+(breadth>=3?4:breadth>=2?2:0);
+ const growth=promise*4;
  const grade=projection>=86?'국가대표급 잠재력':projection>=78?'리그 정상급 잠재력':projection>=68?'1군 주전급 잠재력':projection>=58?'1군 로테이션·백업급':'장기 육성 대상';
  const future=projection>=86?'성장이 순조롭다면 국가대표 선발 경쟁까지 기대할 수 있는 재목입니다.':projection>=78?'전성기에 리그 상위권 선수로 자리 잡을 가능성이 있습니다.':projection>=68?'향후 1군에서 안정적인 역할을 맡을 가능성이 있습니다.':projection>=58?'특정 보직에서 1군 전력으로 활용할 여지가 있습니다.':'기량 발전과 실전 경험 축적이 우선 과제입니다.';
- return {heading:'장기 성장 전망',level:grade,comment:future+(growth>=18?' 현재 완성도와 성장 기대치의 차이가 커 변동성이 높습니다.':' 실전 성적과 부상 이력에 따라 전망이 달라질 수 있습니다.')};
+ return {heading:'장기 성장 전망',level:grade,comment:future+(promise>=2?' 높은 성장 기대치가 있지만 결과의 불확실성도 큽니다.':' 실전 성적과 부상 이력에 따라 전망이 달라질 수 있습니다.')};
 }
 function scoutingReportPanel(p){
  const isP=p.position==='P',now=currentSeasonBoxStats(p),yr=Number(state.year),n=(x,k)=>Number(x?.[k])||0;
