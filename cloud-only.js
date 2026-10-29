@@ -95,15 +95,20 @@ async function packCloudShards(state){
  const packed=await Promise.all(targets.map(async([key,size])=>{
   const started=performance.now();
   const array=state[key],count=Math.ceil(array.length/size);
-  let cacheHits=0,changed=0,rawBytes=0;
+  let cacheHits=0,changed=0,rawBytes=0,serializeMs=0,gzipMs=0;
   const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
+   const serializeStart=performance.now();
    const raw=JSON.stringify(array.slice(i*size,(i+1)*size));
+   serializeMs+=performance.now()-serializeStart;
    const cacheKey=`${key}:${i}`;
    rawBytes+=raw.length;
    if(shardGzipCache.get(cacheKey)?.raw===raw)cacheHits++;else changed++;
-   return [`beShard_${key}_${i}`,await encodeCloudShard(raw,cacheKey)];
+   const gzipStart=performance.now();
+   const encoded=await encodeCloudShard(raw,cacheKey);
+   gzipMs+=performance.now()-gzipStart;
+   return [`beShard_${key}_${i}`,encoded];
   }));
-  return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,rawBytes,ms:+(performance.now()-started).toFixed(1)}};
+  return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
  }));
  window.beCloudArrayShardTiming=packed.map(x=>x.diagnostic);
  for(const {key,size,length,count,entries} of packed){
