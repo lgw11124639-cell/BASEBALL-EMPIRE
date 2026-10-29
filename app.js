@@ -1839,7 +1839,7 @@ function gameManagerInterview(g){
  const team=state.teams[winner];if(!team)return '';
  const manager=officeAI(winner)?.manager;if(!manager)return '';
  const philosophy=managerPhilosophy(manager),pitching=managerPitchingPhilosophy(manager);
- const comment=draw?'투타 모두 끝까지 집중했지만 승부를 가리지 못했습니다.':philosophy==='빅볼'?'타자들이 좋은 공을 강하게 공략한 점이 중요했습니다.':philosophy==='스몰볼'?'주루와 연결 플레이를 끝까지 강조했습니다.':philosophy==='세이버메트릭스'?'출루 기회를 살리고 타석마다 유리한 선택을 하려 했습니다.':'공수에서 균형을 유지하려 했습니다.';
+ const comment=draw?'양 팀 모두 마지막까지 집중한 경기였습니다.':philosophy==='빅볼'?'타자들이 좋은 공을 강하게 공략한 점이 중요했습니다.':philosophy==='스몰볼'?'주루와 연결 플레이를 끝까지 강조했습니다.':philosophy==='세이버메트릭스'?'출루 기회를 살리고 타석마다 유리한 선택을 하려 했습니다.':'공수에서 균형을 유지하려 했습니다.';
  return {name:manager.name||'감독',team:team.name,quote:'“'+comment+' '+situation+' '+(pitching==='불펜 중심형'?'불펜 운용도 상황에 맞춰 준비했습니다.':pitching==='선발 중시형'?'선발투수가 흐름을 잡는 것이 중요합니다.':'다음 경기도 선수 상태를 살피며 준비하겠습니다.')+'”'};
 }
 function gameBroadcastArticle(g){
