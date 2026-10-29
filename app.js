@@ -1876,8 +1876,9 @@ function beUnifiedNoticeArticle(notice){
  const national=kind==='국가대표'||kind==='국가대표 기사';
  const report=['연봉협상','육성 보고','재정 보고','월간 운영보고','스카우트 보고'].includes(kind);
  const category=national?'국가대표·국제대회':kind==='FA 특집'?'FA·이적 시장':kind==='시즌 시상'?'시즌 타이틀·수상':report?'구단 운영 보고서':'스포츠 › 야구 › 구단 소식';
- const body=national?nationalArchivedArticleText(n):publicNoticeBody(n);
- return beArticleSource({title:n.title,category,date:seasonDateLabel(n.day),body,notice:n});
+ const match=national?beArchivedNationalMatchArticle(n):null;
+ const body=match?match.paragraphs.join('\n\n'):national?nationalArchivedArticleText(n):publicNoticeBody(n);
+ return beArticleSource({title:match?.title||n.title,category,date:seasonDateLabel(n.day),body,notice:n});
 }
 function beArticleSource(source){
  const s=source||{};
@@ -2593,6 +2594,20 @@ function bindArticlePlayerLinks(modal){
   const overlay=document.querySelector('#player-overlay');
   if(overlay){modal.dataset.articleBehindPlayer='1';modal.style.visibility='hidden';overlay.style.position='fixed';overlay.style.zIndex='2147483647';}
  });
+}
+function beArchivedNationalMatchArticle(n){
+ const title=String(n?.title||'');
+ const event=title.match(/(\\d{4})\\s*(WBC|올림픽|아시안게임)/);
+ if(!event)return null;
+ const rec=Object.values(state.nationalTeamResults||{}).find(r=>Number(r.year)===Number(event[1])&&r.event===event[2]);
+ if(!rec)return null;
+ const round=title.match(/(준결승\\s*\\d*|결승\\s*\\d*|조별리그\\s*[A-Z]조\\s*\\d+-\\d+)/);
+ if(!round)return null;
+ const games=(rec.matchResults||[]).filter(g=>g.round===round[1]);
+ if(games.length!==1)return null;
+ const g=games[0];
+ const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국';
+ return beCanonicalGameArticle(g,opponent,'대한민국',{competition:event[2],round:g.round,date:g.date});
 }
 function nationalArchivedArticleText(n){
  const body=String(n.body||'').trim(),title=String(n.title||'');
