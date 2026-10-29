@@ -2600,21 +2600,26 @@ function bindArticlePlayerLinks(modal){
   if(overlay){modal.dataset.articleBehindPlayer='1';modal.style.visibility='hidden';overlay.style.position='fixed';overlay.style.zIndex='2147483647';}
  });
 }
-function beArchivedNationalMatchArticle(n){
+function beFindArchivedNationalMatch(n){
  const title=String(n?.title||'');
  const event=title.match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
- if(!event)return null;
- const rec=Object.values(state.nationalTeamResults||{}).find(r=>Number(r.year)===Number(event[1])&&r.event===event[2]);
- if(!rec)return null;
  const round=title.match(/(준결승\s*\d*|결승\s*\d*|조별리그\s*[A-Z]조\s*\d+-\d+)/);
- if(!round)return null;
- const games=(rec.matchResults||[]).filter(g=>g.round===round[1]);
- const named=games.filter(g=>{const code=String(g.opponent||'').trim(),opponent=String(INTERNATIONAL_COUNTRIES[code]||code).trim();return (opponent&&title.includes(opponent))||(code&&title.includes(code));});
- const matches=named.length?named:games;
- if(matches.length!==1)return null;
- const g=matches[0];
+ if(!event||!round)return null;
+ for(const [key,record] of Object.entries(state.nationalTeamResults||{})){
+  if(Number(record.year)!==Number(event[1])||record.event!==event[2])continue;
+  const games=(record.matchResults||[]).map((game,index)=>({game,index})).filter(x=>x.game.round===round[1]);
+  const named=games.filter(({game})=>{const code=String(game.opponent||'').trim(),country=String(INTERNATIONAL_COUNTRIES[code]||code).trim();return (country&&title.includes(country))||(code&&title.includes(code));});
+  const matches=named.length?named:games;
+  if(matches.length===1)return {key,index:matches[0].index,record,game:matches[0].game};
+ }
+ return null;
+}
+function beArchivedNationalMatchArticle(n){
+ const found=beFindArchivedNationalMatch(n);
+ if(!found)return null;
+ const {record,game:g}=found;
  const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국';
- return beCanonicalGameArticle(g,opponent,'대한민국',{competition:event[2],round:g.round,date:g.date,id:[event[1],event[2],g.round,g.opponent,g.date||''].join(':')});
+ return beCanonicalGameArticle(g,opponent,'대한민국',{competition:record.event,round:g.round,date:g.date,id:[record.year,record.event,g.round,g.opponent,g.date||''].join(':')});
 }
 function nationalArchivedArticleText(n){
  const body=String(n.body||'').trim(),title=String(n.title||'');
@@ -2641,16 +2646,8 @@ function beEditorialParagraphs(value,notice){
 function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
- const nationalMatch=beArchivedNationalMatchArticle(n);
- if(nationalMatch){
-  const event=String(n.title||'').match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
-  const entry=event&&Object.entries(state.nationalTeamResults||{}).find(([,rec])=>Number(rec.year)===Number(event[1])&&rec.event===event[2]);
-  if(entry){
-   const index=(entry[1].matchResults||[]).findIndex(g=>[entry[1].year,entry[1].event,g.round,g.opponent,g.date||''].join(':')===nationalMatch.id);
-   if(index>=0){beOpenInternationalGameArticle(entry[0],index);return;}
-  }
- }
-
+ const match=beFindArchivedNationalMatch(n);
+ if(match){beOpenInternationalGameArticle(match.key,match.index);return;}
  const modal=document.createElement('div');
  modal.classList.add('be-editorial-modal','be-game-article-style');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
