@@ -2609,7 +2609,7 @@ function beArchivedNationalMatchArticle(n){
  const round=title.match(/(준결승\s*\d*|결승\s*\d*|조별리그\s*[A-Z]조\s*\d+-\d+)/);
  if(!round)return null;
  const games=(rec.matchResults||[]).filter(g=>g.round===round[1]);
- const named=games.filter(g=>{const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'';return title.includes(opponent)||title.includes(String(g.opponent||''));});
+ const named=games.filter(g=>{const code=String(g.opponent||'').trim(),opponent=String(INTERNATIONAL_COUNTRIES[code]||code).trim();return (opponent&&title.includes(opponent))||(code&&title.includes(code));});
  const matches=named.length?named:games;
  if(matches.length!==1)return null;
  const g=matches[0];
