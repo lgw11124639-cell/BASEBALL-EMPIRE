@@ -2608,7 +2608,7 @@ function beFindArchivedNationalMatch(n){
  for(const [key,record] of Object.entries(state.nationalTeamResults||{})){
   if(Number(record.year)!==Number(event[1])||record.event!==event[2])continue;
   const games=(record.matchResults||[]).map((game,index)=>({game,index})).filter(x=>x.game.round===round[1]);
-  const named=games.filter(({game})=>{const code=String(game.opponent||'').trim(),country=String(INTERNATIONAL_COUNTRIES[code]||code).trim();return (country&&title.includes(country))||(code&&title.includes(code));});
+  const named=games.filter(({game})=>{const code=String(game.opponent||'').trim(),country=String(INTERNATIONAL_COUNTRIES[code]||code).trim();return (country&&title.includes(country))||(code&&new RegExp('(^|[^A-Za-z])'+code.replace(/[.*+?^${}()|[\]\\]/g,'\\ const named=games.filter(({game})=>{const code=String(game.opponent||'').trim(),country=String(INTERNATIONAL_COUNTRIES[code]||code).trim();return (country&&title.includes(country))||(code&&title.includes(code));});')+'(?=$|[^A-Za-z])').test(title));});
   const matches=named.length?named:games;
   if(matches.length===1)return {key,index:matches[0].index,record,game:matches[0].game};
  }
