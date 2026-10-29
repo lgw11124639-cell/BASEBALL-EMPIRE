@@ -58,6 +58,8 @@ export async function cloudGate(onReady){
   if(!logout){
    logout=document.createElement('button');logout.id='be-cloud-logout';logout.type='button';logout.textContent='로그아웃';
    logout.style.cssText='position:fixed;right:14px;top:12px;z-index:2147483000;padding:9px 13px;border:1px solid #c5d5e4;border-radius:20px;background:#fff;color:#214c72;font:700 13px system-ui';
+   logout.style.display=(document.body.classList.contains('be-start-screen')?'':'none');
+   new MutationObserver(()=>{logout.style.display=document.body.classList.contains('be-start-screen')?'':'none'}).observe(document.body,{attributes:true,attributeFilter:['class']});
    logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;remember();location.reload()};
    document.body.append(logout);
   }
