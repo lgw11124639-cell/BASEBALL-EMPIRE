@@ -2068,6 +2068,9 @@ function beReplayFinalRecordCard(g){
  return '<section class="be-final-record-card"><h3>경기 주요 기록</h3>'+row('결승타',g.awayRuns===g.homeRuns?'무승부':winningHit)+row('승리투수',pitching('win'))+row('세이브',pitching('save'))+row('홀드',pitching('hold'))+row('홈런',homers)+'</section>';
 }
 function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
+ // Replay is a separate full-screen view: dismiss the article before mounting it.
+ closeGameArticle();
+ document.querySelectorAll('.be-editorial-modal').forEach(el=>el.remove());
  const g=overrideGame||(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));if(!g)return;
  const teams=overrideTeams||state.teams;
  const a=teams[g.away],h=teams[g.home],ai=g.awayInnings||[],hi=g.homeInnings||[],n=Math.max(ai.length,hi.length,9);
