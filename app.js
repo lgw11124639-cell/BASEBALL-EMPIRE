@@ -280,7 +280,32 @@ function recordPitch(club,p,inning){if(!p)return null;if(!club.active||club.acti
 function stadiumFactors(teamId){const i=Number(teamId)||0;if(i<0||!Number.isInteger(i)||!state.teams[i])return {name:'국제대회 중립 구장',type:'중립형',hit:1,homer:1};const t=state.teams[i];const presets=[['균형형',1,1],['타자친화형',1.10,1.13],['투수친화형',.92,.88],['중립형',1,1],['장타친화형',1.04,1.17],['넓은 외야',.96,.86],['고지대',1.08,1.11],['바람 많은 구장',1.03,1.08],['투수친화형',.94,.90],['타자친화형',1.07,1.12]];const x=presets[i%presets.length];return {name:ballpark(t),type:x[0],hit:x[1],homer:x[2]}}
 function deliveryFactors(p,batter){if(!p)return {hit:1,walk:1,strikeout:1};const d=playerBaseball(p).delivery,hand=playerBaseball(p).throwHand,batHand=playerBaseball(batter).batHand,same=hand?.slice(0,1)===batHand?.slice(0,1);const m={'오버핸드':[.98,1,1.09],'쓰리쿼터':[1,1,1.03],'사이드암':[same?.92:1.06,1.03,1.02],'언더핸드':[same?.89:1.09,1.07,.95]}[d]||[1,1,1];return {hit:m[0],walk:m[1],strikeout:m[2]}}
 const PITCH_TYPES=['직구','슬라이더','커브','체인지업','포크볼'];
-function pitchingArsenal(p){const b=playerBaseball(p);if(!b.arsenal){const r=rng(((Number(p.id)||1)*81217+7301)>>>0),sk=ensureProfile(p).skills||{};const base=Number(sk.stuff)||Number(p.overall)||60,control=Number(sk.control)||base,stamina=Number(sk.stamina)||base;const fast=137+Math.round((base-55)*.28)+ri(r,-4,4)+(r()<.003?ri(r,14,21):0);b.arsenal={velocity:Math.max(125,Math.min(165,fast)),control,stamina,pitches:[{name:'직구',grade:Math.max(20,Math.min(99,base+ri(r,-7,7)))},...PITCH_TYPES.slice(1).map(name=>({name,grade:Math.max(20,Math.min(99,base+ri(r,-23,14)))})).sort((a,c)=>c.grade-a.grade).slice(0,ri(r,0,4))]}}if(!b.arsenal.usage){const total=b.arsenal.pitches.reduce((n,x)=>n+Math.max(10,x.grade-25),0);b.arsenal.usage=b.arsenal.pitches.map(x=>({name:x.name,percent:Math.round(Math.max(10,x.grade-25)/total*100)}))}return b.arsenal}
+function pitchingArsenal(p){
+ const b=playerBaseball(p),seed=((Number(p.id)||1)*81217+7301)>>>0,r=rng(seed),sk=ensureProfile(p).skills||{};
+ const base=Number(sk.stuff)||Number(p.overall)||60,control=Number(sk.control)||base,stamina=Number(sk.stamina)||base;
+ if(!b.arsenal){
+  const fast=137+Math.round((base-55)*.28)+ri(r,-4,4)+(r()<.003?ri(r,14,21):0);
+  b.arsenal={velocity:Math.max(125,Math.min(165,fast)),control,stamina,pitches:[{name:'직구',grade:Math.max(20,Math.min(99,base+ri(r,-7,7)))}]};
+ }
+ const a=b.arsenal;
+ if(!Array.isArray(a.pitches))a.pitches=[];
+ const unique=new Set();a.pitches=a.pitches.filter(x=>x&&PITCH_TYPES.includes(x.name)&&!unique.has(x.name)&&(unique.add(x.name),true));
+ const role=String(p.pitcherRole||p.role||p.rotationRole||'');
+ const starter=/선발/.test(role)||Number(stamina)>=65;
+ const minimum=starter?3:2,maximum=starter?5:4;
+ const candidates=PITCH_TYPES.filter(name=>!unique.has(name)).map(name=>({name,grade:Math.max(20,Math.min(99,base+ri(r,-23,14)))})).sort((x,y)=>y.grade-x.grade);
+ if(!a.pitches.length){a.pitches.push({name:'직구',grade:Math.max(20,Math.min(99,base+ri(r,-7,7)))});unique.add('직구');}
+ const desired=Math.max(minimum,Math.min(maximum,2+Math.floor(r()*(maximum-1))));
+ while(a.pitches.length<desired&&candidates.length){const next=candidates.shift();if(unique.has(next.name))continue;a.pitches.push(next);unique.add(next.name);}
+ if(!Array.isArray(a.usage)||a.usage.length!==a.pitches.length||a.usage.some(x=>!unique.has(x.name)||!Number.isFinite(Number(x.percent)))){
+  const weights=a.pitches.map(x=>Math.max(10,(Number(x.grade)||40)-25));
+  const total=weights.reduce((n,x)=>n+x,0);
+  const raw=weights.map(w=>w/total*100),whole=raw.map(Math.floor),remainder=100-whole.reduce((n,x)=>n+x,0);
+  raw.map((x,i)=>({i,part:x-whole[i]})).sort((x,y)=>y.part-x.part).slice(0,remainder).forEach(x=>whole[x.i]++);
+  a.usage=a.pitches.map((x,i)=>({name:x.name,percent:whole[i]}));
+ }
+ return a;
+}
 function pitchMatchup(p,batter,inning){if(!p)return {hit:1,walk:1,strikeout:1,homer:1};const a=pitchingArsenal(p),f=playerBaseball(p),fatigue=Math.max(0,Math.min(100,Number(f.fatigue)||0)),stuff=a.pitches.reduce((sum,x)=>sum+x.grade,0)/a.pitches.length,quality=(stuff-60)/100,command=(a.control-60)/100,velo=(a.velocity-143)/100,speedBonus=pitcherSpeedBonus(p),stam=(a.stamina-60)/100;const late=Math.max(0,inning-4),wear=Math.max(0,late*(.025-stam*.012)+fatigue*.0013);const breaking=a.pitches.some(x=>x.name==='슬라이더'||x.name==='커브'),offSpeed=a.pitches.some(x=>x.name==='체인지업'||x.name==='포크볼');const same=f.throwHand?.slice(0,1)===playerBaseball(batter).batHand?.slice(0,1);return {hit:Math.max(.78,Math.min(1.27,1-quality*.17-speedBonus.hit*.6-velo*.04+(wear*.6)+(breaking&&same?-.025:0))),walk:Math.max(.70,Math.min(1.55,1-command*.55+wear*.65)),strikeout:Math.max(.73,Math.min(1.35,1+quality*.35+speedBonus.strikeout*.8+velo*.05-wear*.35)),homer:Math.max(.72,Math.min(1.35,1-quality*.12-velo*.13+wear*.55+(offSpeed?-.035:0)))}}
 function sharedHitBases(roll){return roll<.045?4:roll<.065?3:roll<.24?2:1}
 function sharedHitAdvance(batter,pitcher,fieldingTeamId,inning,roll){const power=batterSkill(batter,'power'),park=stadiumFactors(fieldingTeamId),arsenal=pitchMatchup(pitcher,batter,inning),bodyBonus=batterPhysicalBonus(batter);const homerChance=Math.max(.05,Math.min(.24,(.10+(power-60)*.002)*park.homer*arsenal.homer*(1+bodyBonus.power)));return roll<homerChance?4:roll<homerChance+.025?3:roll<homerChance+.245?2:1}
