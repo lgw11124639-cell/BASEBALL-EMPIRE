@@ -700,3 +700,9 @@
 .pro-profile .player-game-log-table tbody tr:last-child td{border-bottom:0!important}
 .pro-profile .player-game-log-table tbody td:first-child{font-weight:700!important;color:#194f82!important}
 .pro-profile .player-game-log-table tbody td:last-child{text-align:left!important;white-space:normal;min-width:110px}
+
+/* Player contract dossier */
+.pro-profile .profile-contract-status{display:flex;flex-direction:column;gap:7px;padding:14px 16px;border:1px solid #d7e4f0;border-left:3px solid #2875b7;border-radius:8px;background:#f5f9fe;color:#1b3e63}
+.pro-profile .profile-contract-status strong{font-size:15px}
+.pro-profile .profile-contract-status span{font-size:13px;font-variant-numeric:tabular-nums}
+.pro-profile .profile-contract-status small{color:#71859b;font-size:11px;line-height:1.5}
