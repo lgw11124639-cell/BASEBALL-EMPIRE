@@ -1,4 +1,4 @@
-// Thirty-year calendar smoke test for the game's real seasonDate helper.
+// Fifty-year calendar smoke test for the game's real seasonDate helper.
 // This does not simulate match engines, drafts, or saves.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -13,7 +13,9 @@ const context=vm.createContext({state,Date,localTodayISO:()=>state.seasonStartDa
 vm.runInContext(source.slice(begin,end),context);
 const date=day=>vm.runInContext('seasonDate('+day+')',context);
 let last=null,yearChanges=0,leapDays=0;
-for(let day=1;day<=10958;day++){
+const years=50;
+const totalDays=Math.round((new Date(2026+years,0,1)-new Date(2026,0,1))/86400000);
+for(let day=1;day<=totalDays;day++){
  const current=date(day);
  assert.equal(current.getHours(),12,'midday date '+day);
  if(last){
@@ -26,6 +28,6 @@ for(let day=1;day<=10958;day++){
  if(current.getMonth()===1&&current.getDate()===29)leapDays++;
  last=current;
 }
-assert.equal(yearChanges,30,'thirty year transitions');
-assert.equal(leapDays,7,'leap dates 2028 through 2052');
-console.log('30-year calendar smoke: PASS (10,958 dates, 30 year transitions, 7 leap days)');
+assert.equal(yearChanges,years-1,'year transitions within 50-year span');
+assert.equal(leapDays,12,'leap dates 2028 through 2072');
+console.log('50-year calendar smoke: PASS ('+totalDays+' dates, '+yearChanges+' year transitions, '+leapDays+' leap days)');
