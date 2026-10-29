@@ -53,6 +53,9 @@ async function unpackReplayResults(state){
 const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
+// Cross-object cache: safe even when a render/simulation rebuilds an archive object.
+// Reuse only after exact serialized JSON equality; never trust reference identity alone.
+const auxiliaryLastCompressed=new Map();
 async function packAuxiliaryFields(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
  // Independent league archives can be compressed concurrently, while preserving
@@ -64,7 +67,7 @@ async function packAuxiliaryFields(state){
   const value=state[key];
   const raw=JSON.stringify(value);
   const serializedAt=performance.now();
-  const cached=value&&typeof value==='object'?auxiliaryCompressionCache.get(value):null;
+  const cached=(value&&typeof value==='object'?auxiliaryCompressionCache.get(value):null)||auxiliaryLastCompressed.get(key);
   if(cached&&cached.key===key&&cached.raw===raw){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:0,cacheHit:true,rawBytes:raw.length});return cached.encoded?{key,encoded:cached.encoded}:null;}
   if(!raw||raw.length<20000){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:0,cacheHit:false,rawBytes:raw?.length||0});return null;}
   try{
@@ -73,7 +76,9 @@ async function packAuxiliaryFields(state){
    const encoded=btoa(binary);
    const useful=encoded.length<raw.length*.8;
    fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),cacheHit:false,rawBytes:raw.length,packedBytes:encoded.length});
-   if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,raw,encoded:useful?encoded:null});
+   const cacheEntry={key,raw,encoded:useful?encoded:null};
+   if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,cacheEntry);
+   auxiliaryLastCompressed.set(key,cacheEntry);
    return useful?{key,encoded}:null;
   }catch(_){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),failed:true});return null}
  }));
