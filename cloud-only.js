@@ -180,7 +180,7 @@ async function unpackLeagueShards(state){
  if(manifest.version!==1||!manifest.fields||typeof manifest.fields!=='object')throw Error('리그 저장 메타데이터 오류');
  if(typeof DecompressionStream!=='function')throw Error('리그 기록 압축 해제 불가');
  for(const [field,meta] of Object.entries(manifest.fields)){
-  if(!leagueShardFields.includes(field)||!meta?.seasons||typeof meta.seasons!=='object')throw Error('리그 저장 필드 오류');
+  if(!/^[A-Za-z][A-Za-z0-9]{0,63}$/.test(field)||field==='__proto__'||field==='constructor'||field==='prototype'||!meta?.seasons||typeof meta.seasons!=='object')throw Error('리그 저장 필드 오류: '+field);
   const root={};
   for(const [season,descriptors] of Object.entries(meta.seasons)){
    if(!Array.isArray(descriptors))throw Error('리그 시즌 메타데이터 오류');
