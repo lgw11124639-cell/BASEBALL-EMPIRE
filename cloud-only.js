@@ -160,6 +160,7 @@ async function packAuxiliaryFields(state){
   }catch(_){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),failed:true});return null}
  }));
  window.beCloudFieldPackingTiming=fieldTimings.sort((a,b)=>(b.serializeMs+b.gzipMs)-(a.serializeMs+a.gzipMs));
+ window.beCloudAuxiliaryDiagnostics={fields:fieldTimings.map(x=>({...x})),totalRawBytes:fieldTimings.reduce((n,x)=>n+(x.rawBytes||0),0),cacheHits:fieldTimings.filter(x=>x.cacheHit).length,compressedFields:fieldTimings.filter(x=>x.packedBytes).length};
  const active=entries.filter(Boolean);
  if(!active.length)return state;
  const copy={...state};
