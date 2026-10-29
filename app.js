@@ -1896,8 +1896,10 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   if(index>=total)return;
   if(detailed){
    const frame=frames[index],e=frame.e,name=e.side==='away'?a.name:h.name,runner=(frame.kind==='pitch'?e.bases:e.afterBases||[]).map(id=>id?'◆':'◇');
-   // Display only the current half-inning; retain all saved broadcast events.\n   const halfKey=e.inning+':'+e.side;\n   if(out.dataset.halfKey!==halfKey){out.replaceChildren();out.dataset.halfKey=halfKey;}
-   if(frame.kind==='pitcher-change'&&out.dataset.halfKey!==halfKey)out.dataset.halfKey=halfKey;\n   if(frame.kind==='pitcher-change'){const change=frame.change,defense=e.side==='away'?h.name:a.name;inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');batter.textContent=defense+' 투수 교체 · '+change.from+' → '+change.to;pitchLabel.textContent='투수 교체';pitchCount.textContent=change.from+' → '+change.to;out.insertAdjacentHTML('afterbegin','<div class="be-replay-event be-replay-result-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(defense)+'</small><strong>투수 교체 · '+esc(change.from)+' → '+esc(change.to)+'</strong></div>');index++;status.textContent='투수 교체';updateNextBatter(index);return;}
+   // Display only the current half-inning; retain all saved broadcast events.
+   const halfKey=e.inning+':'+e.side;
+   if(out.dataset.halfKey!==halfKey){out.replaceChildren();out.dataset.halfKey=halfKey;}
+   if(frame.kind==='pitcher-change'){const change=frame.change,defense=e.side==='away'?h.name:a.name;inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');batter.textContent=defense+' 투수 교체 · '+change.from+' → '+change.to;pitchLabel.textContent='투수 교체';pitchCount.textContent=change.from+' → '+change.to;out.insertAdjacentHTML('afterbegin','<div class="be-replay-event be-replay-result-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(defense)+'</small><strong>투수 교체 · '+esc(change.from)+' → '+esc(change.to)+'</strong></div>');index++;status.textContent='투수 교체';updateNextBatter(index);return;}
    if(frame.kind==='pitch'){
     const cumulativePitches=pitcherPitchNumber(e);
     inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');
