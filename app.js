@@ -1771,6 +1771,16 @@ function beGameScoringEvents(awayInnings,homeInnings){
   return {inning:i+1,away:awayRuns,home:homeRuns,scoreA:awayTotal,scoreH:homeTotal};
  }).filter(x=>x.away||x.home);
 }
+function beCanonicalGameArticle(g,awayName,homeName,options){
+ const o=options||{};
+ const narrative=beUnifiedGameNarrative(g,awayName,homeName);
+ const bats=(g.homeBatters||[]).filter(p=>(Number(p.hits)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0));
+ const starter=(g.homePitchers||[]).find(p=>p.role==='선발')||(g.homePitchers||[])[0];
+ const paragraphs=narrative.paragraphs.slice();
+ if(bats[0])paragraphs.push(homeName+' 타선에서는 '+bats[0].name+'이 '+(Number(bats[0].hits)||0)+'안타 '+(Number(bats[0].runsBattedIn)||0)+'타점을 기록했다.');
+ if(starter)paragraphs.push(homeName+' 선발 '+starter.name+'은 '+baseballIP(Number(starter.outs)||0)+'이닝 '+(Number(starter.strikeouts)||0)+'탈삼진을 기록했다.');
+ return {...narrative,paragraphs,id:String(o.id||[o.competition||'game',o.date||'',o.round||'',awayName,homeName,g.awayRuns,g.homeRuns].join(':'))};
+}
 function beUnifiedGameNarrative(g,awayName,homeName,context){
  const away=String(awayName||'원정팀'),home=String(homeName||'홈팀');
  const ar=Number(g.awayRuns)||0,hr=Number(g.homeRuns)||0,draw=ar===hr;
@@ -1941,12 +1951,10 @@ function beOpenInternationalGameArticle(key,index){
  const best=bats.find(p=>(Number(p.hits)||0)>0),pitchers=g.homePitchers||[],starter=pitchers.find(p=>p.role==='선발')||pitchers[0];
  const h=g.homeInnings||[],a=g.awayInnings||[],n=Math.max(9,h.length,a.length),innings=Array.from({length:n},(_,i)=>i);
  const scoring=beGameScoringEvents(a,h).map(x=>({i:x.inning-1,k:x.home,o:x.away})),turn=scoring.slice().sort((x,y)=>(y.k+y.o)-(x.k+x.o))[0];
- const unified=beUnifiedGameNarrative(g,opponent,'대한민국');
+ const unified=beCanonicalGameArticle(g,opponent,'대한민국',{competition:key,round:g.round,date:g.date});
  const title=/결승/.test(round)&&!draw?(win?'한국, '+opponent+' 꺾고 우승…'+kr+'대'+opp: '한국, '+opponent+'에 '+kr+'대'+opp+'…준우승'):unified.title;
  const intro=unified.lead;
  const paragraphs=unified.paragraphs.slice();
- if(best)paragraphs.push('한국 타선에서는 '+best.name+'이 '+(Number(best.hits)||0)+'안타 '+(Number(best.runsBattedIn)||0)+'타점으로 활약했다.');
- if(starter)paragraphs.push('한국 선발 '+starter.name+'은 '+baseballIP(Number(starter.outs)||0)+'이닝 '+(Number(starter.strikeouts)||0)+'탈삼진 '+(Number(starter.earnedRuns)||0)+'자책을 기록했다.');
  if(/결승/.test(round)&&!draw)paragraphs.push((win?'대한민국':'상대 '+opponent)+'이 우승을 차지했고 '+(win?opponent:'대한민국')+'은 준우승으로 대회를 마쳤다.');
  const row=(name,values,total,players)=>'<tr><th>'+esc(name)+'</th>'+innings.map(i=>'<td>'+(values[i]??'-')+'</td>').join('')+'<td><b>'+total+'</b></td><td>'+players.reduce((s,p)=>s+(Number(p.hits)||0),0)+'</td></tr>';
  const batTable=(name,players)=>'<h3>'+esc(name)+' 타자 기록</h3><div class="scoreboard-scroll"><table class="scoreboard-table"><thead><tr><th>선수</th><th>타수</th><th>안타</th><th>홈런</th><th>타점</th><th>볼넷</th></tr></thead><tbody>'+players.map(p=>'<tr><th>'+esc(p.name||'선수')+'</th><td>'+(p.atBats??'-')+'</td><td>'+(p.hits??'-')+'</td><td>'+(p.homeRuns??'-')+'</td><td>'+(p.runsBattedIn??'-')+'</td><td>'+(p.walks??'-')+'</td></tr>').join('')+'</tbody></table></div>';
