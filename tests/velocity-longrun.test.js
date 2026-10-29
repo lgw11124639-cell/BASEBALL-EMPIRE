@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
 function section(start,end){const i=source.indexOf('function '+start+'('),j=source.indexOf('function '+end+'(',i);assert(i>=0&&j>i);return source.slice(i,j)}
-const context={pitchingArsenal:p=>({velocity:p.velocity,control:60,stamina:60,pitches:[{name:'직구',grade:60}]}),playerBaseball:p=>({fatigue:0,throwHand:'우투',batHand:'우타'}),batterSkill:()=>60,stadiumFactors:()=>({hit:1,homer:1}),deliveryFactors:()=>({hit:1,walk:1,strikeout:1}),batterPhysicalBonus:()=>({contact:0,power:0})};
+const context={pitchingArsenal:p=>({velocity:p.velocity,control:60,stamina:60,pitches:[{name:'직구',grade:60}]}),playerBaseball:p=>({fatigue:0,throwHand:'우투',batHand:'우타'}),batterSkill:()=>60,bePlayerEvaluation:()=>60,batterZoneFactor:()=>1,stadiumFactors:()=>({hit:1,homer:1}),deliveryFactors:()=>({hit:1,walk:1,strikeout:1}),batterPhysicalBonus:()=>({contact:0,power:0})};
 vm.createContext(context);vm.runInContext(section('pitchMatchup','sharedHitBases')+section('sharedPlateOutcome','playHalf')+section('pitcherSpeedBonus','playerPhysical'),context);
 let seed=123456789;function random(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}
 const velocities=[125,130,135,140,141,145,150,155,160,165],totals=[];
