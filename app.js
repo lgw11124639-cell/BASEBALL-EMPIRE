@@ -1888,7 +1888,7 @@ function beOpenInternationalGameArticle(key,index){
  const title=/결승/.test(round)?(win?'한국, '+opponent+' 꺾고 정상…'+kr+'대'+opp+' 우승':'한국, '+opponent+'에 '+kr+'대'+opp+'…'+(draw?'결승 무승부':'결승 준우승')):(win?'한국, '+opponent+' 제압 '+kr+'대'+opp:draw?'한국, '+opponent+'와 '+kr+'대'+opp+' 무승부':'한국, '+opponent+'에 '+kr+'대'+opp+' 패배');
  const intro='대한민국 야구 대표팀이 '+opponent+'과의 '+round+' 경기에서 '+kr+'대'+opp+'로 '+(draw?'비겼다.':win?'승리했다.':'패했다.');
  const paragraphs=[intro];
- if(scoring.length)paragraphs.push('경기 득점은 '+scoring.map(x=>(x.i+1)+'회 한국 '+x.k+'점·'+opponent+' '+x.o+'점').join(', ')+'으로 기록됐다.');
+ if(scoring.length){const early=scoring.filter(x=>x.i<3),late=scoring.filter(x=>x.i>=6);if(early.length)paragraphs.push('초반 3이닝에서는 '+early.map(x=>(x.i+1)+'회 대한민국 '+x.k+'점, '+opponent+' '+x.o+'점').join('; ')+'이 기록됐다.');paragraphs.push('득점 흐름은 '+scoring.map(x=>(x.i+1)+'회 대한민국 '+x.k+'점, '+opponent+' '+x.o+'점').join('; ')+'으로 이어졌다.');if(late.length)paragraphs.push('경기 후반에는 '+late.map(x=>(x.i+1)+'회 대한민국 '+x.k+'점, '+opponent+' '+x.o+'점').join('; ')+'이 나왔다.');}
  if(turn)paragraphs.push('가장 많은 점수가 나온 '+(turn.i+1)+'회에는 한국이 '+turn.k+'점, '+opponent+'이 '+turn.o+'점을 올렸다.');
  if(best)paragraphs.push('한국 타선에서는 '+best.name+'이 '+(Number(best.hits)||0)+'안타 '+(Number(best.runsBattedIn)||0)+'타점으로 활약했다.');
  if(starter)paragraphs.push('한국 선발 '+starter.name+'은 '+baseballIP(Number(starter.outs)||0)+'이닝 '+(Number(starter.strikeouts)||0)+'탈삼진 '+(Number(starter.earnedRuns)||0)+'자책을 기록했다.');
