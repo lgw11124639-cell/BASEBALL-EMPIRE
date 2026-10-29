@@ -647,9 +647,12 @@ function internationalSharedGame(korea,opponent,seed){
  validateRoster(opponent,'상대국');
  const home=makeClub(-1001,korea),away=makeClub(-1002,opponent);
  if(!home||!away)return null;
+ home.beEvents=[];away.beEvents=[];home.beSide='home';away.beSide='away';
  home.internationalTiebreak=true;away.internationalTiebreak=true;
  const r=rng(seed>>>0);
  const box=runBaseballInnings(away,home,r,{historical:true,international:true,maxInnings:Infinity});
+ const inningTotal=xs=>(xs||[]).reduce((sum,v)=>sum+(Number(v)||0),0);
+ if(inningTotal(box.homeInnings)!==home.runs||inningTotal(box.awayInnings)!==away.runs)throw new Error('국제경기 이닝별 득점 합계 불일치');
  return {homeRuns:home.runs,awayRuns:away.runs,homeInnings:box.homeInnings,awayInnings:box.awayInnings,homeStarter:home.starter.name,awayStarter:away.starter.name,
   homeBatters:home.plan.first.filter(p=>p.position!=='P').map(p=>({id:p.id,name:p.name,atBats:p.atBats||0,hits:p.hits||0,homeRuns:p.homeRuns||0,runsBattedIn:p.runsBattedIn||0,walks:p.walks||0})),
   awayBatters:away.plan.first.filter(p=>p.position!=='P').map(p=>({id:p.id,name:p.name,atBats:p.atBats||0,hits:p.hits||0,homeRuns:p.homeRuns||0,runsBattedIn:p.runsBattedIn||0,walks:p.walks||0})),
