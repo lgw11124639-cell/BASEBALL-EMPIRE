@@ -422,3 +422,9 @@
 .be-replay-dialog>.be-replay-scoreboard span{min-width:0!important;text-align:center!important;font-size:14px!important;line-height:1.4!important}
 .be-replay-dialog>.be-replay-scoreboard strong{font-size:24px!important;line-height:1.2!important}
 @media(max-width:600px){.be-replay-dialog>.be-replay-scoreboard{height:66px!important;min-height:66px!important;max-height:66px!important;grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important;padding:10px 8px!important}.be-replay-dialog>.be-replay-scoreboard span{font-size:12px!important}.be-replay-dialog>.be-replay-scoreboard strong{font-size:21px!important}}
+
+/* Larger strike-zone presentation with generous outer-ball clearance (2026-10-29). */
+.be-replay-dialog>.be-broadcast-zone{box-sizing:border-box!important;grid-template-columns:260px minmax(0,1fr)!important;min-height:240px!important;padding:28px 38px!important;gap:28px!important;overflow:visible!important}
+.be-replay-dialog>.be-broadcast-zone>div:first-child{min-height:205px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;overflow:visible!important}
+.be-replay-dialog .be-broadcast-zone-grid{box-sizing:border-box!important;width:130px!important;height:130px!important;margin:24px auto!important;flex:0 0 auto!important}
+@media(max-width:600px){.be-replay-dialog>.be-broadcast-zone{grid-template-columns:185px minmax(0,1fr)!important;min-height:210px!important;padding:24px 14px!important;gap:14px!important}.be-replay-dialog>.be-broadcast-zone>div:first-child{min-height:180px!important}.be-replay-dialog .be-broadcast-zone-grid{width:104px!important;height:104px!important;margin:22px auto!important}}
