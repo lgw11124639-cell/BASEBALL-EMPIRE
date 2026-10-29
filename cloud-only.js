@@ -8,7 +8,24 @@ async function call(path,method='GET',data,rev){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
  if(rev!==undefined)headers['If-Match']=String(rev);
- const response=await fetch(API+path,{method,headers,body:data===undefined?undefined:JSON.stringify(data),cache:'no-store'});
+ const json=data===undefined?undefined:JSON.stringify(data);
+ let body=json;
+ // Large saves are transferred compressed only when the browser supports it.
+ // Retry uncompressed on unsupported-content-encoding responses; never retry conflicts.
+ let compressed=false;
+ if(path==='/v2/saves/main'&&method==='PUT'&&json&&json.length>100000&&typeof CompressionStream==='function'){
+  try{
+   const stream=new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));
+   body=await new Response(stream).arrayBuffer();
+   headers['Content-Encoding']='gzip';
+   compressed=true;
+  }catch(e){body=json;delete headers['Content-Encoding']}
+ }
+ let response=await fetch(API+path,{method,headers,body,cache:'no-store'});
+ if(compressed&&(response.status===400||response.status===415)){
+  delete headers['Content-Encoding'];
+  response=await fetch(API+path,{method,headers,body:json,cache:'no-store'});
+ }
  let result={};try{result=await response.json()}catch(_){}
  if(!response.ok){if(response.status===401){token=null;username='';verified=false;remember()}const err=Error(result.error||'HTTP '+response.status);err.status=response.status;throw err}
  return result;
