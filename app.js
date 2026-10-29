@@ -1830,7 +1830,7 @@ function gameBroadcastArticle(g){
 function beArticleSource(source){
  const s=source||{};
  const text=String(s.body||'').trim();
- const paragraphs=Array.isArray(s.paragraphs)?s.paragraphs.filter(x=>typeof x==='string'&&x.trim()):text.split(/\\n\\s*\\n|\\r?\\n/).map(x=>x.trim()).filter(Boolean);
+ const paragraphs=Array.isArray(s.paragraphs)?s.paragraphs.filter(x=>typeof x==='string'&&x.trim()):text.split(/\n\s*\n|\r?\n/).map(x=>x.trim()).filter(Boolean);
  return {title:String(s.title||''),category:String(s.category||'야구'),date:String(s.date||''),paragraphs,notice:s.notice||null};
 }
 function beArticleContent(source){
