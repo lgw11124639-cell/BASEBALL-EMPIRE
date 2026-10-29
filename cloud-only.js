@@ -601,10 +601,12 @@ export async function cloudSave(state){
    const games=state?.gameResults;
    const rows=[];
    if(Array.isArray(games)){
-    const chunks=changedFields.filter(x=>/^beShard_gameResults_\\d+$/.test(x.key)).slice(0,5);
-    for(const chunk of chunks){
-     const index=Number(chunk.key.slice('beShard_gameResults_'.length));
-     const subset=games.slice(index*shardArrayFields.gameResults,(index+1)*shardArrayFields.gameResults);
+    const shardSize=shardArrayFields.gameResults;
+    const changedIndices=new Set(changedFields.filter(x=>/^beShard_gameResults_\\d+$/.test(x.key)).map(x=>Number(x.key.slice('beShard_gameResults_'.length))));
+    const count=Math.ceil(games.length/shardSize);
+    const candidates=Array.from({length:count},(_,i)=>i).sort((a,b)=>Number(changedIndices.has(b))-Number(changedIndices.has(a))||b-a).slice(0,5);
+    for(const index of candidates){
+     const subset=games.slice(index*shardSize,(index+1)*shardSize);
      const propertySizes=Object.create(null);
      let rawBytes=0;
      for(const game of subset){
@@ -614,7 +616,9 @@ export async function cloudSave(state){
        rawBytes+=size;
       }
      }
-     rows.push({shard:chunk.key,games:subset.length,encodedBytes:chunk.bytes,rawBytes,
+     const shard='beShard_gameResults_'+index;
+     rows.push({shard,games:subset.length,changed:changedIndices.has(index),
+      encodedBytes:changedFields.find(x=>x.key===shard)?.bytes??null,rawBytes,
       largestProperties:Object.entries(propertySizes).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([key,bytes])=>({key,bytes}))});
     }
    }
