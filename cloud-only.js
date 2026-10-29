@@ -594,6 +594,27 @@ export async function cloudSave(state){
    entry.fields++;entry.bytes+=bytes;
   }
   window.beCloudPatchBreakdown=Object.entries(changedGroups).map(([group,value])=>({group,...value})).sort((a,b)=>b.bytes-a.bytes);
+  // Inspect only the changed independent-league field; do not mutate the save.
+  // Capture sizes by season/subtree to select a safe lossless sharding scheme.
+  if(delta?.set&&Object.prototype.hasOwnProperty.call(delta.set,'independentBaseball')){
+   const root=delta.set.independentBaseball;
+   const rows=[];
+   if(root&&typeof root==='object'){
+    for(const [key,value] of Object.entries(root)){
+     const size=JSON.stringify(value)?.length||0;
+     rows.push({path:key,kind:Array.isArray(value)?'array':typeof value,
+      entries:Array.isArray(value)?value.length:value&&typeof value==='object'?Object.keys(value).length:0,bytes:size});
+     if(value&&typeof value==='object'&&!Array.isArray(value)){
+      for(const [child,part] of Object.entries(value)){
+       rows.push({path:key+'/'+child,kind:Array.isArray(part)?'array':typeof part,
+        entries:Array.isArray(part)?part.length:part&&typeof part==='object'?Object.keys(part).length:0,
+        bytes:JSON.stringify(part)?.length||0});
+      }
+     }
+    }
+   }
+   window.beIndependentBaseballPayloadShape=rows.sort((a,b)=>b.bytes-a.bytes);
+  }
   window.beCloudDeltaTiming={compareMs:+(performance.now()-deltaStarted).toFixed(1),
    fullBytes:fullJsonLength,deltaBytes:deltaJson?.length||0,used:useDelta,
    changedFieldCount:changedFields.length,changedFields:changedFields.slice(0,12),
