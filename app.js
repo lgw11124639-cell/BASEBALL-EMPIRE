@@ -1735,7 +1735,7 @@ function coachDevelopmentDay(offseason){const d=seasonDate(state.day),month=d.ge
  '【선수별 평가】 '+(names.length?names.join(', '):'이번 보고 기간에 기록된 변동 없음')+'.',
  '【운영 판단】 성장 선수는 현재 경기 출전 기회와 역할을 재검토하고, 기량 저하 선수는 컨디션 회복과 훈련 부담 조정을 우선 검토합니다. 1군 등록 여부는 엔트리 상황과 경기력에 따라 별도로 결정합니다.',
  '【후속 점검】 1군·2군 코칭스태프가 경기 기록과 훈련 경과를 확인합니다. 세부 능력치 수치는 공개하지 않습니다.'
- ].join('\\n\\n'),[t.id],[])}}}}
+ ].join('\n\n'),[t.id],[])}}}}
 // Foreign-player recruitment: AI scouting, negotiation, signing and renewal for all clubs.
 const FOREIGN_FIRST=['Alex','Daniel','Michael','Ryan','Luis','Carlos','Miguel','Jose','Tyler','Jordan','David','Victor','Javier','Marco','Ethan','Noah','Aaron','Brandon','Lucas','Santiago'];
 const FOREIGN_LAST=['Martinez','Rodriguez','Garcia','Wilson','Anderson','Ramirez','Gonzalez','Walker','Hernandez','Brown','Lopez','Miller','Castillo','Diaz','Perez','Taylor','Reyes','Flores','Sanchez','Cruz'];
