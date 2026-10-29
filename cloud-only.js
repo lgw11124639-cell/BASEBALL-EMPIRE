@@ -141,7 +141,10 @@ async function packCloudShards(state){
   const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
    const serializeStart=performance.now();
    const gameFast=key==='gameResults'&&gameShardFastCache&&gameShardFastCache.array===array&&gameShardFastCache.version===window.beGameResultsRevision&&Number.isSafeInteger(window.beGameResultsRevision)&&gameShardFastCache.size===size;
-   const raw=gameFast&&gameShardFastCache.parts[i]!==undefined?gameShardFastCache.parts[i]:JSON.stringify(array.slice(i*size,(i+1)*size));
+   const previousGame=gameShardFastCache;
+   const appended=key==='gameResults'&&previousGame?.array===array&&previousGame.size===size&&Number.isSafeInteger(window.beGameResultsRevision)&&window.beGameResultsRevision>previousGame.version&&array.length>previousGame.length&&array.length-previousGame.length===window.beGameResultsRevision-previousGame.version;
+   const cachedGame=(gameFast||(appended&&(i+1)*size<=previousGame.length))&&previousGame.parts[i]!==undefined;
+   const raw=cachedGame?previousGame.parts[i]:JSON.stringify(array.slice(i*size,(i+1)*size));
    serializeMs+=performance.now()-serializeStart;
    const cacheKey=`${key}:${i}`;
    rawBytes+=raw.length;
