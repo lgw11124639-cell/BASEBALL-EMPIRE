@@ -2577,6 +2577,9 @@ function nationalArchivedArticleText(n){
  }
  return lines.join('\n\n');
 }
+function beEditorialParagraphs(value){
+ return String(value||'').split(/\\n\\s*\\n|\\r?\\n/).map(x=>x.trim()).filter(Boolean).map(x=>'<p>'+esc(x)+'</p>').join('');
+}
 function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
