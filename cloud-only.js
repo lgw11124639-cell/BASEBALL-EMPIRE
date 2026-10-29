@@ -251,6 +251,7 @@ export async function cloudSave(state){
  // Avoid a redundant full snapshot GET before every daily save.
  // A 409/412 still blocks progress and requires a fresh login/load.
  let result;
+ let payload;
  try{
   const packStarted=performance.now();
   // gameResults is already losslessly gzip-packed by packAuxiliaryFields.
@@ -258,7 +259,7 @@ export async function cloudSave(state){
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
   const replayPacked=state;
   const replayPackedAt=performance.now();
-  const payload=await packAuxiliaryFields(replayPacked);
+  payload=await packAuxiliaryFields(replayPacked);
   const auxiliaryPackedAt=performance.now();
   // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
   window.beVerifyCloudPacking=async()=>{
