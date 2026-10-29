@@ -11,7 +11,7 @@ const seasonDate=day=>{const d=new Date(state.seasonStartDate+'T12:00:00');d.set
 const context=vm.createContext({state,Date,Math,Array,seasonDate});
 vm.runInContext(source.slice(start,end),context);
 let total=0;
-for(let year=2026;year<2056;year++){
+for(let year=2026;year<2076;year++){
  state.year=year;state.seasonStartDate=year+'-01-01';
  state.teams=Array.from({length:10},(_,id)=>({id,wins:0,losses:0,draws:0}));
  let games=0;
@@ -34,4 +34,4 @@ for(let year=2026;year<2056;year++){
  assert.ok(state.teams.every(t=>t.wins+t.losses+t.draws===144),'full 144-game season '+year);
  total+=games;
 }
-console.log('Real 30-year league schedule: 30 seasons, '+total+' games PASS');
+console.log('Real 50-year league schedule: 50 seasons, '+total+' games PASS');
