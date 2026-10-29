@@ -96,6 +96,20 @@ async function unpackAuxiliaryFields(state){
  delete state.bePackedAuxiliaryGzip;
  return state;
 }
+// Track actual wire-payload growth without serializing the state a second time.
+const cloudPayloadHistory=[];
+function recordCloudPayload(bytes){
+ const previous=cloudPayloadHistory.length?cloudPayloadHistory[cloudPayloadHistory.length-1]:null;
+ cloudPayloadHistory.push(bytes);
+ if(cloudPayloadHistory.length>11)cloudPayloadHistory.shift();
+ const first=cloudPayloadHistory[0];
+ window.beCloudPayloadGrowth={
+  bytes,deltaBytes:previous===null?null:bytes-previous,
+  windowSaves:cloudPayloadHistory.length,
+  windowDeltaBytes:cloudPayloadHistory.length>1?bytes-first:0,
+  averageDeltaBytes:cloudPayloadHistory.length>1?Math.round((bytes-first)/(cloudPayloadHistory.length-1)):0
+ };
+}
 async function call(path,method='GET',data,rev){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
@@ -183,7 +197,7 @@ export async function cloudSave(state){
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
- revision=next;baseline={save:state,revision:next};return result;
+ revision=next;baseline={save:state,revision:next};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
 export async function cloudGate(onReady){
  const overlay=document.createElement('div');overlay.id='be-cloud-gate';
