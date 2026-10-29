@@ -1430,7 +1430,7 @@ function seasonProgressPanel(){
   }
  }
  for(const record of Object.values(state.nationalTeamResults||{})){
-  for(const g of [...(record.matchResults||[]),...(record.otherMatches||[])].filter(koreanGame)){
+  for(const g of (record.otherMatches||[]).filter(koreanGame)){
    const date=String(g.date||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
    const left=g.opponent?'대한민국':countryName(g.home),right=g.opponent?countryName(g.opponent):countryName(g.away);
    const score=Number.isFinite(Number(g.homeRuns))&&Number.isFinite(Number(g.awayRuns))?g.homeRuns+' : '+g.awayRuns:'일정';
