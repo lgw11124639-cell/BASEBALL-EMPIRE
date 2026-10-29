@@ -2521,7 +2521,23 @@ function nationalArchivedArticleText(n){
  if(Number(g.awayRuns)===0)lines.push('한국 투수진은 상대 타선을 무실점으로 막았다.');
  if(bat)lines.push('타선에서는 '+bat.name+'이 '+(Number(bat.hits)||0)+'안타 '+(Number(bat.runsBattedIn)||0)+'타점을 기록했다.');
  if(pitch&&(!bat||String(pitch.id)!==String(bat.id))&&(!bat||pitch.name!==bat.name))lines.push('마운드에서는 '+pitch.name+'이 '+baseballIP(pitch.outs)+'이닝 동안 삼진 '+(Number(pitch.strikeouts)||0)+'개를 잡았다.');
- return lines.join(' ');
+ const kr=g.homeInnings||[],other=g.awayInnings||[];
+ if(kr.length&&other.length){
+  const scoring=Array.from({length:Math.max(kr.length,other.length)},(_,i)=>({inning:i+1,k:Number(kr[i])||0,o:Number(other[i])||0})).filter(x=>x.k||x.o);
+  const turning=scoring.slice().sort((a,b)=>(b.k+b.o)-(a.k+a.o))[0];
+  if(turning)lines.push('승부의 분수령은 '+turning.inning+'회였다. 이 이닝에 한국은 '+turning.k+'점, '+name(g.opponent)+'은 '+turning.o+'점을 올렸다.');
+  const detail=scoring.map(x=>x.inning+'회 한국 '+x.k+'점·'+name(g.opponent)+' '+x.o+'점').join(', ');
+  if(detail)lines.push('득점 흐름은 '+detail+'으로 이어졌다.');
+ }
+ const batters=(g.homeBatters||[]).filter(p=>(Number(p.hits)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0)).slice(0,3);
+ const moreBatters=batters.filter(p=>!bat||String(p.id)!==String(bat.id));
+ if(moreBatters.length)lines.push('이 밖에 '+moreBatters.map(p=>p.name+' '+(Number(p.hits)||0)+'안타 '+(Number(p.runsBattedIn)||0)+'타점').join(', ')+'을 기록했다.');
+ const extraPitchers=(g.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0&&(!pitch||String(p.id)!==String(pitch.id))).slice(0,3);
+ if(extraPitchers.length)lines.push('한국 불펜에서는 '+extraPitchers.map(p=>p.name+' '+baseballIP(Number(p.outs)||0)+'이닝 '+(Number(p.strikeouts)||0)+'탈삼진').join(', ')+'으로 마운드를 이어받았다.');
+ if(/결승/.test(round[1])){
+  lines.push(g.won?'한국은 결승전 승리로 '+event[1]+' '+event[2]+' 우승을 차지했다. '+name(g.opponent)+'은 준우승으로 대회를 마쳤다.':name(g.opponent)+'이 결승전에서 승리해 '+event[1]+' '+event[2]+' 정상에 올랐다. 대한민국은 준우승으로 대회를 마쳤다.');
+ }
+ return lines.join('\n\n');
 }
 function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
