@@ -8,19 +8,28 @@ try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.token&&s?.userna
 function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,username,expiresAt:Date.now()+6*24*60*60*1000}));else localStorage.removeItem(KEY)}catch(_){}}
 // Lossless replay-event packing inside the JSON save (no Content-Encoding header).
 // The live game state is never mutated; old uncompressed saves remain readable.
+const replayCompressionCache=new WeakMap();
 async function packReplayResults(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined'||!Array.isArray(state?.gameResults))return state;
  const games=state.gameResults;let changed=false;
  const packed=await Promise.all(games.map(async game=>{
   if(!Array.isArray(game?.broadcastEvents)||!game.broadcastEvents.length)return game;
-  const raw=JSON.stringify(game.broadcastEvents);
+  const events=game.broadcastEvents;
+  const prior=replayCompressionCache.get(events);
+  if(prior&&prior.count===events.length&&prior.first===events[0]&&prior.last===events[events.length-1]){
+   if(!prior.encoded)return game;
+   changed=true;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=prior.encoded;return copy;
+  }
+  const raw=JSON.stringify(events);
   if(raw.length<1500)return game;
   try{
    const bytes=new TextEncoder().encode(raw);
    const zipped=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
-   if(encoded.length>=raw.length*.85)return game;
+   const useful=encoded.length<raw.length*.85;
+   replayCompressionCache.set(events,{count:events.length,first:events[0],last:events[events.length-1],encoded:useful?encoded:null});
+   if(!useful)return game;
    changed=true;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=encoded;return copy;
   }catch(_){return game}
  }));
