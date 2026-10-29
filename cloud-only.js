@@ -54,6 +54,13 @@ export async function cloudGate(onReady){
   if(data&&(!Array.isArray(data.teams)||data.teams.length!==10||!Array.isArray(data.players)||data.schema!==1))throw Error('서버 저장 데이터 형식이 잘못됐습니다');
   await onReady(data);
   overlay.remove();
+  let logout=document.getElementById('be-cloud-logout');
+  if(!logout){
+   logout=document.createElement('button');logout.id='be-cloud-logout';logout.type='button';logout.textContent='로그아웃';
+   logout.style.cssText='position:fixed;right:14px;top:12px;z-index:2147483000;padding:9px 13px;border:1px solid #c5d5e4;border-radius:20px;background:#fff;color:#214c72;font:700 13px system-ui';
+   logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;remember();location.reload()};
+   document.body.append(logout);
+  }
  }catch(e){msg.textContent='로그인 또는 불러오기 실패: '+(e.message||e);if(!token){name.hidden=false;pass.hidden=false;button.textContent='로그인'}else{button.textContent='다시 시도';name.hidden=true;pass.hidden=true}}finally{button.disabled=false;toggle.disabled=false}};
  button.onclick=start;pass.onkeydown=e=>{if(e.key==='Enter'&&!signup)start()};confirmPass.onkeydown=e=>{if(e.key==='Enter'&&signup)start()};
  if(token){name.hidden=true;pass.hidden=true;button.textContent='다시 연결';toggle.hidden=true;msg.textContent='자동 로그인 중입니다.';start()}
