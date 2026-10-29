@@ -1710,7 +1710,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const frames=detailed?events.flatMap((e,eventIndex)=>[...(Array.isArray(e.pitchSequence)?e.pitchSequence.map((pitch,pitchIndex)=>({kind:'pitch',e,eventIndex,pitch,pitchIndex})):[]),{kind:'result',e,eventIndex}]):[];
  const total=detailed?frames.length:n;
  const nextBatter=document.createElement('div');nextBatter.className='be-next-batter';const livePanel=document.querySelector('.be-replay-dialog .be-replay-live');livePanel?.appendChild(nextBatter);
- const describeCall=(pitch,e)=>{const c=pitch.call||'';const type=pitch.type||'공',v=Number.isFinite(pitch.velocity)?' '+pitch.velocity+'km/h':'';const label=c==='볼넷'?'볼넷! 타자가 걸어나갑니다.':c==='삼진'?'삼진! 타자를 돌려세웁니다.':c==='인플레이'?'타격! '+(e.outcome||'타격 완료')+'!':c==='스트라이크'?'스트라이크! 좋은 공이 들어왔습니다.':c==='볼'?'볼! 존을 벗어났습니다.':c==='파울'?'파울! 승부가 이어집니다.':c==='헛스윙'?'헛스윙! 배트가 허공을 가릅니다.':'이전 경기: 투구별 판정 미기록';return e.batter+' 타석, '+pitch.number+'구 '+type+v+'. '+label};
+ const describeCall=(pitch,e)=>{const c=pitch.call||'';const type=pitch.type||'공',v=Number.isFinite(pitch.velocity)?' '+pitch.velocity+'km/h':'';const label=c==='볼넷'?'볼넷! 타자가 걸어나갑니다.':c==='삼진'?'삼진! 타자를 돌려세웁니다.':c==='인플레이'?'타격! '+(e.outcome||'타격 완료')+'!':c==='스트라이크'?'루킹 스트라이크! 배트를 내지 않았습니다.':c==='볼'?'볼! 존을 벗어났습니다.':c==='파울'?'파울 타구! 승부가 이어집니다.':c==='헛스윙'?'헛스윙 스트라이크! 배트가 허공을 가릅니다.':'이전 경기: 투구별 판정 미기록';return e.batter+' 타석, '+pitch.number+'구 '+type+v+'. '+label};
  const updateNextBatter=(nextIndex)=>{const next=frames.slice(nextIndex).find(f=>f.kind==='pitch'||f.kind==='result');if(!next){nextBatter.textContent='경기 종료';return}nextBatter.textContent='다음 타석 · '+(next.e.side==='away'?a.name:h.name)+' '+next.e.batter+' / 상대 투수 '+next.e.pitcher};
  updateNextBatter(0);
  const step=()=>{
@@ -1723,7 +1723,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
     updateDiamond(frame.kind==='pitch'?e.bases:e.afterBases);
     batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher;
     pitchLabel.textContent=frame.pitch.number+'구 · '+frame.pitch.type+(Number.isFinite(frame.pitch.velocity)?' · '+frame.pitch.velocity+'km/h':'')+(' · '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call||'판정 미기록'));markPitch(frame.pitch);
-    pitchCount.textContent=Number.isFinite(frame.pitch.zoneX)&&Number.isFinite(frame.pitch.zoneY)?'투구 위치 표시 · 판정은 타석 결과 기반 재구성':'이전 경기: 투구 위치·B/S 판정 미기록';
+    pitchCount.textContent=frame.pitch.call?'판정: '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call)+' · 타석 결과 기반 재구성':'이전 경기: 투구별 판정 미기록';
     out.insertAdjacentHTML('beforeend','<div class="be-replay-event be-replay-pitch-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+' 공격 · '+esc(e.batter)+'</small><strong>'+esc(describeCall(frame.pitch,e))+'</strong></div>');
     index++;status.textContent='투구 '+index+' / '+total;updateNextBatter(index);
     btn.textContent='▶ 다음 투구';
