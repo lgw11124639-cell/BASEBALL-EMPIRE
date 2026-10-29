@@ -288,3 +288,16 @@
 .be-replay-dialog .be-inning-row>*{white-space:nowrap}
 .be-replay-dialog .be-inning-row>*:nth-last-child(-n+4){background:#dbe9f7;color:#173c61;font-weight:800}
 @media(max-width:600px){.be-replay-dialog .be-inning-row{width:max-content;min-width:100%;grid-template-columns:35px repeat(var(--be-innings,9),26px) 29px 29px 29px 32px;gap:2px;font-size:10px}.be-replay-dialog .be-inning-row>*{padding:7px 0}}
+
+/* Replay layout: the score and game state must never shrink as event cards accumulate */
+.be-replay-dialog{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:10px!important}
+.be-replay-dialog>header,.be-replay-dialog>.be-replay-scoreboard,.be-replay-dialog>.be-replay-innings,.be-replay-dialog>.be-replay-live,.be-replay-dialog>.be-broadcast-zone,.be-replay-dialog>.be-broadcast-lineups,.be-replay-dialog>#be-replay-status,.be-replay-dialog>#be-replay-lines,.be-replay-dialog>.be-replay-controls,.be-replay-dialog>#be-replay-finish{flex:0 0 auto!important;width:100%;min-height:0;box-sizing:border-box}
+.be-replay-dialog .be-replay-innings{flex-shrink:0!important;min-height:90px}
+.be-replay-dialog .be-replay-scoreboard{flex-shrink:0!important;min-height:70px}
+.be-replay-dialog #be-replay-lines{flex:1 1 auto!important;min-height:125px;max-height:34dvh!important;overflow-y:auto!important;overscroll-behavior:contain}
+@media(max-width:600px){
+ .be-replay-dialog{gap:8px!important}
+ .be-replay-dialog .be-replay-innings{min-height:90px}
+ .be-replay-dialog #be-replay-lines{flex:1 1 auto!important;min-height:150px;max-height:30dvh!important;overflow-y:auto!important}
+ .be-replay-dialog>.be-replay-controls{width:100vw;flex:0 0 auto!important}
+}
