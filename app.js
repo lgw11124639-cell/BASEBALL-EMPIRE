@@ -638,9 +638,9 @@ function beOwnerReportSections(n){
   const m=raw.match(re);if(m)metrics.push('<div><small>'+esc(label)+'</small><strong>'+esc(m[1]+suffix)+'</strong></div>');
  }
  const structured=raw.includes('【1군 경기 운영】')||raw.includes('【선수 육성】');
- const segments=structured?raw.split(/\\n\\s*\\n/).filter(Boolean):n.kind==='월간 운영보고'?raw.split(/\\.\\s+(?=(?:선수 육성|FA 관련|월간 수입|감독·프런트))/):[raw];
+ const segments=structured?raw.split(/\n\s*\n/).filter(Boolean):n.kind==='월간 운영보고'?raw.split(/\.\s+(?=(?:선수 육성|FA 관련|월간 수입|감독·프런트))/):[raw];
  const headings=['경기 및 구단 운영','선수 육성 및 컨디션','계약·영입 및 선수단 변동','구단 재정','다음 달 운영 방향'];
- const blocks=segments.map((segment,i)=>{const match=segment.match(/^【([^】]+)】\\s*/);return section(match?match[1]:n.kind==='월간 운영보고'?(headings[i]||'추가 보고'):({'육성 보고':'선수 육성 및 평가','재정 보고':'구단 재정 현황','연봉협상':'계약 및 연봉협상','스카우트 보고':'스카우트 분석'}[n.kind]||'구단 운영 보고'),match?segment.slice(match[0].length):segment)});
+ const blocks=segments.map((segment,i)=>{const match=segment.match(/^【([^】]+)】\s*/);return section(match?match[1]:n.kind==='월간 운영보고'?(headings[i]||'추가 보고'):({'육성 보고':'선수 육성 및 평가','재정 보고':'구단 재정 현황','연봉협상':'계약 및 연봉협상','스카우트 보고':'스카우트 분석'}[n.kind]||'구단 운영 보고'),match?segment.slice(match[0].length):segment)});
  if(n.kind==='육성 보고')blocks.push(section('운영 원칙','훈련과 선수 기용은 감독·코치진이 자동으로 결정합니다. 개별 선수의 세부 능력치 수치는 공개하지 않습니다.'));
  return '<div class="be-owner-report">'+(metrics.length?'<div class="be-owner-report-metrics">'+metrics.join('')+'</div>':'')+blocks.join('')+'</div>';
 }
@@ -1709,7 +1709,7 @@ function monthlyOwnerReport(){const d=seasonDate(state.day);if(d.getDate()!==1)r
  '【선수단 인사】 FA 관련 '+count('FA')+'건 · 영입 '+count('영입')+'건 · 방출 '+count('방출')+'건 · 1군 등록 '+count('1군 콜업')+'건 · 말소 '+count('1군 말소')+'건. 각 인사 조치는 해당 날짜의 구단 소식에서 확인할 수 있습니다.',
  '【재무 현황】 월간 수입 '+moneyWon(income)+' · 지출 '+moneyWon(expense)+' · 월간 순증감 '+moneyWon(income-expense)+' · 현재 구단 자금 '+moneyWon(t.budget)+'.',
  '【다음 달 운영 방침】 감독은 경기력과 컨디션을 고려해 1군 엔트리 및 선발 출전 계획을 조정합니다. 2군 코칭스태프는 육성과 경기 출전을 병행하고, 프런트는 계약·스카우트·재정 집행을 검토합니다.'
- ].join('\\n\\n');clubNotice('월간 운영보고',reportYear+'년 '+month+'월 단장 종합보고',text,[t.id],[]);state.monthlyOwnerReports[key]=true}
+ ].join('\n\n');clubNotice('월간 운영보고',reportYear+'년 '+month+'월 단장 종합보고',text,[t.id],[]);state.monthlyOwnerReports[key]=true}
 function calendarNotice(){const d=seasonDate(state.day),key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');state.calendarNotices=state.calendarNotices||{};if(state.calendarNotices[key])return;const phase=calendarPhase(d);if(d.getDate()===1||(d.getMonth()===2&&d.getDate()===20)){state.calendarNotices[key]=true;clubNotice('연간 일정',key+' · '+phase+' 일정', '감독·코치진과 프런트가 '+phase+' 업무를 자동 진행합니다. 경기 및 선수단 소식은 기사로 확인하세요.',[state.teamId],[])}}
 function beDevelopPlayerSkills(p,delta,r){
  const profile=ensureProfile(p),skills=profile.skills||{},pitcher=p.position==='P';
