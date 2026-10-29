@@ -1646,7 +1646,7 @@ function seasonProgressPanel(){
   (record?.matchResults||[]).forEach((g,i)=>{
    if(String(g.date||'').slice(0,10)!==selected)return;
    const homeName=countryName(g.home||'KR'),awayName=countryName(g.away||g.opponent);
-   nationalRows.push('<div class="be-today-match"><div class="be-today-teams"><strong>'+esc(homeName)+'</strong><span>'+Number(g.homeRuns)+' : '+Number(g.awayRuns)+'</span><strong>'+esc(awayName)+'</strong></div><div class="be-today-actions"><small>'+esc(record.event||'국제대회')+' · '+esc(g.round||'경기')+' · 경기 종료</small><button type="button" data-calendar-national-key="'+esc(key)+'" data-calendar-national-index="'+i+'">경기 다시보기</button></div></div>');
+   nationalRows.push('<div class="be-today-match"><div class="be-today-teams"><strong>'+esc(homeName)+'</strong><span>'+Number(g.homeRuns)+' : '+Number(g.awayRuns)+'</span><strong>'+esc(awayName)+'</strong></div><div class="be-today-actions"><small>'+esc(record.event||'국제대회')+' · '+esc(g.round||'경기')+' · 경기 종료</small><button type="button" data-calendar-national-key="'+esc(key)+'" data-calendar-national-index="'+i+'">경기 다시보기</button><button type="button" data-calendar-national-article-key="'+esc(key)+'" data-calendar-national-article-index="'+i+'">경기 기사</button></div></div>');
   });
  }
  const selectedMatches=selected?'<div class="be-calendar-match-list"><details class="be-calendar-fold" open><summary>오늘의 경기 · KBO</summary>'+(kboRows||'<p class="profile-note">이 날짜에는 KBO 경기가 없습니다.</p>')+'</details><details class="be-calendar-fold" open><summary>오늘의 국가대표 경기</summary>'+(nationalRows.join('')||'<p class="profile-note">이 날짜에는 국가대표 경기가 없습니다.</p>')+'</details></div>':'';
@@ -1854,6 +1854,23 @@ function beInternationalTodayPanel(){
  if(!games.length)return '';
  return '<section class="dashboard-section be-today-games"><div class="section-title"><div><span class="section-kicker">INTERNATIONAL</span><h2>오늘의 국가대표 경기</h2></div></div>'+games.map(({key,i,record,g})=>'<div class="be-today-match"><div class="be-today-teams"><strong>대한민국</strong><span>'+Number(g.homeRuns)+' : '+Number(g.awayRuns)+'</span><strong>'+esc(INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국')+'</strong></div><div class="be-today-actions"><small>'+esc(record.event||'국제대회')+' · '+esc(g.round||'경기')+'</small><button type="button" onclick="beOpenInternationalReplay(\''+esc(key)+'\','+i+')">경기 관전하기</button></div></div>').join('')+'</section>';
 }
+function beOpenInternationalGameArticle(key,index){
+ const record=state.nationalTeamResults?.[key],g=record?.matchResults?.[index];if(!g)return;
+ const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국';
+ const title='대한민국 '+g.homeRuns+' : '+g.awayRuns+' '+opponent+' · '+(g.round||'국제대회');
+ const bats=(g.homeBatters||[]).filter(p=>(Number(p.hits)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)).slice(0,5);
+ const pitchers=(g.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0);
+ const items=(list,fmt)=>list.map(p=>'<li>'+esc(p.name||'선수')+' · '+fmt(p)+'</li>').join('');
+ const rows=(name,values,total)=>'<tr><th>'+esc(name)+'</th>'+Array.from({length:Math.max(9,(g.homeInnings||[]).length,(g.awayInnings||[]).length)},(_,i)=>'<td>'+(values?.[i]??'-')+'</td>').join('')+'<td>'+total+'</td></tr>';
+ const body='<div class="editorial-copy"><p>대한민국 대표팀이 '+esc(opponent)+'과의 '+esc(g.round||'국제대회 경기')+'에서 '+g.homeRuns+'대'+g.awayRuns+'를 기록했다.</p><h3>주요 타자</h3><ul>'+items(bats,p=>(p.hits||0)+'안타 '+(p.runsBattedIn||0)+'타점')+'</ul><h3>주요 투수</h3><ul>'+items(pitchers,p=>baseballIP(p.outs||0)+'이닝 '+(p.strikeouts||0)+'탈삼진')+'</ul><h3>이닝별 점수</h3><div class="scoreboard-scroll"><table class="scoreboard-table"><tbody>'+rows(opponent,g.awayInnings,g.awayRuns)+rows('대한민국',g.homeInnings,g.homeRuns)+'</tbody></table></div></div>';
+ closeGameArticle();
+ document.body.insertAdjacentHTML('beforeend','<div id="game-news-overlay" class="game-news-overlay"><article class="game-news-dialog" role="dialog" aria-modal="true"><header><div><small>BASEBALL EMPIRE SPORTS · '+esc(g.date||'')+'</small><h2>'+esc(title)+'</h2></div><button id="close-game-news">× 닫기</button></header><div class="be-article-replay"><button id="national-replay-from-article">▶ 경기 다시보기</button></div>'+body+'</article></div>');
+ document.querySelector('#close-game-news').onclick=closeGameArticle;
+ document.querySelector('#national-replay-from-article').onclick=()=>beOpenInternationalReplay(key,index);
+ document.querySelector('#game-news-overlay').onclick=e=>{if(e.target.id==='game-news-overlay')closeGameArticle()};
+ document.addEventListener('keydown',gameNewsEscape);
+}
+window.beOpenInternationalGameArticle=beOpenInternationalGameArticle;
 function beOpenInternationalReplay(key,index){
  const record=state.nationalTeamResults?.[key],g=record?.matchResults?.[index];if(!g)return;
  const away={city:'',name:INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국'},home={city:'',name:'대한민국'};
@@ -2550,6 +2567,8 @@ function openBaseballNewsArticle(id){
 document.addEventListener('click',e=>{
  const button=e.target.closest('[data-news-article]');
  if(button)openBaseballNewsArticle(button.dataset.newsArticle);
+ const nationalArticleButton=e.target.closest('[data-calendar-national-article-key]');
+ if(nationalArticleButton)beOpenInternationalGameArticle(nationalArticleButton.dataset.calendarNationalArticleKey,Number(nationalArticleButton.dataset.calendarNationalArticleIndex));
  const nationalCalendarButton=e.target.closest('[data-calendar-national-key]');
  if(nationalCalendarButton)beOpenInternationalReplay(nationalCalendarButton.dataset.calendarNationalKey,Number(nationalCalendarButton.dataset.calendarNationalIndex));
  const gameButton=e.target.closest('[data-game-article-day]');
