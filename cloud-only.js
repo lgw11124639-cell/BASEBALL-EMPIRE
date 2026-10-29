@@ -3,6 +3,7 @@ const API='https://baseball-empire-save.duckdns.org';
 const KEY='be-cloud-session-v1';
 let token=null,username='',revision=null,verified=false,baseline=null;
 let gzipSaveSupported=true; // In-memory only: disable after the server rejects compressed uploads.
+let gzipRejectedStatus=null;
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.token&&s?.username&&Number(s.expiresAt)>Date.now()){token=s.token;username=s.username}else localStorage.removeItem(KEY)}catch(_){try{localStorage.removeItem(KEY)}catch(_){}}
 function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,username,expiresAt:Date.now()+6*24*60*60*1000}));else localStorage.removeItem(KEY)}catch(_){}}
 async function call(path,method='GET',data,rev){
@@ -27,16 +28,21 @@ async function call(path,method='GET',data,rev){
  }
  const encodedAt=measure?performance.now():0;
  let response=await fetch(API+path,{method,headers,body,cache:'no-store'});
+ const firstStatus=response.status;
+ const firstRequestMs=measure?performance.now()-encodedAt:0;
+ let retriedUncompressed=false;
  if(compressed&&(response.status===400||response.status===415)){
   gzipSaveSupported=false;
+  gzipRejectedStatus=response.status;
+  retriedUncompressed=true;
   delete headers['Content-Encoding'];
   response=await fetch(API+path,{method,headers,body:json,cache:'no-store'});
  }
  const receivedAt=measure?performance.now():0;
  const serverTiming=measure?response.headers.get('Server-Timing'):null;
- const serverMs=measure?response.headers.get('Server-Timing'):null;
+ const serverMs=serverTiming;
  let result={};try{result=await response.json()}catch(_){}
- if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed,serverMs};}
+ if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed:compressed&&!retriedUncompressed,compressionAttempted:compressed,retriedUncompressed,firstStatus,firstRequestMs,gzipRejectedStatus,serverMs};}
  if(!response.ok){if(response.status===401){token=null;username='';verified=false;remember()}const err=Error(result.error||'HTTP '+response.status);err.status=response.status;throw err}
  return result;
 }
