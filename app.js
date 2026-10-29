@@ -1719,7 +1719,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const total=detailed?frames.length:n;
  const nextBatter=document.createElement('div');nextBatter.className='be-next-batter';const livePanel=document.querySelector('.be-replay-dialog .be-replay-live');livePanel?.appendChild(nextBatter);
  const describeCall=(pitch,e)=>{const c=pitch.call||'';const type=pitch.type||'공',v=Number.isFinite(Number(pitch.velocity))&&pitch.velocity!=null?' '+Math.round(Number(pitch.velocity))+'km/h':Number.isFinite(Number(e.velocity))&&e.velocity!=null?' · 구속 미기록 (투수 기준 '+Math.round(Number(e.velocity))+'km/h)':' · 구속 미기록';const label=c==='루킹 삼진'?'루킹 삼진! 배트를 내지 못하고 삼진 아웃!':c==='헛스윙 삼진'?'헛스윙 삼진! 배트가 허공을 가릅니다!':c==='사구'?'몸에 맞는 공! 타자가 1루로 나갑니다.':c==='루킹 스트라이크'?'루킹 스트라이크! 타자가 지켜봤습니다.':c==='볼넷'?'볼넷! 타자가 걸어나갑니다.':c==='삼진'?'삼진! 타자를 돌려세웁니다.':c==='인플레이'?'타격! '+(e.outcome||'타격 완료')+'!':c==='스트라이크'?'루킹 스트라이크! 배트를 내지 않았습니다.':c==='볼'?'볼! 존을 벗어났습니다.':c==='파울'?'파울 타구! 승부가 이어집니다.':c==='헛스윙'?'헛스윙 스트라이크! 배트가 허공을 가릅니다.' :'투구 결과를 확인합니다.';return e.batter+' 타석, '+pitch.number+'구 '+type+v+'. '+label};
- const updateNextBatter=(nextIndex)=>{const next=frames.slice(nextIndex).find(f=>f.kind==='pitch'||f.kind==='result');if(!next){nextBatter.textContent='경기 종료';return}nextBatter.textContent='다음 타석 · '+(next.e.side==='away'?a.name:h.name)+' '+next.e.batter+' / 상대 투수 '+next.e.pitcher};
+ const updateNextBatter=(nextIndex)=>{const next=frames.slice(nextIndex).find(f=>f.kind==='pitch'||f.kind==='result');if(!next){nextBatter.textContent='경기 종료';return}nextBatter.textContent='다음 타석 · '+(next.e.side==='away'?a.name:h.name)+' '+next.e.batter+' / '+(next.e.side==='away'?h.name:a.name)+' 투수 '+next.e.pitcher};
  updateNextBatter(0);
  const step=()=>{
   if(index>=total)return;
@@ -1729,9 +1729,9 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
     inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');
     count.textContent=(e.outsBefore||0)+'아웃';updateCountLamps(frame.pitch.ballsAfter,frame.pitch.strikesAfter,e.outsBefore);
     updateDiamond(frame.kind==='pitch'?e.bases:e.afterBases);
-    batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher;
+    batter.textContent=name+' 타자 '+e.batter+' · '+(e.side==='away'?h.name:a.name)+' 투수 '+e.pitcher;
     pitchLabel.textContent=frame.pitch.number+'구 · '+frame.pitch.type+(frame.pitch.velocity!=null&&Number.isFinite(Number(frame.pitch.velocity))?' · '+Math.round(Number(frame.pitch.velocity))+'km/h':' · 구속 미기록')+(' · '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call||'판정 미기록'));markPitch(frame.pitch);
-    pitchCount.textContent=frame.pitch.call?'판정: '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call)+' · 타석 결과 기반 재구성':'타석 결과 기반 재구성';
+    pitchCount.textContent=frame.pitch.call?'● '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call)+' · '+(frame.pitch.call==='볼'||frame.pitch.call==='볼넷'?'볼 판정':frame.pitch.call.includes('스트라이크')||frame.pitch.call.includes('삼진')?'스트라이크 판정':'타격 판정'):'투구 결과 확인';
     out.insertAdjacentHTML('beforeend','<div class="be-replay-event be-replay-pitch-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+' 공격 · '+esc(e.batter)+'</small><strong>'+esc(describeCall(frame.pitch,e))+'</strong></div>');
     index++;status.textContent='투구 '+index+' / '+total;updateNextBatter(index);
     btn.textContent='▶ 다음 투구';
