@@ -298,7 +298,7 @@ function playHalf(batting,fielding,inning,r,walkoff=false){const runsAtStart=bat
  // Preserve the engine's at-bat result; construct a rules-consistent pitch trace.
  // A walk requires at least four pitches and a strikeout at least three.
  const minCount=terminal==='볼넷'?4:terminal==='삼진'?3:1;
- while(pitches.length<minCount){const prev=pitches[pitches.length-1];pitches.push({type:prev?.type||bePlate.pitch||'직구',number:pitches.length+1,zoneX:prev?.zoneX,zoneY:prev?.zoneY});}
+ while(pitches.length<minCount){const prev=pitches[pitches.length-1];const type=prev?.type||bePlate.pitch||'직구';pitches.push({type,number:pitches.length+1,zoneX:prev?.zoneX,zoneY:prev?.zoneY});if(appearance){appearance.pitchCount=(appearance.pitchCount||0)+1;appearance.pitchMix=appearance.pitchMix||{};appearance.pitchMix[type]=(appearance.pitchMix[type]||0)+1;}}
  bePlate.pitchCount=pitches.length;
  let balls=0,strikes=0;
  for(let i=0;i<pitches.length;i++){
