@@ -721,7 +721,8 @@ function internationalRivalResult(year,event,round,homeCode,awayCode){
  catch(err){console.error('국제대회 타국 경기 오류',err);return {error:String(err?.stack||err?.message||err).slice(0,350)};}
  finally{restoreLeagueCounters(snapshot);for(const p of participants)playerBaseball(p).fatigue=fatigue.get(p.id);}
  if(!box)return null;
- return {round,date:null,home:homeCode,away:awayCode,homeRuns:box.homeRuns,awayRuns:box.awayRuns,homeInnings:box.homeInnings,awayInnings:box.awayInnings,winner:box.homeRuns===box.awayRuns?(((year+homeCode.charCodeAt(0)+awayCode.charCodeAt(0)+String(round).length)%2)?homeCode:awayCode):box.homeRuns>box.awayRuns?homeCode:awayCode};
+ if(box.homeRuns===box.awayRuns)return {error:'국제경기 연장전 미결정: '+homeCode+' vs '+awayCode};
+ return {round,date:null,home:homeCode,away:awayCode,homeRuns:box.homeRuns,awayRuns:box.awayRuns,homeInnings:box.homeInnings,awayInnings:box.awayInnings,winner:box.homeRuns>box.awayRuns?homeCode:box.awayRuns>box.homeRuns?awayCode:null};
 }
 const INTERNATIONAL_COUNTRIES={KR:'대한민국',JP:'일본',TW:'대만',CN:'중국',AU:'호주',US:'미국',DO:'도미니카공화국',VE:'베네수엘라',PR:'푸에르토리코',CU:'쿠바',MX:'멕시코',CA:'캐나다',PA:'파나마',CO:'콜롬비아',NI:'니카라과',IT:'이탈리아',NL:'네덜란드',GB:'영국',CZ:'체코',IL:'이스라엘',PH:'필리핀',TH:'태국',HK:'홍콩',PK:'파키스탄',IN:'인도',ID:'인도네시아',SG:'싱가포르'};
 function internationalTournamentGroups(event){
@@ -866,12 +867,9 @@ function nationalTeamTournamentDay(){
    let box;try{box=internationalOpeningGame(year,event,roster,opponent,seed);}catch(err){record.lastError='대한민국 경기 엔진 예외 · '+today+' · '+round+' · '+String(err?.message||err).slice(0,220);clubNotice('국가대표',year+' '+event+' 경기 진행 오류',record.lastError,state.teams.map(t=>t.id),record.players);return null;}finally{for(const p of roster.filter(p=>p.position==='P'))p.lastAppearance=priorDays.get(p.id);}
    if(!box){record.lastError='대한민국 경기 엔진 결과 생성 실패 · '+today+' · '+round;clubNotice('국가대표',year+' '+event+' 경기 진행 오류',record.lastError,state.teams.map(t=>t.id),record.players);return null;}
    if(box.homeRuns===box.awayRuns){
-    // International elimination and group games must have a winner; extend the simulated game.
-    const extraSeed=year*31+seed*17+record.games*13;
-    const koreanWins=(extraSeed>>>0)%2===0;
-    if(koreanWins)box.homeRuns+=1;else box.awayRuns+=1;
-    box.homeInnings=[...(box.homeInnings||[]),koreanWins?1:0];
-    box.awayInnings=[...(box.awayInnings||[]),koreanWins?0:1];
+    record.lastError='국가대표 경기 동점 종료 오류 · '+today+' · '+round;
+    clubNotice('국가대표',year+' '+event+' 경기 진행 오류',record.lastError,state.teams.map(t=>t.id),record.players);
+    return null;
    }
    for(const p of box.homePitchers||[])if((Number(p.outs)||0)>0)pitchDays[p.id]=state.day;
    game={round,date:today,...box,won:box.homeRuns>box.awayRuns};
