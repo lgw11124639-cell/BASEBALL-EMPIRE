@@ -483,3 +483,9 @@
 .be-calendar-match-list .be-today-actions small{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .be-calendar-match-list .be-today-actions button{white-space:nowrap!important;word-break:keep-all!important;flex:0 0 auto!important;min-width:max-content!important;width:auto!important;max-width:none!important;padding:9px 11px!important;line-height:1.2!important;font-size:12px!important}
 @media(max-width:420px){.be-calendar-match-list .be-today-actions{flex-wrap:wrap!important}.be-calendar-match-list .be-today-actions small{flex-basis:100%}}
+
+/* Calendar action layout: contain controls inside the match card on narrow panels. */
+.be-calendar-match-list .be-today-match{min-width:0;max-width:100%}
+.be-calendar-match-list .be-today-actions{display:grid!important;grid-template-columns:minmax(0,1fr) max-content max-content;gap:6px;max-width:100%;align-items:center}
+.be-calendar-match-list .be-today-actions button{min-width:0!important;max-width:100%!important;white-space:nowrap!important;word-break:keep-all!important;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;min-height:34px;height:34px;padding:7px 9px!important}
+@media(max-width:760px){.be-calendar-match-list .be-today-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.be-calendar-match-list .be-today-actions small{grid-column:1/-1;min-width:0}.be-calendar-match-list .be-today-actions button{width:100%!important;font-size:11px!important;padding:7px 5px!important}}
