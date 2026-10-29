@@ -87,6 +87,9 @@ let shardGzipActive=0;
 const shardGzipQueue=[];
 const shardGzipMetrics={tasks:0,queued:0,waitMs:0,workMs:0,maxActive:0};
 window.beCloudGzipMetrics=shardGzipMetrics;
+// A snapshot is more useful than lifetime totals when investigating one-day saves.
+window.beCloudGzipSnapshot=()=>({tasks:shardGzipMetrics.tasks,queued:shardGzipMetrics.queued,waitMs:shardGzipMetrics.waitMs,workMs:shardGzipMetrics.workMs,maxActive:shardGzipMetrics.maxActive,active:shardGzipActive,pending:shardGzipQueue.length});
+window.beCloudGzipSince=(before)=>{const now=window.beCloudGzipSnapshot();return {tasks:now.tasks-(before?.tasks||0),queued:now.queued-(before?.queued||0),waitMs:+(now.waitMs-(before?.waitMs||0)).toFixed(1),workMs:+(now.workMs-(before?.workMs||0)).toFixed(1),maxActive:now.maxActive,active:now.active,pending:now.pending};};
 async function withShardGzipSlot(work){
  const requestedAt=performance.now();
  if(shardGzipActive>=shardGzipConcurrency){
