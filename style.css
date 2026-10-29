@@ -428,3 +428,9 @@
 .be-replay-dialog>.be-broadcast-zone>div:first-child{min-height:205px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;overflow:visible!important}
 .be-replay-dialog .be-broadcast-zone-grid{box-sizing:border-box!important;width:130px!important;height:130px!important;margin:24px auto!important;flex:0 0 auto!important}
 @media(max-width:600px){.be-replay-dialog>.be-broadcast-zone{grid-template-columns:185px minmax(0,1fr)!important;min-height:210px!important;padding:24px 14px!important;gap:14px!important}.be-replay-dialog>.be-broadcast-zone>div:first-child{min-height:180px!important}.be-replay-dialog .be-broadcast-zone-grid{width:104px!important;height:104px!important;margin:22px auto!important}}
+
+/* Compact strike-zone card: all pitch markers stay inside the card. */
+.be-replay-dialog>.be-broadcast-zone{grid-template-columns:168px minmax(0,1fr)!important;min-height:164px!important;padding:13px 20px!important;gap:18px!important;overflow:hidden!important}
+.be-replay-dialog>.be-broadcast-zone>div:first-child{min-height:136px!important;overflow:visible!important}
+.be-replay-dialog .be-broadcast-zone-grid{width:92px!important;height:92px!important;margin:15px auto!important}
+@media(max-width:600px){.be-replay-dialog>.be-broadcast-zone{grid-template-columns:130px minmax(0,1fr)!important;min-height:148px!important;padding:12px 10px!important;gap:10px!important}.be-replay-dialog>.be-broadcast-zone>div:first-child{min-height:122px!important}.be-replay-dialog .be-broadcast-zone-grid{width:80px!important;height:80px!important;margin:14px auto!important}}
