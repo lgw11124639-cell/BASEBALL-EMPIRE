@@ -349,12 +349,12 @@ export async function cloudSave(state){
   // Estimate full size without another multi-megabyte JSON.stringify.
   // The estimate is conservative for normal ASCII keys and compressed shards.
   const fullJsonLength=delta?Object.entries(payload).reduce((n,[key,value])=>
-   n+JSON.stringify(key).length+1+(typeof value==='string'?JSON.stringify(value).length:JSON.stringify(value)?.length||4)+1,1):0;
+   n+JSON.stringify(key).length+1+(typeof value==='string'?value.length+2:JSON.stringify(value)?.length||4)+1,1):0;
   const useDelta=!!deltaJson&&deltaJson.length<fullJsonLength*.85;
   // Record what actually changes; the full snapshot size is not the upload size.
   // Field-level diagnostics identify whether a finer-grained protocol is worthwhile.
   const changedFields=delta?Object.entries(delta.set).map(([key,value])=>({
-   key,bytes:JSON.stringify(value)?.length||0
+   key,bytes:typeof value==='string'?value.length+2:JSON.stringify(value)?.length||0
   })).sort((a,b)=>b.bytes-a.bytes):[];
   window.beCloudDeltaTiming={compareMs:+(performance.now()-deltaStarted).toFixed(1),
    fullBytes:fullJsonLength,deltaBytes:deltaJson?.length||0,used:useDelta,
