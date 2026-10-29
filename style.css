@@ -630,3 +630,16 @@
 .be-game-article-style .editorial-meta{margin-bottom:18px!important}
 .be-game-article-style .be-owner-report-metrics{gap:10px!important}
 @media(max-width:600px){.be-game-article-style>.editorial-story{padding:20px 15px 65px!important}.be-game-article-style .editorial-headline{font-size:27px!important}.be-game-article-style .editorial-copy{font-size:16px!important}}
+
+
+/* Player dossier polish: compact, responsive, no artificial blank height. */
+.player-overlay .player-panel.pro-profile{height:auto!important;min-height:0!important;max-height:calc(100dvh - 24px)!important;overflow-y:auto!important;box-shadow:0 26px 75px rgba(13,36,64,.22)!important}
+.pro-profile .profile-banner{background:linear-gradient(115deg,#eaf1fa 0%,#f6f9fd 70%,#e9f1fa 100%)!important;border-bottom:1px solid #d7e3f0!important}
+.pro-profile .profile-name{letter-spacing:-.045em!important;font-weight:850!important}
+.pro-profile .profile-content{min-height:0!important;padding-bottom:24px!important}
+.pro-profile .profile-facts>div,.pro-profile .profile-section,.pro-profile .profile-card{border-radius:12px!important}
+.pro-profile .profile-facts>div{transition:background-color .15s ease,border-color .15s ease}
+.pro-profile .profile-facts>div:hover{background:#eaf2fc!important;border-color:#b9d2ed!important}
+.pro-profile .profile-heading{letter-spacing:-.02em!important}
+.pro-profile .profile-note{line-height:1.65!important}
+@media(max-width:600px){.player-overlay{padding:0!important}.player-overlay .player-panel.pro-profile{max-height:100dvh!important;border-radius:0!important}.pro-profile .profile-content{padding:14px 12px 20px!important}}
