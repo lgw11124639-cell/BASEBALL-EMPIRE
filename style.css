@@ -281,3 +281,10 @@
  .be-replay-dialog .be-replay-controls #be-replay-all{grid-column:1/-1}
  .be-replay-dialog .be-replay-lines{max-height:none;overflow:visible}
 }
+
+/* Broadcast line score: innings + R/H/E/BB, horizontal scroll on narrow devices */
+.be-replay-dialog .be-inning-row{width:max-content;min-width:100%;grid-template-columns:40px repeat(var(--be-innings,9),minmax(26px,1fr)) repeat(4,34px);gap:3px}
+.be-replay-dialog .be-replay-innings{overflow-x:auto;overflow-y:hidden;max-height:none;-webkit-overflow-scrolling:touch}
+.be-replay-dialog .be-inning-row>*{white-space:nowrap}
+.be-replay-dialog .be-inning-row>*:nth-last-child(-n+4){background:#dbe9f7;color:#173c61;font-weight:800}
+@media(max-width:600px){.be-replay-dialog .be-inning-row{width:max-content;min-width:100%;grid-template-columns:35px repeat(var(--be-innings,9),26px) 29px 29px 29px 32px;gap:2px;font-size:10px}.be-replay-dialog .be-inning-row>*{padding:7px 0}}
