@@ -246,3 +246,26 @@
 @media(max-width:600px){.be-replay-overlay{padding:3px}.be-replay-dialog{max-height:99dvh;padding:9px;border-radius:9px}.be-replay-dialog header{top:-9px;padding:5px 0}.be-replay-dialog header h2{font-size:14px}.be-replay-scoreboard{padding:8px 6px;margin:3px 0}.be-replay-innings{padding:4px;margin:5px 0}.be-replay-live{margin:5px 0;padding:8px}.be-broadcast-zone{margin:5px 0;padding:8px}.be-replay-dialog .be-replay-lines{max-height:24dvh}.be-replay-controls{bottom:-9px;padding:8px 0}.be-replay-controls button{padding:9px 4px;font-size:11px}}
 
 .be-broadcast-zone-grid{position:relative}.be-zone-marker{position:absolute;width:12px;height:12px;transform:translate(-50%,-50%);border-radius:50%;background:#e7a83b;border:2px solid #fff;box-shadow:0 1px 5px #173b65a0;z-index:2;pointer-events:none}
+
+/* Mobile broadcast layout hotfix */
+.be-replay-dialog{min-width:0;box-sizing:border-box}
+.be-replay-innings{width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.be-inning-row{width:max-content;min-width:100%;grid-template-columns:42px repeat(12,30px) 34px}
+.be-replay-live,.be-broadcast-zone,.be-broadcast-lineups,.be-replay-lines{min-width:0}
+@media(max-width:600px){
+ .be-replay-overlay{inset:0;padding:0;align-items:stretch}
+ .be-replay-dialog{width:100%;height:100dvh;max-height:100dvh;border-radius:0;padding:10px 12px 88px;overflow-y:auto;overflow-x:hidden}
+ .be-replay-dialog header{top:-10px;margin:-10px -12px 5px;padding:12px;background:#fff}
+ .be-replay-scoreboard{margin:5px 0}
+ .be-replay-innings{margin:5px 0;max-height:92px}
+ .be-inning-row{grid-template-columns:42px repeat(12,28px) 34px;gap:2px;font-size:10px}
+ .be-inning-row>*{padding:5px 0}
+ .be-replay-live{min-height:100px;gap:4px 8px}
+ .be-broadcast-zone{grid-template-columns:125px minmax(0,1fr);gap:8px}
+ .be-broadcast-zone-grid{width:86px;height:86px}
+ .be-broadcast-lineups>div{gap:8px}
+ .be-replay-dialog .be-replay-lines{max-height:28dvh;overflow:auto}
+ .be-replay-controls{position:sticky;bottom:-88px;margin:0 -12px -88px;padding:9px 12px calc(12px + env(safe-area-inset-bottom));background:#fff;display:grid;grid-template-columns:1.1fr 1fr 75px;gap:6px;box-shadow:0 -4px 14px #dbe7f3a8}
+ .be-replay-controls button,.be-replay-controls select{font-size:12px;min-width:0;min-height:43px}
+ .be-replay-controls #be-replay-all{grid-column:1/-1}
+}
