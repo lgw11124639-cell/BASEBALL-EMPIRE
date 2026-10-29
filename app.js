@@ -2613,6 +2613,9 @@ function nationalArchivedArticleText(n){
  if(!round)return body;
  const found=games.filter(g=>g.round===round[1]);
  if(found.length!==1)return body;
+ const matchedGame=found[0];
+ const canonical=beCanonicalGameArticle(matchedGame,name(matchedGame.opponent),'대한민국',{competition:event[2],round:matchedGame.round,date:matchedGame.date});
+ return canonical.paragraphs.join('\n\n');
  const g=found[0],bat=(g.homeBatters||[]).filter(p=>(Number(p.atBats)||0)>0).sort((x,y)=>(Number(y.runsBattedIn)||0)-(Number(x.runsBattedIn)||0)||(Number(y.hits)||0)-(Number(x.hits)||0))[0];
  const pitch=(g.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0).sort((x,y)=>(Number(y.outs)||0)-(Number(x.outs)||0))[0];
  const lines=['대한민국 야구대표팀이 '+event[1]+' '+event[2]+' '+round[1].replace(/\s*\d+$/,'')+'에서 '+name(g.opponent)+'을 상대로 '+g.homeRuns+'대'+g.awayRuns+'로 '+(g.won?'승리했다.':'패했다.')+' '+(g.won?'한국은 타선의 집중력과 마운드의 안정감을 앞세워 경기를 마쳤다.':'상대의 득점 기회를 막아내지 못한 것이 아쉬웠다.')];
