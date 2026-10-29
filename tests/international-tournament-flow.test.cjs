@@ -23,6 +23,7 @@ const context=vm.createContext({
  clubNotice:(...args)=>notices.push(args),
  awardNationalTeamServicePoints:()=>{},
 });
+context.nationalTeamPreparationDay=()=>{};
 vm.runInContext(source.slice(start,end),context);
 for(let day=1;day<=20;day++){
  current=new Date(2028,7,day,12);
