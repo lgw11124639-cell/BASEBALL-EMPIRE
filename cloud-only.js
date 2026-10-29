@@ -83,7 +83,7 @@ const shardArrayFields={players:128,gameResults:8};
 const shardGzipCache=new Map();
 // Limit simultaneous gzip streams. Do not change the wire format or skip JSON
 // comparisons: both are required for lossless revision-checked cloud saves.
-const shardGzipConcurrency=8;
+const shardGzipConcurrency=6;
 let shardGzipActive=0;
 const shardGzipQueue=[];
 const shardGzipMetrics={tasks:0,queued:0,waitMs:0,workMs:0,maxActive:0};
@@ -151,6 +151,7 @@ async function packCloudShards(state){
   return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
  }));
  window.beCloudArrayShardTiming=packed.map(x=>x.diagnostic);
+ window.beCloudShardSummary=packed.map(x=>({field:x.key,chunks:x.count,changed:x.diagnostic.changed,cacheHits:x.diagnostic.cacheHits,serializeMs:x.diagnostic.serializeMs,wallMs:x.diagnostic.ms,gzipTaskSumMs:x.diagnostic.gzipWaitSumMs,rawKB:Math.round(x.diagnostic.rawBytes/1024)}));
  for(const {key,size,length,count,entries} of packed){
   manifest.fields[key]={count,length,size};
   for(const [name,encoded] of entries)copy[name]=encoded;
