@@ -1655,8 +1655,8 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   if(detailed){
    const e=events[index],name=e.side==='away'?a.name:h.name,runner=(e.afterBases||[]).map(id=>id?'◆':'◇');
    if(e.side==='away')ar=e.score;else hr=e.score;
-   inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');count.textContent=(e.outsAfter||0)+'아웃';bases.textContent=(runner[2]||'◇')+' '+(runner[1]||'◇')+' '+(runner[0]||'◇');batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher+' | 1루 '+runnerName(e.afterBases?.[0])+' · 2루 '+runnerName(e.afterBases?.[1])+' · 3루 '+runnerName(e.afterBases?.[2]);pitchLabel.textContent=e.pitch?(e.pitch+(e.velocity?' · 최고구속 '+e.velocity+'km/h':'')):'구종 기록 없음';pitchCount.textContent='해당 타석 '+(e.pitches||0)+'구 · '+e.outcome;
-   const pitch=e.pitch?'<small>대표 구종 '+esc(e.pitch)+(e.velocity?' · 최고구속 기준 '+e.velocity+'km/h':'')+' · 타석 투구 '+e.pitches+'개</small>':'';
+   inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');count.textContent=(e.outsAfter||0)+'아웃';bases.textContent=(runner[2]||'◇')+' '+(runner[1]||'◇')+' '+(runner[0]||'◇');batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher+' | 1루 '+runnerName(e.afterBases?.[0])+' · 2루 '+runnerName(e.afterBases?.[1])+' · 3루 '+runnerName(e.afterBases?.[2]);pitchLabel.textContent=e.pitch?('타석 사용 구종 '+e.pitch+(e.velocity?' · 투수 최고구속 '+e.velocity+'km/h':'')):'투구별 기록 없음';pitchCount.textContent='해당 타석 총 '+(e.pitches||0)+'구 · '+e.outcome+' (개별 투구 판정 미기록)';
+   const pitch=e.pitch?'<small>타석 사용 구종 '+esc(e.pitch)+(e.velocity?' · 투수 최고구속 '+e.velocity+'km/h':'')+' · 타석 총 '+e.pitches+'구 (개별 판정 미기록)</small>':'';
    out.insertAdjacentHTML('beforeend','<div class="be-replay-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+'</small><strong>'+esc(describe(e))+'</strong>'+pitch+(e.runs?'<b>+'+e.runs+'점</b>':'')+'</div>');
   }else{
    const x=Number(ai[index])||0,y=Number(hi[index])||0;ar+=x;hr+=y;
