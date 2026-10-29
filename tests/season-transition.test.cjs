@@ -1,4 +1,4 @@
-// Exercise the actual beginNextSeason controller across 30 yearly transitions.
+// Exercise the actual beginNextSeason controller across 50 yearly transitions.
 // External scouting/contract engines are stubbed; this is not a full-season simulation.
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -26,7 +26,7 @@ const context=vm.createContext({
  clubNotice:(...args)=>notices.push(args),
 });
 vm.runInContext(source.slice(begin,end),context);
-for(let n=1;n<=30;n++){
+for(let n=1;n<=50;n++){
  const previousYear=state.year;
  player.games=100;player.hits=120;player.homeRuns=15;
  state.gameResults=[{id:'season-'+previousYear}];
@@ -48,7 +48,7 @@ for(let n=1;n<=30;n++){
  assert.equal(state.events.length,0,'daily events reset '+n);
  assert.equal(state.teams[0].wins,0,'team wins reset '+n);
 }
-assert.equal(snapshots.length,30,'one snapshot call per transition');
-assert.equal(notices.length,30,'one season notice per transition');
-assert.equal(archived.length,30,'minor stats archived once per transition');
-console.log('30-year season transition smoke: PASS');
+assert.equal(snapshots.length,50,'one snapshot call per transition');
+assert.equal(notices.length,50,'one season notice per transition');
+assert.equal(archived.length,50,'minor stats archived once per transition');
+console.log('50-year season transition smoke: PASS');
