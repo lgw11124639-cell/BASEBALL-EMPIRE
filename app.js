@@ -1666,7 +1666,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const drawInningBoard=(completed=false)=>{
   if(!inningBoard)return;
   inningBoard.style.setProperty('--be-innings',String(maxInnings));
-  const sides=[['away','원정',ai,g.awayRuns],['home','홈',hi,g.homeRuns]];
+  const sides=[['away',a.name||a.city||'원정팀',ai,g.awayRuns],['home',h.name||h.city||'홈팀',hi,g.homeRuns]];
   inningBoard.innerHTML='<div class="be-inning-row"><b>팀</b>'+Array.from({length:maxInnings},(_,i)=>'<b>'+(i+1)+'</b>').join('')+'<b>R</b><b>H</b><b>E</b><b>BB</b></div>'+sides.map(([side,label,innings,runs])=>{
    const visible=completed?innings:inningProgress[side];
    const scoreNow=completed?runs:visible.reduce((sum,x)=>sum+(Number(x)||0),0);
