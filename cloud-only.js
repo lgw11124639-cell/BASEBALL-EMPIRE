@@ -8,7 +8,10 @@ async function call(path,method='GET',data,rev){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
  if(rev!==undefined)headers['If-Match']=String(rev);
+ const measure=path==='/v2/saves/main'&&method==='PUT';
+ const start=measure?performance.now():0;
  const json=data===undefined?undefined:JSON.stringify(data);
+ const serializedAt=measure?performance.now():0;
  let body=json;
  // Large saves are transferred compressed only when the browser supports it.
  // Retry uncompressed on unsupported-content-encoding responses; never retry conflicts.
@@ -21,12 +24,15 @@ async function call(path,method='GET',data,rev){
    compressed=true;
   }catch(e){body=json;delete headers['Content-Encoding']}
  }
+ const encodedAt=measure?performance.now():0;
  let response=await fetch(API+path,{method,headers,body,cache:'no-store'});
  if(compressed&&(response.status===400||response.status===415)){
   delete headers['Content-Encoding'];
   response=await fetch(API+path,{method,headers,body:json,cache:'no-store'});
  }
+ const receivedAt=measure?performance.now():0;
  let result={};try{result=await response.json()}catch(_){}
+ if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed};}
  if(!response.ok){if(response.status===401){token=null;username='';verified=false;remember()}const err=Error(result.error||'HTTP '+response.status);err.status=response.status;throw err}
  return result;
 }
