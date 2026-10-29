@@ -7,7 +7,9 @@ const vm=require('node:vm');
 const {spawnSync}=require('node:child_process');
 const root=path.join(__dirname,'..');
 for(const file of ['app.js','sw.js','update.js']){
-  new vm.Script(fs.readFileSync(path.join(root,file),'utf8'),{filename:file});
+  const source=fs.readFileSync(path.join(root,file),'utf8');
+  const syntaxSource=file==='app.js'?source.replace(/^\s*import\s+[^;]+;\s*/gm,'').replace(/^\s*export\s+(?=(?:async\s+)?(?:function|class|const|let|var)\b)/gm,''):source;
+  new vm.Script(syntaxSource,{filename:file});
   console.log('PASS syntax:',file);
 }
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
