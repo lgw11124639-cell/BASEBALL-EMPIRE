@@ -204,6 +204,23 @@ async function packAuxiliaryFields(state){
   });
  }
  window.beCloudArchiveSubtreeShapes=archiveSubtreeShapes;
+ window.beCloudArchiveSubtreeBytes=Object.fromEntries(
+  ['highSchoolBaseball','collegeBaseball','minorLeague'].map(key=>{
+   const root=state?.[key];
+   const seasons=root&&typeof root==='object'&&!Array.isArray(root)?
+    Object.entries(root).map(([season,node])=>({
+     season,
+     children:node&&typeof node==='object'&&!Array.isArray(node)?
+      Object.entries(node).map(([field,value])=>({
+       field,bytes:JSON.stringify(value)?.length??0,
+       kind:Array.isArray(value)?'array':typeof value,
+       count:Array.isArray(value)?value.length:null
+      })).sort((a,b)=>b.bytes-a.bytes):[]
+    })):[];
+   return [key,seasons];
+  })
+ );
+
  const entries=await Promise.all(auxiliarySaveFields.map(async key=>{
   if(state?.[key]===undefined)return null;
   const fieldStart=performance.now();
