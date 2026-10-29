@@ -12,8 +12,8 @@ async function run(mode){
  let saves=0,simulations=0,stops=0,contracts=0,negotiations=0,rollovers=0;
  const state={year:2027,day:42,players:[],teams:[],events:[],gameResults:[],postseasons:{2027:{finished:true}},offseasonContractsDone:{}};
  const ctx={state,seasonStepBusy:false,entryMode:'game',tab:'home',
- document:{querySelector:()=>({disabled:false})},window:{},structuredClone:clone,
- ensureSeasonCalendar:()=>{},monthlyOwnerReport:()=>{},saveSeasonSnapshot:()=>{},
+ document:{querySelector:()=>({disabled:false})},window:{},performance:{now:()=>0},structuredClone:clone,
+ ensureSeasonCalendar:()=>{},monthlyOwnerReport:()=>{},saveSeasonSnapshot:()=>{},nationalTeamTournamentDay:()=>{},nationalTeamReturnDay:()=>{},
  seasonDate:()=>new Date(mode==='rollover'?'2028-01-01T12:00:00':mode==='offseason'?'2027-02-01T12:00:00':'2027-05-01T12:00:00'),
  awardsFinished:()=>mode==='rollover'||mode==='offseason',
  offseasonDay:()=>{ctx.state.day++},
