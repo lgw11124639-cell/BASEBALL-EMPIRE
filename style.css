@@ -376,3 +376,10 @@
  .be-replay-dialog #be-replay-batter{font-size:14px!important;font-weight:750!important}
  .be-replay-dialog .be-next-batter{font-size:13px!important}
 }
+
+/* Half-inning transition: one-row compact card, no broken '종료' label */
+.be-replay-dialog .be-half-change{display:grid!important;grid-template-columns:max-content minmax(0,1fr) max-content!important;align-items:center!important;gap:12px!important;width:100%!important;box-sizing:border-box!important;margin:6px 0 10px!important;padding:13px 15px!important;border:1px solid #cbdff1!important;border-left:4px solid #2a72aa!important;border-radius:12px!important;background:#eaf3fc!important;color:#183c62!important;box-shadow:0 2px 8px #123b6510!important}
+.be-replay-dialog .be-half-change>b{font-size:15px!important;font-weight:850!important;white-space:nowrap!important;word-break:keep-all!important}
+.be-replay-dialog .be-half-change>span{font-size:13px!important;font-weight:700!important;text-align:center!important;white-space:nowrap!important;word-break:keep-all!important;color:#547492!important}
+.be-replay-dialog .be-half-change>strong{font-size:17px!important;font-weight:850!important;white-space:nowrap!important;text-align:right!important;color:#153c67!important}
+@media(max-width:600px){.be-replay-dialog .be-half-change{gap:7px!important;padding:12px 10px!important}.be-replay-dialog .be-half-change>b{font-size:14px!important}.be-replay-dialog .be-half-change>span{font-size:12px!important}.be-replay-dialog .be-half-change>strong{font-size:16px!important}}
