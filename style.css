@@ -340,3 +340,12 @@
 .be-count-lamps span:nth-child(1) i.active{background:#3aa77b;border-color:#2e8b66}
 .be-count-lamps span:nth-child(2) i.active{background:#e9b345;border-color:#c89529}
 .be-count-lamps span:nth-child(3) i.active{background:#df6670;border-color:#b94752}
+
+/* Broadcast readability: compact commentary instead of oversized record cards */
+.be-replay-dialog .be-next-batter{grid-column:1/-1;display:block;width:100%;padding:8px 10px;background:#e7f0f9;border-radius:8px;font-size:12px;font-weight:750;color:#23496d;box-sizing:border-box}
+.be-replay-dialog .be-replay-event{padding:10px 12px!important;margin:0 0 5px!important;min-height:0!important;border-radius:9px!important;line-height:1.45!important;box-sizing:border-box!important}
+.be-replay-dialog .be-replay-event small{display:block!important;margin-bottom:3px!important;font-size:11px!important;color:#607b98!important}
+.be-replay-dialog .be-replay-event strong{display:block!important;font-size:13px!important;line-height:1.5!important}
+.be-replay-dialog .be-replay-result-event{border-left:3px solid #2d77ae!important;background:#eaf3fc!important}
+.be-replay-dialog .be-replay-result-event span{display:block;font-size:11px;color:#476c8d;margin-top:4px}
+@media(max-width:600px){.be-replay-dialog .be-replay-event{padding:9px 10px!important}.be-replay-dialog #be-replay-lines{max-height:none!important;overflow:visible!important}}
