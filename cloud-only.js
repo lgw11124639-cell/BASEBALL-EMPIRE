@@ -83,7 +83,7 @@ const shardArrayFields={players:128,gameResults:24};
 const shardGzipCache=new Map();
 // Limit simultaneous gzip streams. Do not change the wire format or skip JSON
 // comparisons: both are required for lossless revision-checked cloud saves.
-const shardGzipConcurrency=4;
+const shardGzipConcurrency=6;
 let shardGzipActive=0;
 const shardGzipQueue=[];
 const shardGzipMetrics={tasks:0,queued:0,waitMs:0,workMs:0,maxActive:0};
