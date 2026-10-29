@@ -613,6 +613,7 @@ export async function cloudSave(state){
  let payload;
  try{
   const packStarted=performance.now();
+  window.beCloudSaveStartAt=packStarted;
   // gameResults is already losslessly gzip-packed by packAuxiliaryFields.
   // Avoid individually gzipping every broadcast and then gzipping the entire archive again.
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
@@ -730,7 +731,9 @@ export async function cloudSave(state){
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
- revision=next;acknowledgedWireSave=structuredClone(payload);baseline={save:state,revision:next};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
+ const snapshotStarted=performance.now();
+ revision=next;acknowledgedWireSave=structuredClone(payload);baseline={save:state,revision:next};
+ window.beCloudSaveStages={...window.beCloudSaveStages,postSaveCloneMs:+(performance.now()-snapshotStarted).toFixed(1),fullSaveMs:+(performance.now()-window.beCloudSaveStartAt).toFixed(1)};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
 export async function cloudGate(onReady){
  const overlay=document.createElement('div');overlay.id='be-cloud-gate';
