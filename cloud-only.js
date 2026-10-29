@@ -396,7 +396,31 @@ window.beAuditCloudConsistency=async function(){
   if(canonical(local[key])!==canonical(restored[key]))
    differences.push({field:key,localLength:Array.isArray(local[key])?local[key].length:null,serverLength:Array.isArray(restored[key])?restored[key].length:null});
  }
- const result={ok:serverRev===revision&&differences.length===0,clientRev:revision,serverRev,differences,
+ // Read-only, bounded structural diff: do not expose full player or team objects.
+ const teamDetails=[];
+ if(canonical(local.teams)!==canonical(restored.teams)){
+  const left=Array.isArray(local.teams)?local.teams:[];
+  const right=Array.isArray(restored.teams)?restored.teams:[];
+  const describe=v=>v===undefined?'missing':v===null?'null':Array.isArray(v)?'array('+v.length+')':typeof v;
+  const walk=(a,b,path,out,depth)=>{
+   if(out.length>=30||canonical(a)===canonical(b))return;
+   if(depth>=5||!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b)){
+    out.push({path,localType:describe(a),serverType:describe(b)});return;
+   }
+   const keys=new Set([...Object.keys(a),...Object.keys(b)]);
+   for(const k of keys){
+    if(out.length>=30)break;
+    walk(a[k],b[k],path+'.'+k,out,depth+1);
+   }
+  };
+  for(let i=0;i<Math.max(left.length,right.length);i++){
+   const changed=[];
+   walk(left[i],right[i],'teams['+i+']',changed,0);
+   if(changed.length)teamDetails.push({index:i,teamId:left[i]?.id??right[i]?.id??null,teamName:left[i]?.name??right[i]?.name??null,changed});
+  }
+ }
+ window.beCloudTeamDiff=teamDetails;
+ const result={ok:serverRev===revision&&differences.length===0,clientRev:revision,serverRev,differences,teamDetails,
   checked:fields,readOnly:true,at:new Date().toISOString()};
  window.beCloudConsistencyAudit=result;
  return result;
