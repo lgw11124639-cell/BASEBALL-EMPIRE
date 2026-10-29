@@ -2,6 +2,7 @@
 const API='https://baseball-empire-save.duckdns.org';
 const KEY='be-cloud-session-v1';
 let token=null,username='',revision=null,verified=false,baseline=null;
+let gzipSaveSupported=true; // In-memory only: disable after the server rejects compressed uploads.
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.token&&s?.username&&Number(s.expiresAt)>Date.now()){token=s.token;username=s.username}else localStorage.removeItem(KEY)}catch(_){try{localStorage.removeItem(KEY)}catch(_){}}
 function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,username,expiresAt:Date.now()+6*24*60*60*1000}));else localStorage.removeItem(KEY)}catch(_){}}
 async function call(path,method='GET',data,rev){
@@ -16,7 +17,7 @@ async function call(path,method='GET',data,rev){
  // Large saves are transferred compressed only when the browser supports it.
  // Retry uncompressed on unsupported-content-encoding responses; never retry conflicts.
  let compressed=false;
- if(path==='/v2/saves/main'&&method==='PUT'&&json&&json.length>100000&&typeof CompressionStream==='function'){
+ if(path==='/v2/saves/main'&&method==='PUT'&&json&&json.length>100000&&gzipSaveSupported&&typeof CompressionStream==='function'){
   try{
    const stream=new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));
    body=await new Response(stream).arrayBuffer();
@@ -27,10 +28,12 @@ async function call(path,method='GET',data,rev){
  const encodedAt=measure?performance.now():0;
  let response=await fetch(API+path,{method,headers,body,cache:'no-store'});
  if(compressed&&(response.status===400||response.status===415)){
+  gzipSaveSupported=false;
   delete headers['Content-Encoding'];
   response=await fetch(API+path,{method,headers,body:json,cache:'no-store'});
  }
  const receivedAt=measure?performance.now():0;
+ const serverTiming=measure?response.headers.get('Server-Timing'):null;
  const serverMs=measure?response.headers.get('Server-Timing'):null;
  let result={};try{result=await response.json()}catch(_){}
  if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed,serverMs};}
