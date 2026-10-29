@@ -383,3 +383,9 @@
 .be-replay-dialog .be-half-change>span{font-size:13px!important;font-weight:700!important;text-align:center!important;white-space:nowrap!important;word-break:keep-all!important;color:#547492!important}
 .be-replay-dialog .be-half-change>strong{font-size:17px!important;font-weight:850!important;white-space:nowrap!important;text-align:right!important;color:#153c67!important}
 @media(max-width:600px){.be-replay-dialog .be-half-change{gap:7px!important;padding:12px 10px!important}.be-replay-dialog .be-half-change>b{font-size:14px!important}.be-replay-dialog .be-half-change>span{font-size:12px!important}.be-replay-dialog .be-half-change>strong{font-size:16px!important}}
+
+/* Pitch location: allow visible ball markers on every side of the strike zone */
+.be-replay-dialog .be-broadcast-zone-grid{overflow:visible!important;isolation:isolate}
+.be-replay-dialog .be-zone-marker{width:13px;height:13px;background:#e5a33c;border:2px solid #fff;box-shadow:0 0 0 1px #ad7220,0 2px 5px #173b6550}
+.be-replay-dialog .be-zone-marker-ball{background:#e46b55!important;box-shadow:0 0 0 2px #a83e2b,0 2px 5px #173b6550!important}
+@media(max-width:600px){.be-replay-dialog .be-broadcast-zone{grid-template-columns:124px minmax(0,1fr)!important;gap:7px!important}.be-replay-dialog .be-broadcast-zone-grid{width:76px!important;height:76px!important;margin:13px auto!important}}
