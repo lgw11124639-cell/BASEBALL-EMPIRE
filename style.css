@@ -474,3 +474,12 @@
 .be-editorial-modal{inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;border-radius:0!important;z-index:2147483000!important}
 .be-editorial-modal>.editorial-story{max-width:1080px!important;width:100%!important;box-sizing:border-box!important;margin:0 auto!important}
 .be-owner-report{display:grid;gap:20px;margin-top:20px}.be-owner-report-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px}.be-owner-report-metrics>div{background:#f2f7fd;border:1px solid #d9e6f4;border-radius:12px;padding:17px;display:grid;gap:8px}.be-owner-report-metrics small{color:#587394}.be-owner-report-metrics strong{color:#123b67;font-size:23px}.be-owner-report-section{border-top:1px solid #dce7f1;padding:18px 0}.be-owner-report-section h2{font-size:18px;margin:0 0 12px}.be-owner-report-section p{line-height:1.9;overflow-wrap:break-word;margin:0}
+
+/* Calendar match cards: fixed compact controls without awkward word wrapping. */
+.be-calendar-match-list .be-today-match{min-width:0;box-sizing:border-box;overflow:hidden;padding:10px 12px!important}
+.be-calendar-match-list .be-today-teams{min-width:0;display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:7px;align-items:center}
+.be-calendar-match-list .be-today-teams strong{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.be-calendar-match-list .be-today-actions{display:flex!important;align-items:center;gap:7px;flex-wrap:nowrap!important;min-width:0}
+.be-calendar-match-list .be-today-actions small{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.be-calendar-match-list .be-today-actions button{white-space:nowrap!important;word-break:keep-all!important;flex:0 0 auto!important;min-width:max-content!important;width:auto!important;max-width:none!important;padding:9px 11px!important;line-height:1.2!important;font-size:12px!important}
+@media(max-width:420px){.be-calendar-match-list .be-today-actions{flex-wrap:wrap!important}.be-calendar-match-list .be-today-actions small{flex-basis:100%}}
