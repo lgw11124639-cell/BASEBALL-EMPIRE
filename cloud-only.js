@@ -34,12 +34,15 @@ async function packReplayResults(state){
  const packed=await Promise.all(games.map(async game=>{
   if(!Array.isArray(game?.broadcastEvents)||!game.broadcastEvents.length)return game;
   const events=game.broadcastEvents;
-  const prior=replayCompressionCache.get(events);
-  if(prior&&prior.count===events.length&&prior.first===events[0]&&prior.last===events[events.length-1]){
-   if(!prior.encoded)return game;
-   changed=true;if(prior.game===game&&prior.packedGame)return prior.packedGame;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=prior.encoded;prior.game=game;prior.packedGame=copy;return copy;
-  }
+  // Validate the full event payload before reusing compressed replay data.
   const raw=JSON.stringify(events);
+  const prior=replayCompressionCache.get(events);
+  if(prior&&prior.raw===raw){
+   if(!prior.encoded)return game;
+   changed=true;if(prior.game===game&&prior.packedGame)return prior.packedGame;
+   const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=prior.encoded;
+   prior.game=game;prior.packedGame=copy;return copy;
+  }
   if(raw.length<1500)return game;
   try{
    const bytes=new TextEncoder().encode(raw);
@@ -47,9 +50,9 @@ async function packReplayResults(state){
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
    const useful=encoded.length<raw.length*.85;
-   if(!useful){replayCompressionCache.set(events,{count:events.length,first:events[0],last:events[events.length-1],encoded:null});return game;}
+   if(!useful){replayCompressionCache.set(events,{raw,encoded:null});return game;}
    changed=true;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=encoded;
-   replayCompressionCache.set(events,{count:events.length,first:events[0],last:events[events.length-1],encoded,game,packedGame:copy});return copy;
+   replayCompressionCache.set(events,{raw,encoded,game,packedGame:copy});return copy;
   }catch(_){return game}
  }));
  return changed?{...state,gameResults:packed}:state;
