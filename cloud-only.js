@@ -29,7 +29,13 @@ async function call(path,method='GET',data,rev){
  // Refresh payload composition every 10 saves to expose growth without paying the extra serialization cost on every day.
  // This is diagnostic only; it never changes the saved state or cloud revision.
  if(measure&&data&&typeof data==='object'&&((window.beCloudPayloadAuditSaveCount=(window.beCloudPayloadAuditSaveCount||0)+1)===1||window.beCloudPayloadAuditSaveCount%10===0)){
-  try{const sizes=Object.entries(data).map(([key,value])=>({key,bytes:JSON.stringify(value)?.length||0})).sort((a,b)=>b.bytes-a.bytes);window.beCloudPayloadAudit=sizes.slice(0,10)}catch(_){}
+  try{const sizes=Object.entries(data).map(([key,value])=>({key,bytes:JSON.stringify(value)?.length||0})).sort((a,b)=>b.bytes-a.bytes);window.beCloudPayloadAudit=sizes.slice(0,10);
+   const results=Array.isArray(data.gameResults)?data.gameResults:[];
+   const sample=results.slice(-Math.min(20,results.length));
+   const sampleBytes=sample.reduce((n,g)=>n+JSON.stringify(g).length,0);
+   const broadcastBytes=sample.reduce((n,g)=>n+JSON.stringify(g.broadcastEvents||[]).length,0);
+   window.beCloudGameResultsAudit={games:results.length,sampleGames:sample.length,sampleBytes,broadcastBytes,broadcastShare:sampleBytes?Math.round(broadcastBytes/sampleBytes*100):0};
+  }catch(_){}
  }
  const encodedAt=measure?performance.now():0;
  let response=await fetch(API+path,{method,headers,body,cache:'no-store'});
