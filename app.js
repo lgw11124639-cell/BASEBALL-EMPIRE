@@ -646,15 +646,6 @@ function openClubNotice(id){
  const players=(n.players||[]).map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean);
  const playerLinks=players.map(p=>'<button type="button" data-notice-player="'+esc(p.id)+'" style="display:block;width:100%;padding:14px;margin:8px 0;text-align:left;border:1px solid #dce7f1;border-radius:10px;background:#f2f7fc;color:#173e6c;font-weight:700">'+esc(p.name)+' · 선수 프로필 보기 →</button>').join('');
  const draftHtml=isDraft&&draft?.length?'<h2>라운드별 지명 결과</h2>'+Array.from({length:11},(_,i)=>'<section><h3>'+(i+1)+'라운드</h3>'+draft.filter(x=>Number(x.round)===i+1).map(x=>'<button type="button" data-notice-player="'+esc(x.playerId)+'" style="display:block;width:100%;text-align:left;padding:12px;border:0;border-bottom:1px solid #dce7f1;background:transparent;color:#173e6c">'+esc(x.pick+'순위 · '+(state.teams[x.teamId]?.name||'구단')+' · '+x.name+' ('+x.position+')')+'</button>').join('')+'</section>').join(''):'';
- const nationalMatch=beArchivedNationalMatchArticle(n);
- if(nationalMatch){
-  const event=String(n.title||'').match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
-  const entry=event&&Object.entries(state.nationalTeamResults||{}).find(([,rec])=>Number(rec.year)===Number(event[1])&&rec.event===event[2]);
-  if(entry){
-   const index=(entry[1].matchResults||[]).findIndex(g=>[entry[1].year,entry[1].event,g.round,g.opponent,g.date||''].join(':')===nationalMatch.id);
-   if(index>=0){beOpenInternationalGameArticle(entry[0],index);return;}
-  }
- }
  const modal=document.createElement('div');
  modal.classList.add('be-editorial-modal','be-game-article-style');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
@@ -2650,6 +2641,16 @@ function beEditorialParagraphs(value,notice){
 function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
+ const nationalMatch=beArchivedNationalMatchArticle(n);
+ if(nationalMatch){
+  const event=String(n.title||'').match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
+  const entry=event&&Object.entries(state.nationalTeamResults||{}).find(([,rec])=>Number(rec.year)===Number(event[1])&&rec.event===event[2]);
+  if(entry){
+   const index=(entry[1].matchResults||[]).findIndex(g=>[entry[1].year,entry[1].event,g.round,g.opponent,g.date||''].join(':')===nationalMatch.id);
+   if(index>=0){beOpenInternationalGameArticle(entry[0],index);return;}
+  }
+ }
+
  const modal=document.createElement('div');
  modal.classList.add('be-editorial-modal','be-game-article-style');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
