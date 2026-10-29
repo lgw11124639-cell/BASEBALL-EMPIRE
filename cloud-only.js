@@ -93,13 +93,19 @@ async function packCloudShards(state){
  if(!targets.length)return state;
  const copy={...state},manifest={version:1,fields:{}};
  const packed=await Promise.all(targets.map(async([key,size])=>{
+  const started=performance.now();
   const array=state[key],count=Math.ceil(array.length/size);
+  let cacheHits=0,changed=0,rawBytes=0;
   const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
    const raw=JSON.stringify(array.slice(i*size,(i+1)*size));
-   return [`beShard_${key}_${i}`,await encodeCloudShard(raw,`${key}:${i}`)];
+   const cacheKey=`${key}:${i}`;
+   rawBytes+=raw.length;
+   if(shardGzipCache.get(cacheKey)?.raw===raw)cacheHits++;else changed++;
+   return [`beShard_${key}_${i}`,await encodeCloudShard(raw,cacheKey)];
   }));
-  return {key,size,length:array.length,count,entries};
+  return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,rawBytes,ms:+(performance.now()-started).toFixed(1)}};
  }));
+ window.beCloudArrayShardTiming=packed.map(x=>x.diagnostic);
  for(const {key,size,length,count,entries} of packed){
   manifest.fields[key]={count,length,size};
   for(const [name,encoded] of entries)copy[name]=encoded;
