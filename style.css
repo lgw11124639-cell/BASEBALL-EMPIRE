@@ -607,3 +607,13 @@
 .club-headline>span:last-child{grid-column:2!important;grid-row:2!important}
 .be-report-item>span:last-child{flex:0 0 auto!important;white-space:nowrap!important}
 @media(max-width:600px){.be-report-list>.be-report-item,.baseball-news-list>.be-report-item,.club-headline-list>.club-headline{padding:12px 13px!important;gap:7px!important}}
+
+/* Desktop article width correction: keep article readable without nested narrow viewport. */
+@media(min-width:900px){
+ #game-news-overlay .game-news-dialog{width:100%!important;max-width:100%!important;display:flex!important;flex-direction:column!important}
+ #game-news-overlay .game-news-dialog>.news-article-body{flex:1 1 auto!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:24px clamp(24px,5vw,72px) 80px!important;box-sizing:border-box!important}
+ #game-news-overlay .game-news-dialog>.news-article-body.editorial-story{width:100%!important;max-width:100%!important;margin:0!important}
+ #game-news-overlay .news-article-body>.editorial-copy,
+ #game-news-overlay .news-article-body>.scoreboard-scroll{width:100%!important;max-width:100%!important}
+ #game-news-overlay .game-news-dialog>header{width:100%!important;max-width:100%!important}
+}
