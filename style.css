@@ -349,3 +349,17 @@
 .be-replay-dialog .be-replay-result-event{border-left:3px solid #2d77ae!important;background:#eaf3fc!important}
 .be-replay-dialog .be-replay-result-event span{display:block;font-size:11px;color:#476c8d;margin-top:4px}
 @media(max-width:600px){.be-replay-dialog .be-replay-event{padding:9px 10px!important}.be-replay-dialog #be-replay-lines{max-height:none!important;overflow:visible!important}}
+
+/* Mobile replay: keep the inning, count and batter on single lines */
+@media(max-width:600px){
+ .be-replay-dialog .be-replay-live{grid-template-columns:minmax(0,1fr) 100px!important;column-gap:6px!important}
+ .be-replay-dialog .be-replay-live>div:first-child{min-width:0!important;display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:5px!important;overflow:hidden!important}
+ .be-replay-dialog #be-replay-inning{white-space:nowrap!important;flex:0 0 auto!important;font-size:13px!important}
+ .be-replay-dialog #be-replay-count{white-space:nowrap!important;flex:0 0 auto!important;font-size:11px!important}
+ .be-replay-dialog .be-count-lamps{flex:0 1 auto!important;min-width:0!important;display:flex!important;flex-wrap:nowrap!important;gap:3px!important;margin:0!important}
+ .be-replay-dialog .be-count-lamps span{white-space:nowrap!important;gap:2px!important;font-size:10px!important}
+ .be-replay-dialog .be-count-lamps i{width:8px!important;height:8px!important;flex:0 0 8px!important}
+ .be-replay-dialog #be-replay-batter,.be-replay-dialog .be-next-batter{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+ .be-replay-dialog .be-broadcast-pitch{min-width:0!important}
+ .be-replay-dialog #be-broadcast-pitch,.be-replay-dialog #be-broadcast-pitchcount{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+}
