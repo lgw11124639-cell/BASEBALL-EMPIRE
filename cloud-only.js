@@ -55,30 +55,28 @@ const auxiliarySaveFields=['highSchoolBaseball','collegeBaseball','nationalTeamR
 const auxiliaryCompressionCache=new WeakMap();
 async function packAuxiliaryFields(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
- let packed=null,copy=null;
- for(const key of auxiliarySaveFields){
-  if(state?.[key]===undefined)continue;
+ // Independent league archives can be compressed concurrently, while preserving
+ // byte-for-byte JSON content and the existing cache / unpack format.
+ const entries=await Promise.all(auxiliarySaveFields.map(async key=>{
+  if(state?.[key]===undefined)return null;
   const value=state[key];
-  // Compare serialized content: league objects may mutate without changing identity.
   const raw=JSON.stringify(value);
   const cached=value&&typeof value==='object'?auxiliaryCompressionCache.get(value):null;
-  if(cached&&cached.key===key&&cached.raw===raw){
-   if(cached.encoded){if(!copy)copy={...state};if(!packed)packed={};packed[key]=cached.encoded;delete copy[key]}
-   continue;
-  }
-  if(!raw||raw.length<20000)continue;
+  if(cached&&cached.key===key&&cached.raw===raw)return cached.encoded?{key,encoded:cached.encoded}:null;
+  if(!raw||raw.length<20000)return null;
   try{
    const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
-   if(encoded.length>=raw.length*.8){if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,raw,encoded:null});continue}
-   if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,raw,encoded});
-   if(!copy)copy={...state};
-   if(!packed)packed={};
-   packed[key]=encoded;delete copy[key];
-  }catch(_){}
- }
- if(!copy)return state;
+   const useful=encoded.length<raw.length*.8;
+   if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,raw,encoded:useful?encoded:null});
+   return useful?{key,encoded}:null;
+  }catch(_){return null}
+ }));
+ const active=entries.filter(Boolean);
+ if(!active.length)return state;
+ const copy={...state},packed={};
+ for(const {key,encoded} of active){packed[key]=encoded;delete copy[key]}
  copy.bePackedAuxiliaryGzip=packed;
  return copy;
 }
