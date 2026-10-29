@@ -1345,12 +1345,14 @@ function snapshotOverseasInterest(year){
  for(const p of state.players){
   if(p.retired||p.foreignPlayer||p.draftPending||p.overseasContract||p.level==='방출'||p.level==='은퇴'||p.level==='FA대기')continue;
   if(playerNationality(p)!=='KR')continue;
-  const age=Number(p.age)||25,service=postingServiceStatus(p).creditedSeasons,overall=bePlayerEvaluation(p);
+  const age=Number(p.age)||25,service=postingServiceStatus(p).creditedSeasons,skills=ensureProfile(p).skills||{};
+  const internationalCandidate=p.position==='P'?Number(skills.stuff)>=78&&Number(skills.control)>=65:Number(skills.contact)>=78&&(Number(skills.power)>=65||Number(skills.eye)>=75);
+  const eliteCandidate=p.position==='P'?Number(skills.stuff)>=88&&Number(skills.control)>=78:Number(skills.contact)>=88&&Number(skills.power)>=78;
   const recentGames=Number(p.games)||0,performance=p.position==='P'?(Number(p.inningsPitched)||0)>=65:(Number(p.atBats)||0)>=180;
   // Preliminary scouting threshold only; formal posting and overseas FA rules are separate.
-  if(age<22||age>35||service<7||overall<78||!performance)continue;
+  if(age<22||age>35||service<7||!internationalCandidate||!performance)continue;
   if(r()>.10)continue;
-  const league=leagues[overall>=85&&r()<.7?0:1];
+  const league=leagues[eliteCandidate&&r()<.7?0:1];
   const club=league.clubs[ri(r,0,league.clubs.length-1)];
   offers.push({playerId:p.id,name:p.name,teamId:p.teamId,league:league.id,club,year,stage:'관심',route:service>=9?'해외 FA 자격 검토':'포스팅 자격 검토'});
   if(offers.length>=8)break;
