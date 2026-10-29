@@ -152,7 +152,7 @@ async function packCloudShards(state){
    return [`beShard_${key}_${i}`,encoded];
   }));
   if(key==='gameResults'&&Number.isSafeInteger(window.beGameResultsRevision)){
-   gameShardFastCache={array,version:window.beGameResultsRevision,size,parts:entries.map((_,i)=>shardGzipCache.get('gameResults:'+i)?.raw)};
+   gameShardFastCache={array,version:window.beGameResultsRevision,length:array.length,size,parts:entries.map((_,i)=>shardGzipCache.get('gameResults:'+i)?.raw)};
   }else if(key==='gameResults')gameShardFastCache=null;
   return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
  }));
