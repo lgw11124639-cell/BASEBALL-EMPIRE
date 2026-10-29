@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 const src=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
-const start=src.indexOf('async function advanceSeason(){');
+const start=src.indexOf('async function advanceSeason(');
 const end=src.indexOf('function newsStory(',start);
 assert.ok(start>=0&&end>start,'real day-advance function found');
 const initial={year:2026,day:366,gameResults:[{year:2026,day:100}],players:[{id:1,teamId:0,profile:{contractYears:1}}],teams:[{id:0,budget:100000000},{id:1,budget:100000000}],history:{seasons:{2026:{complete:true}}},postseasons:{2026:{finished:true}}};
@@ -14,6 +14,7 @@ const context=vm.createContext({performance:{now:()=>0},document:{querySelector:
  seasonStepBusy:false,entryMode:'game',tab:'home',
  ensureSeasonCalendar:()=>{},monthlyOwnerReport:()=>{},
  seasonDate:()=>new Date('2027-01-01T12:00:00'),
+ nationalTeamTournamentDay:()=>{},nationalTeamReturnDay:()=>{},
  awardsFinished:()=>true,
  runOffseasonContracts:()=>{
    state.offseasonContractsDone={2026:true};
