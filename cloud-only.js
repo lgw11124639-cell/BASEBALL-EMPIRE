@@ -13,7 +13,13 @@ function makeCloudDelta(previous,current){
  const set=Object.create(null),unset=[];
  for(const key of Object.keys(previous))if(!Object.prototype.hasOwnProperty.call(current,key))unset.push(key);
  for(const [key,value] of Object.entries(current)){
-  if(!Object.prototype.hasOwnProperty.call(previous,key)||JSON.stringify(value)!==JSON.stringify(previous[key]))set[key]=value;
+  if(!Object.prototype.hasOwnProperty.call(previous,key)){set[key]=value;continue;}
+  const before=previous[key];
+  // Shard payloads are immutable base64 strings. Compare them directly rather
+  // than JSON-encoding both multi-kilobyte strings on every save.
+  if(typeof value==='string'&&typeof before==='string'){if(value!==before)set[key]=value;continue;}
+  if(value===before)continue;
+  if(JSON.stringify(value)!==JSON.stringify(before))set[key]=value;
  }
  return {protocol:deltaProtocol,set,unset};
 }
@@ -340,7 +346,10 @@ export async function cloudSave(state){
   const deltaStarted=performance.now();
   const delta=incrementalSaveSupported?makeCloudDelta(acknowledgedWireSave,payload):null;
   const deltaJson=delta?JSON.stringify(delta):null;
-  const fullJsonLength=delta?JSON.stringify(payload).length:0;
+  // Estimate full size without another multi-megabyte JSON.stringify.
+  // The estimate is conservative for normal ASCII keys and compressed shards.
+  const fullJsonLength=delta?Object.entries(payload).reduce((n,[key,value])=>
+   n+JSON.stringify(key).length+1+(typeof value==='string'?JSON.stringify(value).length:JSON.stringify(value)?.length||4)+1,1):0;
   const useDelta=!!deltaJson&&deltaJson.length<fullJsonLength*.85;
   // Record what actually changes; the full snapshot size is not the upload size.
   // Field-level diagnostics identify whether a finer-grained protocol is worthwhile.
