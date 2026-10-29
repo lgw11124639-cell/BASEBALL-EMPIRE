@@ -311,18 +311,18 @@ function playHalf(batting,fielding,inning,r,walkoff=false){const runsAtStart=bat
   if(last)call=terminal==='삼진'?(r()<.55?'헛스윙 삼진':'루킹 삼진'):terminal;
   else if(terminal==='볼넷'&&remaining<=4-balls)call='볼';
   else if(terminal==='삼진'&&remaining<=3-strikes)call=inside?'루킹 스트라이크':'헛스윙';
-  else if(balls>=3)call=inside?(strikes<2?'루킹 스트라이크':'파울'):'파울';
-  else if(strikes>=2)call=inside?'파울':(r()<.45?'헛스윙':'파울');
-  else if(inside)call=r()<.3?'헛스윙':'루킹 스트라이크';
-  else call='볼';
-  if(last&&call==='루킹 삼진'){z.zoneX=50;z.zoneY=50;}
-  if(last&&call==='볼넷'){z.zoneX=5;z.zoneY=50;}
-  if(call==='볼')balls++;
+  else if(balls===3&&strikes===2)call='파울';
+  else if(balls===3)call=inside?'루킹 스트라이크':'파울';
+  else if(strikes===2)call=inside?'파울':(r()<.5?'볼':'파울');
+  else call=inside?(r()<.3?'헛스윙':'루킹 스트라이크'):'볼';
+  if(call==='루킹 삼진'||call==='루킹 스트라이크'){z.zoneX=50;z.zoneY=50;}
+  if(call==='볼'||call==='볼넷'){z.zoneX=5;z.zoneY=50;}
+  if(call==='볼'||call==='볼넷')balls++;
   if(call==='루킹 스트라이크'||call==='헛스윙'||call==='루킹 삼진'||call==='헛스윙 삼진')strikes++;
   if(call==='파울'&&strikes<2)strikes++;
   z.call=call;
-  z.ballsAfter=last&&terminal==='볼넷'?4:balls;
-  z.strikesAfter=last&&terminal==='삼진'?3:strikes;
+  z.ballsAfter=balls;
+  z.strikesAfter=strikes;
  }
 }
 batting.beEvents.push({inning,side:batting.beSide,batter:p.name,pitcher:bePlate.pitcher,pitch:bePlate.pitch||'',velocity:bePlate.velocity||null,pitches:bePlate.pitchCount||0,pitchSequence:bePlate.pitchSequence||[],outsBefore:bePlate.outs,outsAfter:outs,hitDelta:Math.max(0,(p.hits||0)-bePlate.hits),walkDelta:Math.max(0,(p.walks||0)-bePlate.walks),errorDelta:Math.max(0,(fielding.errors||0)-bePlate.errors),runs:batting.runs-bePlate.runs,score:batting.runs,outcome,bases:bePlate.bases,afterBases:bases.map(x=>x?.id||null)});}}}if(outs<3&&!(walkoff&&batting.runs>fielding.runs)){const remaining=3-outs;if(appearance)appearance.outs+=remaining;fielding.inningSafetyStops=(fielding.inningSafetyStops||0)+1}if(appearance)appearance.exitLead=fielding.runs-batting.runs;for(const x of fielding.usage){if(x===appearance&&x!==fielding.usage[0]&&x.entryLead>0&&(x.entryLead<=3||x.entryLead<=x.entryRunners+2||x.outs>=9)&&fielding.runs<=batting.runs&&!x.blownSave){x.blownSave=true;x.p.blownSaves=(x.p.blownSaves||0)+1}}return batting.runs-runsAtStart}
