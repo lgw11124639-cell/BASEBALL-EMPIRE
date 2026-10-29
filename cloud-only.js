@@ -162,21 +162,29 @@ async function packAuxiliaryFields(state){
  window.beCloudFieldPackingTiming=fieldTimings.sort((a,b)=>(b.serializeMs+b.gzipMs)-(a.serializeMs+a.gzipMs));
  const active=entries.filter(Boolean);
  if(!active.length)return state;
- const copy={...state},packed={};
- for(const {key,encoded} of active){packed[key]=encoded;delete copy[key]}
- copy.bePackedAuxiliaryGzip=packed;
+ const copy={...state};
+ // Each auxiliary archive is an independent PATCH field, avoiding a full
+ // bePackedAuxiliaryGzip retransmission when only one archive changes.
+ for(const {key,encoded} of active){
+  copy['bePackedAux_'+key]=encoded;
+  delete copy[key];
+ }
  return copy;
 }
 async function unpackAuxiliaryFields(state){
  const packed=state?.bePackedAuxiliaryGzip;
- if(!packed||typeof packed!=='object')return state;
+ const hasLegacy=packed&&typeof packed==='object';
+ if(!hasLegacy&&!auxiliarySaveFields.some(key=>typeof state?.['bePackedAux_'+key]==='string'))return state;
  if(typeof DecompressionStream!=='function')throw Error('저장 데이터 압축 해제를 지원하는 브라우저가 필요합니다');
  for(const key of auxiliarySaveFields){
-  if(typeof packed[key]!=='string')continue;
-  const binary=atob(packed[key]),bytes=new Uint8Array(binary.length);
+  const individual=state['bePackedAux_'+key];
+  const encoded=typeof individual==='string'?individual:hasLegacy?packed[key]:null;
+  if(typeof encoded!=='string')continue;
+  const binary=atob(encoded),bytes=new Uint8Array(binary.length);
   for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
   const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
   state[key]=JSON.parse(await new Response(stream).text());
+  delete state['bePackedAux_'+key];
  }
  delete state.bePackedAuxiliaryGzip;
  return state;
