@@ -882,7 +882,7 @@ function nationalTeamTournamentDay(){
    }
    record.games=record.matchResults.length;record.wins=record.matchResults.filter(g=>g.won).length;record.losses=record.games-record.wins;
    clubNotice('국가대표',year+' '+event+' '+round+' 대한민국 '+game.homeRuns+':'+game.awayRuns+' '+game.opponent,game.won?'대한민국 승리':'대한민국 패배',state.teams.map(t=>t.id),record.players);
-   const rivalName=INTERNATIONAL_COUNTRIES[game.opponent]||game.opponent;
+   const rivalName=INTERNATIONAL_COUNTRIES[game.opponent]||'상대국';
    const roundLabel=String(round).replace(/([A-Z])조\s*\d+-\d+/,'$1조').replace(/(준결승|결승|8강|4강)\s*\d+$/,'$1');
    const topHitter=(game.homeBatters||[]).filter(p=>(Number(p.atBats)||0)+(Number(p.walks)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0))[0];
    const topPitcher=(game.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0).sort((a,b)=>(Number(b.outs)||0)-(Number(a.outs)||0))[0];
@@ -1429,14 +1429,6 @@ function seasonProgressPanel(){
    add(iso(date),'휴식','월요일 정기 휴식','정규시즌 휴식일',4);
   }
  }
- for(const record of Object.values(state.nationalTeamResults||{})){
-  for(const g of (record.otherMatches||[]).filter(koreanGame)){
-   const date=String(g.date||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
-   const left=g.opponent?'대한민국':countryName(g.home),right=g.opponent?countryName(g.opponent):countryName(g.away);
-   const score=Number.isFinite(Number(g.homeRuns))&&Number.isFinite(Number(g.awayRuns))?g.homeRuns+' : '+g.awayRuns:'일정';
-   add(date,record.event||'국가대표',String(g.round||'국제경기')+' · '+left+' '+score+' '+right,'기록된 경기',1);
-  }
- }
  // National preparation milestones are rendered once by the engine-derived calendar below.
  // Show offseason milestones for the current calendar year only when relevant.
  const year=d.getFullYear(),draftYear=year+1;
@@ -1509,7 +1501,7 @@ function seasonProgressPanel(){
     const fixtureDate=new Date(startDate);fixtureDate.setDate(fixtureDate.getDate()+f.day-1);
     const date=playedGame?.date||iso(fixtureDate);
     const score=playedGame?' · '+playedGame.homeRuns+':'+playedGame.awayRuns:'';
-    add(date,event,'대한민국 vs '+(INTERNATIONAL_COUNTRIES[opponent]||opponent)+score,f.round+(playedGame?' · 경기 종료':' · 예정'),-5);
+    add(date,event,'대한민국 vs '+(INTERNATIONAL_COUNTRIES[opponent]||'상대국')+score,f.round+(playedGame?' · 경기 종료':' · 예정'),-5);
    }
    // Knockout opponents are only confirmed after the tournament bracket is decided.
    for(const game of record?.matchResults||[]){
@@ -1518,7 +1510,7 @@ function seasonProgressPanel(){
    }
   }
  }
- const ordered=[...new Map(events.sort((a,b)=>a.priority-b.priority).map(x=>[x.date+'|'+x.kind+'|'+x.title,x])).values()].sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
+ const ordered=[...new Map(events.filter(x=>!['WBC','올림픽','아시안게임','국가대표'].includes(x.kind)||!x.title.includes(' vs ')||x.title.startsWith('대한민국 vs ')).sort((a,b)=>a.priority-b.priority).map(x=>[x.date+'|'+x.kind+'|'+x.title,x])).values()].sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
  if(beCalendarLastDay!==current){beCalendarMonth=current.slice(0,7);beCalendarSelected='';beCalendarManual=false;beCalendarLastDay=current;}
  const viewMonth=beCalendarMonth||current.slice(0,7),[cy,cm]=viewMonth.split('-').map(Number),first=new Date(cy,cm-1,1,12),days=new Date(cy,cm,0).getDate(),pad=first.getDay();
  const selected=beCalendarSelected&&beCalendarSelected.startsWith(viewMonth)?beCalendarSelected:current.startsWith(viewMonth)?current:'';
@@ -1531,7 +1523,7 @@ function seasonProgressPanel(){
  const render=x=>'<div class="be-agenda-line"><span class="be-agenda-date">'+esc(label(new Date(x.date+'T12:00:00')))+'</span><span class="be-agenda-detail"><b>'+esc(x.title)+'</b><small>'+esc(x.kind==='KBO'?'정규시즌 · '+x.detail:x.kind+' · '+x.detail)+'</small></span>'+(x.date===current?'<em>오늘</em>':'')+'</div>';
  const chosen=selected?(eventMap.get(selected)||[]):monthly.filter(x=>x.date>=current).slice(0,6);
  const upcoming=ordered.filter(x=>x.date>=current&&(!selected||x.date!==selected)).slice(0,4);
- return '<div class="be-season-progress be-season-unified be-season-compact"><div class="be-compact-head"><div><small>SEASON '+esc(state.year)+'</small><strong>'+esc(seasonDateLabel(state.day))+' · '+esc(calendarPhase(d))+'</strong></div><div class="be-compact-stat"><b>'+pct+'%</b><span>'+played+' / 144경기</span></div></div><div class="be-progress-track"><div style="width:'+pct+'%"></div></div><div class="be-calendar-layout"><div class="be-calendar-panel"><div class="be-cal-header"><button type="button" onclick="beCalendarMove(-1)">‹</button><strong>'+cy+'년 '+cm+'월</strong><button type="button" onclick="beCalendarToday()">오늘</button><button type="button" onclick="beCalendarMove(1)">›</button></div><div class="be-cal-grid">'+['일','월','화','수','목','금','토'].map(x=>'<span class="be-cal-weekday">'+x+'</span>').join('')+cells+'</div><div class="be-cal-legend">● 경기·구단 일정　<span>● 국가대표 일정</span></div></div><div class="be-compact-agenda"><h3>'+(selected?esc(selected.replace(/-/g,'.'))+' 일정':'이번 달 일정')+'</h3>'+(chosen.length?chosen.map(render).join(''):'<p>선택한 날짜에 등록된 일정이 없습니다.</p>')+'<h3 class="be-cal-next-title">다가오는 주요 일정</h3>'+(upcoming.length?upcoming.map(render).join(''):'<p>확인된 다음 일정이 없습니다.</p>')+'</div></div></div>';
+ return '<div class="be-season-progress be-season-unified be-season-compact"><div class="be-compact-head"><div><small>'+esc(state.year)+'년 시즌</small><strong>'+esc(seasonDateLabel(state.day))+' · '+esc(calendarPhase(d))+'</strong></div><div class="be-compact-stat"><b>'+pct+'%</b><span>'+played+' / 144경기</span></div></div><div class="be-progress-track"><div style="width:'+pct+'%"></div></div><div class="be-calendar-layout"><div class="be-calendar-panel"><div class="be-cal-header"><button type="button" onclick="beCalendarMove(-1)">‹</button><strong>'+cy+'년 '+cm+'월</strong><button type="button" onclick="beCalendarToday()">오늘</button><button type="button" onclick="beCalendarMove(1)">›</button></div><div class="be-cal-grid">'+['일','월','화','수','목','금','토'].map(x=>'<span class="be-cal-weekday">'+x+'</span>').join('')+cells+'</div><div class="be-cal-legend">● 경기·구단 일정　<span>● 국가대표 일정</span></div></div><div class="be-compact-agenda"><h3>'+(selected?esc(selected.replace(/-/g,'.'))+' 일정':'이번 달 일정')+'</h3>'+(chosen.length?chosen.map(render).join(''):'<p>선택한 날짜에 등록된 일정이 없습니다.</p>')+'<h3 class="be-cal-next-title">다가오는 주요 일정</h3>'+(upcoming.length?upcoming.map(render).join(''):'<p>확인된 다음 일정이 없습니다.</p>')+'</div></div></div>';
 }
 function publicNoticeBody(n){let body=String(n?.body||'');if(n?.kind==='월간 운영보고'&&/정규시즌|1군 0경기/.test(body)){const m=String(n.title||'').match(/(\d{4})년\s*(\d{1,2})월/),y=Number(m?.[1]),month=Number(m?.[2]),id=n.teams?.[0];if(y&&month&&id!=null){const ps=(state.postseasons?.[y]?.games||[]).filter(g=>{const d=g.date?new Date(g.date+'T12:00:00'):seasonDate(g.day);return d.getFullYear()===y&&d.getMonth()+1===month&&(Number(g.home)===Number(id)||Number(g.away)===Number(id))});if(ps.length&&!body.includes('포스트시즌 ')){const wins=ps.filter(g=>Number(g.winner)===Number(id)).length;body+='\n\n포스트시즌 별도 집계: '+ps.length+'경기 '+wins+'승 '+(ps.length-wins)+'패. 기존 1군 경기 수는 정규시즌만 집계한 값입니다.'}}}if(n?.kind==='육성 보고'){const match=body.match(/선수별 변동:\s*(.*)$/);const names=match?.[1]?.split(/,\s*/).map(x=>x.replace(/\s*\(\s*\d+\s*→\s*\d+\s*\)/g,'').replace(/\s*\d+\s*→\s*\d+/g,'').trim()).filter(Boolean)||[];body=body.replace(/\s*선수별 변동:.*$/,'').replace(/\s*성장:\s*.*$/,'');return body+(names.length?'\n\n대상 선수: '+names.join(', '):'\n\n대상 선수 상세 기록은 남아 있지 않습니다.')+'\n선수 능력치 수치는 비공개입니다.'}return body}
 function homeReportsPanel(){const notices=(state.clubNotices||[]).filter(n=>Number(n.year)===Number(state.year)&&(n.teams||[]).some(id=>Number(id)===Number(state.teamId))).slice(-120).reverse();const chosen=notices.filter(n=>['월간 운영보고','육성 보고','FA','연봉협상','지도자','시즌 시상','포스트시즌','트레이드','영입','방출','신인 드래프트','1군 콜업','1군 말소'].some(k=>String(n.kind).includes(k))).filter(n=>n.kind!=='육성 보고'||!(state.clubNotices||[]).some(x=>x.kind==='월간 운영보고'&&x.year===n.year&&(x.teams||[]).includes(state.teamId)&&seasonDate(x.day)>seasonDate(n.day))).slice(0,6);return '<section class="dashboard-section be-reports"><div class="section-title"><div><span class="section-kicker">CLUB REPORTS</span><h2>구단 주요 보고</h2></div></div><div class="be-report-list">'+(chosen.length?chosen.map(n=>'<button type="button" class="be-report-item" data-club-notice="'+n.id+'"><span><small>'+esc(n.kind)+' · '+esc(seasonDateLabel(n.day))+'</small><strong>'+esc(n.kind==='육성 보고'?'선수 육성 현황 보고':n.kind==='시즌 시상'?awardNoticeTitle(n):n.title)+'</strong></span><span aria-hidden="true">›</span></button>').join(''):'<p>아직 주요 보고가 없습니다.</p>')+'</div></section>'}
