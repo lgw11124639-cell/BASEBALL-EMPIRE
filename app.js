@@ -1762,6 +1762,15 @@ backup=structuredClone({...state,gameResults:undefined});
 if(priorResults)backup.gameResults=priorResults.slice();
 perfBackup=performance.now()-perfStart;advancePhase='시즌 일정 확인';ensureSeasonCalendar();monthlyOwnerReport();const currentDate=seasonDate(state.day);if(currentDate.getFullYear()>state.year){if(awardsFinished()&&state.postseasons?.[state.year]?.finished){if(!state.offseasonContractsDone?.[state.year])runOffseasonContracts();annualSalaryNegotiations();beginNextSeason()}else{throw new Error('이전 시즌 정규시즌 또는 포스트시즌이 완료되지 않았습니다. 기존 시즌 데이터를 보존하기 위해 새해 전환을 중단했습니다.')}}advancePhase='하루 시뮬레이션';const watchedDay=state.day;if(Number(state.beWatchedCompletedDay)===Number(state.day)){delete state.beWatchedCompletedDay;state.day++;}else{if(awardsFinished()||seasonDate(state.day)<new Date(state.year+'-03-20T12:00:00')){offseasonDay();}else{simulateLeagueDay();}nationalTeamTournamentDay();nationalTeamReturnDay();}if(holdGameDay&&(state.gameResults||[]).some(g=>Number(g.day)===Number(watchedDay))){state.day=watchedDay;state.beWatchedCompletedDay=watchedDay;}if(awardsFinished()&&state.postseasons?.[state.year]?.finished&&!state.history?.seasons?.[state.year]?.complete)saveSeasonSnapshot();if(state.day%30===0)validateSeasonIntegrity();const latest=(state.gameResults||[]).at(-1);if(latest)window.beNewsDay=latest.day;advancePhase='저장';perfSim=performance.now()-perfStart-perfBackup;await save();perfSave=performance.now()-perfStart-perfBackup-perfSim;window.beLastStepTiming={backup:perfBackup,simulation:perfSim,save:perfSave,total:performance.now()-perfStart};advancePhase='화면 갱신';if(entryMode==='game'&&tab==='home'){render();const nextButton=document.querySelector('#advance-day');if(nextButton)nextButton.disabled=true;}return true}catch(e){if(backup)state=backup;stopAutoSeason();render();alert('경기 진행 실패 ('+advancePhase+'): '+e.message);return false}finally{seasonStepBusy=false;const nextButton=document.querySelector('#advance-day');if(nextButton)nextButton.disabled=false}}
 
+function beGameScoringEvents(awayInnings,homeInnings){
+ const away=Array.isArray(awayInnings)?awayInnings:[],home=Array.isArray(homeInnings)?homeInnings:[];
+ let awayTotal=0,homeTotal=0;
+ return Array.from({length:Math.max(away.length,home.length)},(_,i)=>{
+  const awayRuns=Number(away[i])||0,homeRuns=Number(home[i])||0;
+  awayTotal+=awayRuns;homeTotal+=homeRuns;
+  return {inning:i+1,away:awayRuns,home:homeRuns,scoreA:awayTotal,scoreH:homeTotal};
+ }).filter(x=>x.away||x.home);
+}
 function newsStory(g){const a=state.teams[g.away],h=state.teams[g.home],draw=g.awayRuns===g.homeRuns,awayWin=g.awayRuns>g.homeRuns,w=awayWin?a:h,l=awayWin?h:a,margin=Math.abs(g.awayRuns-g.homeRuns),ai=g.awayInnings||[],hi=g.homeInnings||[];let ar=0,hr=0,decisive=null,peak=null,turns=[];for(let i=0;i<Math.max(ai.length,hi.length);i++){const x=Number(ai[i])||0,y=Number(hi[i])||0,previous=ar-hr;ar+=x;hr+=y;if(x+y){turns.push({inning:i+1,away:x,home:y,scoreA:ar,scoreH:hr});if(!peak||x+y>peak.away+peak.home)peak=turns[turns.length-1];if(previous!==0&&Math.sign(previous)!==Math.sign(ar-hr)&&ar!==hr)decisive=turns[turns.length-1]}}const title=draw?esc(a.name)+'·'+esc(h.name)+', 연장 끝 무승부':margin>=7?esc(w.name)+', '+margin+'점 차 압승…'+esc(l.name)+' 제압':margin===1?esc(w.name)+', '+esc(l.name)+'에 한 점 차 승리':esc(w.name)+', '+esc(l.name)+' 꺾고 '+margin+'점 차 승리';const summary=draw?esc(a.city+' '+a.name)+'와 '+esc(h.city+' '+h.name)+'가 '+g.awayRuns+'대 '+g.homeRuns+'로 승부를 가리지 못했다.':esc(w.city+' '+w.name)+'가 '+esc(l.city+' '+l.name)+'를 '+Math.max(g.awayRuns,g.homeRuns)+'대 '+Math.min(g.awayRuns,g.homeRuns)+'로 꺾었다.';return {title,summary,turns,decisive,peak,draw,margin}}
 function gameMvp(g){
  if(g.mvp&&typeof g.mvp==='object'){
@@ -1898,7 +1907,7 @@ function beOpenInternationalGameArticle(key,index){
  const bats=(g.homeBatters||[]).slice().sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0));
  const best=bats.find(p=>(Number(p.hits)||0)>0),pitchers=g.homePitchers||[],starter=pitchers.find(p=>p.role==='선발')||pitchers[0];
  const h=g.homeInnings||[],a=g.awayInnings||[],n=Math.max(9,h.length,a.length),innings=Array.from({length:n},(_,i)=>i);
- const scoring=innings.map(i=>({i,k:Number(h[i])||0,o:Number(a[i])||0})).filter(x=>x.k||x.o),turn=scoring.slice().sort((x,y)=>(y.k+y.o)-(x.k+x.o))[0];
+ const scoring=beGameScoringEvents(a,h).map(x=>({i:x.inning-1,k:x.home,o:x.away})),turn=scoring.slice().sort((x,y)=>(y.k+y.o)-(x.k+x.o))[0];
  const title=/결승/.test(round)?(win?'한국, '+opponent+' 꺾고 정상…'+kr+'대'+opp+' 우승':'한국, '+opponent+'에 '+kr+'대'+opp+'…'+(draw?'결승 무승부':'결승 준우승')):(win?'한국, '+opponent+' 제압 '+kr+'대'+opp:draw?'한국, '+opponent+'와 '+kr+'대'+opp+' 무승부':'한국, '+opponent+'에 '+kr+'대'+opp+' 패배');
  const intro='대한민국 야구 대표팀이 '+opponent+'과의 '+round+' 경기에서 '+kr+'대'+opp+'로 '+(draw?'비겼다.':win?'승리했다.':'패했다.');
  const paragraphs=[intro];
