@@ -416,3 +416,9 @@
 .be-final-record-row span{color:#5b7692;font-weight:700}
 .be-final-record-row strong{color:#15385e;line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:600px){.be-final-record-card{padding:14px}.be-final-record-row{grid-template-columns:74px minmax(0,1fr);gap:8px;font-size:13px}}
+
+/* Keep the Czechia–Korea replay score card fixed while commentary grows. */
+.be-replay-dialog>.be-replay-scoreboard{box-sizing:border-box!important;flex:0 0 auto!important;flex-shrink:0!important;height:72px!important;min-height:72px!important;max-height:72px!important;width:100%!important;display:grid!important;grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr)!important;align-items:center!important;padding:12px 18px!important;margin:6px 0 10px!important}
+.be-replay-dialog>.be-replay-scoreboard span{min-width:0!important;text-align:center!important;font-size:14px!important;line-height:1.4!important}
+.be-replay-dialog>.be-replay-scoreboard strong{font-size:24px!important;line-height:1.2!important}
+@media(max-width:600px){.be-replay-dialog>.be-replay-scoreboard{height:66px!important;min-height:66px!important;max-height:66px!important;grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important;padding:10px 8px!important}.be-replay-dialog>.be-replay-scoreboard span{font-size:12px!important}.be-replay-dialog>.be-replay-scoreboard strong{font-size:21px!important}}
