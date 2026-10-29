@@ -650,7 +650,7 @@ function openClubNotice(id){
  modal.classList.add('be-editorial-modal','be-game-article-style');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
  const report=!isDraft&&['연봉협상','육성 보고','재정 보고','월간 운영보고','스카우트 보고'].includes(n.kind);
- const subtitle=report?'구단 운영 보고서':'스포츠 › 야구 › 구단 소식';
+ const subtitle=beUnifiedNoticeArticle(n).category;
  modal.innerHTML='<header style="position:sticky;top:0;z-index:2;background:#fff;border-bottom:2px solid #3476b8;padding:calc(env(safe-area-inset-top, 0px) + 15px) 18px 17px;display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="min-width:0"><small style="display:block;color:#6383a5">BASEBALL EMPIRE · '+esc(n.year)+'년</small><strong style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(n.title)+'</strong></div><button type="button" class="notice-close" style="flex-shrink:0;background:#e8f1fb;color:#174674;border:0;border-radius:10px;padding:12px 14px;font-weight:800">✕ 닫기</button></header><article class="editorial-story" style="max-width:760px;margin:auto;padding:24px 20px 70px"><div class="article-category">'+esc(subtitle)+'</div><h1 class="editorial-headline">'+esc(isDraft?year+'시즌 신인 드래프트 결과':n.title)+'</h1><div class="editorial-meta"><strong>'+esc(report?'BASEBALL EMPIRE 구단 운영팀':'BASEBALL EMPIRE 스포츠팀')+'</strong><span>'+esc(seasonDateLabel(n.day))+' · '+esc(n.kind)+'</span></div>'+(clubs.length?'<div style="padding:22px 0;text-align:center;background:#f4f8fd;margin:20px 0">'+clubs.slice(0,2).map(t=>'<div style="display:inline-block;margin:0 12px">'+teamLogo(t,true)+'<div>'+esc(t.city+' '+t.name)+'</div></div>').join('')+'</div>':'')+'<div class="editorial-copy" style="border-top:1px solid #dce7f1;padding-top:22px">'+(report?beOwnerReportSections(n):beEditorialParagraphs(publicNoticeBody(n),n))+'</div>'+(!report&&players.length?newsPlayerSeasonFeature(n):'')+draftHtml+(playerLinks?'<section style="margin-top:28px"><h3>관련 선수</h3>'+playerLinks+'</section>':'')+'</article>';
  document.body.appendChild(modal);
  modal.querySelector('.notice-close').onclick=()=>modal.remove();
@@ -1853,6 +1853,14 @@ function gameBroadcastArticle(g){
  const title=decisive?(winning==='away'?awayTeam:homeTeam).name+', '+decisive.at+' '+decisive.actor+' 결승 득점…'+(winning==='away'?homeTeam:awayTeam).name+' 제압':null;
  return {title,paragraph:picks.sort((x,y)=>scoring.indexOf(x)-scoring.indexOf(y)).map(x=>x.text).join(' '),bullpen:changes.slice(0,5).join(' ')};
 }
+function beUnifiedNoticeArticle(notice){
+ const n=notice||{},kind=String(n.kind||'구단 소식');
+ const national=kind==='국가대표'||kind==='국가대표 기사';
+ const report=['연봉협상','육성 보고','재정 보고','월간 운영보고','스카우트 보고'].includes(kind);
+ const category=national?'국가대표·국제대회':kind==='FA 특집'?'FA·이적 시장':kind==='시즌 시상'?'시즌 타이틀·수상':report?'구단 운영 보고서':'스포츠 › 야구 › 구단 소식';
+ const body=national?nationalArchivedArticleText(n):publicNoticeBody(n);
+ return beArticleSource({title:n.title,category,date:seasonDateLabel(n.day),body,notice:n});
+}
 function beArticleSource(source){
  const s=source||{};
  const text=String(s.body||'').trim();
@@ -2627,7 +2635,7 @@ function openBaseballNewsArticle(id){
  modal.classList.add('be-editorial-modal','be-game-article-style');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
  const category=(n.kind==='국가대표'||n.kind==='국가대표 기사')?'국가대표·국제대회':n.kind==='FA 특집'?'FA·이적 시장':n.kind==='국가대표 기사'?'국가대표·국제대회':n.kind==='시즌 시상'?'시즌 타이틀·수상':'리그 대기록';
- const body=(n.kind==='국가대표'||n.kind==='국가대표 기사')?nationalArchivedArticleText(n):String(n.body||'').trim();
+ const body=beUnifiedNoticeArticle(n).paragraphs.join('\n\n');
  const clubIds=(Array.isArray(n.teams)?n.teams:[]).map(Number).filter(Number.isFinite);
  const articleClubs=clubIds.map(id=>state.teams.find(t=>Number(t.id)===id)).filter(Boolean);
  const isNational=n.kind==='국가대표 기사'||(n.kind==='국가대표'&&/대회 종료|WBC|결승|준결승|조별리그|8강|3위 결정전/.test(n.title||''));
