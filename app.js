@@ -1727,7 +1727,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
    const frame=frames[index],e=frame.e,name=e.side==='away'?a.name:h.name,runner=(frame.kind==='pitch'?e.bases:e.afterBases||[]).map(id=>id?'◆':'◇');
    if(frame.kind==='pitch'){
     inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');
-    count.textContent=(e.outsBefore||0)+'아웃 · B '+(Number.isFinite(frame.pitch.ballsAfter)?frame.pitch.ballsAfter:'–')+' / S '+(Number.isFinite(frame.pitch.strikesAfter)?frame.pitch.strikesAfter:'–');updateCountLamps(frame.pitch.ballsAfter,frame.pitch.strikesAfter,e.outsBefore);
+    count.textContent=(e.outsBefore||0)+'아웃';updateCountLamps(frame.pitch.ballsAfter,frame.pitch.strikesAfter,e.outsBefore);
     updateDiamond(frame.kind==='pitch'?e.bases:e.afterBases);
     batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher;
     pitchLabel.textContent=frame.pitch.number+'구 · '+frame.pitch.type+(frame.pitch.velocity!=null&&Number.isFinite(Number(frame.pitch.velocity))?' · '+Math.round(Number(frame.pitch.velocity))+'km/h':' · 구속 미기록')+(' · '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call||'판정 미기록'));markPitch(frame.pitch);
