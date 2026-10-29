@@ -527,6 +527,31 @@ window.beAuditCloudConsistency=async function(){
  window.beCloudConsistencyAudit=result;
  return result;
 };
+
+// Register diagnostics at module initialization, including immediately after login/load.
+// Audit only the most recent packed save; never mutate or transmit game data.
+let lastPackingAuditPayload=null,lastPackingAuditState=null;
+// On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
+window.beVerifyCloudPacking=async()=>{
+ if(!lastPackingAuditPayload||!lastPackingAuditState)return {ok:false,reason:'No in-memory packed save yet. Save one game day, then retry.',readOnly:true};
+ const start=performance.now();
+ const snapshot=JSON.parse(JSON.stringify(lastPackingAuditPayload));
+ await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(snapshot)))));
+ const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),...leagueShardFields,'amateurCareerArchive'])];
+ // Compare canonical JSON semantics, not object insertion order. Packed replay
+ // events are restored after the auxiliary archive, changing property order.
+ const canonical=value=>JSON.stringify(value, function(key,v){
+  if(v&&typeof v==='object'&&!Array.isArray(v)){
+   const ordered={};for(const k of Object.keys(v).sort())ordered[k]=v[k];return ordered;
+  }
+  return v;
+ });
+ const mismatches=keys.filter(key=>canonical(snapshot[key])!==canonical(lastPackingAuditState[key]));
+ const result={ok:mismatches.length===0,checked:keys.filter(key=>lastPackingAuditState[key]!==undefined),mismatches,ms:Math.round(performance.now()-start),source:'latest in-memory save payload; does not test server reload'};
+ window.beCloudRoundTripAudit=result;
+ return result;
+};
+
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
@@ -551,25 +576,8 @@ export async function cloudSave(state){
   payload=await packAuxiliaryFields(leagues);
   const auxiliaryPackedAt=performance.now();
   window.beCloudPackingStages={shardsMs:+(shardPackedAt-replayPackedAt).toFixed(1),amateurMs:+(amateurPackedAt-shardPackedAt).toFixed(1),leaguesMs:+(leaguePackedAt-amateurPackedAt).toFixed(1),auxiliaryMs:+(auxiliaryPackedAt-leaguePackedAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
-  // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
-  window.beVerifyCloudPacking=async()=>{
-   const start=performance.now();
-   const snapshot=JSON.parse(JSON.stringify(payload));
-   await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(snapshot)))));
-   const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),...leagueShardFields,'amateurCareerArchive'])];
-   // Compare canonical JSON semantics, not object insertion order. Packed replay
-   // events are restored after the auxiliary archive, changing property order.
-   const canonical=value=>JSON.stringify(value, function(key,v){
-    if(v&&typeof v==='object'&&!Array.isArray(v)){
-     const ordered={};for(const k of Object.keys(v).sort())ordered[k]=v[k];return ordered;
-    }
-    return v;
-   });
-   const mismatches=keys.filter(key=>canonical(snapshot[key])!==canonical(state[key]));
-   const result={ok:mismatches.length===0,checked:keys.filter(key=>state[key]!==undefined),mismatches,ms:Math.round(performance.now()-start),source:'latest in-memory save payload; does not test server reload'};
-   window.beCloudRoundTripAudit=result;
-   return result;
-  };
+  lastPackingAuditPayload=payload;
+  lastPackingAuditState=state;
   // Use PATCH only when a full, server-acknowledged baseline exists.
   // Compare the exact packed wire fields, not the mutable in-game state.
   const deltaStarted=performance.now();
