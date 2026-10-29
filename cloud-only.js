@@ -118,7 +118,7 @@ async function unpackCloudShards(state){
  return state;
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive' ];
+const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
@@ -289,7 +289,7 @@ window.beVerifyCloudServer=async()=>{
  const remote=await snapshot();
  if(!remote?.save)throw Error('서버에 저장된 게임이 없습니다');
  const serverRevision=revisionOf(remote);
- const restored=await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(remote.save)));
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(structuredClone(remote.save))));
  const current=baseline?.save;
  if(!current)throw Error('비교할 현재 게임 저장 상태가 없습니다');
  const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
@@ -298,7 +298,7 @@ window.beVerifyCloudServer=async()=>{
  window.beCloudServerAudit=result;
  return result;
 };
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;acknowledgedWireSave=s?.save||null;return s?.save?await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(s.save))):null}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(structuredClone(s.save)))):null;baseline={save:restored,revision:rev};return restored}
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
