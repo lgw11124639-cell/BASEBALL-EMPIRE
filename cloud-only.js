@@ -308,6 +308,31 @@ window.beVerifyCloudServer=async()=>{
  return result;
 };
 async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(structuredClone(s.save)))):null;baseline={save:restored,revision:rev};return restored}
+// Read-only cloud consistency audit. Never overwrites game state or save revision.
+window.beAuditCloudConsistency=async function(){
+ if(!token||!verified)throw Error('클라우드 로그인이 필요합니다');
+ const remote=await snapshot();
+ if(!remote?.save)return {ok:false,reason:'server save missing'};
+ const serverRev=revisionOf(remote);
+ const local=baseline?.save;
+ if(!local)return {ok:false,reason:'local baseline unavailable',serverRev,clientRev:revision};
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(structuredClone(remote.save))));
+ const fields=['date','year','season','teams','players','gameResults','minorLeague','nationalTeamResults'];
+ const canonical=value=>JSON.stringify(value,function(k,v){
+  if(v&&typeof v==='object'&&!Array.isArray(v)){
+   const o={};for(const key of Object.keys(v).sort())o[key]=v[key];return o;
+  }return v;
+ });
+ const differences=[];
+ for(const key of fields){
+  if(canonical(local[key])!==canonical(restored[key]))
+   differences.push({field:key,localLength:Array.isArray(local[key])?local[key].length:null,serverLength:Array.isArray(restored[key])?restored[key].length:null});
+ }
+ const result={ok:serverRev===revision&&differences.length===0,clientRev:revision,serverRev,differences,
+  checked:fields,readOnly:true,at:new Date().toISOString()};
+ window.beCloudConsistencyAudit=result;
+ return result;
+};
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
