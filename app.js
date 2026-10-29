@@ -2651,19 +2651,25 @@ function bindArticlePlayerLinks(modal){
  });
 }
 function beFindArchivedNationalMatch(n){
- const title=String(n?.title||'');
- const event=title.match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
- const round=title.match(/(준결승\s*\d*|결승\s*\d*|조별리그\s*[A-Z]조\s*\d+-\d+)/);
+ const title=String(n?.title||''),event=title.match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
  if(!event)return null;
+ const round=title.match(/(준결승|결승|3위\s*결정전|8강|조별리그\s*[A-Z]조)(?:\s*(\d+(?:-\d+)?))?/);
+ const date=Number.isFinite(Number(n.day))?seasonDate(Number(n.day)):null;
+ const dayKey=date&&!Number.isNaN(date.getTime())?[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-'):'';
  for(const [key,record] of Object.entries(state.nationalTeamResults||{})){
   if(Number(record.year)!==Number(event[1])||record.event!==event[2])continue;
-  const games=(record.matchResults||[]).map((game,index)=>({game,index})).filter(x=>!round||x.game.round===round[1]);
+  const games=(record.matchResults||[]).map((game,index)=>({game,index})).filter(({game})=>{
+   if(!round)return true;
+   const gameRound=String(game.round||'').replace(/\s+/g,'');
+   const requested=round[1].replace(/\s+/g,'');
+   return gameRound.startsWith(requested)&&(!round[2]||gameRound.includes(round[2]));
+  });
   const named=games.filter(({game})=>{
-   const code=String(game.opponent||'').trim();
-   const country=String(INTERNATIONAL_COUNTRIES[code]||code).trim();
+   const code=String(game.opponent||'').trim(),country=String(INTERNATIONAL_COUNTRIES[code]||code).trim();
    return (country&&title.includes(country))||(code&&title.split(/[^A-Za-z]+/).includes(code));
   });
-  const matches=named.length?named:(round?games:[]);
+  const dated=named.filter(({game})=>dayKey&&String(game.date||'').slice(0,10)===dayKey);
+  const matches=dated.length?dated:named;
   if(matches.length===1)return {key,index:matches[0].index,record,game:matches[0].game};
  }
  return null;
