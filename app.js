@@ -654,7 +654,7 @@ function internationalSharedGame(korea,opponent,seed){
   homeBatters:home.plan.first.filter(p=>p.position!=='P').map(p=>({id:p.id,name:p.name,atBats:p.atBats||0,hits:p.hits||0,homeRuns:p.homeRuns||0,runsBattedIn:p.runsBattedIn||0,walks:p.walks||0})),
   awayBatters:away.plan.first.filter(p=>p.position!=='P').map(p=>({id:p.id,name:p.name,atBats:p.atBats||0,hits:p.hits||0,homeRuns:p.homeRuns||0,runsBattedIn:p.runsBattedIn||0,walks:p.walks||0})),
   homePitchers:home.usage.map(x=>({id:x.p.id,name:x.p.name,outs:x.outs||0,strikeouts:x.strikeouts||0,hits:x.hits||0,walks:x.walks||0,earnedRuns:x.er||0})),
-  awayPitchers:away.usage.map(x=>({id:x.p.id,name:x.p.name,outs:x.outs||0,strikeouts:x.strikeouts||0,hits:x.hits||0,walks:x.walks||0,earnedRuns:x.er||0}))};
+  awayPitchers:away.usage.map(x=>({id:x.p.id,name:x.p.name,outs:x.outs||0,strikeouts:x.strikeouts||0,hits:x.hits||0,walks:x.walks||0,earnedRuns:x.er||0})),broadcastEvents:[...(away.beEvents||[]),...(home.beEvents||[])].sort((x,y)=>(Number(x.inning)||0)-(Number(y.inning)||0)||(x.side===y.side?0:x.side==='away'?-1:1))};
 }
 function internationalOpponentRoster(year,country){
  const seed=rng((year*70139+country.split('').reduce((n,c)=>n*31+c.charCodeAt(0),0))>>>0);
