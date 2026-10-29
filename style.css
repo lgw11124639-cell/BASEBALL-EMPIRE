@@ -531,3 +531,17 @@
 #game-news-overlay .game-news-dialog>header h2,#game-news-overlay .game-news-dialog>header small{display:block!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 #game-news-overlay .game-news-dialog>header button{flex:0 0 auto!important;white-space:nowrap!important;max-width:85px!important}
 #game-news-overlay .scoreboard-scroll{max-width:100%!important;min-width:0!important;overflow-x:auto!important;touch-action:pan-x pan-y!important}
+
+/* Keep the news header readable while the full-screen dialog remains horizontally locked. */
+@media(max-width:760px){
+ #game-news-overlay .game-news-dialog>header{padding:12px 14px!important;gap:10px!important;overflow:visible!important}
+ #game-news-overlay .game-news-dialog>header>div{min-width:0!important;overflow:visible!important}
+ #game-news-overlay .game-news-dialog>header h2{font-size:clamp(15px,4vw,19px)!important;line-height:1.35!important;white-space:normal!important;word-break:keep-all!important;overflow-wrap:anywhere!important;overflow:visible!important;text-overflow:clip!important;max-width:100%!important}
+ #game-news-overlay .game-news-dialog>header small{font-size:10px!important;letter-spacing:.04em!important;white-space:normal!important;overflow-wrap:anywhere!important;overflow:visible!important;text-overflow:clip!important}
+ #game-news-overlay .game-news-dialog>header button{max-width:none!important;min-width:60px!important;padding:9px 10px!important}
+ #game-news-overlay .news-article-body{width:100%!important;max-width:100%!important;min-width:0!important;padding:18px 14px 60px!important;box-sizing:border-box!important}
+ #game-news-overlay .scoreboard-scroll{display:block!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important}
+ #game-news-overlay .scoreboard-scroll .scoreboard-table{display:table!important;width:max-content!important;min-width:100%!important;max-width:none!important;table-layout:auto!important}
+ #game-news-overlay .scoreboard-scroll .scoreboard-table th,#game-news-overlay .scoreboard-scroll .scoreboard-table td{white-space:nowrap!important;word-break:normal!important;padding:8px 9px!important;font-size:12px!important}
+ #game-news-overlay .scoreboard-scroll .scoreboard-table th:first-child{position:sticky;left:0;z-index:1;background:#fff}
+}
