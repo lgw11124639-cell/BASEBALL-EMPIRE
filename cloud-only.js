@@ -63,6 +63,15 @@ export async function cloudGate(onReady){
    logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;remember();location.reload()};
    document.body.append(logout);
   }
+  let reset=document.getElementById('be-cloud-reset');
+  if(!reset){
+   reset=document.createElement('button');reset.id='be-cloud-reset';reset.type='button';reset.textContent='클라우드 초기화';
+   reset.style.cssText='position:fixed;right:14px;top:58px;z-index:2147483000;padding:9px 13px;border:1px solid #e3b5b5;border-radius:20px;background:#fff;color:#a32626;font:700 13px system-ui';
+   const syncVisibility=()=>{const show=document.body.classList.contains('be-start-screen');logout.style.display=show?'':'none';reset.style.display=show?'':'none'};
+   reset.onclick=async()=>{if(!confirm('정말 클라우드 저장 데이터를 삭제할까요? 이 작업은 되돌릴 수 없습니다.'))return;if(!confirm('마지막 확인: 이 계정의 클라우드 게임 저장을 영구 삭제합니다. 계속할까요?'))return;reset.disabled=true;try{await call('/v2/saves/main','DELETE');revision=0;verified=true;baseline=null;alert('클라우드 저장 데이터가 삭제되었습니다. 새 게임을 시작할 수 있습니다.');location.reload()}catch(e){alert('클라우드 초기화 실패: '+(e.message||e)+'\n서버가 저장 삭제 API를 지원하는지 확인해야 합니다.')}finally{reset.disabled=false}};
+   document.body.append(reset);
+   new MutationObserver(syncVisibility).observe(document.body,{attributes:true,attributeFilter:['class']});syncVisibility();
+  }
  }catch(e){msg.textContent='로그인 또는 불러오기 실패: '+(e.message||e);if(!token){name.hidden=false;pass.hidden=false;button.textContent='로그인'}else{button.textContent='다시 시도';name.hidden=true;pass.hidden=true}}finally{button.disabled=false;toggle.disabled=false}};
  button.onclick=start;pass.onkeydown=e=>{if(e.key==='Enter'&&!signup)start()};confirmPass.onkeydown=e=>{if(e.key==='Enter'&&signup)start()};
  if(token){name.hidden=true;pass.hidden=true;button.textContent='다시 연결';toggle.hidden=true;msg.textContent='자동 로그인 중입니다.';start()}
