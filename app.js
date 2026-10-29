@@ -1414,6 +1414,8 @@ function seasonProgressPanel(){
  const label=date=>String(date.getMonth()+1).padStart(2,'0')+'.'+String(date.getDate()).padStart(2,'0')+' ('+['일','월','화','수','목','금','토'][date.getDay()]+')';
  const current=iso(d),events=[];
  const add=(date,kind,title,detail,priority=2)=>{if(!date)return;events.push({date,kind,title,detail,priority})};
+ const countryName=code=>INTERNATIONAL_COUNTRIES[String(code||'').toUpperCase()]||({'대한민국':'대한민국','한국':'대한민국'}[String(code||'')]||String(code||''));
+ const koreanGame=g=>!!g.opponent||['KR','대한민국','한국'].includes(String(g.home||'').toUpperCase())||['KR','대한민국','한국'].includes(String(g.away||'').toUpperCase());
  // Prepare the full season fixture calendar, not merely the next few days.
  // Preview mode deliberately ignores completed-game totals without modifying saved results.
  const calendarStart=new Date(d.getFullYear(),0,1,12),calendarEnd=new Date(d.getFullYear()+1,0,1,12);
@@ -1428,9 +1430,9 @@ function seasonProgressPanel(){
   }
  }
  for(const record of Object.values(state.nationalTeamResults||{})){
-  for(const g of [...(record.matchResults||[]),...(record.otherMatches||[])]){
+  for(const g of [...(record.matchResults||[]),...(record.otherMatches||[])].filter(koreanGame)){
    const date=String(g.date||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
-   const left=g.opponent?'대한민국':g.home,right=g.opponent?g.opponent:g.away;
+   const left=g.opponent?'대한민국':countryName(g.home),right=g.opponent?countryName(g.opponent):countryName(g.away);
    const score=Number.isFinite(Number(g.homeRuns))&&Number.isFinite(Number(g.awayRuns))?g.homeRuns+' : '+g.awayRuns:'일정';
    add(date,record.event||'국가대표',String(g.round||'국제경기')+' · '+left+' '+score+' '+right,'기록된 경기',1);
   }
@@ -1516,7 +1518,7 @@ function seasonProgressPanel(){
    }
   }
  }
- const ordered=events.sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
+ const ordered=[...new Map(events.sort((a,b)=>a.priority-b.priority).map(x=>[x.date+'|'+x.kind+'|'+x.title,x])).values()].sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
  if(beCalendarLastDay!==current){beCalendarMonth=current.slice(0,7);beCalendarSelected='';beCalendarManual=false;beCalendarLastDay=current;}
  const viewMonth=beCalendarMonth||current.slice(0,7),[cy,cm]=viewMonth.split('-').map(Number),first=new Date(cy,cm-1,1,12),days=new Date(cy,cm,0).getDate(),pad=first.getDay();
  const selected=beCalendarSelected&&beCalendarSelected.startsWith(viewMonth)?beCalendarSelected:current.startsWith(viewMonth)?current:'';
