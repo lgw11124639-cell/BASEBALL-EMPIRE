@@ -1418,21 +1418,27 @@ function playerRetirementProbability(p){
  if(age<35){
   // Young players retire mainly when professional opportunities disappear.
   // Do not force promising prospects or productive starters out solely by age.
-  const overall=bePlayerEvaluation(p);
+  const skills=ensureProfile(p).skills||{};
+  const roleSkills=p.position==='P'?['stuff','control']:['contact','eye'];
+  const competitive=roleSkills.some(k=>(Number(skills[k])||0)>=70);
+  const struggling=roleSkills.every(k=>(Number(skills[k])||0)<50);
   const games=Number(p.games)||0,atBats=Number(p.atBats)||0,innings=Number(p.inningsPitched)||0;
   const productive=p.position==='P'?innings>=60:atBats>=180;
   const injured=Boolean(p.injured||p.injury?.active||p.injury?.status==='부상');
   const released=p.level==='방출'||p.level==='FA대기'||p.level==='웨이버 대기';
-  if(age<23)return released&&overall<42?.012:0;
+  if(age<23)return released&&struggling?.012:0;
   let risk=released?.035:age>=29?.004:.001;
-  if(overall<42)risk+=.045;
-  else if(overall<50)risk+=.018;
+  if(struggling)risk+=.045;
+  else if(!competitive)risk+=.018;
   if(!productive&&games<15)risk+=.008;
   if(injured)risk+=.015;
-  if(overall>=70||productive)risk*=.12;
+  if(competitive||productive)risk*=.12;
   return Math.min(.12,Math.max(0,risk));
  }
- const overall=bePlayerEvaluation(p);
+ const skills=ensureProfile(p).skills||{};
+ const roleSkills=p.position==='P'?['stuff','control']:['contact','eye'];
+ const competitive=roleSkills.some(k=>(Number(skills[k])||0)>=75);
+ const struggling=roleSkills.every(k=>(Number(skills[k])||0)<55);
  const isPitcher=p.position==='P';
  const games=Number(p.games)||0;
  const atBats=Number(p.atBats)||0;
@@ -1443,10 +1449,8 @@ function playerRetirementProbability(p){
  const walks=Number(p.walks)||0;
  const baseline=age<37?.015+(age-35)*.015:age<40?.055+(age-37)*.065:age<44?.29+(age-40)*.115:.75+(age-44)*.055;
  let adjustment=0;
- if(overall>=80)adjustment-=.14;
- else if(overall>=70)adjustment-=.07;
- else if(overall<50)adjustment+=.12;
- else if(overall<58)adjustment+=.06;
+ if(competitive)adjustment-=.10;
+ else if(struggling)adjustment+=.10;
  if(isPitcher){
   if(innings>=130){const era=earnedRuns*9/innings;adjustment+=era<=3.5?-.17:era>=6?.09:-.04}
   else if(innings>=45){const era=earnedRuns*9/innings;adjustment+=era<=3.5?-.07:era>=6?.07:0}
