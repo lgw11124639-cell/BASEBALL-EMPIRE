@@ -26,6 +26,10 @@ async function call(path,method='GET',data,rev){
    compressed=true;
   }catch(e){body=json;delete headers['Content-Encoding']}
  }
+ // Sample payload composition only on the first save; do not mutate the saved state.
+ if(measure&&!window.beCloudPayloadAudit&&data&&typeof data==='object'){
+  try{const sizes=Object.entries(data).map(([key,value])=>({key,bytes:JSON.stringify(value)?.length||0})).sort((a,b)=>b.bytes-a.bytes);window.beCloudPayloadAudit=sizes.slice(0,10)}catch(_){}
+ }
  const encodedAt=measure?performance.now():0;
  let response=await fetch(API+path,{method,headers,body,cache:'no-store'});
  const firstStatus=response.status;
