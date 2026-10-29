@@ -638,7 +638,7 @@ function openClubNotice(id){
  restoreLegacyDrafts();
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
- if(n.kind==='FA 특집'||n.kind==='시즌 시상'||n.kind==='국가대표'||n.kind==='국가대표 기사')return openBaseballNewsArticle(id);
+ if(beFindArchivedNationalMatch(n)||n.kind==='FA 특집'||n.kind==='시즌 시상'||n.kind==='국가대표'||n.kind==='국가대표 기사')return openBaseballNewsArticle(id);
  const isDraft=n.kind==='신인 드래프트';
  const year=isDraft?draftClassYear(n):n.year;
  const draft=isDraft?state.draftResults?.[year]:null;
