@@ -12,7 +12,7 @@ const hitter=(age,overrides={})=>({age,position:'OF',overall:65,games:120,atBats
 const pitcher=(age,overrides={})=>({age,position:'P',overall:65,games:30,inningsPitched:145,earnedRuns:58,...overrides});
 assert.ok(chance(hitter(27,{overall:40,atBats:0,games:0}))>chance(hitter(27,{overall:85,hits:150})),'struggling young player has greater retirement risk');
 assert.ok(chance(hitter(27,{overall:85,hits:150}))<.01,'productive young player has negligible retirement risk');
-assert.ok(chance(hitter(22,{overall:85} )===0,'promising early-twenties player not retired for age');
+assert.ok(chance(hitter(22,{overall:85}))===0,'promising early-twenties player not retired for age');
 assert.ok(chance(hitter(40,{overall:85,hits:145,homeRuns:35}))<chance(hitter(40,{overall:45,hits:65,homeRuns:2})),'star veteran plays longer');
 assert.ok(chance(pitcher(40,{overall:80,earnedRuns:38}))<chance(pitcher(40,{overall:48,earnedRuns:115})),'pitcher ERA and ability matter');
 assert.ok(chance(hitter(40,{injured:true}))>chance(hitter(40)),'injury raises retirement risk');
