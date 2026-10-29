@@ -185,6 +185,25 @@ async function call(path,method='GET',data,rev){
  if(!response.ok){if(response.status===401){token=null;username='';verified=false;remember()}const err=Error(result.error||'HTTP '+response.status);err.status=response.status;throw err}
  return result;
 }
+// Read-only capability inspection for a future revision-safe incremental save API.
+// Never sends a PATCH or modifies a cloud save. The existing full PUT remains authoritative.
+window.beInspectIncrementalSaveSupport=async()=>{
+ if(!token||!verified)throw Error('클라우드 로그인 후 실행하세요');
+ const started=performance.now();
+ const response=await fetch(API+'/v2/saves/main',{
+  method:'OPTIONS',headers:{Accept:'application/json',Authorization:'Bearer '+token},cache:'no-store'
+ });
+ const allow=response.headers.get('Allow')||'';
+ const acceptPatch=response.headers.get('Accept-Patch')||'';
+ const accessControl=response.headers.get('Access-Control-Allow-Methods')||'';
+ const methods=[allow,accessControl].join(',').split(/[\\s,]+/).filter(Boolean);
+ const result={status:response.status,allow,acceptPatch,accessControl,
+  patchAdvertised:methods.some(m=>m.toUpperCase()==='PATCH'),
+  patchSchemaVerified:false,revisionConflictSafetyVerified:false,
+  safeToEnableIncrementalSave:false,ms:Math.round(performance.now()-started),
+  note:'Read-only OPTIONS probe. PATCH advertisement alone does not establish a safe delta-save contract.'};
+ window.beIncrementalSaveSupport=result;return result;
+};
 const revisionOf=x=>{const n=Number(x?.revision??x?.rev??x?.saveRevision);return Number.isSafeInteger(n)&&n>=0?n:null};
 async function snapshot(){try{return await call('/v2/saves/main')}catch(e){if(e.status===404)return null;throw e}}
 // Read-only verification against the actual server snapshot; never overwrites the running game.
