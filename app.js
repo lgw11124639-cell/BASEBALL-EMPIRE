@@ -2604,8 +2604,10 @@ function beArchivedNationalMatchArticle(n){
  const round=title.match(/(준결승\s*\d*|결승\s*\d*|조별리그\s*[A-Z]조\s*\d+-\d+)/);
  if(!round)return null;
  const games=(rec.matchResults||[]).filter(g=>g.round===round[1]);
- if(games.length!==1)return null;
- const g=games[0];
+ const named=games.filter(g=>{const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'';return title.includes(opponent)||title.includes(String(g.opponent||''));});
+ const matches=named.length?named:games;
+ if(matches.length!==1)return null;
+ const g=matches[0];
  const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국';
  return beCanonicalGameArticle(g,opponent,'대한민국',{competition:event[2],round:g.round,date:g.date});
 }
