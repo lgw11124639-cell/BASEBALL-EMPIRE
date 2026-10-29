@@ -72,6 +72,8 @@ async function unpackReplayResults(state){
 // gzip shards. The server's existing revision-checked top-level PATCH needs no changes.
 // Old saves remain readable; new saves reconstruct identical arrays on load.
 const shardArrayFields={players:64,gameResults:24};
+// Auxiliary archives may contain nested objects, not arrays; inspect their shape
+// before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
 async function encodeCloudShard(raw,cacheKey){
  const prior=shardGzipCache.get(cacheKey);
@@ -169,6 +171,14 @@ async function packAuxiliaryFields(state){
   }catch(_){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),failed:true});return null}
  }));
  window.beCloudFieldPackingTiming=fieldTimings.sort((a,b)=>(b.serializeMs+b.gzipMs)-(a.serializeMs+a.gzipMs));
+ window.beCloudArchiveShapes=Object.fromEntries(auxiliarySaveFields.filter(key=>state?.[key]!==undefined).map(key=>{
+  const value=state[key];
+  const kind=Array.isArray(value)?'array':value===null?'null':typeof value;
+  const keys=value&&typeof value==='object'&&!Array.isArray(value)?Object.keys(value):[];
+  return [key,{kind,length:Array.isArray(value)?value.length:undefined,keyCount:keys.length,
+   topKeys:keys.slice(0,15).map(k=>({key:k,kind:Array.isArray(value[k])?'array':typeof value[k],
+    size:Array.isArray(value[k])?value[k].length:undefined}))}];
+ }));
  window.beCloudAuxiliaryDiagnostics={fields:fieldTimings.map(x=>({...x})),totalRawBytes:fieldTimings.reduce((n,x)=>n+(x.rawBytes||0),0),cacheHits:fieldTimings.filter(x=>x.cacheHit).length,compressedFields:fieldTimings.filter(x=>x.packedBytes).length};
  const active=entries.filter(Boolean);
  if(!active.length)return state;
