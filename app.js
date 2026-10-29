@@ -1614,15 +1614,9 @@ function beInternationalTodayPanel(){
 }
 function beOpenInternationalReplay(key,index){
  const record=state.nationalTeamResults?.[key],g=record?.matchResults?.[index];if(!g)return;
- const old=state.gameResults;
- // Replay uses the existing readonly KBO renderer with temporary display-only teams.
  const away={city:'',name:INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국'},home={city:'',name:'대한민국'};
- const originalTeams=state.teams;
- const replay={...g,day:-987654,away:0,home:1,awayRuns:g.awayRuns,homeRuns:g.homeRuns,broadcastEvents:g.broadcastEvents||[]};
- try{
-  state.teams=[away,home];state.gameResults=[replay];
-  beOpenGameReplay(-987654,0);
- }finally{state.teams=originalTeams;state.gameResults=old}
+ const replay={...g,day:-987654,away:0,home:1,broadcastEvents:g.broadcastEvents||[]};
+ beOpenGameReplay(-987654,0,replay,[away,home]);
 }
 window.beOpenInternationalReplay=beOpenInternationalReplay;
 function beTodayGamesPanel(){
@@ -1644,13 +1638,14 @@ async function beWatchGame(day,away){
  if(game)beOpenGameReplay(day,away);
 }
 window.beWatchGame=beWatchGame;
-function beOpenGameReplay(day,away){
- const g=(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));if(!g)return;
- const a=state.teams[g.away],h=state.teams[g.home],ai=g.awayInnings||[],hi=g.homeInnings||[],n=Math.max(ai.length,hi.length,9);
+function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
+ const g=overrideGame||(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));if(!g)return;
+ const teams=overrideTeams||state.teams;
+ const a=teams[g.away],h=teams[g.home],ai=g.awayInnings||[],hi=g.homeInnings||[],n=Math.max(ai.length,hi.length,9);
  const events=Array.isArray(g.broadcastEvents)?g.broadcastEvents:[],detailed=events.length>0;const playerNames=new Map([...(g.awayBatters||[]),...(g.homeBatters||[])].filter(p=>p.id!=null).map(p=>[String(p.id),p.name]));const runnerName=id=>id==null?'없음':playerNames.get(String(id))||'주자';const describe=e=>e.batter+' 선수 '+(e.outcome||'타격 완료')+(e.runs?' · '+e.runs+'점 득점!':'')+(e.outsAfter>e.outsBefore?' · '+e.outsAfter+'아웃':'');
- const all=(state.gameResults||[]).filter(x=>Number(x.day)===Number(day));
+ const all=overrideGame?[overrideGame]:(state.gameResults||[]).filter(x=>Number(x.day)===Number(day));
  const lineup=side=>(g[side+'Batters']||[]).filter(p=>!p.subIn).sort((u,v)=>(u.battingOrder||99)-(v.battingOrder||99)).slice(0,9).map(p=>'<li><b>'+(p.battingOrder||'–')+'</b> '+esc(p.name)+' <small>'+esc(p.position||'')+'</small></li>').join('');
- const scores=all.map(x=>'<div class="be-replay-score-row"><span>'+esc(state.teams[x.away]?.name||'원정')+'</span><strong>'+x.awayRuns+' : '+x.homeRuns+'</strong><span>'+esc(state.teams[x.home]?.name||'홈')+'</span></div>').join('');
+ const scores=all.map(x=>'<div class="be-replay-score-row"><span>'+esc(teams[x.away]?.name||'원정')+'</span><strong>'+x.awayRuns+' : '+x.homeRuns+'</strong><span>'+esc(teams[x.home]?.name||'홈')+'</span></div>').join('');
  document.querySelector('#be-replay-overlay')?.remove();
  document.body.insertAdjacentHTML('beforeend','<div id="be-replay-overlay" class="be-replay-overlay"><section class="be-replay-dialog" role="dialog" aria-modal="true" aria-label="경기 관전"><header><div><small>BASEBALL EMPIRE · 경기 문자중계</small><h2>'+esc(a.city+' '+a.name)+' vs '+esc(h.city+' '+h.name)+'</h2></div><button type="button" onclick="beCloseGameReplay()">✕ 닫기</button></header><div class="be-replay-scoreboard"><span>'+esc(a.name)+'</span><strong id="be-replay-current-score">0 : 0</strong><span>'+esc(h.name)+'</span></div><div class="be-replay-live"><div><b id="be-replay-inning">경기 전</b><span id="be-replay-count">0아웃</span></div><div id="be-replay-bases" class="be-replay-bases">◇ ◇ ◇</div><div id="be-replay-batter">타자 대기</div></div><div class="be-broadcast-zone"><div><b>스트라이크존</b><div class="be-broadcast-zone-grid">'+Array(9).fill('<span></span>').join('')+'</div><small>투구별 위치 기록 없음</small></div><div class="be-broadcast-pitch"><b id="be-broadcast-pitch">구종·구속 대기</b><span id="be-broadcast-pitchcount">타석별 투구 수 표시</span><small>볼·스트라이크 판정은 추후 엔진 연동</small></div></div><details class="be-broadcast-lineups"><summary>양 팀 선발 라인업</summary><div><section><h4>'+esc(a.name)+'</h4><ol>'+lineup('away')+'</ol></section><section><h4>'+esc(h.name)+'</h4><ol>'+lineup('home')+'</ol></section></div></details><p id="be-replay-status" class="be-replay-note">'+(detailed?'실제 경기 엔진에서 저장한 타석 결과를 중계합니다. 투구별 볼·스트라이크 판정은 아직 기록되지 않습니다.':'이 경기는 타석별 기록이 없어 이닝별 실제 득점만 표시합니다.')+'</p><div id="be-replay-lines" class="be-replay-lines"></div><div id="be-replay-finish" hidden><h3>경기 종료 · 당일 전체 경기 최종 점수</h3>'+scores+'</div><div class="be-replay-controls"><button type="button" id="be-replay-next" class="be-replay-next">▶ '+(detailed?'다음 타석':'1회 진행')+'</button><button type="button" id="be-replay-auto" class="be-replay-next be-replay-skip">▶ 자동중계</button><select id="be-replay-speed" aria-label="중계 속도"><option value="1400">보통</option><option value="450">빠르게</option><option value="100">매우 빠르게</option></select><button type="button" id="be-replay-all" class="be-replay-next be-replay-skip">결과까지 보기</button></div></section></div>');
  const out=document.querySelector('#be-replay-lines'),btn=document.querySelector('#be-replay-next'),skip=document.querySelector('#be-replay-all'),finish=document.querySelector('#be-replay-finish'),score=document.querySelector('#be-replay-current-score'),status=document.querySelector('#be-replay-status'),inningLabel=document.querySelector('#be-replay-inning'),count=document.querySelector('#be-replay-count'),bases=document.querySelector('#be-replay-bases'),batter=document.querySelector('#be-replay-batter');
@@ -2360,15 +2355,14 @@ function internationalGameIdentityReport(g){
  return [...new Set(issues)];
 }
 function beOpenNationalReplay(index){
- const record=Object.values(state.nationalTeamResults||{}).find(x=>x.year===Number(window.beNationalYear)&&x.event===window.beNationalEvent)||Object.values(state.nationalTeamResults||{}).filter(x=>(x.matchResults||[]).length).sort((a,b)=>b.year-a.year)[0];if(!record)return;
+ const record=Object.values(state.nationalTeamResults||{}).find(x=>x.year===Number(window.beNationalYear)&&x.event===window.beNationalEvent)||Object.values(state.nationalTeamResults||{}).filter(x=>(x.matchResults||[]).length).sort((a,b)=>b.year-a.year)[0];
+ if(!record)return;
  const games=[...(record.matchResults||[]),...(record.bronzeMatch?[record.bronzeMatch]:[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.round||'').localeCompare(String(b.round||'')));
- const g=games[index];if(!g)return;const away=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대',ai=g.awayInnings||[],hi=g.homeInnings||[],n=Math.max(9,ai.length,hi.length);
- document.querySelector('#be-replay-overlay')?.remove();
- document.body.insertAdjacentHTML('beforeend','<div id="be-replay-overlay" class="be-replay-overlay"><section class="be-replay-dialog" role="dialog" aria-modal="true" aria-label="국제경기 다시보기"><header><div><small>'+esc(record.year+' '+record.event+' · '+(g.round||''))+'</small><h2>'+esc(away)+' vs 대한민국</h2></div><button type="button" onclick="beCloseGameReplay()">✕ 닫기</button></header><div class="be-replay-scoreboard"><span>'+esc(away)+'</span><strong id="be-replay-current-score">0 : 0</strong><span>대한민국</span></div><p class="be-replay-note">저장된 이닝별 경기 기록 · 다시보기는 공식 기록을 변경하지 않습니다.</p><div id="be-replay-lines" class="be-replay-lines"></div><div id="be-replay-finish" hidden><h3>경기 종료 · 최종 점수</h3><div class="be-replay-score-row"><span>'+esc(away)+'</span><strong>'+g.awayRuns+' : '+g.homeRuns+'</strong><span>대한민국</span></div></div><div class="be-replay-controls"><button type="button" id="be-replay-next" class="be-replay-next">▶ 다음 이닝</button><button type="button" id="be-replay-all" class="be-replay-next be-replay-skip">결과까지 보기</button></div></section></div>');
- const out=document.querySelector('#be-replay-lines'),score=document.querySelector('#be-replay-current-score'),finish=document.querySelector('#be-replay-finish'),next=document.querySelector('#be-replay-next'),skip=document.querySelector('#be-replay-all');let i=0,ar=0,hr=0;
- const step=()=>{if(i>=n)return;const x=Number(ai[i])||0,y=Number(hi[i])||0;ar+=x;hr+=y;out.insertAdjacentHTML('beforeend','<div class="be-replay-line"><b>'+(i+1)+'회</b><span>'+esc(away)+' '+x+'점 · 대한민국 '+y+'점</span><strong>'+ar+' : '+hr+'</strong></div>');i++;score.textContent=ar+' : '+hr;if(i===n){score.textContent=g.awayRuns+' : '+g.homeRuns;finish.hidden=false;next.disabled=true;next.textContent='경기 종료';skip.hidden=true}};
- next.onclick=step;skip.onclick=()=>{while(i<n)step();finish.scrollIntoView({block:'nearest'})};document.querySelector('#be-replay-overlay').onclick=e=>{if(e.target.id==='be-replay-overlay')beCloseGameReplay()};
+ const g=games[index];if(!g)return;
+ const away={city:'',name:INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국'},home={city:'',name:'대한민국'};
+ beOpenGameReplay(-987654,0,{...g,day:-987654,away:0,home:1,broadcastEvents:g.broadcastEvents||[]},[away,home]);
 }
+
 function internationalMatchDetails(g){
  const home=Array.isArray(g.homeInnings)?g.homeInnings:[],away=Array.isArray(g.awayInnings)?g.awayInnings:[];
  if(!home.length&&!away.length)return '<p>이닝별 기록이 저장되지 않은 경기입니다.</p>';
