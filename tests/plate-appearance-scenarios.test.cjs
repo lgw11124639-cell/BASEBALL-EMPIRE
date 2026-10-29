@@ -15,7 +15,8 @@ function runScenario(name,events,expected,{walkoff=false,homeRuns=0}={}){
  let next=0;
  const context=vm.createContext({state,Math,Number,
   selectPitcher:()=>pitcher,recordPitch:()=>appearance,
-  pitchingArsenal:()=>({stamina:65,usage:[{name:'fastball',percent:100}]}),
+  pitchingArsenal:()=>({stamina:65,usage:[]}),
+  catcherGameCalling:()=>({preference:'바깥쪽',skill:50}),
   managerRatings:()=>({pitching:60,baserunning:60}),
   clubPitchingPhilosophy:()=> '선발 중시형',
   clubBattingPhilosophy:()=> '빅볼',
