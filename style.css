@@ -389,3 +389,11 @@
 .be-replay-dialog .be-zone-marker{width:13px;height:13px;background:#e5a33c;border:2px solid #fff;box-shadow:0 0 0 1px #ad7220,0 2px 5px #173b6550}
 .be-replay-dialog .be-zone-marker-ball{background:#e46b55!important;box-shadow:0 0 0 2px #a83e2b,0 2px 5px #173b6550!important}
 @media(max-width:600px){.be-replay-dialog .be-broadcast-zone{grid-template-columns:124px minmax(0,1fr)!important;gap:7px!important}.be-replay-dialog .be-broadcast-zone-grid{width:76px!important;height:76px!important;margin:13px auto!important}}
+
+/* Batter scouting: readable nine-cell hot/cold zone */
+.batter-zone-card .batter-zone-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-width:300px;margin:12px auto}
+.batter-zone-card .batter-zone-grid>div{min-height:66px;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;font-size:12px;font-weight:750}
+.batter-zone-card .batter-zone-grid b{font-size:13px;letter-spacing:.04em}
+.batter-zone-card .batter-zone-grid .hot{background:#fce1dc;color:#a53224;border:1px solid #efafa3}
+.batter-zone-card .batter-zone-grid .cold{background:#dcecfb;color:#20588d;border:1px solid #a7cbed}
+.batter-zone-card .batter-zone-grid .neutral{background:#edf1f5;color:#4b6077;border:1px solid #d4dfe9}
