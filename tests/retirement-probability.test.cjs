@@ -5,7 +5,7 @@ const path=require('node:path');
 const src=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
 const start=src.indexOf('function playerRetirementProbability('),end=src.indexOf('function runOffseasonContracts(',start);
 assert.ok(start>=0&&end>start,'real retirement model present');
-const ctx=vm.createContext({Math,Number});
+const ctx=vm.createContext({Math,Number,ensureProfile:p=>({skills:p.skills||{contact:p.overall||65,eye:p.overall||65,stuff:p.overall||65,control:p.overall||65}})});
 vm.runInContext(src.slice(start,end),ctx);
 const chance=vm.runInContext('playerRetirementProbability',ctx);
 const hitter=(age,overrides={})=>({age,position:'OF',overall:65,games:120,atBats:420,hits:110,homeRuns:12,walks:30,...overrides});
