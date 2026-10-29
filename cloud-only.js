@@ -128,6 +128,74 @@ async function unpackCloudShards(state){
  delete state.beShardManifest;
  return state;
 }
+// Versioned league archive shards; legacy whole-field gzip remains supported.
+const leagueShardFields=['highSchoolBaseball','collegeBaseball','minorLeague'];
+const leagueShardSize=24;
+function leagueShardName(field,season,name,i){return 'beLeaguePart_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+i}
+async function packLeagueShards(state){
+ if(typeof CompressionStream!=='function')return state;
+ const targets=leagueShardFields.filter(field=>state?.[field]&&typeof state[field]==='object'&&!Array.isArray(state[field]));
+ if(!targets.length)return state;
+ const copy={...state},manifest={version:1,fields:{}};
+ const packed=await Promise.all(targets.map(async field=>{
+  const seasons={},parts=[];
+  for(const [season,node] of Object.entries(state[field])){
+   if(!node||typeof node!=='object'||Array.isArray(node))return null;
+   const descriptors=[];
+   for(const [name,value] of Object.entries(node)){
+    const isArray=Array.isArray(value),count=isArray?Math.ceil(value.length/leagueShardSize):1;
+    descriptors.push({name,kind:isArray?'array':'value',length:isArray?value.length:null,count});
+    for(let i=0;i<count;i++)parts.push({name:leagueShardName(field,season,name,i),raw:JSON.stringify(isArray?value.slice(i*leagueShardSize,(i+1)*leagueShardSize):value)});
+   }
+   seasons[season]=descriptors;
+  }
+  const encoded=await Promise.all(parts.map(async p=>[p.name,await encodeCloudShard(p.raw,p.name)]));
+  return {field,seasons,encoded};
+ }));
+ if(packed.some(x=>!x))return state;
+ for(const {field,seasons,encoded} of packed){
+  manifest.fields[field]={seasons};
+  for(const [name,value] of encoded)copy[name]=value;
+  delete copy[field];
+ }
+ copy.beLeagueShardManifest=manifest;
+ return copy;
+}
+async function unpackLeagueShards(state){
+ const manifest=state?.beLeagueShardManifest;
+ if(!manifest)return state;
+ if(manifest.version!==1||!manifest.fields||typeof manifest.fields!=='object')throw Error('리그 저장 메타데이터 오류');
+ if(typeof DecompressionStream!=='function')throw Error('리그 기록 압축 해제 불가');
+ for(const [field,meta] of Object.entries(manifest.fields)){
+  if(!leagueShardFields.includes(field)||!meta?.seasons||typeof meta.seasons!=='object')throw Error('리그 저장 필드 오류');
+  const root={};
+  for(const [season,descriptors] of Object.entries(meta.seasons)){
+   if(!Array.isArray(descriptors))throw Error('리그 시즌 메타데이터 오류');
+   const entries=await Promise.all(descriptors.map(async d=>{
+    if(typeof d.name!=='string'||!Number.isSafeInteger(d.count)||d.count<0||d.count>100000||!['array','value'].includes(d.kind)||d.kind==='array'&&(!Number.isSafeInteger(d.length)||d.length<0)||d.kind==='value'&&d.count!==1)throw Error('리그 묶음 메타데이터 오류');
+    const pieces=await Promise.all(Array.from({length:d.count},async(_,i)=>{
+     const key=leagueShardName(field,season,d.name,i),encoded=state[key];
+     if(typeof encoded!=='string')throw Error('리그 기록 누락: '+key);
+     const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+     const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+     return {key,value:JSON.parse(raw)};
+    }));
+    const value=d.kind==='array'?pieces.flatMap(p=>{
+     if(!Array.isArray(p.value))throw Error('리그 배열 형식 오류');
+     return p.value;
+    }):pieces[0].value;
+    if(d.kind==='array'&&value.length!==d.length)throw Error('리그 기록 길이 불일치');
+    return {name:d.name,value,keys:pieces.map(p=>p.key)};
+   }));
+   const node={};
+   for(const e of entries){if(Object.prototype.hasOwnProperty.call(node,e.name))throw Error('리그 중복 필드');node[e.name]=e.value;for(const key of e.keys)delete state[key]}
+   root[season]=node;
+  }
+  state[field]=root;
+ }
+ delete state.beLeagueShardManifest;
+ return state;
+}
 // Stable, independently compressed amateur-career buckets. Old saves remain readable.
 const amateurBucketCount=32;
 function amateurBucket(key){let h=2166136261;for(let i=0;i<key.length;i++){h^=key.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0)%amateurBucketCount}
@@ -404,7 +472,7 @@ window.beVerifyCloudServer=async()=>{
  const remote=await snapshot();
  if(!remote?.save)throw Error('서버에 저장된 게임이 없습니다');
  const serverRevision=revisionOf(remote);
- const restored=await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save)))));
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save))))));
  const current=baseline?.save;
  if(!current)throw Error('비교할 현재 게임 저장 상태가 없습니다');
  const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
@@ -413,7 +481,7 @@ window.beVerifyCloudServer=async()=>{
  window.beCloudServerAudit=result;
  return result;
 };
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(s.save))))):null;baseline={save:restored,revision:rev};return restored}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(s.save)))))):null;baseline={save:restored,revision:rev};return restored}
 // Read-only cloud consistency audit. Never overwrites game state or save revision.
 window.beAuditCloudConsistency=async function(){
  if(!token||!verified)throw Error('클라우드 로그인이 필요합니다');
@@ -422,7 +490,7 @@ window.beAuditCloudConsistency=async function(){
  const serverRev=revisionOf(remote);
  const local=baseline?.save;
  if(!local)return {ok:false,reason:'local baseline unavailable',serverRev,clientRev:revision};
- const restored=await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save)))));
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save))))));
  const fields=['date','year','season','teams','players','gameResults','minorLeague','nationalTeamResults'];
  const canonical=value=>JSON.stringify(value,function(k,v){
   if(v&&typeof v==='object'&&!Array.isArray(v)){
@@ -478,13 +546,13 @@ export async function cloudSave(state){
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
   const replayPacked=state;
   const replayPackedAt=performance.now();
-  payload=await packAuxiliaryFields(await packAmateurBuckets(await packCloudShards(replayPacked)));
+  payload=await packAuxiliaryFields(await packLeagueShards(await packAmateurBuckets(await packCloudShards(replayPacked))));
   const auxiliaryPackedAt=performance.now();
   // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
   window.beVerifyCloudPacking=async()=>{
    const start=performance.now();
    const snapshot=JSON.parse(JSON.stringify(payload));
-   await unpackReplayResults(await unpackCloudShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(snapshot))));
+   await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(snapshot)))));
    const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields)])];
    // Compare canonical JSON semantics, not object insertion order. Packed replay
    // events are restored after the auxiliary archive, changing property order.
