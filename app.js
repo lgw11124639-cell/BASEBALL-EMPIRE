@@ -284,7 +284,7 @@ function pitchingArsenal(p){
  const b=playerBaseball(p),seed=((Number(p.id)||1)*81217+7301)>>>0,r=rng(seed),sk=ensureProfile(p).skills||{};
  const base=Number(sk.stuff)||60,control=Number(sk.control)||base,stamina=Number(sk.stamina)||base;
  if(!b.arsenal){
-  const talent=ensureProfile(p).development?.talentTier;const fast=137+Math.round((base-55)*.28)+ri(r,-4,4)+(r()<.003?ri(r,14,21):0)+(talent==='historic'?ri(r,2,7):0);
+  const talent=ensureProfile(p).development?.talentTier;const fast=137+Math.round((base-55)*.28)+ri(r,-4,4)+(r()<.0015?ri(r,7,12):0)+(talent==='historic'?ri(r,2,5):0);
   b.arsenal={velocity:Math.max(125,fast),control,stamina,pitches:[{name:'직구',grade:Math.max(20,base+ri(r,-7,7))}]};
  }
  const a=b.arsenal;
