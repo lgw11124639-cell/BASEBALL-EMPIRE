@@ -35,20 +35,26 @@ export async function cloudGate(onReady){
  const card=document.createElement('section');card.style.cssText='background:#fff;border-radius:18px;padding:26px;max-width:390px;width:100%;box-shadow:0 10px 45px #1233';
  const title=document.createElement('h2');title.textContent='⚾ BASEBALL EMPIRE';
  const intro=document.createElement('p');intro.textContent='클라우드 계정에 로그인해야 게임을 시작할 수 있습니다.';
- const name=document.createElement('input'),pass=document.createElement('input');
- for(const e of [name,pass])e.style.cssText='box-sizing:border-box;width:100%;padding:12px;margin:7px 0;border:1px solid #bccddd;border-radius:9px;font-size:16px';
- name.placeholder='아이디';name.autocomplete='username';pass.placeholder='비밀번호';pass.type='password';pass.autocomplete='current-password';
+ const name=document.createElement('input'),pass=document.createElement('input'),confirmPass=document.createElement('input');
+ let signup=false;
+ for(const e of [name,pass,confirmPass])e.style.cssText='box-sizing:border-box;width:100%;padding:12px;margin:7px 0;border:1px solid #bccddd;border-radius:9px;font-size:16px';
+ name.placeholder='아이디';name.autocomplete='username';pass.placeholder='비밀번호';pass.type='password';pass.autocomplete='current-password';confirmPass.type='password';confirmPass.placeholder='비밀번호 확인';confirmPass.autocomplete='new-password';confirmPass.hidden=true;
  const button=document.createElement('button');button.textContent='로그인';button.style.cssText='width:100%;padding:13px;margin:10px 0;border:0;border-radius:9px;background:#2365a2;color:#fff;font-weight:700';
+ const toggle=document.createElement('button');toggle.type='button';toggle.textContent='계정이 없나요? 회원가입';toggle.style.cssText='width:100%;padding:10px;border:0;background:transparent;color:#2365a2;text-decoration:underline;font-weight:700';
  const msg=document.createElement('p');msg.style.cssText='white-space:pre-wrap;line-height:1.5';
- card.append(title,intro,name,pass,button,msg);overlay.append(card);document.body.append(overlay);
- const start=async()=>{button.disabled=true;try{
-  if(!token){if(!name.value.trim()||!pass.value)throw Error('아이디와 비밀번호를 입력하세요');const r=await call('/v2/auth/login','POST',{username:name.value.trim(),password:pass.value});if(!r.token)throw Error('로그인 응답 오류');token=r.token;username=name.value.trim();remember()}
-  pass.value='';
+ card.append(title,intro,name,pass,confirmPass,button,toggle,msg);overlay.append(card);document.body.append(overlay);
+ const setMode=mode=>{signup=mode;confirmPass.hidden=!mode;button.textContent=mode?'회원가입':'로그인';toggle.textContent=mode?'이미 계정이 있나요? 로그인':'계정이 없나요? 회원가입';pass.autocomplete=mode?'new-password':'current-password';msg.textContent='';};
+ toggle.onclick=()=>setMode(!signup);
+ const start=async()=>{button.disabled=true;toggle.disabled=true;try{
+  if(!token){if(!name.value.trim()||!pass.value)throw Error('아이디와 비밀번호를 입력하세요');let r;
+   if(signup){if(!/^[a-zA-Z0-9_]{4,24}$/.test(name.value.trim()))throw Error('아이디는 영문·숫자·밑줄 4~24자로 입력하세요');if(pass.value.length<12||pass.value.length>128)throw Error('비밀번호는 12~128자로 입력하세요');if(pass.value!==confirmPass.value)throw Error('비밀번호 확인이 일치하지 않습니다');r=await call('/v2/auth/register','POST',{username:name.value.trim(),password:pass.value});if(!r.token){r=await call('/v2/auth/login','POST',{username:name.value.trim(),password:pass.value})}}
+   else r=await call('/v2/auth/login','POST',{username:name.value.trim(),password:pass.value});if(!r.token)throw Error('로그인 응답 오류');token=r.token;username=name.value.trim();remember()}
+  pass.value='';confirmPass.value='';
   const data=await check();
   if(data&&(!Array.isArray(data.teams)||data.teams.length!==10||!Array.isArray(data.players)||data.schema!==1))throw Error('서버 저장 데이터 형식이 잘못됐습니다');
   await onReady(data);
   overlay.remove();
- }catch(e){msg.textContent='로그인 또는 불러오기 실패: '+(e.message||e);if(!token){name.hidden=false;pass.hidden=false;button.textContent='로그인'}else{button.textContent='다시 시도';name.hidden=true;pass.hidden=true}}finally{button.disabled=false}};
- button.onclick=start;pass.onkeydown=e=>{if(e.key==='Enter')start()};
- if(token){name.hidden=true;pass.hidden=true;button.textContent='다시 연결';msg.textContent='이전 로그인 세션을 확인하고 있습니다.';start()}
+ }catch(e){msg.textContent='로그인 또는 불러오기 실패: '+(e.message||e);if(!token){name.hidden=false;pass.hidden=false;button.textContent='로그인'}else{button.textContent='다시 시도';name.hidden=true;pass.hidden=true}}finally{button.disabled=false;toggle.disabled=false}};
+ button.onclick=start;pass.onkeydown=e=>{if(e.key==='Enter'&&!signup)start()};confirmPass.onkeydown=e=>{if(e.key==='Enter'&&signup)start()};
+ if(token){name.hidden=true;pass.hidden=true;button.textContent='다시 연결';toggle.hidden=true;msg.textContent='이전 로그인 세션을 확인하고 있습니다.';start()}
 }
