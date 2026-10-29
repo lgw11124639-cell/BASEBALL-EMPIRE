@@ -4,6 +4,19 @@ const KEY='be-cloud-session-v1';
 let token=null,username='',revision=null,verified=false,baseline=null;
 let gzipSaveSupported=false; // Temporarily disable gzip uploads: Content-Encoding can fail CORS preflight; retain uncompressed cloud-only PUT with If-Match.
 let gzipRejectedStatus=null;
+// Snapshot of the last server-acknowledged wire representation. Never stored locally.
+let acknowledgedWireSave=null;
+let incrementalSaveSupported=true;
+const deltaProtocol='be-top-level-delta-v1';
+function makeCloudDelta(previous,current){
+ if(!previous||typeof previous!=='object'||!current||typeof current!=='object')return null;
+ const set=Object.create(null),unset=[];
+ for(const key of Object.keys(previous))if(!Object.prototype.hasOwnProperty.call(current,key))unset.push(key);
+ for(const [key,value] of Object.entries(current)){
+  if(!Object.prototype.hasOwnProperty.call(previous,key)||JSON.stringify(value)!==JSON.stringify(previous[key]))set[key]=value;
+ }
+ return {protocol:deltaProtocol,set,unset};
+}
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.token&&s?.username&&Number(s.expiresAt)>Date.now()){token=s.token;username=s.username}else localStorage.removeItem(KEY)}catch(_){try{localStorage.removeItem(KEY)}catch(_){}}
 function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,username,expiresAt:Date.now()+6*24*60*60*1000}));else localStorage.removeItem(KEY)}catch(_){}}
 // Lossless replay-event packing inside the JSON save (no Content-Encoding header).
@@ -230,7 +243,7 @@ window.beVerifyCloudServer=async()=>{
  window.beCloudServerAudit=result;
  return result;
 };
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;return s?.save?await unpackReplayResults(await unpackAuxiliaryFields(s.save)):null}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;acknowledgedWireSave=s?.save||null;return s?.save?await unpackReplayResults(await unpackAuxiliaryFields(s.save)):null}
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
@@ -266,13 +279,30 @@ export async function cloudSave(state){
    window.beCloudRoundTripAudit=result;
    return result;
   };
-  result=await call('/v2/saves/main','PUT',payload,revision);
+  // Use PATCH only when a full, server-acknowledged baseline exists.
+  // Compare the exact packed wire fields, not the mutable in-game state.
+  const deltaStarted=performance.now();
+  const delta=incrementalSaveSupported?makeCloudDelta(acknowledgedWireSave,payload):null;
+  const deltaJson=delta?JSON.stringify(delta):null;
+  const fullJsonLength=delta?JSON.stringify(payload).length:0;
+  const useDelta=!!deltaJson&&deltaJson.length<fullJsonLength*.85;
+  window.beCloudDeltaTiming={compareMs:+(performance.now()-deltaStarted).toFixed(1),fullBytes:fullJsonLength,deltaBytes:deltaJson?.length||0,used:useDelta};
+  if(useDelta){
+   try{result=await call('/v2/saves/main','PATCH',delta,revision);}
+   catch(e){
+    // Only a definite unsupported-method response permits a safe full PUT retry.
+    // Never retry an ambiguous network failure or a revision conflict.
+    if(e.status!==404&&e.status!==405&&e.status!==501)throw e;
+    incrementalSaveSupported=false;
+    result=await call('/v2/saves/main','PUT',payload,revision);
+   }
+  }else result=await call('/v2/saves/main','PUT',payload,revision);
   window.beCloudPackingTiming={replay:Math.round((replayPackedAt-packStarted)*10)/10,auxiliary:Math.round((auxiliaryPackedAt-replayPackedAt)*10)/10,total:Math.round((auxiliaryPackedAt-packStarted)*10)/10};
  }
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
- revision=next;baseline={save:state,revision:next};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
+ revision=next;acknowledgedWireSave=payload;baseline={save:state,revision:next};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
 export async function cloudGate(onReady){
  const overlay=document.createElement('div');overlay.id='be-cloud-gate';
@@ -305,7 +335,7 @@ export async function cloudGate(onReady){
    logout.style.cssText='position:fixed;right:14px;top:12px;z-index:2147483000;padding:9px 13px;border:1px solid #c5d5e4;border-radius:20px;background:#fff;color:#214c72;font:700 13px system-ui';
    logout.style.display=(document.body.classList.contains('be-start-screen')?'':'none');
    new MutationObserver(()=>{logout.style.display=document.body.classList.contains('be-start-screen')?'':'none'}).observe(document.body,{attributes:true,attributeFilter:['class']});
-   logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;remember();location.reload()};
+   logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;acknowledgedWireSave=null;remember();location.reload()};
    document.body.append(logout);
   }
   let reset=document.getElementById('be-cloud-reset');
