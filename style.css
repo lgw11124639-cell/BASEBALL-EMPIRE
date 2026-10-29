@@ -545,3 +545,22 @@
  #game-news-overlay .scoreboard-scroll .scoreboard-table th,#game-news-overlay .scoreboard-scroll .scoreboard-table td{white-space:nowrap!important;word-break:normal!important;padding:8px 9px!important;font-size:12px!important}
  #game-news-overlay .scoreboard-scroll .scoreboard-table th:first-child{position:sticky;left:0;z-index:1;background:#fff}
 }
+
+/* International article box scores: compact, consistent, independently scrollable tables. */
+#game-news-overlay .news-article-body>h3{margin:24px 0 10px!important;font-size:18px!important;line-height:1.35!important}
+#game-news-overlay .news-article-body>.scoreboard-scroll{width:100%!important;max-width:100%!important;min-width:0!important;margin:0 0 18px!important;border:1px solid #dce6f1!important;border-radius:10px!important;box-sizing:border-box!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important}
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table{display:table!important;width:max-content!important;min-width:100%!important;max-width:none!important;border-collapse:separate!important;border-spacing:0!important;table-layout:auto!important}
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table th,
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table td{box-sizing:border-box!important;white-space:nowrap!important;min-width:42px!important;padding:10px 12px!important;font-size:13px!important;line-height:1.35!important;text-align:center!important;border-bottom:1px solid #e2eaf3!important}
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table th:first-child,
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table td:first-child{position:sticky!important;left:0!important;z-index:2!important;min-width:105px!important;text-align:left!important;background:#fff!important;box-shadow:1px 0 0 #dce6f1}
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table thead th{background:#edf4fb!important;font-weight:800!important;color:#17375a!important}
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table thead th:first-child{z-index:3!important;background:#edf4fb!important}
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table tbody tr:nth-child(even) td{background:#f8fbff!important}
+#game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table tbody tr:nth-child(even)>:first-child{background:#f8fbff!important}
+@media(max-width:600px){
+ #game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table th,
+ #game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table td{min-width:37px!important;padding:9px 8px!important;font-size:12px!important}
+ #game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table th:first-child,
+ #game-news-overlay .news-article-body>.scoreboard-scroll>.scoreboard-table td:first-child{min-width:94px!important;max-width:140px!important}
+}
