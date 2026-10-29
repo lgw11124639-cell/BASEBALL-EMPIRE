@@ -50,7 +50,7 @@ async function unpackReplayResults(state){
  }));return state;
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive'];
+const auxiliarySaveFields=['highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 async function packAuxiliaryFields(state){
