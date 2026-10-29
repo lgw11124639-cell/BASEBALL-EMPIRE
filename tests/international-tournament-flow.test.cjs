@@ -24,6 +24,7 @@ const context=vm.createContext({
  awardNationalTeamServicePoints:()=>{},
 });
 context.nationalTeamPreparationDay=()=>{};
+context.INTERNATIONAL_COUNTRIES={KR:'대한민국',JP:'일본',TW:'대만',US:'미국',AU:'호주',DO:'도미니카공화국'};
 vm.runInContext(source.slice(start,end),context);
 for(let day=1;day<=20;day++){
  current=new Date(2028,7,day,12);
