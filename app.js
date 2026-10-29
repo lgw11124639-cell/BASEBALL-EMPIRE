@@ -2004,7 +2004,7 @@ function beInternationalTodayPanel(){
  if(!games.length)return '';
  return '<section class="dashboard-section be-today-games"><div class="section-title"><div><span class="section-kicker">INTERNATIONAL</span><h2>오늘의 국가대표 경기</h2></div></div>'+games.map(({key,i,record,g})=>'<div class="be-today-match"><div class="be-today-teams"><strong>대한민국</strong><span>'+Number(g.homeRuns)+' : '+Number(g.awayRuns)+'</span><strong>'+esc(INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국')+'</strong></div><div class="be-today-actions"><small>'+esc(record.event||'국제대회')+' · '+esc(g.round||'경기')+'</small><button type="button" onclick="beOpenInternationalReplay(\''+esc(key)+'\','+i+')">경기 관전하기</button></div></div>').join('')+'</section>';
 }
-function beOpenInternationalGameArticle(key,index){
+function beOpenInternationalGameArticle(key,index,headlineOverride){
  const record=state.nationalTeamResults?.[key],g=record?.matchResults?.[index];if(!g)return;
  const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국',kr=Number(g.homeRuns)||0,opp=Number(g.awayRuns)||0;
  const win=kr>opp,draw=kr===opp,round=String(g.round||'국제대회'),winner=draw?'무승부':win?'대한민국':opponent;
@@ -2013,7 +2013,7 @@ function beOpenInternationalGameArticle(key,index){
  const h=g.homeInnings||[],a=g.awayInnings||[],n=Math.max(9,h.length,a.length),innings=Array.from({length:n},(_,i)=>i);
  const scoring=beGameScoringEvents(a,h).map(x=>({i:x.inning-1,k:x.home,o:x.away})),turn=scoring.slice().sort((x,y)=>(y.k+y.o)-(x.k+x.o))[0];
  const unified=beCanonicalGameArticle(g,opponent,'대한민국',{competition:record?.event||key,round:g.round,date:g.date,id:[record?.year||'',record?.event||key,g.round,g.opponent,g.date||''].join(':')});
- const title=unified.title;
+ const title=String(headlineOverride||unified.title).trim();
  const intro=unified.lead;
  const paragraphs=unified.paragraphs.slice();
 
@@ -2701,7 +2701,7 @@ function openBaseballNewsArticle(id){
  const n=(state.clubNotices||[]).find(x=>String(x.id)===String(id));
  if(!n)return;
  const match=beFindArchivedNationalMatch(n);
- if(match){beOpenInternationalGameArticle(match.key,match.index);return;}
+ if(match){beOpenInternationalGameArticle(match.key,match.index,n.title);return;}
  const modal=document.createElement('div');
  modal.classList.add('be-editorial-modal','be-game-article-style');
  modal.style.cssText='position:fixed;inset:0;z-index:999999;background:#fff;color:#17375a;overflow-y:auto;-webkit-overflow-scrolling:touch';
