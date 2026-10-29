@@ -1896,7 +1896,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   if(index>=total)return;
   if(detailed){
    const frame=frames[index],e=frame.e,name=e.side==='away'?a.name:h.name,runner=(frame.kind==='pitch'?e.bases:e.afterBases||[]).map(id=>id?'◆':'◇');
-   if(frame.kind==='pitcher-change'){const change=frame.change,defense=e.side==='away'?h.name:a.name;inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');batter.textContent=defense+' 투수 교체 · '+change.from+' → '+change.to;pitchLabel.textContent='투수 교체';pitchCount.textContent=change.from+' → '+change.to;out.insertAdjacentHTML('afterbegin','<div class="be-replay-event be-replay-result-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(defense)+'</small><strong>투수 교체 · '+esc(change.from)+' → '+esc(change.to)+'</strong></div>');index++;status.textContent='투수 교체 · '+index+' / '+total;updateNextBatter(index);return;}
+   if(frame.kind==='pitcher-change'){const change=frame.change,defense=e.side==='away'?h.name:a.name;inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');batter.textContent=defense+' 투수 교체 · '+change.from+' → '+change.to;pitchLabel.textContent='투수 교체';pitchCount.textContent=change.from+' → '+change.to;out.insertAdjacentHTML('afterbegin','<div class="be-replay-event be-replay-result-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(defense)+'</small><strong>투수 교체 · '+esc(change.from)+' → '+esc(change.to)+'</strong></div>');index++;status.textContent='투수 교체';updateNextBatter(index);return;}
    if(frame.kind==='pitch'){
     const cumulativePitches=pitcherPitchNumber(e);
     inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');
@@ -1906,7 +1906,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
     pitchLabel.textContent=frame.pitch.number+'구 · '+frame.pitch.type+(frame.pitch.velocity!=null&&Number.isFinite(Number(frame.pitch.velocity))?' · '+Math.round(Number(frame.pitch.velocity))+'km/h':' · 구속 미기록')+(' · '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call||'판정 미기록'));markPitch(frame.pitch);
     pitchCount.textContent='투수 '+e.pitcher+' · 오늘 '+cumulativePitches+'구 | '+(frame.pitch.call?'● '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call)+' · '+(frame.pitch.call==='볼'||frame.pitch.call==='볼넷'?'볼 판정':frame.pitch.call.includes('스트라이크')||frame.pitch.call.includes('삼진')?'스트라이크 판정':'타격 판정'):'투구 결과 확인');
     out.insertAdjacentHTML('afterbegin','<div class="be-replay-event be-replay-pitch-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+' 공격 · '+esc(e.batter)+' · '+esc(e.pitcher)+' 오늘 '+cumulativePitches+'구</small><strong>'+esc(describeCall(frame.pitch,e))+'</strong></div>');
-    index++;status.textContent='투구 '+index+' / '+total;updateNextBatter(index);
+    index++;status.textContent='경기 중계 중';updateNextBatter(index);
     btn.textContent='▶ 다음 투구';
     return;
    }
@@ -1926,7 +1926,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
    inningProgress.away[index]=x;inningProgress.home[index]=y;drawInningBoard();
    inningLabel.textContent=(index+1)+'회 종료';out.insertAdjacentHTML('afterbegin','<div class="be-replay-line"><b>'+(index+1)+'회</b><span>'+esc(a.name)+' '+x+'점 · '+esc(h.name)+' '+y+'점</span><strong>'+ar+' : '+hr+'</strong></div>');
   }
-  index++;if(detailed&&index<total){const current=frames[index-1]?.e,next=frames[index]?.e;if(current&&next&&(current.inning!==next.inning||current.side!==next.side)){out.insertAdjacentHTML('afterbegin','<div class="be-replay-line be-half-change"><b>'+next.inning+'회 '+(next.side==='away'?'초':'말')+' 시작</b><span>공수교대</span><strong>'+ar+' : '+hr+'</strong></div>');}}updateNextBatter(index);score.textContent=ar+' : '+hr;status.textContent=index>=total?'경기 종료 · 최종 점수':detailed?'타석 '+index+' / '+total:'이닝 '+index+' / '+total;
+  index++;if(detailed&&index<total){const current=frames[index-1]?.e,next=frames[index]?.e;if(current&&next&&(current.inning!==next.inning||current.side!==next.side)){out.insertAdjacentHTML('afterbegin','<div class="be-replay-line be-half-change"><b>'+next.inning+'회 '+(next.side==='away'?'초':'말')+' 시작</b><span>공수교대</span><strong>'+ar+' : '+hr+'</strong></div>');}}updateNextBatter(index);score.textContent=ar+' : '+hr;status.textContent=index>=total?'경기 종료 · 최종 점수':'경기 중계 중';
   if(index>=total){if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계'}autoBtn.disabled=true;score.textContent=g.awayRuns+' : '+g.homeRuns;drawInningBoard(true);finish.hidden=false;btn.textContent='경기 종료';btn.disabled=true;skip.hidden=true}else btn.textContent='▶ '+(detailed?'다음 투구':(index+1)+'회 진행');
   
  };
