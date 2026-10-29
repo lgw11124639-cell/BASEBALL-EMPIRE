@@ -489,3 +489,18 @@
 .be-calendar-match-list .be-today-actions{display:grid!important;grid-template-columns:minmax(0,1fr) max-content max-content;gap:6px;max-width:100%;align-items:center}
 .be-calendar-match-list .be-today-actions button{min-width:0!important;max-width:100%!important;white-space:nowrap!important;word-break:keep-all!important;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;min-height:34px;height:34px;padding:7px 9px!important}
 @media(max-width:760px){.be-calendar-match-list .be-today-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.be-calendar-match-list .be-today-actions small{grid-column:1/-1;min-width:0}.be-calendar-match-list .be-today-actions button{width:100%!important;font-size:11px!important;padding:7px 5px!important}}
+
+/* Mobile editorial viewport: prevent sideways scrolling and oversized article furniture. */
+@media(max-width:600px){
+ .be-editorial-modal,.game-news-overlay,#game-news-overlay{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+ .be-editorial-modal>header,.be-editorial-modal>.news-article-header{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;padding-left:16px!important;padding-right:16px!important;gap:8px!important}
+ .be-editorial-modal>header>div,.be-editorial-modal>.news-article-header>div{min-width:0!important;flex:1 1 auto!important;overflow:hidden}
+ .be-editorial-modal>header button,.be-editorial-modal>.news-article-header button{flex:0 0 auto!important;white-space:nowrap!important;padding:9px 11px!important;font-size:13px!important}
+ .be-editorial-modal .editorial-story,.be-editorial-modal .news-article-body,#game-news-overlay .editorial-story{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;padding:18px 16px 72px!important;overflow-wrap:break-word}
+ .be-editorial-modal .editorial-headline,#game-news-overlay .editorial-headline{font-size:clamp(24px,7vw,32px)!important;line-height:1.3!important;letter-spacing:-.04em!important;overflow-wrap:break-word!important;word-break:keep-all!important}
+ .be-editorial-modal .editorial-subtitle,.be-editorial-modal .editorial-copy p,#game-news-overlay .editorial-copy p{font-size:15px!important;line-height:1.75!important;overflow-wrap:break-word!important;word-break:keep-all!important}
+ .be-editorial-modal .editorial-hero,.be-editorial-modal .editorial-stadium,.be-editorial-modal .editorial-hero-title{box-sizing:border-box!important;max-width:100%!important;min-width:0!important;overflow:hidden}
+ .be-editorial-modal .editorial-hero-title{font-size:clamp(15px,4.5vw,22px)!important;overflow-wrap:anywhere!important}
+ .be-editorial-modal .editorial-hero-title b{font-size:clamp(24px,8vw,38px)!important}
+ .be-editorial-modal .editorial-meta{display:flex!important;flex-wrap:wrap!important;gap:5px 12px!important}
+}
