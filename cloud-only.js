@@ -710,6 +710,7 @@ export async function cloudSave(state){
    fullBytes:fullJsonLength,deltaBytes:deltaJson?.length||0,used:useDelta,
    changedFieldCount:changedFields.length,changedFields:changedFields.slice(0,12),
    removedFields:delta?.unset||[]};
+  const uploadStarted=performance.now();
   if(useDelta){
    try{result=await call('/v2/saves/main','PATCH',delta,revision,deltaJson);}
    catch(e){
@@ -720,6 +721,7 @@ export async function cloudSave(state){
     result=await call('/v2/saves/main','PUT',payload,revision);
    }
   }else result=await call('/v2/saves/main','PUT',payload,revision);
+  window.beCloudSaveStages={...window.beCloudPackingStages,deltaMs:+(uploadStarted-deltaStarted).toFixed(1),uploadMs:+(performance.now()-uploadStarted).toFixed(1),totalMs:+(performance.now()-packStarted).toFixed(1),method:window.beCloudSaveTiming?.method||null,uploadBytes:window.beCloudSaveTiming?.transferred||0};
   window.beCloudDeltaTiming.actualMethod=window.beCloudSaveTiming?.method||null;
   window.beCloudDeltaTiming.actualUploadBytes=window.beCloudSaveTiming?.transferred||0;
   window.beCloudPackingTiming={replay:Math.round((replayPackedAt-packStarted)*10)/10,auxiliary:Math.round((auxiliaryPackedAt-replayPackedAt)*10)/10,total:Math.round((auxiliaryPackedAt-packStarted)*10)/10};
