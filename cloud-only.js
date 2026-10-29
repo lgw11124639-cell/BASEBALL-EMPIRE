@@ -188,6 +188,9 @@ async function packAuxiliaryFields(state){
  // Independent league archives can be compressed concurrently, while preserving
  // byte-for-byte JSON content and the existing cache / unpack format.
  const fieldTimings=[];
+ // Expensive subtree diagnostics are opt-in; normal saves must not stringify archives twice.
+ if(window.beCloudArchiveDiagnosticsRequested===true){
+  window.beCloudArchiveDiagnosticsRequested=false;
  // Diagnostic only: discover stable internal subtrees before changing the save format.
  const archiveSubtreeShapes={};
  for(const key of ['highSchoolBaseball','collegeBaseball','minorLeague']){
@@ -220,6 +223,8 @@ async function packAuxiliaryFields(state){
    return [key,seasons];
   })
  );
+
+ }
 
  const entries=await Promise.all(auxiliarySaveFields.map(async key=>{
   if(state?.[key]===undefined)return null;
