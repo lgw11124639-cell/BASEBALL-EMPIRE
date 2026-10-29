@@ -447,12 +447,13 @@ function seasonDate(day){const start=state?.seasonStartDate||localTodayISO();con
  const elapsed=Math.round((d-opening)/86400000);
  if(elapsed<0)return [];
  const week=Math.floor(elapsed/7),weekdayOffset=elapsed%7;
- if(week>=27)return [];
+ // Continue make-up fixtures after the original 27-week window if any club has fewer than 144 games.
+ // Never replay completed fixtures; the per-club 144-game filter below remains authoritative.
  const half=weekdayOffset<=2?0:weekdayOffset>=3&&weekdayOffset<=5?1:-1;
  if(half<0)return [];
  const slot=week*2+half,cycle=Math.floor(slot/9),round=slot%9;
  // Four three-game cycles and two two-game cycles: 4*3 + 2*2 = 16 vs each opponent.
- const gamesInSeries=cycle<4?3:2,dayInSeries=half===0?weekdayOffset:weekdayOffset-3;
+ const gamesInSeries=week>=27?3:cycle<4?3:2,dayInSeries=half===0?weekdayOffset:weekdayOffset-3;
  if(dayInSeries>=gamesInSeries)return [];
  const ids=state.teams.map(t=>t.id),n=ids.length;
  if(n!==10)return [];
