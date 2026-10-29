@@ -80,14 +80,37 @@ const shardArrayFields={players:64,gameResults:24};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
+// Limit simultaneous gzip streams. Do not change the wire format or skip JSON
+// comparisons: both are required for lossless revision-checked cloud saves.
+const shardGzipConcurrency=4;
+let shardGzipActive=0;
+const shardGzipQueue=[];
+async function withShardGzipSlot(work){
+ if(shardGzipActive>=shardGzipConcurrency)await new Promise(resolve=>shardGzipQueue.push(resolve));
+ shardGzipActive++;
+ try{return await work()}
+ finally{
+  shardGzipActive--;
+  const next=shardGzipQueue.shift();
+  if(next)next();
+ }
+}
+const shardGzipInFlight=new Map();
 async function encodeCloudShard(raw,cacheKey){
  const prior=shardGzipCache.get(cacheKey);
  if(prior?.raw===raw)return prior.encoded;
- const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
- let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
- const encoded=btoa(binary);
- shardGzipCache.set(cacheKey,{raw,encoded});
- return encoded;
+ const pending=shardGzipInFlight.get(cacheKey);
+ if(pending?.raw===raw)return pending.promise;
+ const promise=withShardGzipSlot(async()=>{
+  const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+  let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
+  const encoded=btoa(binary);
+  shardGzipCache.set(cacheKey,{raw,encoded});
+  return encoded;
+ });
+ shardGzipInFlight.set(cacheKey,{raw,promise});
+ try{return await promise}
+ finally{if(shardGzipInFlight.get(cacheKey)?.promise===promise)shardGzipInFlight.delete(cacheKey)}
 }
 async function packCloudShards(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
