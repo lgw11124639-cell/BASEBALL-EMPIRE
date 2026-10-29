@@ -1585,10 +1585,12 @@ function seasonProgressPanel(){
  // Prepare the full season fixture calendar, not merely the next few days.
  // Preview mode deliberately ignores completed-game totals without modifying saved results.
  const calendarStart=new Date(d.getFullYear(),0,1,12),calendarEnd=new Date(d.getFullYear()+1,0,1,12);
+ const calendarRegularCount=new Map();
  for(let date=new Date(calendarStart);date<calendarEnd;date.setDate(date.getDate()+1)){
   const day=state.day+Math.round((date-d)/86400000),pairs=scheduledPairs(day,true);
   const mine=pairs.find(([a,b])=>a===state.teamId||b===state.teamId);
-  if(mine){
+  if(mine && (calendarRegularCount.get(state.teamId)||0)<144 && !(played>=144&&date>d)){
+   calendarRegularCount.set(state.teamId,(calendarRegularCount.get(state.teamId)||0)+1);
    const away=state.teams.find(t=>t.id===mine[0]),home=state.teams.find(t=>t.id===mine[1]);
    if(away&&home)add(iso(date),'KBO',away.city+' '+away.name+' vs '+home.city+' '+home.name,(mine[1]===state.teamId?'홈':'원정')+' · 정규시즌',0);
   }else if(date.getDay()===1&&date.getMonth()>=2&&date.getMonth()<=8&&date>=new Date(d.getFullYear(),2,20,12)){
@@ -1697,7 +1699,8 @@ function seasonProgressPanel(){
  const selectedGames=selected?(state.gameResults||[]).filter(g=>iso(seasonDate(Number(g.day)))===selected):[];
  const regularSeasonComplete=state.teams.every(t=>(t.wins||0)+(t.losses||0)+(t.draws||0)>=144);
  const selectedIsPostseason=regularSeasonComplete&&selectedDay!=null&&selectedDay>=Number(state.day)&&!!state.postseasons?.[state.year];
- const scheduled=!selectedIsPostseason&&selectedDay!=null&&selectedDate.getFullYear()===Number(state.year)?scheduledPairs(selectedDay,true):[];
+ const selectedHasRegularFixture=selected&&eventMap.get(selected)?.some(x=>x.kind==='KBO');
+ const scheduled=!selectedIsPostseason&&selectedDay!=null&&selectedDate.getFullYear()===Number(state.year)&&!!selectedHasRegularFixture?scheduledPairs(selectedDay,true):[];
  const kboPairs=new Map();
  for(const pair of scheduled)kboPairs.set(pair[0]+':'+pair[1],pair);
  for(const g of selectedGames)kboPairs.set(g.away+':'+g.home,[g.away,g.home]);
