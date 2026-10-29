@@ -488,46 +488,26 @@ window.beAuditCloudConsistency=async function(){
  const remote=await snapshot();
  if(!remote?.save)return {ok:false,reason:'server save missing'};
  const serverRev=revisionOf(remote);
- const local=baseline?.save;
- if(!local)return {ok:false,reason:'local baseline unavailable',serverRev,clientRev:revision};
- const restored=await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(structuredClone(remote.save))))));
- const fields=['date','year','season','teams','players','gameResults','minorLeague','nationalTeamResults'];
+ // Compare two immutable wire snapshots. baseline.save points at the mutable
+ // simulation state and can change after the save, producing false team diffs.
+ const expected=acknowledgedWireSave;
+ if(!expected)return {ok:false,reason:'acknowledged wire snapshot unavailable',serverRev,clientRev:revision};
+ const actual=remote.save;
+ const keys=[...new Set([...Object.keys(expected),...Object.keys(actual)])].sort();
  const canonical=value=>JSON.stringify(value,function(k,v){
   if(v&&typeof v==='object'&&!Array.isArray(v)){
-   const o={};for(const key of Object.keys(v).sort())o[key]=v[key];return o;
+   const ordered={};for(const name of Object.keys(v).sort())ordered[name]=v[name];return ordered;
   }return v;
  });
  const differences=[];
- for(const key of fields){
-  if(canonical(local[key])!==canonical(restored[key]))
-   differences.push({field:key,localLength:Array.isArray(local[key])?local[key].length:null,serverLength:Array.isArray(restored[key])?restored[key].length:null});
+ for(const key of keys){
+  if(canonical(expected[key])!==canonical(actual[key]))
+   differences.push({field:key,localLength:Array.isArray(expected[key])?expected[key].length:null,serverLength:Array.isArray(actual[key])?actual[key].length:null});
  }
- // Read-only, bounded structural diff: do not expose full player or team objects.
- const teamDetails=[];
- if(canonical(local.teams)!==canonical(restored.teams)){
-  const left=Array.isArray(local.teams)?local.teams:[];
-  const right=Array.isArray(restored.teams)?restored.teams:[];
-  const describe=v=>v===undefined?'missing':v===null?'null':Array.isArray(v)?'array('+v.length+')':typeof v;
-  const walk=(a,b,path,out,depth)=>{
-   if(out.length>=30||canonical(a)===canonical(b))return;
-   if(depth>=5||!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b)){
-    out.push({path,localType:describe(a),serverType:describe(b)});return;
-   }
-   const keys=new Set([...Object.keys(a),...Object.keys(b)]);
-   for(const k of keys){
-    if(out.length>=30)break;
-    walk(a[k],b[k],path+'.'+k,out,depth+1);
-   }
-  };
-  for(let i=0;i<Math.max(left.length,right.length);i++){
-   const changed=[];
-   walk(left[i],right[i],'teams['+i+']',changed,0);
-   if(changed.length)teamDetails.push({index:i,teamId:left[i]?.id??right[i]?.id??null,teamName:left[i]?.name??right[i]?.name??null,changed});
-  }
- }
- window.beCloudTeamDiff=teamDetails;
- const result={ok:serverRev===revision&&differences.length===0,clientRev:revision,serverRev,differences,teamDetails,
-  checked:fields,readOnly:true,at:new Date().toISOString()};
+ const result={ok:serverRev===revision&&differences.length===0,clientRev:revision,serverRev,
+  differences,teamDetails:[],checked:keys,comparison:'last acknowledged wire snapshot vs server wire snapshot',
+  readOnly:true,at:new Date().toISOString()};
+ window.beCloudTeamDiff=[];
  window.beCloudConsistencyAudit=result;
  return result;
 };
