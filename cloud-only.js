@@ -539,15 +539,31 @@ export async function cloudSave(state){
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
   const replayPacked=state;
   const replayPackedAt=performance.now();
-  const shards=await packCloudShards(replayPacked);
-  const shardPackedAt=performance.now();
-  const amateur=await packAmateurBuckets(shards);
-  const amateurPackedAt=performance.now();
-  const leagues=await packLeagueShards(amateur);
-  const leaguePackedAt=performance.now();
-  payload=await packAuxiliaryFields(leagues);
+  // Independent archive packers operate on the same immutable input.
+  // Merge only their own packed fields; preserve all original fields untouched
+  // unless that packer explicitly replaced the field.
+  const packers=[
+   ['shards',packCloudShards],['amateur',packAmateurBuckets],
+   ['leagues',packLeagueShards],['auxiliary',packAuxiliaryFields]
+  ];
+  const results=await Promise.all(packers.map(async([name,fn])=>{
+   const started=performance.now();
+   const packed=await fn(replayPacked);
+   return {name,packed,ms:+(performance.now()-started).toFixed(1)};
+  }));
+  payload={...replayPacked};
+  for(const {packed} of results){
+   for(const key of Object.keys(replayPacked)){
+    if(Object.prototype.hasOwnProperty.call(packed,key))continue;
+    delete payload[key];
+   }
+   for(const [key,value] of Object.entries(packed)){
+    if(!Object.prototype.hasOwnProperty.call(replayPacked,key))payload[key]=value;
+   }
+  }
   const auxiliaryPackedAt=performance.now();
-  window.beCloudPackingStages={shardsMs:+(shardPackedAt-replayPackedAt).toFixed(1),amateurMs:+(amateurPackedAt-shardPackedAt).toFixed(1),leaguesMs:+(leaguePackedAt-amateurPackedAt).toFixed(1),auxiliaryMs:+(auxiliaryPackedAt-leaguePackedAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
+  const times=Object.fromEntries(results.map(x=>[x.name,x.ms]));
+  window.beCloudPackingStages={shardsMs:times.shards,amateurMs:times.amateur,leaguesMs:times.leagues,auxiliaryMs:times.auxiliary,totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),parallel:true,deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
   // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
   window.beVerifyCloudPacking=async()=>{
    const start=performance.now();
