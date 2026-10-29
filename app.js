@@ -1771,7 +1771,24 @@ function beGameScoringEvents(awayInnings,homeInnings){
   return {inning:i+1,away:awayRuns,home:homeRuns,scoreA:awayTotal,scoreH:homeTotal};
  }).filter(x=>x.away||x.home);
 }
-function newsStory(g){const a=state.teams[g.away],h=state.teams[g.home],draw=g.awayRuns===g.homeRuns,awayWin=g.awayRuns>g.homeRuns,w=awayWin?a:h,l=awayWin?h:a,margin=Math.abs(g.awayRuns-g.homeRuns),ai=g.awayInnings||[],hi=g.homeInnings||[];let decisive=null,peak=null;const turns=beGameScoringEvents(ai,hi);let previous=0;for(const turn of turns){const diff=turn.scoreA-turn.scoreH;if(!peak||turn.away+turn.home>peak.away+peak.home)peak=turn;if(previous!==0&&Math.sign(previous)!==Math.sign(diff)&&diff!==0)decisive=turn;previous=diff;}const title=draw?esc(a.name)+'·'+esc(h.name)+', 연장 끝 무승부':margin>=7?esc(w.name)+', '+margin+'점 차 압승…'+esc(l.name)+' 제압':margin===1?esc(w.name)+', '+esc(l.name)+'에 한 점 차 승리':esc(w.name)+', '+esc(l.name)+' 꺾고 '+margin+'점 차 승리';const summary=draw?esc(a.city+' '+a.name)+'와 '+esc(h.city+' '+h.name)+'가 '+g.awayRuns+'대 '+g.homeRuns+'로 승부를 가리지 못했다.':esc(w.city+' '+w.name)+'가 '+esc(l.city+' '+l.name)+'를 '+Math.max(g.awayRuns,g.homeRuns)+'대 '+Math.min(g.awayRuns,g.homeRuns)+'로 꺾었다.';return {title,summary,turns,decisive,peak,draw,margin}}
+function beUnifiedGameNarrative(g,awayName,homeName,context){
+ const away=String(awayName||'원정팀'),home=String(homeName||'홈팀');
+ const ar=Number(g.awayRuns)||0,hr=Number(g.homeRuns)||0,draw=ar===hr;
+ const winner=ar>hr?away:home,loser=ar>hr?home:away;
+ const margin=Math.abs(ar-hr),events=beGameScoringEvents(g.awayInnings,g.homeInnings);
+ const biggest=events.reduce((best,x)=>!best||x.away+x.home>best.away+best.home?x:best,null);
+ const lead=draw?away+'와 '+home+'가 '+ar+'대 '+hr+'로 승부를 가리지 못했다.':winner+'가 '+loser+'를 '+Math.max(ar,hr)+'대 '+Math.min(ar,hr)+'로 꺾었다.';
+ const title=draw?away+'·'+home+', '+ar+'대'+hr+' 무승부':margin>=7?winner+', '+margin+'점 차 대승…'+loser+' 제압':margin===1?winner+', '+loser+'에 한 점 차 승리':winner+', '+loser+' 꺾고 '+margin+'점 차 승리';
+ const paragraphs=[lead];
+ if(events.length){
+  const first=events[0];paragraphs.push(first.inning+'회 '+(first.away?away+' '+first.away+'점 ':'')+(first.home?home+' '+first.home+'점 ':'')+'득점으로 경기 흐름이 시작됐다.');
+  if(biggest&&biggest!==first)paragraphs.push(biggest.inning+'회에는 '+away+' '+biggest.away+'점, '+home+' '+biggest.home+'점으로 양 팀 합계 '+(biggest.away+biggest.home)+'점이 나왔다.');
+  const last=events[events.length-1];if(last!==first&&last!==biggest)paragraphs.push(last.inning+'회에는 '+away+' '+last.away+'점, '+home+' '+last.home+'점이 기록됐다.');
+ }else paragraphs.push('양 팀 모두 득점을 기록하지 못했다.');
+ if(context)paragraphs.push(String(context));
+ return {title,lead,paragraphs,events,margin,draw};
+}
+function newsStory(g){const a=state.teams[g.away],h=state.teams[g.home],draw=g.awayRuns===g.homeRuns,awayWin=g.awayRuns>g.homeRuns,w=awayWin?a:h,l=awayWin?h:a,margin=Math.abs(g.awayRuns-g.homeRuns),ai=g.awayInnings||[],hi=g.homeInnings||[];let decisive=null,peak=null;const turns=beGameScoringEvents(ai,hi);let previous=0;for(const turn of turns){const diff=turn.scoreA-turn.scoreH;if(!peak||turn.away+turn.home>peak.away+peak.home)peak=turn;if(previous!==0&&Math.sign(previous)!==Math.sign(diff)&&diff!==0)decisive=turn;previous=diff;}const unified=beUnifiedGameNarrative(g,a.city+' '+a.name,h.city+' '+h.name);const title=unified.title,summary=unified.lead;return {title,summary,turns,decisive,peak,draw,margin}}
 function gameMvp(g){
  if(g.mvp&&typeof g.mvp==='object'){
   const raw=g.mvp;
