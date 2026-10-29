@@ -730,11 +730,7 @@ export async function cloudSave(state){
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
- // The packed payload is a fresh, private wire object created for this save.
- // Retain it as the acknowledged PATCH baseline instead of deep-cloning every
- // compressed shard after each successful save. Future packing creates a new
- // object and does not mutate this one; the server revision is already checked.
- revision=next;acknowledgedWireSave=payload;baseline={save:state,revision:next};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
+ revision=next;acknowledgedWireSave=structuredClone(payload);baseline={save:state,revision:next};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
 export async function cloudGate(onReady){
  const overlay=document.createElement('div');overlay.id='be-cloud-gate';
