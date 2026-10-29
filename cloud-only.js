@@ -369,13 +369,13 @@ function recordCloudPayload(bytes){
   averageDeltaBytes:cloudPayloadHistory.length>1?Math.round((bytes-first)/(cloudPayloadHistory.length-1)):0
  };
 }
-async function call(path,method='GET',data,rev){
+async function call(path,method='GET',data,rev,preSerializedJson){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
  if(rev!==undefined)headers['If-Match']=String(rev);
  const measure=path==='/v2/saves/main'&&(method==='PUT'||method==='PATCH');
  const start=measure?performance.now():0;
- const json=data===undefined?undefined:JSON.stringify(data);
+ const json=data===undefined?undefined:(preSerializedJson===undefined?JSON.stringify(data):preSerializedJson);
  const serializedAt=measure?performance.now():0;
  let body=json;
  // Large saves are transferred compressed only when the browser supports it.
@@ -567,7 +567,7 @@ export async function cloudSave(state){
    changedFieldCount:changedFields.length,changedFields:changedFields.slice(0,12),
    removedFields:delta?.unset||[]};
   if(useDelta){
-   try{result=await call('/v2/saves/main','PATCH',delta,revision);}
+   try{result=await call('/v2/saves/main','PATCH',delta,revision,deltaJson);}
    catch(e){
     // Only a definite unsupported-method response permits a safe full PUT retry.
     // Never retry an ambiguous network failure or a revision conflict.
