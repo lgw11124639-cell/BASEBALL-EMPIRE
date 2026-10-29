@@ -1815,14 +1815,21 @@ function gameMvp(g){
  const best=candidates[0];
  return best?{id:best.id,name:best.name,team:best.team,role:best.role,detail:best.detail}:null;
 }
+function beGameInterviewContext(g){
+ const margin=Math.abs((Number(g.awayRuns)||0)-(Number(g.homeRuns)||0));
+ const extra=Math.max((g.awayInnings||[]).length,(g.homeInnings||[]).length)>9;
+ const draw=Number(g.awayRuns)===Number(g.homeRuns);
+ const situation=extra?'연장전까지 집중력을 유지하는 것이 중요했습니다.':margin===1?'한 점 차라 마지막 아웃카운트까지 긴장을 놓을 수 없었습니다.':margin>=6?'점수 차와 상관없이 매 이닝 집중하려고 했습니다.':'경기 흐름이 바뀔 수 있어 매 순간 최선을 다했습니다.';
+ return {margin,extra,draw,situation};
+}
 function gameMvpInterview(g,mvp){
  if(!mvp)return '';
  const winner=g.awayRuns>g.homeRuns?g.away:g.home,win=g.awayRuns!==g.homeRuns&&mvp.team===winner;
- const margin=Math.abs(g.awayRuns-g.homeRuns),extra=(g.awayInnings||[]).length>9||(g.homeInnings||[]).length>9;
+ const {margin,extra,situation}=beGameInterviewContext(g);
  const p=state.players.find(x=>x.id===mvp.id);
  const character=String(p?.personality||p?.profile?.personality||'');
  const first=mvp.role==='투수'?(Number(mvp.detail.match(/(\d+)탈삼진/)?.[1])>=8?'삼진을 잡아야 할 순간에 제 공을 믿고 던졌습니다.':'포수와 경기 전 준비한 승부가 잘 맞아떨어졌습니다.'):(mvp.detail.includes('홈런')&&!mvp.detail.includes('0홈런')?'타석에서 장타를 의식하기보다 제 스윙에 집중했습니다.':'주자가 있을 때 어떻게든 출루하고 연결하려고 했습니다.');
- const situation=extra?'연장전까지 집중력을 유지하는 것이 중요했습니다.':margin===1?'한 점 차라 마지막 아웃카운트까지 긴장을 놓을 수 없었습니다.':margin>=6?'점수 차와 상관없이 매 이닝 집중하려고 했습니다.':'경기 흐름이 바뀔 수 있어 매 순간 최선을 다했습니다.';
+ 
  const tone=/신중|차분|내성/.test(character)?'아직 부족한 점이 많습니다.':/자신|승부|적극/.test(character)?'다음 경기에서도 공격적으로 임하겠습니다.':'팀 동료들에게 고맙습니다.';
  return '“'+first+' '+situation+' '+(win?'오늘 승리는 팀 전체가 함께 만든 결과입니다. ':'다음 경기를 더 잘 준비하겠습니다. ')+tone+'”';
 }
