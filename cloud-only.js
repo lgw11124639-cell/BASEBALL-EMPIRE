@@ -6,6 +6,40 @@ let gzipSaveSupported=false; // Temporarily disable gzip uploads: Content-Encodi
 let gzipRejectedStatus=null;
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.token&&s?.username&&Number(s.expiresAt)>Date.now()){token=s.token;username=s.username}else localStorage.removeItem(KEY)}catch(_){try{localStorage.removeItem(KEY)}catch(_){}}
 function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,username,expiresAt:Date.now()+6*24*60*60*1000}));else localStorage.removeItem(KEY)}catch(_){}}
+// Lossless replay-event packing inside the JSON save (no Content-Encoding header).
+// The live game state is never mutated; old uncompressed saves remain readable.
+async function packReplayResults(state){
+ if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined'||!Array.isArray(state?.gameResults))return state;
+ const games=state.gameResults;let changed=false;
+ const packed=await Promise.all(games.map(async game=>{
+  if(!Array.isArray(game?.broadcastEvents)||!game.broadcastEvents.length)return game;
+  const raw=JSON.stringify(game.broadcastEvents);
+  if(raw.length<1500)return game;
+  try{
+   const bytes=new TextEncoder().encode(raw);
+   const zipped=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+   let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
+   const encoded=btoa(binary);
+   if(encoded.length>=raw.length*.85)return game;
+   changed=true;const copy={...game};delete copy.broadcastEvents;copy.bePackedBroadcastGzip=encoded;return copy;
+  }catch(_){return game}
+ }));
+ return changed?{...state,gameResults:packed}:state;
+}
+async function unpackReplayResults(state){
+ if(!Array.isArray(state?.gameResults))return state;
+ const packed=state.gameResults.filter(g=>typeof g?.bePackedBroadcastGzip==='string');
+ if(!packed.length)return state;
+ if(typeof DecompressionStream!=='function')throw Error('이 저장 데이터를 불러오려면 gzip 압축 해제를 지원하는 브라우저가 필요합니다');
+ await Promise.all(packed.map(async game=>{
+  const binary=atob(game.bePackedBroadcastGzip);const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const events=JSON.parse(await new Response(stream).text());
+  if(!Array.isArray(events))throw Error('경기 다시보기 데이터 형식이 올바르지 않습니다');
+  game.broadcastEvents=events;delete game.bePackedBroadcastGzip;
+ }));return state;
+}
 async function call(path,method='GET',data,rev){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
@@ -73,7 +107,7 @@ async function call(path,method='GET',data,rev){
 }
 const revisionOf=x=>{const n=Number(x?.revision??x?.rev??x?.saveRevision);return Number.isSafeInteger(n)&&n>=0?n:null};
 async function snapshot(){try{return await call('/v2/saves/main')}catch(e){if(e.status===404)return null;throw e}}
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;return s?.save||null}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;return s?.save?await unpackReplayResults(s.save):null}
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
@@ -81,7 +115,7 @@ export async function cloudSave(state){
  // Avoid a redundant full snapshot GET before every daily save.
  // A 409/412 still blocks progress and requires a fresh login/load.
  let result;
- try{result=await call('/v2/saves/main','PUT',state,revision)}
+ try{result=await call('/v2/saves/main','PUT',await packReplayResults(state),revision)}
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
