@@ -311,11 +311,14 @@ function playHalf(batting,fielding,inning,r,walkoff=false){const runsAtStart=bat
   if(last)call=terminal==='삼진'?(r()<.55?'헛스윙 삼진':'루킹 삼진'):terminal;
   else if(terminal==='볼넷'&&remaining<=4-balls)call='볼';
   else if(terminal==='삼진'&&remaining<=3-strikes)call=inside?'루킹 스트라이크':'헛스윙';
-  else if(inside&&strikes<2)call=r()<.3?'헛스윙':'루킹 스트라이크';
-  else if(!inside&&balls<3)call='볼';
-  else call='파울';
+  else if(balls>=3)call=inside?(strikes<2?'루킹 스트라이크':'파울'):'파울';
+  else if(strikes>=2)call=inside?'파울':(r()<.45?'헛스윙':'파울');
+  else if(inside)call=r()<.3?'헛스윙':'루킹 스트라이크';
+  else call='볼';
+  if(last&&call==='루킹 삼진'){z.zoneX=50;z.zoneY=50;}
+  if(last&&call==='볼넷'){z.zoneX=5;z.zoneY=50;}
   if(call==='볼')balls++;
-  if(call==='루킹 스트라이크'||call==='헛스윙')strikes++;
+  if(call==='루킹 스트라이크'||call==='헛스윙'||call==='루킹 삼진'||call==='헛스윙 삼진')strikes++;
   if(call==='파울'&&strikes<2)strikes++;
   z.call=call;
   z.ballsAfter=last&&terminal==='볼넷'?4:balls;
