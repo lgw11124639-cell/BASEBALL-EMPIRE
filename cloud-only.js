@@ -195,7 +195,15 @@ export async function cloudSave(state){
    const snapshot=JSON.parse(JSON.stringify(payload));
    await unpackReplayResults(await unpackAuxiliaryFields(snapshot));
    const keys=[...new Set([...auxiliarySaveFields,'gameResults'])];
-   const mismatches=keys.filter(key=>JSON.stringify(snapshot[key])!==JSON.stringify(state[key]));
+   // Compare canonical JSON semantics, not object insertion order. Packed replay
+   // events are restored after the auxiliary archive, changing property order.
+   const canonical=value=>JSON.stringify(value, function(key,v){
+    if(v&&typeof v==='object'&&!Array.isArray(v)){
+     const ordered={};for(const k of Object.keys(v).sort())ordered[k]=v[k];return ordered;
+    }
+    return v;
+   });
+   const mismatches=keys.filter(key=>canonical(snapshot[key])!==canonical(state[key]));
    const result={ok:mismatches.length===0,checked:keys.filter(key=>state[key]!==undefined),mismatches,ms:Math.round(performance.now()-start),source:'latest in-memory save payload; does not test server reload'};
    window.beCloudRoundTripAudit=result;
    return result;
