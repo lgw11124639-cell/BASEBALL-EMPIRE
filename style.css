@@ -690,3 +690,13 @@
  .player-overlay .player-panel.pro-profile .profile-content{height:fit-content!important;min-height:0!important;display:block!important;flex-grow:0!important}
  .player-overlay .player-panel.pro-profile [data-profile-pane]:not([hidden]){height:auto!important;min-height:0!important;flex-grow:0!important}
 }
+
+/* Recent game log: structured baseball box-score table */
+.pro-profile .player-game-log-table{border:1px solid #d9e4f0!important;border-radius:8px;border-collapse:separate!important;border-spacing:0!important;overflow:hidden;font-variant-numeric:tabular-nums}
+.pro-profile .player-game-log-table thead th{background:#edf3f9!important;color:#23466d!important;font-size:11px!important;font-weight:800!important;white-space:nowrap;text-align:center!important;padding:11px 10px!important;border-bottom:2px solid #bed0e3!important}
+.pro-profile .player-game-log-table tbody td{padding:10px!important;border-bottom:1px solid #e2eaf3!important;text-align:center!important;color:#24415f!important;white-space:nowrap;font-size:12px!important}
+.pro-profile .player-game-log-table tbody tr:nth-child(even){background:#f7faff!important}
+.pro-profile .player-game-log-table tbody tr:hover{background:#eaf3fd!important}
+.pro-profile .player-game-log-table tbody tr:last-child td{border-bottom:0!important}
+.pro-profile .player-game-log-table tbody td:first-child{font-weight:700!important;color:#194f82!important}
+.pro-profile .player-game-log-table tbody td:last-child{text-align:left!important;white-space:normal;min-width:110px}
