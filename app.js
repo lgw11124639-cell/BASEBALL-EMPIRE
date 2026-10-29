@@ -1952,7 +1952,7 @@ function beOpenInternationalGameArticle(key,index){
  const h=g.homeInnings||[],a=g.awayInnings||[],n=Math.max(9,h.length,a.length),innings=Array.from({length:n},(_,i)=>i);
  const scoring=beGameScoringEvents(a,h).map(x=>({i:x.inning-1,k:x.home,o:x.away})),turn=scoring.slice().sort((x,y)=>(y.k+y.o)-(x.k+x.o))[0];
  const unified=beCanonicalGameArticle(g,opponent,'대한민국',{competition:key,round:g.round,date:g.date});
- const title=/결승/.test(round)&&!draw?(win?'한국, '+opponent+' 꺾고 우승…'+kr+'대'+opp: '한국, '+opponent+'에 '+kr+'대'+opp+'…준우승'):unified.title;
+ const title=unified.title;
  const intro=unified.lead;
  const paragraphs=unified.paragraphs.slice();
  if(/결승/.test(round)&&!draw)paragraphs.push((win?'대한민국':'상대 '+opponent)+'이 우승을 차지했고 '+(win?opponent:'대한민국')+'은 준우승으로 대회를 마쳤다.');
