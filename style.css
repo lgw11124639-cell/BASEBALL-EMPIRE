@@ -227,3 +227,20 @@
 .be-replay-dialog .be-replay-controls{flex-shrink:0;position:relative!important;bottom:auto!important;padding:10px 0 8px!important;border-top:1px solid #dce7f2}
 .be-replay-dialog #be-replay-finish:not([hidden]){flex:0 1 auto;max-height:25dvh;overflow-y:auto}
 @media(max-width:600px){.be-replay-dialog>header h2{font-size:15px!important}.be-replay-dialog .be-replay-scoreboard{padding:10px 6px;margin:4px 0}.be-replay-dialog .be-replay-live{padding:9px;margin:6px 0}.be-replay-dialog .be-broadcast-zone{padding:8px;margin:5px 0}.be-replay-dialog .be-broadcast-zone-grid{width:66px;height:66px}.be-replay-dialog .be-replay-controls button{padding:10px 5px;font-size:12px}.be-replay-dialog .be-replay-score-row span{overflow-wrap:normal;word-break:keep-all;font-size:11px}}
+
+/* BASEBALL EMPIRE broadcast prototype layout: inning board + runner diamond */
+.be-replay-dialog{width:min(980px,100%);background:#f6f9fd}
+.be-replay-innings{overflow-x:auto;background:#fff;border:1px solid #d8e5f2;border-radius:10px;padding:8px;margin:8px 0}
+.be-inning-row{display:grid;grid-template-columns:42px repeat(12,minmax(23px,1fr)) 34px;gap:3px;min-width:390px;text-align:center;align-items:center;font-size:11px;margin:3px 0}
+.be-inning-row>*{padding:5px 0;border-radius:4px;background:#edf3f9;font-variant-numeric:tabular-nums}
+.be-inning-row strong,.be-inning-row b{background:#dbe9f7;color:#173c61}
+.be-replay-bases{position:relative;width:100px;height:80px;letter-spacing:normal!important}
+.be-diamond-base{position:absolute;width:17px;height:17px;transform:rotate(45deg);background:#b9cbdc;border:2px solid #7e9fbd;border-radius:2px}
+.be-diamond-base.on{background:#e9ad3d;border-color:#f6cc73}
+.be-diamond-first{left:72px;top:36px}.be-diamond-second{left:42px;top:7px}.be-diamond-third{left:12px;top:36px}
+.be-diamond-plate{position:absolute;left:44px;top:62px;font-size:12px}
+.be-replay-live{grid-template-columns:minmax(0,1fr) 108px;align-items:center}
+.be-replay-event{background:#fff;border-left:3px solid #88a7c6;border-bottom:0;border-radius:7px;padding:10px 12px;margin:5px 0}
+.be-replay-event:has(>b){border-left-color:#dfab50}
+@media(min-width:850px){.be-replay-dialog{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px 16px}.be-replay-dialog>header,.be-replay-dialog>.be-replay-scoreboard,.be-replay-dialog>.be-replay-innings,.be-replay-dialog>.be-replay-controls,.be-replay-dialog>#be-replay-finish{grid-column:1/-1}.be-replay-dialog>.be-replay-live,.be-replay-dialog>.be-broadcast-zone,.be-replay-dialog>.be-broadcast-lineups{grid-column:1}.be-replay-dialog>#be-replay-status,.be-replay-dialog>#be-replay-lines{grid-column:2}.be-replay-dialog>#be-replay-lines{grid-row:4/span 3;max-height:55dvh}}
+@media(max-width:600px){.be-replay-overlay{padding:3px}.be-replay-dialog{max-height:99dvh;padding:9px;border-radius:9px}.be-replay-dialog header{top:-9px;padding:5px 0}.be-replay-dialog header h2{font-size:14px}.be-replay-scoreboard{padding:8px 6px;margin:3px 0}.be-replay-innings{padding:4px;margin:5px 0}.be-replay-live{margin:5px 0;padding:8px}.be-broadcast-zone{margin:5px 0;padding:8px}.be-replay-dialog .be-replay-lines{max-height:24dvh}.be-replay-controls{bottom:-9px;padding:8px 0}.be-replay-controls button{padding:9px 4px;font-size:11px}}
