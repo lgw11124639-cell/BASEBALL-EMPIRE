@@ -1732,7 +1732,7 @@ function beInternationalTodayPanel(){
   for(const [i,g] of (record.matchResults||[]).entries())if(String(g.date||'').slice(0,10)===iso)games.push({key,i,record,g});
  }
  if(!games.length)return '';
- return '<section class="dashboard-section be-today-games"><div class="section-title"><div><span class="section-kicker">INTERNATIONAL</span><h2>오늘의 국가대표 경기</h2></div></div>'+games.map(({key,i,record,g})=>'<div class="be-today-match"><div class="be-today-teams"><strong>대한민국</strong><span>'+Number(g.homeRuns)+' : '+Number(g.awayRuns)+'</span><strong>'+esc(INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국')+'</strong></div><div class="be-today-actions"><small>'+esc(record.event||'국제대회')+' · '+esc(g.round||'경기')+'</small><button type="button" onclick="beOpenInternationalReplay('+JSON.stringify(key)+','+i+')">경기 다시보기</button></div></div>').join('')+'</section>';
+ return '<section class="dashboard-section be-today-games"><div class="section-title"><div><span class="section-kicker">INTERNATIONAL</span><h2>오늘의 국가대표 경기</h2></div></div>'+games.map(({key,i,record,g})=>'<div class="be-today-match"><div class="be-today-teams"><strong>대한민국</strong><span>'+Number(g.homeRuns)+' : '+Number(g.awayRuns)+'</span><strong>'+esc(INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국')+'</strong></div><div class="be-today-actions"><small>'+esc(record.event||'국제대회')+' · '+esc(g.round||'경기')+'</small><button type="button" onclick="beOpenInternationalReplay(\''+esc(key)+'\','+i+')">경기 관전하기</button></div></div>').join('')+'</section>';
 }
 function beOpenInternationalReplay(key,index){
  const record=state.nationalTeamResults?.[key],g=record?.matchResults?.[index];if(!g)return;
