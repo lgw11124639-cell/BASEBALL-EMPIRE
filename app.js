@@ -1669,11 +1669,11 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
    const frame=frames[index],e=frame.e,name=e.side==='away'?a.name:h.name,runner=(frame.kind==='pitch'?e.bases:e.afterBases||[]).map(id=>id?'◆':'◇');
    if(frame.kind==='pitch'){
     inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');
-    count.textContent=(e.outsBefore||0)+'아웃 · B/S 미기록';
+    count.textContent=(e.outsBefore||0)+'아웃 · B/S —';
     updateDiamond(frame.kind==='pitch'?e.bases:e.afterBases);
     batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher;
     pitchLabel.textContent=frame.pitch.number+'구 · '+frame.pitch.type;markPitch(frame.pitch);
-    pitchCount.textContent='개별 투구 판정·구속·위치 미기록';
+    pitchCount.textContent=Number.isFinite(frame.pitch.zoneX)&&Number.isFinite(frame.pitch.zoneY)?'투구 위치 표시 중 · B/S 판정 미기록':'이전 경기: 투구 위치·B/S 판정 미기록';
     out.insertAdjacentHTML('beforeend','<div class="be-replay-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+'</small><strong>'+frame.pitch.number+'구 '+esc(frame.pitch.type)+'</strong></div>');
     index++;status.textContent='중계 '+index+' / '+total;
     btn.textContent='▶ 다음 투구';if(out.children.length>7)out.lastElementChild.scrollIntoView({block:'nearest'});
