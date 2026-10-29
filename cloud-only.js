@@ -292,7 +292,7 @@ window.beVerifyCloudServer=async()=>{
  const restored=await unpackReplayResults(await unpackCloudShards(await unpackAuxiliaryFields(remote.save)));
  const current=baseline?.save;
  if(!current)throw Error('비교할 현재 게임 저장 상태가 없습니다');
- const keys=[...new Set([...auxiliarySaveFields,'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
+ const keys=[...new Set([...auxiliarySaveFields,...Object.keys(shardArrayFields),'teams','season','date','year','events'])].filter(k=>current[k]!==undefined||restored[k]!==undefined);
  const mismatches=keys.filter(k=>canonicalCloudValue(current[k])!==canonicalCloudValue(restored[k]));
  const result={ok:serverRevision===revision&&mismatches.length===0,revisionMatches:serverRevision===revision,serverRevision,localRevision:revision,checked:keys,mismatches,gameResultsCount:Array.isArray(restored.gameResults)?restored.gameResults.length:null,ms:Math.round(performance.now()-start),note:'Read-only server GET; current game state unchanged'};
  window.beCloudServerAudit=result;
