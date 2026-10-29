@@ -1656,16 +1656,26 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const scores=all.map(x=>'<div class="be-replay-score-row"><span>'+esc(teams[x.away]?.name||'원정')+'</span><strong>'+x.awayRuns+' : '+x.homeRuns+'</strong><span>'+esc(teams[x.home]?.name||'홈')+'</span></div>').join('');
  document.querySelector('#be-replay-overlay')?.remove();
  document.body.insertAdjacentHTML('beforeend','<div id="be-replay-overlay" class="be-replay-overlay"><section class="be-replay-dialog" role="dialog" aria-modal="true" aria-label="경기 관전"><header><div><small>BASEBALL EMPIRE · 경기 문자중계</small><h2>'+esc(a.city+' '+a.name)+' vs '+esc(h.city+' '+h.name)+'</h2></div><button type="button" onclick="beCloseGameReplay()">✕ 닫기</button></header><div class="be-replay-scoreboard"><span>'+esc(a.name)+'</span><strong id="be-replay-current-score">0 : 0</strong><span>'+esc(h.name)+'</span></div><div class="be-replay-innings" id="be-replay-innings"></div><div class="be-replay-live"><div><b id="be-replay-inning">경기 전</b><span id="be-replay-count">0아웃</span></div><div id="be-replay-bases" class="be-replay-bases"><span class="be-diamond-base be-diamond-second" id="be-base-2"></span><span class="be-diamond-base be-diamond-third" id="be-base-3"></span><span class="be-diamond-base be-diamond-first" id="be-base-1"></span><span class="be-diamond-plate">◆</span></div><div id="be-replay-batter">타자 대기</div></div><div class="be-broadcast-zone"><div><b>스트라이크존</b><div class="be-broadcast-zone-grid">'+Array(9).fill('<span></span>').join('')+'</div><small>투구 위치 · 새 경기부터 기록</small></div><div class="be-broadcast-pitch"><b id="be-broadcast-pitch">구종·구속 대기</b><span id="be-broadcast-pitchcount">타석별 투구 수 표시</span><small>볼·스트라이크 판정은 추후 엔진 연동</small></div></div><details class="be-broadcast-lineups"><summary>양 팀 선발 라인업</summary><div><section><h4>'+esc(a.name)+'</h4><ol>'+lineup('away')+'</ol></section><section><h4>'+esc(h.name)+'</h4><ol>'+lineup('home')+'</ol></section></div></details><p id="be-replay-status" class="be-replay-note">'+(detailed?'실제 경기 엔진에서 저장한 타석 결과를 중계합니다. 투구별 볼·스트라이크 판정은 아직 기록되지 않습니다.':'이 경기는 타석별 기록이 없어 이닝별 실제 득점만 표시합니다.')+'</p><div id="be-replay-lines" class="be-replay-lines"></div><div id="be-replay-finish" hidden><h3>경기 종료 · 당일 전체 경기 최종 점수</h3>'+scores+'</div><div class="be-replay-controls"><button type="button" id="be-replay-next" class="be-replay-next">▶ '+(detailed?'다음 투구':'1회 진행')+'</button><button type="button" id="be-replay-auto" class="be-replay-next be-replay-skip">▶ 자동중계</button><select id="be-replay-speed" aria-label="중계 속도"><option value="1400">보통</option><option value="450">빠르게</option><option value="100">매우 빠르게</option></select><button type="button" id="be-replay-all" class="be-replay-next be-replay-skip">결과까지 보기</button></div></section></div>');
- const inningBoard=document.querySelector('#be-replay-innings');if(inningBoard){
- const max=Math.max(ai.length,hi.length,9);
+ const inningBoard=document.querySelector('#be-replay-innings');
+ const maxInnings=Math.max(ai.length,hi.length,9);
  const totalStat=(side,key)=>{const rows=g[side+'Batters'];return Array.isArray(rows)?rows.reduce((sum,p)=>sum+(Number(p[key])||0),0):null};
- const hitStat=side=>Number.isFinite(Number(g[side+'Hits']))?Number(g[side+'Hits']):totalStat(side,'hits');
+ const hitStat=side=>g[side+'Hits']!=null?Number(g[side+'Hits']):totalStat(side,'hits');
  const errorStat=side=>g[side+'Errors']==null?null:Number(g[side+'Errors']);
  const statCell=value=>value==null?'–':String(value);
- const rows=[['원정',ai,g.awayRuns,hitStat('away'),errorStat('away'),totalStat('away','walks')],['홈',hi,g.homeRuns,hitStat('home'),errorStat('home'),totalStat('home','walks')]];
- inningBoard.style.setProperty('--be-innings',String(max));
- inningBoard.innerHTML='<div class="be-inning-row"><b>팀</b>'+Array.from({length:max},(_,i)=>'<b>'+(i+1)+'</b>').join('')+'<b>R</b><b>H</b><b>E</b><b>BB</b></div>'+rows.map(([label,innings,runs,hits,errors,walks])=>'<div class="be-inning-row"><strong>'+label+'</strong>'+Array.from({length:max},(_,i)=>'<span>'+(innings[i]===null?'–':innings[i]??'')+'</span>').join('')+'<strong>'+statCell(runs)+'</strong><strong>'+statCell(hits)+'</strong><strong>'+statCell(errors)+'</strong><strong>'+statCell(walks)+'</strong></div>').join('');
-}
+ const inningProgress={away:[],home:[]};
+ const drawInningBoard=(completed=false)=>{
+  if(!inningBoard)return;
+  inningBoard.style.setProperty('--be-innings',String(maxInnings));
+  const sides=[['away','원정',ai,g.awayRuns],['home','홈',hi,g.homeRuns]];
+  inningBoard.innerHTML='<div class="be-inning-row"><b>팀</b>'+Array.from({length:maxInnings},(_,i)=>'<b>'+(i+1)+'</b>').join('')+'<b>R</b><b>H</b><b>E</b><b>BB</b></div>'+sides.map(([side,label,innings,runs])=>{
+   const visible=completed?innings:inningProgress[side];
+   const scoreNow=completed?runs:visible.reduce((sum,x)=>sum+(Number(x)||0),0);
+   const h=completed?hitStat(side):null,err=completed?errorStat(side):null,walk=completed?totalStat(side,'walks'):null;
+   return '<div class="be-inning-row"><strong>'+label+'</strong>'+Array.from({length:maxInnings},(_,i)=>'<span>'+(visible[i]===undefined?'':visible[i]===null?'–':visible[i])+'</span>').join('')+'<strong>'+scoreNow+'</strong><strong>'+statCell(h)+'</strong><strong>'+statCell(err)+'</strong><strong>'+statCell(walk)+'</strong></div>';
+  }).join('');
+ };
+ drawInningBoard();
+
  const updateDiamond=ids=>{for(let i=0;i<3;i++){const el=document.querySelector('#be-base-'+(i+1));if(el){el.classList.toggle('on',ids?.[i]!=null);el.title=runnerName(ids?.[i]);}}};
  const out=document.querySelector('#be-replay-lines'),btn=document.querySelector('#be-replay-next'),skip=document.querySelector('#be-replay-all'),finish=document.querySelector('#be-replay-finish'),score=document.querySelector('#be-replay-current-score'),status=document.querySelector('#be-replay-status'),inningLabel=document.querySelector('#be-replay-inning'),count=document.querySelector('#be-replay-count'),bases=document.querySelector('#be-replay-bases'),batter=document.querySelector('#be-replay-batter');
  let index=0,ar=0,hr=0,autoTimer=null;const autoBtn=document.querySelector('#be-replay-auto'),speedSelect=document.querySelector('#be-replay-speed'),pitchLabel=document.querySelector('#be-broadcast-pitch'),pitchCount=document.querySelector('#be-broadcast-pitchcount');const zoneGrid=document.querySelector('.be-broadcast-zone-grid');
@@ -1689,6 +1699,10 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
     return;
    }
    if(e.side==='away')ar=e.score;else hr=e.score;
+   const sideInnings=e.side==='away'?ai:hi;
+   const priorRuns=sideInnings.slice(0,e.inning-1).reduce((sum,x)=>sum+(Number(x)||0),0);
+   inningProgress[e.side][e.inning-1]=Math.max(0,(Number(e.score)||0)-priorRuns);
+   drawInningBoard();
    inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');count.textContent=(e.outsAfter||0)+'아웃';updateDiamond(frame.kind==='pitch'?e.bases:e.afterBases);batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher+' | 1루 '+runnerName(e.afterBases?.[0])+' · 2루 '+runnerName(e.afterBases?.[1])+' · 3루 '+runnerName(e.afterBases?.[2]);pitchLabel.textContent=Array.isArray(e.pitchSequence)&&e.pitchSequence.length?'구종 순서: '+e.pitchSequence.map(x=>x.type).join(' → '):e.pitch?('타석 사용 구종 '+e.pitch+(e.velocity?' · 투수 최고구속 '+e.velocity+'km/h':'')):'투구별 기록 없음';pitchCount.textContent='해당 타석 총 '+(e.pitches||0)+'구 · '+e.outcome+' (개별 투구 판정 미기록)';
    const pitch=Array.isArray(e.pitchSequence)&&e.pitchSequence.length
     ?'<div class="be-replay-pitch-list">'+e.pitchSequence.map(x=>'<span>'+Number(x.number)+'구 '+esc(x.type)+'</span>').join(' · ')+'</div><small>투구별 구종 기록 · 볼/스트라이크 판정 및 위치 미기록</small>'
@@ -1696,10 +1710,11 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
    out.insertAdjacentHTML('beforeend','<div class="be-replay-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+'</small><strong>'+esc(describe(e))+'</strong>'+pitch+(e.runs?'<b>+'+e.runs+'점</b>':'')+'</div>');
   }else{
    const x=Number(ai[index])||0,y=Number(hi[index])||0;ar+=x;hr+=y;
+   inningProgress.away[index]=x;inningProgress.home[index]=y;drawInningBoard();
    inningLabel.textContent=(index+1)+'회 종료';out.insertAdjacentHTML('beforeend','<div class="be-replay-line"><b>'+(index+1)+'회</b><span>'+esc(a.name)+' '+x+'점 · '+esc(h.name)+' '+y+'점</span><strong>'+ar+' : '+hr+'</strong></div>');
   }
   index++;score.textContent=ar+' : '+hr;status.textContent=index>=total?'경기 종료 · 최종 점수':detailed?'타석 '+index+' / '+total:'이닝 '+index+' / '+total;
-  if(index>=total){if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계'}autoBtn.disabled=true;score.textContent=g.awayRuns+' : '+g.homeRuns;finish.hidden=false;btn.textContent='경기 종료';btn.disabled=true;skip.hidden=true}else btn.textContent='▶ '+(detailed?'다음 투구':(index+1)+'회 진행');
+  if(index>=total){if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계'}autoBtn.disabled=true;score.textContent=g.awayRuns+' : '+g.homeRuns;drawInningBoard(true);finish.hidden=false;btn.textContent='경기 종료';btn.disabled=true;skip.hidden=true}else btn.textContent='▶ '+(detailed?'다음 투구':(index+1)+'회 진행');
   if(out.children.length>7)out.lastElementChild.scrollIntoView({block:'nearest'});
  };
  btn.onclick=step;autoBtn.onclick=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계';return}autoBtn.textContent='Ⅱ 일시정지';autoTimer=setInterval(step,Number(speedSelect.value)||1400)};speedSelect.onchange=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=setInterval(step,Number(speedSelect.value)||1400)}};skip.onclick=()=>{while(index<total)step();finish.scrollIntoView({block:'nearest'})};
