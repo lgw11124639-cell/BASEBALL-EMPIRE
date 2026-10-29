@@ -59,21 +59,20 @@ async function packAuxiliaryFields(state){
  for(const key of auxiliarySaveFields){
   if(state?.[key]===undefined)continue;
   const value=state[key];
-  if(value&&typeof value==='object'){
-   const cached=auxiliaryCompressionCache.get(value);
-   if(cached&&cached.key===key){
-    if(cached.encoded){if(!copy)copy={...state};if(!packed)packed={};packed[key]=cached.encoded;delete copy[key]}
-    continue;
-   }
-  }
+  // Compare serialized content: league objects may mutate without changing identity.
   const raw=JSON.stringify(value);
+  const cached=value&&typeof value==='object'?auxiliaryCompressionCache.get(value):null;
+  if(cached&&cached.key===key&&cached.raw===raw){
+   if(cached.encoded){if(!copy)copy={...state};if(!packed)packed={};packed[key]=cached.encoded;delete copy[key]}
+   continue;
+  }
   if(!raw||raw.length<20000)continue;
   try{
    const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
-   if(encoded.length>=raw.length*.8){if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,encoded:null});continue}
-   if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,encoded});
+   if(encoded.length>=raw.length*.8){if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,raw,encoded:null});continue}
+   if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,raw,encoded});
    if(!copy)copy={...state};
    if(!packed)packed={};
    packed[key]=encoded;delete copy[key];
