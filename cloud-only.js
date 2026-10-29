@@ -2,8 +2,8 @@
 const API='https://baseball-empire-save.duckdns.org';
 const KEY='be-cloud-session-v1';
 let token=null,username='',revision=null,verified=false,baseline=null;
-try{const s=JSON.parse(sessionStorage.getItem(KEY)||'null');if(s?.token&&s?.username){token=s.token;username=s.username}}catch(_){}
-function remember(){try{if(token)sessionStorage.setItem(KEY,JSON.stringify({token,username}));else sessionStorage.removeItem(KEY)}catch(_){}}
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.token&&s?.username&&Number(s.expiresAt)>Date.now()){token=s.token;username=s.username}else localStorage.removeItem(KEY)}catch(_){try{localStorage.removeItem(KEY)}catch(_){}}
+function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,username,expiresAt:Date.now()+6*24*60*60*1000}));else localStorage.removeItem(KEY)}catch(_){}}
 async function call(path,method='GET',data,rev){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
@@ -56,5 +56,5 @@ export async function cloudGate(onReady){
   overlay.remove();
  }catch(e){msg.textContent='로그인 또는 불러오기 실패: '+(e.message||e);if(!token){name.hidden=false;pass.hidden=false;button.textContent='로그인'}else{button.textContent='다시 시도';name.hidden=true;pass.hidden=true}}finally{button.disabled=false;toggle.disabled=false}};
  button.onclick=start;pass.onkeydown=e=>{if(e.key==='Enter'&&!signup)start()};confirmPass.onkeydown=e=>{if(e.key==='Enter'&&signup)start()};
- if(token){name.hidden=true;pass.hidden=true;button.textContent='다시 연결';toggle.hidden=true;msg.textContent='이전 로그인 세션을 확인하고 있습니다.';start()}
+ if(token){name.hidden=true;pass.hidden=true;button.textContent='다시 연결';toggle.hidden=true;msg.textContent='자동 로그인 중입니다.';start()}
 }
