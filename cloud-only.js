@@ -138,6 +138,7 @@ async function packCloudShards(state){
   const started=performance.now();
   const array=state[key],count=Math.ceil(array.length/size);
   let cacheHits=0,changed=0,rawBytes=0,serializeMs=0,gzipMs=0,fastReused=0;
+  const gameCacheReason=key==='gameResults'?{prior:!!gameShardFastCache,sameArray:gameShardFastCache?.array===array,priorLength:gameShardFastCache?.length??null,currentLength:array.length,priorVersion:gameShardFastCache?.version??null,currentVersion:window.beGameResultsRevision,sizeMatch:gameShardFastCache?.size===size}:null;
   const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
    const serializeStart=performance.now();
    const gameFast=key==='gameResults'&&gameShardFastCache&&gameShardFastCache.array===array&&gameShardFastCache.version===window.beGameResultsRevision&&Number.isSafeInteger(window.beGameResultsRevision)&&gameShardFastCache.size===size;
@@ -158,7 +159,7 @@ async function packCloudShards(state){
   if(key==='gameResults'&&Number.isSafeInteger(window.beGameResultsRevision)){
    gameShardFastCache={array,version:window.beGameResultsRevision,length:array.length,size,parts:entries.map((_,i)=>shardGzipCache.get('gameResults:'+i)?.raw)};
   }else if(key==='gameResults')gameShardFastCache=null;
-  return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,fastReused,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
+  return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,fastReused,gameCacheReason,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
  }));
  window.beCloudArrayShardTiming=packed.map(x=>x.diagnostic);
  window.beCloudShardSummary=packed.map(x=>({field:x.key,chunks:x.count,changed:x.diagnostic.changed,cacheHits:x.diagnostic.cacheHits,serializeMs:x.diagnostic.serializeMs,wallMs:x.diagnostic.ms,gzipTaskSumMs:x.diagnostic.gzipWaitSumMs,rawKB:Math.round(x.diagnostic.rawBytes/1024)}));
