@@ -1695,7 +1695,9 @@ function seasonProgressPanel(){
  const baseDate=seasonDate(0);
  const selectedDay=selectedDate?Math.round((selectedDate-baseDate)/86400000):null;
  const selectedGames=selected?(state.gameResults||[]).filter(g=>iso(seasonDate(Number(g.day)))===selected):[];
- const scheduled=selectedDay!=null&&selectedDate.getFullYear()===Number(state.year)?scheduledPairs(selectedDay,true):[];
+ const regularSeasonComplete=state.teams.every(t=>(t.wins||0)+(t.losses||0)+(t.draws||0)>=144);
+ const selectedIsPostseason=regularSeasonComplete&&selectedDay!=null&&selectedDay>=Number(state.day)&&!!state.postseasons?.[state.year];
+ const scheduled=!selectedIsPostseason&&selectedDay!=null&&selectedDate.getFullYear()===Number(state.year)?scheduledPairs(selectedDay,true):[];
  const kboPairs=new Map();
  for(const pair of scheduled)kboPairs.set(pair[0]+':'+pair[1],pair);
  for(const g of selectedGames)kboPairs.set(g.away+':'+g.home,[g.away,g.home]);
