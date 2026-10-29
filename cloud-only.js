@@ -128,9 +128,11 @@ async function call(path,method='GET',data,rev){
    compressed=true;
   }catch(e){body=json;delete headers['Content-Encoding']}
  }
- // Refresh payload composition every 10 saves to expose growth without paying the extra serialization cost on every day.
+ // Audit once per page load, or when explicitly requested; avoid extra multi-megabyte JSON serialization on routine saves.
+ // To request the next save audit: window.beCloudPayloadAuditRequested=true.
  // This is diagnostic only; it never changes the saved state or cloud revision.
- if(measure&&data&&typeof data==='object'&&((window.beCloudPayloadAuditSaveCount=(window.beCloudPayloadAuditSaveCount||0)+1)===1||window.beCloudPayloadAuditSaveCount%10===0)){
+ if(measure&&data&&typeof data==='object'&&(window.beCloudPayloadAuditRequested===true||(window.beCloudPayloadAuditSaveCount=(window.beCloudPayloadAuditSaveCount||0)+1)===1)){
+  window.beCloudPayloadAuditRequested=false;
   const auditStart=performance.now();
   const previousAudit=window.beCloudPayloadAuditSnapshot||null;
   try{const sizes=Object.entries(data).map(([key,value])=>({key,bytes:JSON.stringify(value)?.length||0})).sort((a,b)=>b.bytes-a.bytes);window.beCloudPayloadAudit=sizes.slice(0,10);
