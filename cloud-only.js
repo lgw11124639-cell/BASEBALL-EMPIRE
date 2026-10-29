@@ -51,18 +51,29 @@ async function unpackReplayResults(state){
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
 const auxiliarySaveFields=['highSchoolBaseball','collegeBaseball','nationalTeamResults'];
+// Reuse compressed bytes when an auxiliary dataset has not changed identity.
+const auxiliaryCompressionCache=new WeakMap();
 async function packAuxiliaryFields(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
  let packed=null,copy=null;
  for(const key of auxiliarySaveFields){
   if(state?.[key]===undefined)continue;
-  const raw=JSON.stringify(state[key]);
+  const value=state[key];
+  if(value&&typeof value==='object'){
+   const cached=auxiliaryCompressionCache.get(value);
+   if(cached&&cached.key===key){
+    if(cached.encoded){if(!copy)copy={...state};if(!packed)packed={};packed[key]=cached.encoded;delete copy[key]}
+    continue;
+   }
+  }
+  const raw=JSON.stringify(value);
   if(!raw||raw.length<20000)continue;
   try{
    const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
-   if(encoded.length>=raw.length*.8)continue;
+   if(encoded.length>=raw.length*.8){if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,encoded:null});continue}
+   if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,encoded});
    if(!copy)copy={...state};
    if(!packed)packed={};
    packed[key]=encoded;delete copy[key];
