@@ -286,7 +286,15 @@ export async function cloudSave(state){
   const deltaJson=delta?JSON.stringify(delta):null;
   const fullJsonLength=delta?JSON.stringify(payload).length:0;
   const useDelta=!!deltaJson&&deltaJson.length<fullJsonLength*.85;
-  window.beCloudDeltaTiming={compareMs:+(performance.now()-deltaStarted).toFixed(1),fullBytes:fullJsonLength,deltaBytes:deltaJson?.length||0,used:useDelta};
+  // Record what actually changes; the full snapshot size is not the upload size.
+  // Field-level diagnostics identify whether a finer-grained protocol is worthwhile.
+  const changedFields=delta?Object.entries(delta.set).map(([key,value])=>({
+   key,bytes:JSON.stringify(value)?.length||0
+  })).sort((a,b)=>b.bytes-a.bytes):[];
+  window.beCloudDeltaTiming={compareMs:+(performance.now()-deltaStarted).toFixed(1),
+   fullBytes:fullJsonLength,deltaBytes:deltaJson?.length||0,used:useDelta,
+   changedFieldCount:changedFields.length,changedFields:changedFields.slice(0,12),
+   removedFields:delta?.unset||[]};
   if(useDelta){
    try{result=await call('/v2/saves/main','PATCH',delta,revision);}
    catch(e){
@@ -297,6 +305,8 @@ export async function cloudSave(state){
     result=await call('/v2/saves/main','PUT',payload,revision);
    }
   }else result=await call('/v2/saves/main','PUT',payload,revision);
+  window.beCloudDeltaTiming.actualMethod=window.beCloudSaveTiming?.method||null;
+  window.beCloudDeltaTiming.actualUploadBytes=window.beCloudSaveTiming?.transferred||0;
   window.beCloudPackingTiming={replay:Math.round((replayPackedAt-packStarted)*10)/10,auxiliary:Math.round((auxiliaryPackedAt-replayPackedAt)*10)/10,total:Math.round((auxiliaryPackedAt-packStarted)*10)/10};
  }
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
