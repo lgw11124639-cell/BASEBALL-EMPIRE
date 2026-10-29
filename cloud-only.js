@@ -594,6 +594,32 @@ export async function cloudSave(state){
    entry.fields++;entry.bytes+=bytes;
   }
   window.beCloudPatchBreakdown=Object.entries(changedGroups).map(([group,value])=>({group,...value})).sort((a,b)=>b.bytes-a.bytes);
+  // Read-only diagnosis of large game-result chunks. No save format changes.
+  // Compute only when explicitly requested to avoid adding daily JSON overhead.
+  if(window.beCloudGameShardDiagnosticsRequested===true){
+   window.beCloudGameShardDiagnosticsRequested=false;
+   const games=state?.gameResults;
+   const rows=[];
+   if(Array.isArray(games)){
+    const chunks=changedFields.filter(x=>/^beShard_gameResults_\\d+$/.test(x.key)).slice(0,5);
+    for(const chunk of chunks){
+     const index=Number(chunk.key.slice('beShard_gameResults_'.length));
+     const subset=games.slice(index*shardArrayFields.gameResults,(index+1)*shardArrayFields.gameResults);
+     const propertySizes=Object.create(null);
+     let rawBytes=0;
+     for(const game of subset){
+      for(const [key,value] of Object.entries(game||{})){
+       const size=JSON.stringify(value)?.length||0;
+       propertySizes[key]=(propertySizes[key]||0)+size;
+       rawBytes+=size;
+      }
+     }
+     rows.push({shard:chunk.key,games:subset.length,encodedBytes:chunk.bytes,rawBytes,
+      largestProperties:Object.entries(propertySizes).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([key,bytes])=>({key,bytes}))});
+    }
+   }
+   window.beCloudGameShardDiagnosis=rows;
+  }
   // Inspect only the changed independent-league field; do not mutate the save.
   // Capture sizes by season/subtree to select a safe lossless sharding scheme.
   if(delta?.set&&Object.prototype.hasOwnProperty.call(delta.set,'independentBaseball')){
