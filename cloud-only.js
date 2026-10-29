@@ -41,8 +41,17 @@ async function call(path,method='GET',data,rev){
  const receivedAt=measure?performance.now():0;
  const serverTiming=measure?response.headers.get('Server-Timing'):null;
  const serverMs=serverTiming;
+ const resourceTiming=measure?performance.getEntriesByName(API+path,'resource').slice(-1)[0]:null;
+ const timingBreakdown=resourceTiming?{
+  dns:Math.max(0,resourceTiming.domainLookupEnd-resourceTiming.domainLookupStart),
+  connect:Math.max(0,resourceTiming.connectEnd-resourceTiming.connectStart),
+  requestToResponse:Math.max(0,resourceTiming.responseStart-resourceTiming.requestStart),
+  download:Math.max(0,resourceTiming.responseEnd-resourceTiming.responseStart),
+  duration:resourceTiming.duration,
+  detailed:resourceTiming.responseStart>0&&resourceTiming.requestStart>0
+ }:null;
  let result={};try{result=await response.json()}catch(_){}
- if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed:compressed&&!retriedUncompressed,compressionAttempted:compressed,retriedUncompressed,firstStatus,firstRequestMs,gzipRejectedStatus,serverMs};}
+ if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed:compressed&&!retriedUncompressed,compressionAttempted:compressed,retriedUncompressed,firstStatus,firstRequestMs,gzipRejectedStatus,serverMs,timingBreakdown,finalStatus:response.status};}
  if(!response.ok){if(response.status===401){token=null;username='';verified=false;remember()}const err=Error(result.error||'HTTP '+response.status);err.status=response.status;throw err}
  return result;
 }
