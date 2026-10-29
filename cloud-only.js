@@ -2,7 +2,7 @@
 const API='https://baseball-empire-save.duckdns.org';
 const KEY='be-cloud-session-v1';
 let token=null,username='',revision=null,verified=false,baseline=null;
-let gzipSaveSupported=true; // In-memory only: disable after the server rejects compressed uploads.
+let gzipSaveSupported=false; // Temporarily disable gzip uploads: Content-Encoding can fail CORS preflight; retain uncompressed cloud-only PUT with If-Match.
 let gzipRejectedStatus=null;
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.token&&s?.username&&Number(s.expiresAt)>Date.now()){token=s.token;username=s.username}else localStorage.removeItem(KEY)}catch(_){try{localStorage.removeItem(KEY)}catch(_){}}
 function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,username,expiresAt:Date.now()+6*24*60*60*1000}));else localStorage.removeItem(KEY)}catch(_){}}
