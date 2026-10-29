@@ -294,7 +294,7 @@ function playHalf(batting,fielding,inning,r,walkoff=false){const runsAtStart=bat
  if(bePlate){bePlate.pitch=picked.name;bePlate.pitchCount=count;bePlate.velocity=arsenalInfo.velocity;bePlate.pitchSequence=[];}
  for(let pitchIndex=0;pitchIndex<count;pitchIndex++){
   let actual=picked;
-  if(pitchIndex>0){const roll=r()*pool.reduce((n,x)=>n+x.percent,0);let sum=0;for(const option of pool){sum+=option.percent;if(roll<sum){actual=option;break}}}
+  if(pitchIndex>0){const weight=pool.map(option=>{const offspeed=/슬라이더|커브|체인지업|포크|스플리터/.test(option.name);const mix=offspeed?(pitchIndex>=2?1.35:1.08):(pitchIndex>=2?.88:1.1);return Math.max(1,option.percent*mix)}),roll=r()*weight.reduce((n,x)=>n+x,0);let sum=0;for(let j=0;j<pool.length;j++){sum+=weight[j];if(roll<sum){actual=pool[j];break}}}
   appearance.pitchMix[actual.name]=(appearance.pitchMix[actual.name]||0)+1;
   if(bePlate){const isFast=/직구|패스트볼|투심|싱커|커터/.test(actual.name);const offset=isFast?0:/슬라이더|포크|스플리터/.test(actual.name)?-8:/커브/.test(actual.name)?-17:-11;const maxVelocity=Math.max(85,Number(arsenalInfo.velocity)||140);const pitchBase=Number(actual.velocity)||maxVelocity+offset;const velocity=Math.max(85,Math.min(maxVelocity,Math.round(pitchBase+ri(r,-3,0))));bePlate.pitchSequence.push({type:actual.name,number:pitchIndex+1,velocity,...simulatePitchLocation(pitcher,p,actual.name,r,calling),catcher:calling.catcher?.name||'포수',lead:calling.preference});}
  }
