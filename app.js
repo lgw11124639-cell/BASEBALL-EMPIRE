@@ -2604,16 +2604,16 @@ function beFindArchivedNationalMatch(n){
  const title=String(n?.title||'');
  const event=title.match(/(\d{4})\s*(WBC|올림픽|아시안게임)/);
  const round=title.match(/(준결승\s*\d*|결승\s*\d*|조별리그\s*[A-Z]조\s*\d+-\d+)/);
- if(!event||!round)return null;
+ if(!event)return null;
  for(const [key,record] of Object.entries(state.nationalTeamResults||{})){
   if(Number(record.year)!==Number(event[1])||record.event!==event[2])continue;
-  const games=(record.matchResults||[]).map((game,index)=>({game,index})).filter(x=>x.game.round===round[1]);
+  const games=(record.matchResults||[]).map((game,index)=>({game,index})).filter(x=>!round||x.game.round===round[1]);
   const named=games.filter(({game})=>{
    const code=String(game.opponent||'').trim();
    const country=String(INTERNATIONAL_COUNTRIES[code]||code).trim();
    return (country&&title.includes(country))||(code&&title.split(/[^A-Za-z]+/).includes(code));
   });
-  const matches=named.length?named:games;
+  const matches=named.length?named:(round?games:[]);
   if(matches.length===1)return {key,index:matches[0].index,record,game:matches[0].game};
  }
  return null;
