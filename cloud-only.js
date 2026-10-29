@@ -49,6 +49,43 @@ async function unpackReplayResults(state){
   game.broadcastEvents=events;delete game.bePackedBroadcastGzip;
  }));return state;
 }
+// Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
+const auxiliarySaveFields=['highSchoolBaseball','collegeBaseball','nationalTeamResults'];
+async function packAuxiliaryFields(state){
+ if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
+ let packed=null,copy=null;
+ for(const key of auxiliarySaveFields){
+  if(state?.[key]===undefined)continue;
+  const raw=JSON.stringify(state[key]);
+  if(!raw||raw.length<20000)continue;
+  try{
+   const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+   let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
+   const encoded=btoa(binary);
+   if(encoded.length>=raw.length*.8)continue;
+   if(!copy)copy={...state};
+   if(!packed)packed={};
+   packed[key]=encoded;delete copy[key];
+  }catch(_){}
+ }
+ if(!copy)return state;
+ copy.bePackedAuxiliaryGzip=packed;
+ return copy;
+}
+async function unpackAuxiliaryFields(state){
+ const packed=state?.bePackedAuxiliaryGzip;
+ if(!packed||typeof packed!=='object')return state;
+ if(typeof DecompressionStream!=='function')throw Error('저장 데이터 압축 해제를 지원하는 브라우저가 필요합니다');
+ for(const key of auxiliarySaveFields){
+  if(typeof packed[key]!=='string')continue;
+  const binary=atob(packed[key]),bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  state[key]=JSON.parse(await new Response(stream).text());
+ }
+ delete state.bePackedAuxiliaryGzip;
+ return state;
+}
 async function call(path,method='GET',data,rev){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
@@ -116,7 +153,7 @@ async function call(path,method='GET',data,rev){
 }
 const revisionOf=x=>{const n=Number(x?.revision??x?.rev??x?.saveRevision);return Number.isSafeInteger(n)&&n>=0?n:null};
 async function snapshot(){try{return await call('/v2/saves/main')}catch(e){if(e.status===404)return null;throw e}}
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;return s?.save?await unpackReplayResults(s.save):null}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;baseline=s;return s?.save?await unpackReplayResults(await unpackAuxiliaryFields(s.save)):null}
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
@@ -124,7 +161,7 @@ export async function cloudSave(state){
  // Avoid a redundant full snapshot GET before every daily save.
  // A 409/412 still blocks progress and requires a fresh login/load.
  let result;
- try{result=await call('/v2/saves/main','PUT',await packReplayResults(state),revision)}
+ try{result=await call('/v2/saves/main','PUT',await packAuxiliaryFields(await packReplayResults(state)),revision)}
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
