@@ -85,11 +85,22 @@ const shardGzipCache=new Map();
 const shardGzipConcurrency=4;
 let shardGzipActive=0;
 const shardGzipQueue=[];
+const shardGzipMetrics={tasks:0,queued:0,waitMs:0,workMs:0,maxActive:0};
+window.beCloudGzipMetrics=shardGzipMetrics;
 async function withShardGzipSlot(work){
- if(shardGzipActive>=shardGzipConcurrency)await new Promise(resolve=>shardGzipQueue.push(resolve));
+ const requestedAt=performance.now();
+ if(shardGzipActive>=shardGzipConcurrency){
+  shardGzipMetrics.queued++;
+  await new Promise(resolve=>shardGzipQueue.push(resolve));
+ }
+ const enteredAt=performance.now();
+ shardGzipMetrics.waitMs+=enteredAt-requestedAt;
  shardGzipActive++;
+ shardGzipMetrics.maxActive=Math.max(shardGzipMetrics.maxActive,shardGzipActive);
  try{return await work()}
  finally{
+  shardGzipMetrics.tasks++;
+  shardGzipMetrics.workMs+=performance.now()-enteredAt;
   shardGzipActive--;
   const next=shardGzipQueue.shift();
   if(next)next();
