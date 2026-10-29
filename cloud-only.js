@@ -135,7 +135,7 @@ async function call(path,method='GET',data,rev){
  const headers={Accept:'application/json'};if(token)headers.Authorization='Bearer '+token;
  if(data!==undefined)headers['Content-Type']='application/json';
  if(rev!==undefined)headers['If-Match']=String(rev);
- const measure=path==='/v2/saves/main'&&method==='PUT';
+ const measure=path==='/v2/saves/main'&&(method==='PUT'||method==='PATCH');
  const start=measure?performance.now():0;
  const json=data===undefined?undefined:JSON.stringify(data);
  const serializedAt=measure?performance.now():0;
@@ -194,7 +194,7 @@ async function call(path,method='GET',data,rev){
   detailed:resourceTiming.responseStart>0&&resourceTiming.requestStart>0
  }:null;
  let result={};try{result=await response.json()}catch(_){}
- if(measure){window.beCloudSaveTiming={serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed:compressed&&!retriedUncompressed,compressionAttempted:compressed,retriedUncompressed,firstStatus,firstRequestMs,gzipRejectedStatus,serverMs,timingBreakdown,finalStatus:response.status};}
+ if(measure){window.beCloudSaveTiming={method,serialize:serializedAt-start,compress:encodedAt-serializedAt,network:receivedAt-encodedAt,response:performance.now()-receivedAt,bytes:json?.length||0,transferred:typeof body==='string'?body.length:body?.byteLength||0,compressed:compressed&&!retriedUncompressed,compressionAttempted:compressed,retriedUncompressed,firstStatus,firstRequestMs,gzipRejectedStatus,serverMs,timingBreakdown,finalStatus:response.status};}
  if(!response.ok){if(response.status===401){token=null;username='';verified=false;remember()}const err=Error(result.error||'HTTP '+response.status);err.status=response.status;throw err}
  return result;
 }
