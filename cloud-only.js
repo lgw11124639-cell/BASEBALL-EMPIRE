@@ -19,9 +19,9 @@ async function check(){if(!token)throw Error('클라우드 로그인이 필요�
 export async function cloudSave(state){
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
- // Always check for changes made by another device before sending.
- const s=await snapshot(),remote=s?revisionOf(s):0;
- if(remote===null||remote!==revision){verified=false;throw Error('다른 기기에서 저장 데이터가 변경됐습니다. 진행을 중단하고 다시 로그인하여 불러오세요')}
+ // Optimistic concurrency: the server validates If-Match atomically on PUT.
+ // Avoid a redundant full snapshot GET before every daily save.
+ // A 409/412 still blocks progress and requires a fresh login/load.
  let result;
  try{result=await call('/v2/saves/main','PUT',state,revision)}
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
