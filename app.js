@@ -1628,7 +1628,7 @@ function calendarNotice(){const d=seasonDate(state.day),key=d.getFullYear()+'-'+
 function beDevelopPlayerSkills(p,delta,r){
  const profile=ensureProfile(p),skills=profile.skills||{},pitcher=p.position==='P';
  const keys=pitcher?['stuff','control','stamina']:['contact','power','eye','speed','fielding','arm'];
- const weights=keys.map(k=>{const value=Number(skills[k])||50;return Math.max(.1,1/(1+Math.max(0,value-65)/45));});
+ const weights=keys.map(k=>{const value=Number(skills[k])||50;return delta<0?Math.max(.1,1+Math.max(0,value-55)/65):Math.max(.1,1/(1+Math.max(0,value-65)/45));});
  let draw=r()*weights.reduce((a,b)=>a+b,0),key=keys[0];
  for(let i=0;i<keys.length;i++){draw-=weights[i];if(draw<=0){key=keys[i];break;}}
  skills[key]=Math.max(20,(Number(skills[key])||50)+delta);
