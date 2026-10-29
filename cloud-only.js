@@ -151,14 +151,15 @@ async function packLeagueShards(state){
   }
   const started=performance.now();
   let cacheHits=0,changed=0,rawBytes=0,encodedBytes=0;
+  const changedFields=Object.create(null);
   const encoded=await Promise.all(parts.map(async p=>{
    rawBytes+=p.raw.length;
-   if(shardGzipCache.get(p.name)?.raw===p.raw)cacheHits++;else changed++;
+   if(shardGzipCache.get(p.name)?.raw===p.raw)cacheHits++;else{changed++;const fieldName=p.name.split('_').slice(2,-1).join('_');changedFields[fieldName]=(changedFields[fieldName]||0)+1;}
    const value=await encodeCloudShard(p.raw,p.name);
    encodedBytes+=value.length;
    return [p.name,value];
   }));
-  return {field,seasons,encoded,diagnostic:{field,parts:parts.length,cacheHits,changed,rawBytes,encodedBytes,gzipMs:+(performance.now()-started).toFixed(1)}};
+  return {field,seasons,encoded,diagnostic:{field,parts:parts.length,cacheHits,changed,rawBytes,encodedBytes,changedFields,gzipMs:+(performance.now()-started).toFixed(1)}};
  }));
  if(packed.some(x=>!x))return state;
  window.beCloudLeagueShardTiming=packed.map(x=>x.diagnostic);
