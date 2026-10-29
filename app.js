@@ -2552,7 +2552,7 @@ function nationalArchivedArticleText(n){
  if(found.length!==1)return body;
  const g=found[0],bat=(g.homeBatters||[]).filter(p=>(Number(p.atBats)||0)>0).sort((x,y)=>(Number(y.runsBattedIn)||0)-(Number(x.runsBattedIn)||0)||(Number(y.hits)||0)-(Number(x.hits)||0))[0];
  const pitch=(g.homePitchers||[]).filter(p=>(Number(p.outs)||0)>0).sort((x,y)=>(Number(y.outs)||0)-(Number(x.outs)||0))[0];
- const lines=['대한민국이 '+event[1]+' '+event[2]+' '+round[1].replace(/\s*\d+$/,'')+'에서 '+name(g.opponent)+'을 상대로 '+g.homeRuns+'대'+g.awayRuns+'로 '+(g.won?'승리했다.':'패했다.')];
+ const lines=['대한민국 야구대표팀이 '+event[1]+' '+event[2]+' '+round[1].replace(/\s*\d+$/,'')+'에서 '+name(g.opponent)+'을 상대로 '+g.homeRuns+'대'+g.awayRuns+'로 '+(g.won?'승리했다.':'패했다.')+' '+(g.won?'한국은 타선의 집중력과 마운드의 안정감을 앞세워 경기를 마쳤다.':'상대의 득점 기회를 막아내지 못한 것이 아쉬웠다.')];
  if(Number(g.awayRuns)===0)lines.push('한국 투수진은 상대 타선을 무실점으로 막았다.');
  if(bat)lines.push('타선에서는 '+bat.name+'이 '+(Number(bat.hits)||0)+'안타 '+(Number(bat.runsBattedIn)||0)+'타점을 기록했다.');
  if(pitch&&(!bat||String(pitch.id)!==String(bat.id))&&(!bat||pitch.name!==bat.name))lines.push('마운드에서는 '+pitch.name+'이 '+baseballIP(pitch.outs)+'이닝 동안 삼진 '+(Number(pitch.strikeouts)||0)+'개를 잡았다.');
@@ -2564,6 +2564,9 @@ function nationalArchivedArticleText(n){
   const detail=scoring.map(x=>x.inning+'회 한국 '+x.k+'점·'+name(g.opponent)+' '+x.o+'점').join(', ');
   if(detail)lines.push('득점 흐름은 '+detail+'으로 이어졌다.');
  }
+ const koreaHits=(g.homeBatters||[]).reduce((sum,p)=>sum+(Number(p.hits)||0),0);
+ const koreaRbi=(g.homeBatters||[]).reduce((sum,p)=>sum+(Number(p.runsBattedIn)||0),0);
+ if(koreaHits)lines.push('한국 타선은 합계 '+koreaHits+'안타를 기록했다. 기록상 타점은 '+koreaRbi+'점으로 집계됐다.');
  const batters=(g.homeBatters||[]).filter(p=>(Number(p.hits)||0)>0).sort((a,b)=>(Number(b.runsBattedIn)||0)-(Number(a.runsBattedIn)||0)||(Number(b.hits)||0)-(Number(a.hits)||0)).slice(0,3);
  const moreBatters=batters.filter(p=>!bat||String(p.id)!==String(bat.id));
  if(moreBatters.length)lines.push('이 밖에 '+moreBatters.map(p=>p.name+' '+(Number(p.hits)||0)+'안타 '+(Number(p.runsBattedIn)||0)+'타점').join(', ')+'을 기록했다.');
