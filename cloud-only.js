@@ -171,7 +171,15 @@ export async function cloudSave(state){
  // Avoid a redundant full snapshot GET before every daily save.
  // A 409/412 still blocks progress and requires a fresh login/load.
  let result;
- try{result=await call('/v2/saves/main','PUT',await packAuxiliaryFields(await packReplayResults(state)),revision)}
+ try{
+  const packStarted=performance.now();
+  const replayPacked=await packReplayResults(state);
+  const replayPackedAt=performance.now();
+  const payload=await packAuxiliaryFields(replayPacked);
+  const auxiliaryPackedAt=performance.now();
+  result=await call('/v2/saves/main','PUT',payload,revision);
+  window.beCloudPackingTiming={replay:Math.round((replayPackedAt-packStarted)*10)/10,auxiliary:Math.round((auxiliaryPackedAt-replayPackedAt)*10)/10,total:Math.round((auxiliaryPackedAt-packStarted)*10)/10};
+ }
  catch(e){if(e.status===409||e.status===412)verified=false;throw e}
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
