@@ -363,3 +363,16 @@
  .be-replay-dialog .be-broadcast-pitch{min-width:0!important}
  .be-replay-dialog #be-broadcast-pitch,.be-replay-dialog #be-broadcast-pitchcount{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 }
+
+/* Bigger, readable single-line replay status on phones */
+@media(max-width:600px){
+ .be-replay-dialog .be-replay-live{grid-template-columns:minmax(0,1fr) 108px!important;padding:13px 12px!important;gap:10px!important}
+ .be-replay-dialog .be-replay-live>div:first-child{gap:8px!important}
+ .be-replay-dialog #be-replay-inning{font-size:16px!important;letter-spacing:-.4px!important}
+ .be-replay-dialog #be-replay-count{font-size:14px!important;font-weight:750!important}
+ .be-replay-dialog .be-count-lamps{gap:6px!important}
+ .be-replay-dialog .be-count-lamps span{gap:3px!important;font-size:12px!important}
+ .be-replay-dialog .be-count-lamps i{width:10px!important;height:10px!important;flex:0 0 10px!important}
+ .be-replay-dialog #be-replay-batter{font-size:14px!important;font-weight:750!important}
+ .be-replay-dialog .be-next-batter{font-size:13px!important}
+}
