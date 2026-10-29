@@ -133,6 +133,14 @@ const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
 // Reuse only after exact serialized JSON equality; never trust reference identity alone.
 const auxiliaryLastCompressed=new Map();
+const auxiliaryArchiveProbe=new Map();
+function beProbeAuxiliaryArchive(key,raw){
+ const prior=auxiliaryArchiveProbe.get(key);
+ const now={bytes:raw.length,changed:prior!==undefined&&prior!==raw,initial:prior===undefined};
+ auxiliaryArchiveProbe.set(key,raw);
+ return now;
+}
+
 async function packAuxiliaryFields(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
  // Independent league archives can be compressed concurrently, while preserving
@@ -144,15 +152,16 @@ async function packAuxiliaryFields(state){
   const value=state[key];
   const raw=JSON.stringify(value);
   const serializedAt=performance.now();
+  const archiveProbe=beProbeAuxiliaryArchive(key,raw);
   const cached=(value&&typeof value==='object'?auxiliaryCompressionCache.get(value):null)||auxiliaryLastCompressed.get(key);
-  if(cached&&cached.key===key&&cached.raw===raw){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:0,cacheHit:true,rawBytes:raw.length});return cached.encoded?{key,encoded:cached.encoded}:null;}
+  if(cached&&cached.key===key&&cached.raw===raw){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:0,cacheHit:true,rawBytes:raw.length,changedSinceLastSave:archiveProbe.changed,initial:archiveProbe.initial});return cached.encoded?{key,encoded:cached.encoded}:null;}
   if(!raw||raw.length<20000){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:0,cacheHit:false,rawBytes:raw?.length||0});return null;}
   try{
    const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
    const useful=encoded.length<raw.length*.8;
-   fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),cacheHit:false,rawBytes:raw.length,packedBytes:encoded.length});
+   fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),cacheHit:false,rawBytes:raw.length,packedBytes:encoded.length,changedSinceLastSave:archiveProbe.changed,initial:archiveProbe.initial});
    const cacheEntry={key,raw,encoded:useful?encoded:null};
    if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,cacheEntry);
    auxiliaryLastCompressed.set(key,cacheEntry);
