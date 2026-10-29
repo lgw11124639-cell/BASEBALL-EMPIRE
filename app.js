@@ -311,7 +311,7 @@ if(appearance&&arsenalInfo&&Array.isArray(arsenalInfo.usage)&&arsenalInfo.usage.
   z.call=call;z.ballsAfter=balls;z.strikesAfter=strikes;seq.push(z);appearance.pitchMix[actual.name]=(appearance.pitchMix[actual.name]||0)+1;
   if(pitchDecision)break;
  }
- if(!pitchDecision){pitchDecision='인플레이';seq[seq.length-1].call='인플레이'}
+ if(!pitchDecision){pitchDecision='인플레이';seq[seq.length-1].call='인플레이';seq[seq.length-1].ballsAfter=balls;seq[seq.length-1].strikesAfter=strikes}
  appearance.pitchCount+=seq.length;
  if(bePlate){bePlate.pitch=seq[seq.length-1].type;bePlate.pitchCount=seq.length;bePlate.velocity=seq[seq.length-1].velocity;bePlate.pitchSequence=seq;bePlate.pitchAuthoritative=true}
 }
