@@ -504,3 +504,21 @@
  .be-editorial-modal .editorial-hero-title b{font-size:clamp(24px,8vw,38px)!important}
  .be-editorial-modal .editorial-meta{display:flex!important;flex-wrap:wrap!important;gap:5px 12px!important}
 }
+
+/* Editorial overlay: lock horizontal movement at every scroll container. */
+.be-editorial-modal,.game-news-overlay,#game-news-overlay{
+ left:0!important;right:0!important;width:100%!important;max-width:100%!important;
+ box-sizing:border-box!important;overflow-x:clip!important;touch-action:pan-y!important;
+}
+.be-editorial-modal .editorial-story,.be-editorial-modal .news-article-body,
+#game-news-overlay .game-news-dialog,#game-news-overlay .editorial-story{
+ min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+ overflow-x:clip!important;touch-action:pan-y!important;
+}
+.be-editorial-modal img,.be-editorial-modal svg,.be-editorial-modal video,
+#game-news-overlay img,#game-news-overlay svg{max-width:100%!important;height:auto}
+.be-editorial-modal .editorial-copy,.be-editorial-modal .editorial-hero,
+.be-editorial-modal .editorial-stadium,.be-editorial-modal .editorial-points{
+ min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+}
+.be-editorial-modal table,#game-news-overlay table{display:block;max-width:100%;overflow-x:auto;touch-action:pan-x pan-y}
