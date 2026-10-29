@@ -269,3 +269,15 @@
  .be-replay-controls button,.be-replay-controls select{font-size:12px;min-width:0;min-height:43px}
  .be-replay-controls #be-replay-all{grid-column:1/-1}
 }
+
+/* Broadcast iPhone viewport: fit 9-inning board without horizontal clipping */
+.be-replay-dialog .be-inning-row{grid-template-columns:42px repeat(9,minmax(0,1fr)) 34px;width:100%;min-width:0;gap:3px}
+.be-replay-dialog .be-replay-innings{overflow-x:auto;max-height:none}
+@media(max-width:600px){
+ .be-replay-dialog{padding-bottom:calc(100px + env(safe-area-inset-bottom));}
+ .be-replay-dialog .be-inning-row{grid-template-columns:36px repeat(9,minmax(0,1fr)) 30px;gap:2px;font-size:10px}
+ .be-replay-dialog .be-inning-row>*{min-width:0;padding:7px 0}
+ .be-replay-dialog .be-replay-controls{position:fixed;left:0;right:0;bottom:0;margin:0;padding:8px 10px calc(10px + env(safe-area-inset-bottom));z-index:10;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 72px}
+ .be-replay-dialog .be-replay-controls #be-replay-all{grid-column:1/-1}
+ .be-replay-dialog .be-replay-lines{max-height:none;overflow:visible}
+}
