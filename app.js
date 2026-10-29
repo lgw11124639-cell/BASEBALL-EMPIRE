@@ -311,7 +311,23 @@ function sharedHitAdvance(batter,pitcher,fieldingTeamId,inning,roll){const power
 function batterZoneProfile(p){const r=rng(((Number(p?.id)||1)*72931+17713)>>>0),contact=batterSkill(p,'contact');const zones=Array.from({length:9},()=>Math.round((r()-.5)*42+(contact-60)*.12));return {zones,best:zones.indexOf(Math.max(...zones)),worst:zones.indexOf(Math.min(...zones))}}
 function batterZoneFactor(p,pitch){if(!pitch||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))return 1;const x=Number(pitch.zoneX),y=Number(pitch.zoneY);if(x<0||x>100||y<0||y>100)return 1;return Math.max(.89,Math.min(1.11,1+batterZoneProfile(p).zones[Math.min(2,Math.floor(y/33.334))*3+Math.min(2,Math.floor(x/33.334))]/200))}
 function batterZonePanel(p){const z=batterZoneProfile(p);return '<section class="pitch-chart-card batter-zone-card"><div class="pitch-chart-heading"><span>타격 핫존 · 콜드존</span><strong>9분할 존</strong></div><p class="pitch-chart-caption">선수별 타격 성향을 반영한 예상 존 · 실제 타구 데이터 기반 통계는 아님</p><div class="batter-zone-grid">'+z.zones.map((n,i)=>'<div class="'+(i===z.best?'hot':i===z.worst?'cold':'neutral')+'"><b>'+(i===z.best?'HOT':i===z.worst?'COLD':'')+'</b><span>'+(n>=9?'강점':n<=-9?'약점':'보통')+'</span></div>').join('')+'</div><p class="pitch-chart-caption">빨강: 강점 구역 · 파랑: 약점 구역 · 타격 결과에 소폭 반영</p></section>'}
-function catcherGameCalling(fielding,batter,pitcher){const catcher=(fielding?.batters||[]).find(x=>x.position==='C');const skill=catcher?Math.max(20,Math.min(99,Math.round(batterSkill(catcher,'eye')*.45+batterSkill(catcher,'arm')*.25+(Number(catcher.overall)||60)*.30))):50;const r=rng(((Number(catcher?.id)||0)*33013+(Number(batter?.id)||0)*9176+(Number(pitcher?.id)||0)*71)>>>0);const preference=r()<.5?'바깥쪽':'몸쪽';return {catcher,skill,preference}}
+function bePitchStyle(arsenal){
+ const pitches=arsenal?.pitches||[],fast=pitches.filter(x=>/직구|투심|커터|싱커/.test(x.name)),breaking=pitches.filter(x=>/슬라이더|커브|너클커브|스위퍼|슬러브|포크볼|스플리터/.test(x.name));
+ const main=[...pitches].sort((a,b)=>(Number(b.grade)||0)-(Number(a.grade)||0))[0];
+ return {main:main?.name||'직구',style:breaking.length>fast.length?'변화구 중심':fast.length>breaking.length?'속구 중심':'혼합형'};
+}
+function beBatterPitchMatchup(batter,pitcher,pitchName){
+ const b=playerBaseball(batter),p=playerBaseball(pitcher),eye=batterSkill(batter,'eye'),contact=batterSkill(batter,'contact');
+ const seed=((Number(batter?.id)||1)*33791+(Number(pitcher?.id)||1)*179+(pitchName||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0))>>>0;
+ const rr=rng(seed),weakness=(rr()-.5)*.22,hand=b.batHand?.slice(0,1)===p.throwHand?.slice(0,1)?-.025:.015;
+ return Math.max(.8,Math.min(1.2,1+weakness+hand+(eye+contact-120)*.0005));
+}
+function beBatteryFamiliarity(fielding,catcher,pitcher){
+ if(!catcher||!pitcher)return 0;
+ const sameTeam=catcher.teamId===pitcher.teamId,experience=Math.min(1,Math.max(0,Number(pitcher.games)||0)/110);
+ return sameTeam?Math.max(0,Math.min(1,.25+experience*.45)):0;
+}
+function catcherGameCalling(fielding,batter,pitcher){const catcher=(fielding?.batters||[]).find(x=>x.position==='C');const skill=catcher?Math.max(20,Math.min(99,Math.round(batterSkill(catcher,'eye')*.45+batterSkill(catcher,'arm')*.25+(Number(catcher.overall)||60)*.30))):50;const r=rng(((Number(catcher?.id)||0)*33013+(Number(batter?.id)||0)*9176+(Number(pitcher?.id)||0)*71)>>>0);const preference=r()<.5?'바깥쪽':'몸쪽',familiarity=beBatteryFamiliarity(fielding,catcher,pitcher);return {catcher,skill:Math.min(99,skill+Math.round(familiarity*5)),preference,familiarity}}
 const PITCH_TRAITS={
  '직구':{speed:0,run:0,drop:0,command:1,whiff:0},'투심':{speed:-2,run:8,drop:5,command:1.08,whiff:-.015},'커터':{speed:-4,run:-7,drop:1,command:1.08,whiff:.012},'싱커':{speed:-4,run:9,drop:11,command:1.15,whiff:-.005},
  '슬라이더':{speed:-10,run:-15,drop:7,command:1.24,whiff:.05},'커브':{speed:-22,run:-9,drop:23,command:1.38,whiff:.035},'너클커브':{speed:-19,run:-7,drop:26,command:1.48,whiff:.055},
@@ -334,7 +350,7 @@ if(appearance&&arsenalInfo&&Array.isArray(arsenalInfo.usage)&&arsenalInfo.usage.
   const runnersOn=bases.filter(Boolean).length,latePressure=inning>=7&&Math.abs(fielding.runs-batting.runs)<=2;
   const weights=pool.map(x=>{
    const pitch=arsenalInfo.pitches.find(y=>y.name===x.name)||{},trait=pitchTrait(x.name),grade=Number(pitch.grade)||55,command=Number(pitch.command)||arsenalInfo.control||55;
-   const fast=/직구|투심|커터|싱커/.test(x.name),breaking=/슬라이더|커브|너클커브|스위퍼|슬러브|포크볼|스플리터/.test(x.name);
+   const fast=/직구|투심|커터|싱커/.test(x.name),breaking=/슬라이더|커브|너클커브|스위퍼|슬러브|포크볼|스플리터/.test(x.name),matchup=beBatterPitchMatchup(p,pitcher,x.name),style=bePitchStyle(arsenalInfo);
    let factor=1;
    if(balls===0&&strikes===0)factor*=fast?1.28:command>=65?1.12:.85;
    if(balls>=2)factor*=Math.max(.45,Math.min(1.85,.75+(command-50)*.018));
@@ -344,17 +360,17 @@ if(appearance&&arsenalInfo&&Array.isArray(arsenalInfo.usage)&&arsenalInfo.usage.
    if(runnersOn&&latePressure)factor*=Math.max(.6,Math.min(1.5,.85+(grade-50)*.009+(command-50)*.005));
    if(runnersOn>=2&&balls>=2)factor*=Math.max(.55,Math.min(1.5,.85+(command-50)*.012));
    if(appearance.pitchCount>=65&&trait.command>1.4)factor*=.82;
-   return Math.max(.1,x.percent*factor*(.75+Math.max(20,grade)/180));
+   return Math.max(.1,x.percent*factor*(.75+Math.max(20,grade)/180)*(1+(1-matchup)*.9)*(x.name===style.main?1.12:1));
   });
   let draw=r()*weights.reduce((n,x)=>n+x,0),actual=pool[0];for(let j=0;j<pool.length;j++){draw-=weights[j];if(draw<=0){actual=pool[j];break}}
   const trait=pitchTrait(actual.name),pitchSkill=arsenalInfo.pitches.find(x=>x.name===actual.name),pitchGrade=Number(pitchSkill?.grade)||stuff;
   const velocity=Math.max(65,Math.min(arsenalInfo.velocity,Math.round(arsenalInfo.velocity+trait.speed+ri(r,-3,2))));
-  const z={type:actual.name,number:pitchIndex+1,velocity,spinRpm:pitchSpin(actual.name,r),...simulatePitchLocation(pitcher,p,actual.name,r,calling),catcher:calling.catcher?.name||'포수',lead:calling.preference};
+  const z={type:actual.name,number:pitchIndex+1,velocity,spinRpm:pitchSpin(actual.name,r),pitchStyle:bePitchStyle(arsenalInfo).style,...simulatePitchLocation(pitcher,p,actual.name,r,calling),catcher:calling.catcher?.name||'포수',lead:calling.preference};
   const framing=(calling.skill-55)*.055,inside=z.zoneX>=18-framing&&z.zoneX<=82+framing&&z.zoneY>=18-framing&&z.zoneY<=82+framing,zoneFactor=batterZoneFactor(p,z),chase=Math.max(.07,Math.min(.39,.24-(eye-60)*.003+(zoneFactor-1)*.4));
-  const swing=r()<(inside?Math.max(.38,Math.min(.77,.59+(zoneFactor-1)*1.3)):chase);
+  const matchup=beBatterPitchMatchup(p,pitcher,actual.name),swing=r()<(inside?Math.max(.38,Math.min(.77,.59+(zoneFactor-1)*1.3+(matchup-1)*.16)):Math.max(.04,Math.min(.45,chase+(matchup-1)*.13)));
   let call;
   if(!swing)call=inside?'루킹 스트라이크':'볼';
-  else {const whiff=Math.max(.08,Math.min(.54,.28+(pitchGrade-contact)*.003-(zoneFactor-1)*1.2+trait.whiff));call=r()<whiff?'헛스윙':r()<.42?'파울':'인플레이'}
+  else {const whiff=Math.max(.08,Math.min(.54,.28+(pitchGrade-contact)*.003-(zoneFactor-1)*1.2+trait.whiff-(matchup-1)*.15));call=r()<whiff?'헛스윙':r()<.42?'파울':'인플레이'}
   if((call==='볼'||call==='헛스윙')&&bases.some(Boolean)&&r()<catcherMissRisk(actual.name,calling,z.zoneY)){
    const passed=calling.skill<50&&r()<.55;
    z.catchEvent=passed?'포일':'폭투';
