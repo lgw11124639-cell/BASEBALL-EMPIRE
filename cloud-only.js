@@ -26,8 +26,9 @@ async function call(path,method='GET',data,rev){
    compressed=true;
   }catch(e){body=json;delete headers['Content-Encoding']}
  }
- // Sample payload composition only on the first save; do not mutate the saved state.
- if(measure&&!window.beCloudPayloadAudit&&data&&typeof data==='object'){
+ // Refresh payload composition every 10 saves to expose growth without paying the extra serialization cost on every day.
+ // This is diagnostic only; it never changes the saved state or cloud revision.
+ if(measure&&data&&typeof data==='object'&&((window.beCloudPayloadAuditSaveCount=(window.beCloudPayloadAuditSaveCount||0)+1)===1||window.beCloudPayloadAuditSaveCount%10===0)){
   try{const sizes=Object.entries(data).map(([key,value])=>({key,bytes:JSON.stringify(value)?.length||0})).sort((a,b)=>b.bytes-a.bytes);window.beCloudPayloadAudit=sizes.slice(0,10)}catch(_){}
  }
  const encodedAt=measure?performance.now():0;
