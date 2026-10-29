@@ -57,22 +57,27 @@ async function packAuxiliaryFields(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
  // Independent league archives can be compressed concurrently, while preserving
  // byte-for-byte JSON content and the existing cache / unpack format.
+ const fieldTimings=[];
  const entries=await Promise.all(auxiliarySaveFields.map(async key=>{
   if(state?.[key]===undefined)return null;
+  const fieldStart=performance.now();
   const value=state[key];
   const raw=JSON.stringify(value);
+  const serializedAt=performance.now();
   const cached=value&&typeof value==='object'?auxiliaryCompressionCache.get(value):null;
-  if(cached&&cached.key===key&&cached.raw===raw)return cached.encoded?{key,encoded:cached.encoded}:null;
-  if(!raw||raw.length<20000)return null;
+  if(cached&&cached.key===key&&cached.raw===raw){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:0,cacheHit:true,rawBytes:raw.length});return cached.encoded?{key,encoded:cached.encoded}:null;}
+  if(!raw||raw.length<20000){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:0,cacheHit:false,rawBytes:raw?.length||0});return null;}
   try{
    const zipped=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
    let binary='';for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
    const encoded=btoa(binary);
    const useful=encoded.length<raw.length*.8;
+   fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),cacheHit:false,rawBytes:raw.length,packedBytes:encoded.length});
    if(value&&typeof value==='object')auxiliaryCompressionCache.set(value,{key,raw,encoded:useful?encoded:null});
    return useful?{key,encoded}:null;
-  }catch(_){return null}
+  }catch(_){fieldTimings.push({key,serializeMs:+(serializedAt-fieldStart).toFixed(1),gzipMs:+(performance.now()-serializedAt).toFixed(1),failed:true});return null}
  }));
+ window.beCloudFieldPackingTiming=fieldTimings.sort((a,b)=>(b.serializeMs+b.gzipMs)-(a.serializeMs+a.gzipMs));
  const active=entries.filter(Boolean);
  if(!active.length)return state;
  const copy={...state},packed={};
