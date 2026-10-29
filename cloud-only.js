@@ -157,7 +157,7 @@ async function packLeagueShards(state){
   const changedPlayerProperties=Object.create(null);
   const encoded=await Promise.all(parts.map(async p=>{
    rawBytes+=p.raw.length;
-   if(shardGzipCache.get(p.name)?.raw===p.raw)cacheHits++;else{changed++;const fieldName=p.name.split('_').slice(2,-1).join('_');changedFields[fieldName]=(changedFields[fieldName]||0)+1;if(fieldName.includes('players')||fieldName.includes('prospects')){const prior=shardGzipCache.get(p.name)?.raw;try{const before=prior?JSON.parse(prior):null;const after=JSON.parse(p.raw);if(Array.isArray(before)&&Array.isArray(after)){let altered=0;for(let i=0;i<after.length;i++)if(JSON.stringify(before[i])!==JSON.stringify(after[i])){altered++;if(before[i]&&after[i]&&typeof before[i]==='object'&&typeof after[i]==='object'){for(const k of new Set([...Object.keys(before[i]),...Object.keys(after[i])])){if(JSON.stringify(before[i][k])!==JSON.stringify(after[i][k])){const label=fieldName+'/'+k;changedPlayerProperties[label]=(changedPlayerProperties[label]||0)+1;}}}}changedPlayerChunks[fieldName]=(changedPlayerChunks[fieldName]||0)+altered;}}catch(_){}}}
+   if(shardGzipCache.get(p.name)?.raw===p.raw)cacheHits++;else{changed++;const fieldName=p.name.split('_').slice(2,-1).join('_');changedFields[fieldName]=(changedFields[fieldName]||0)+1;if(window.beCloudDeepPlayerDiagnostics===true&&(fieldName.includes('players')||fieldName.includes('prospects'))){const prior=shardGzipCache.get(p.name)?.raw;try{const before=prior?JSON.parse(prior):null;const after=JSON.parse(p.raw);if(Array.isArray(before)&&Array.isArray(after)){let altered=0;for(let i=0;i<after.length;i++)if(JSON.stringify(before[i])!==JSON.stringify(after[i])){altered++;if(before[i]&&after[i]&&typeof before[i]==='object'&&typeof after[i]==='object'){for(const k of new Set([...Object.keys(before[i]),...Object.keys(after[i])])){if(JSON.stringify(before[i][k])!==JSON.stringify(after[i][k])){const label=fieldName+'/'+k;changedPlayerProperties[label]=(changedPlayerProperties[label]||0)+1;}}}}changedPlayerChunks[fieldName]=(changedPlayerChunks[fieldName]||0)+altered;}}catch(_){}}}
    const value=await encodeCloudShard(p.raw,p.name);
    encodedBytes+=value.length;
    return [p.name,value];
@@ -539,8 +539,15 @@ export async function cloudSave(state){
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
   const replayPacked=state;
   const replayPackedAt=performance.now();
-  payload=await packAuxiliaryFields(await packLeagueShards(await packAmateurBuckets(await packCloudShards(replayPacked))));
+  const shards=await packCloudShards(replayPacked);
+  const shardPackedAt=performance.now();
+  const amateur=await packAmateurBuckets(shards);
+  const amateurPackedAt=performance.now();
+  const leagues=await packLeagueShards(amateur);
+  const leaguePackedAt=performance.now();
+  payload=await packAuxiliaryFields(leagues);
   const auxiliaryPackedAt=performance.now();
+  window.beCloudPackingStages={shardsMs:+(shardPackedAt-replayPackedAt).toFixed(1),amateurMs:+(amateurPackedAt-shardPackedAt).toFixed(1),leaguesMs:+(leaguePackedAt-amateurPackedAt).toFixed(1),auxiliaryMs:+(auxiliaryPackedAt-leaguePackedAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
   // On-demand, read-only round-trip audit. No extra network calls or mutations to live state.
   window.beVerifyCloudPacking=async()=>{
    const start=performance.now();
