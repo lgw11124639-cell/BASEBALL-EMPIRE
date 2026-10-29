@@ -663,3 +663,18 @@
  .player-overlay .player-panel.pro-profile .profile-content{height:auto!important;min-height:0!important;flex:0 0 auto!important}
  .player-overlay .player-panel.pro-profile [data-profile-pane]{min-height:0!important}
 }
+
+/* Professional roster dossier */
+.pro-profile .profile-section-label{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:22px 0 10px;padding-bottom:9px;border-bottom:1px solid #cddbea}
+.pro-profile .profile-section-label strong{font-size:15px;letter-spacing:-.025em;color:#15395e}
+.pro-profile .profile-section-label span{font-size:10px;letter-spacing:.12em;font-weight:800;color:#8093aa}
+.pro-profile .profile-facts{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;border-top:1px solid #dce5ef;border-left:1px solid #dce5ef;border-radius:9px;overflow:hidden}
+.pro-profile .profile-facts>div{border:0!important;border-right:1px solid #dce5ef!important;border-bottom:1px solid #dce5ef!important;border-radius:0!important;background:#fff!important;padding:12px 14px!important}
+.pro-profile .profile-facts>div:first-child{background:#f0f5fb!important}
+.pro-profile .profile-facts>div:hover{background:#f3f8fe!important}
+.pro-profile .profile-facts small{color:#74859a!important;font-weight:600}
+.pro-profile .profile-facts strong{font-weight:750!important;color:#193653!important}
+.pro-profile .profile-origin-facts>div:first-child{background:#fff!important}
+.pro-profile .profile-extra{border:1px solid #dce5ef!important;border-radius:8px!important;overflow:hidden}
+.pro-profile .profile-extra summary{font-weight:700!important}
+@media(max-width:650px){.pro-profile .profile-section-label{margin-top:17px}.pro-profile .profile-section-label span{font-size:9px}.pro-profile .profile-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}.pro-profile .profile-facts>div{padding:10px!important}}
