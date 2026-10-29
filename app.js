@@ -1088,11 +1088,21 @@ function nationalTeamTournamentDay(){
 }
 function nationalTeamReturnDay(){
  const now=seasonDate(state.day),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
- for(const p of state.players){
-  if(!p.nationalDutyUntil||p.nationalDutyUntil>=today||p.nationalReturnNotified===p.nationalDutyUntil)continue;
+ const returning=state.players.filter(p=>p.nationalDutyUntil&&p.nationalDutyUntil<today&&p.nationalReturnNotified!==p.nationalDutyUntil);
+ if(!returning.length)return;
+ const groups=new Map();
+ for(const p of returning){
   p.nationalReturnNotified=p.nationalDutyUntil;
-  const injury=Number(p.profile?.injury?.days)||0;
-  clubNotice('국가대표 복귀',p.name+' 대표팀 차출 종료 · 소속 구단 복귀',injury?'부상 재활 '+injury+'일 잔여 · 출전은 회복 후 가능':'대표팀 일정을 마치고 소속 구단에 복귀했습니다.',[p.teamId],[p.id]);
+  const key=String(p.nationalDutyUntil);
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(p);
+ }
+ for(const [d,players] of groups){
+  const teams=[...new Set(players.map(p=>p.teamId).filter(id=>id!=null))];
+  const names=players.map(p=>p.name).join('·');
+  const injured=players.filter(p=>(Number(p.profile?.injury?.days)||0)>0);
+  const body=players.length+'명의 국가대표 선수가 대표팀 일정을 마치고 각 소속 구단으로 복귀했다. 복귀 선수: '+names+'.'+(injured.length?' 부상·재활 중인 선수: '+injured.map(p=>p.name+' ('+Number(p.profile.injury.days)+'일 잔여)').join(', ')+'. 출전은 회복 후 가능하다.':'');
+  clubNotice('국가대표 복귀','대표팀 차출 종료 · '+players.length+'명 소속 구단 복귀',body,teams,players.map(p=>p.id));
  }
 }
 function countDailyFaRegistration(){const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,today=now.toISOString().slice(0,10);if(month<3||month>10)return;for(const p of state.players){if(p.retired||p.draftPending||p.level!=='1군'||p.profile?.injury?.days>0||p.nationalDutyUntil&&today<=p.nationalDutyUntil)continue;p.faRegisteredDaysByYear=p.faRegisteredDaysByYear||{};const days=p.faRegisteredDaysByYear;if(days[year]>=145)continue;days[year]=(Number(days[year])||0)+1}}
