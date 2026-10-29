@@ -1957,7 +1957,7 @@ function beOpenInternationalGameArticle(key,index){
  const best=bats.find(p=>(Number(p.hits)||0)>0),pitchers=g.homePitchers||[],starter=pitchers.find(p=>p.role==='선발')||pitchers[0];
  const h=g.homeInnings||[],a=g.awayInnings||[],n=Math.max(9,h.length,a.length),innings=Array.from({length:n},(_,i)=>i);
  const scoring=beGameScoringEvents(a,h).map(x=>({i:x.inning-1,k:x.home,o:x.away})),turn=scoring.slice().sort((x,y)=>(y.k+y.o)-(x.k+x.o))[0];
- const unified=beCanonicalGameArticle(g,opponent,'대한민국',{competition:key,round:g.round,date:g.date});
+ const unified=beCanonicalGameArticle(g,opponent,'대한민국',{competition:record?.event||key,round:g.round,date:g.date,id:[record?.year||'',record?.event||key,g.round,g.opponent,g.date||''].join(':')});
  const title=unified.title;
  const intro=unified.lead;
  const paragraphs=unified.paragraphs.slice();
@@ -2614,7 +2614,7 @@ function beArchivedNationalMatchArticle(n){
  if(matches.length!==1)return null;
  const g=matches[0];
  const opponent=INTERNATIONAL_COUNTRIES[g.opponent]||g.opponent||'상대국';
- return beCanonicalGameArticle(g,opponent,'대한민국',{competition:event[2],round:g.round,date:g.date});
+ return beCanonicalGameArticle(g,opponent,'대한민국',{competition:event[2],round:g.round,date:g.date,id:[event[1],event[2],g.round,g.opponent,g.date||''].join(':')});
 }
 function nationalArchivedArticleText(n){
  const body=String(n.body||'').trim(),title=String(n.title||'');
