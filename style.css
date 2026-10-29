@@ -397,3 +397,8 @@
 .batter-zone-card .batter-zone-grid .hot{background:#fce1dc;color:#a53224;border:1px solid #efafa3}
 .batter-zone-card .batter-zone-grid .cold{background:#dcecfb;color:#20588d;border:1px solid #a7cbed}
 .batter-zone-card .batter-zone-grid .neutral{background:#edf1f5;color:#4b6077;border:1px solid #d4dfe9}
+
+/* Player profiles: photo and jersey artwork removed */
+.pro-profile .profile-art,.pro-profile .player-photo-upload{display:none!important}
+.pro-profile .profile-banner{display:block!important}
+.pro-profile .profile-identity{width:100%!important;max-width:none!important}
