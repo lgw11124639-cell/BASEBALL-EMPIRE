@@ -706,3 +706,9 @@
 .pro-profile .profile-contract-status strong{font-size:15px}
 .pro-profile .profile-contract-status span{font-size:13px;font-variant-numeric:tabular-nums}
 .pro-profile .profile-contract-status small{color:#71859b;font-size:11px;line-height:1.5}
+
+/* Club crest in player identity header; photos remain disabled. */
+.pro-profile .profile-banner{display:grid!important;grid-template-columns:108px minmax(0,1fr)!important;gap:16px!important;align-items:center!important;min-height:150px!important}
+.pro-profile .profile-banner .profile-art{display:flex!important;width:108px!important;min-width:108px!important;max-width:108px!important;height:118px!important;min-height:118px!important;overflow:visible!important;flex:0 0 108px!important;background:transparent!important;box-shadow:none!important;padding:0!important}
+.pro-profile .profile-banner .profile-art .club-logo{display:block!important;width:76px!important;height:76px!important;max-width:76px!important;object-fit:contain!important}
+@media(max-width:560px){.pro-profile .profile-banner{grid-template-columns:76px minmax(0,1fr)!important;gap:10px!important;padding:12px!important}.pro-profile .profile-banner .profile-art{width:76px!important;min-width:76px!important;max-width:76px!important;height:94px!important;min-height:94px!important;flex-basis:76px!important}.pro-profile .profile-banner .profile-art .club-logo{width:60px!important;height:60px!important}}
