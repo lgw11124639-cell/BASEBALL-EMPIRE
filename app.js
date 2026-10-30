@@ -393,7 +393,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const contact=batterSkill(batter,'contact'),power=batterSkill(batter,'power'),speed=batterSkill(batter,'speed');
  const arm=pitcher?bePlayerEvaluation(pitcher):60;
  const zone=location&&Number.isFinite(Number(location.zoneX))?batterZoneFactor(batter,location):1;
- const quality=(contact-arm)*.004+(power-60)*.0018+(zone-1)*.55+(random()-.5)*.62;
+ const quality=(contact-arm)*.0052+(power-60)*.0018+(zone-1)*.55+(random()-.5)*.62;
  const exitVelocity=Math.max(55,Math.min(122,85+(power-60)*.19+(contact-60)*.08+quality*20+(random()-.5)*23));
  const launchAngle=Math.max(-20,Math.min(65,(random()+random()+random()-1.5)*60+12+(power-60)*.12));
  const sprayAngle=(random()-.5)*90;
@@ -411,7 +411,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  // Batted-ball quality and defensive range determine non-HR hits; no league-average correction.
  const hardContact=Math.max(-1,Math.min(1,(exitVelocity-88)/27));
  const placement=Math.max(-1,Math.min(1,(Math.abs(sprayAngle)-18)/28));
- const trajectory=ground?.275:liner?.585:(launchAngle>48?.105:.235);
+ const trajectory=ground?.292:liner?.605:(launchAngle>48?.105:.245);
  const hitChance=Math.max(.035,Math.min(.78,trajectory+quality*.21+hardContact*(ground?.065:.09)+placement*(ground?.015:.055)-coverage+(speed-60)*(ground?.0018:.0004)));
  const hit=homer||random()<hitChance;
  let bases=1;
