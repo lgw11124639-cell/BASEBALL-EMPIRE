@@ -1648,6 +1648,21 @@ function seasonProgressPanel(){
   else if(done&&ps?.finished)add(current,'FA·연봉협상','FA·연봉협상 처리 대기','11월 10일 이후 · 한국시리즈 종료 조건',-1);
  }
 
+ // Postseason dates come from actual recorded games; do not invent future fixtures.
+ if(ps){
+  for(const game of ps.games||[]){
+   const date=game.date||iso(seasonDate(Number(game.day)));
+   if(!date||date.slice(0,4)!==String(year))continue;
+   const home=state.teams.find(t=>String(t.id)===String(game.home));
+   const away=state.teams.find(t=>String(t.id)===String(game.away));
+   const title=(away?.name||'원정')+' '+game.awayRuns+' : '+game.homeRuns+' '+(home?.name||'홈');
+   add(date,'가을야구',title,String(game.stage||'포스트시즌')+' · 경기 종료',-4);
+  }
+  if(!ps.finished&&!(ps.games||[]).some(g=>String(g.date||iso(seasonDate(Number(g.day))))===current)){
+   const stage=['와일드카드 결정전','준플레이오프','플레이오프','한국시리즈'][Math.min(3,Math.max(0,Number(ps.stage)||0))];
+   add(current,'가을야구',stage+' · 오늘 경기',ps.series?'시리즈 진행 중':'대진 확정',-4);
+  }
+ }
  // National-team milestones are derived from the exact preparation offsets used by the engine.
  for(let y=d.getFullYear();y<=d.getFullYear()+2;y++){
   const competitions=[];
