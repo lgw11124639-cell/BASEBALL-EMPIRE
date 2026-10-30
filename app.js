@@ -412,7 +412,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const hit=homer||random()<hitChance;
  let bases=1;
  if(homer)bases=4;
- else if(hit&&!ground&&carry>205&&carry<fenceFeet&&Math.abs(sprayAngle)>23&&speed>65&&random()<Math.max(.025,Math.min(.16,.055+(speed-65)*.003)))bases=3;
+ else if(hit&&!ground&&carry>180&&carry<fenceFeet&&Math.abs(sprayAngle)>18&&speed>62&&random()<Math.max(.035,Math.min(.24,.095+(speed-65)*.004-(fieldSkill-60)*.001)))bases=3;
  else if(hit&&!ground&&((exitVelocity>88&&carry>125)||(liner&&exitVelocity>91)))bases=2;
  else if(hit&&ground&&speed>78&&random()<.025)bases=2;
  return {hit,hard:exitVelocity>=95,ground,bases,quality,exitVelocity:Math.round(exitVelocity),launchAngle:Math.round(launchAngle),sprayAngle:Math.round(sprayAngle),defenderPosition:target,defenderId:defender?.id??null};
