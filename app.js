@@ -2653,6 +2653,7 @@ function playerHeaderHighlights(p){
  const badges=[];
  const add=(label,icon)=>{if(!badges.some(x=>x.label===label))badges.push({label,icon})};
  for(const a of awards){const title=String(a.title||'').trim();if(/골든글러브|MVP|최우수선수|신인왕|타격왕|홈런왕|다승왕|세이브왕|홀드왕|방어율|평균자책|탈삼진왕/.test(title))add(a.year+' '+title,/골든글러브/.test(title)?'🏆':/MVP|최우수/.test(title)?'★':'◆')}
+ for(const record of Object.values(state.nationalTeamResults||{})){const mvp=nationalTournamentMvp(record);if(mvp?.country==='KR'&&String(mvp.playerId)===String(p.id))add(record.year+' '+record.event+' MVP','🏆')}
  if(national.length){const latest=national.slice().sort((a,b)=>Number(b.year)-Number(a.year))[0];add(latest.year+' 국가대표'+(nationalTeamRoleLabel(p,latest)?' · '+nationalTeamRoleLabel(p,latest):''),'🇰🇷');const victories=national.filter(x=>/우승|금메달|1위/.test(String(x.result||'')));if(victories.length)add(victories[victories.length-1].year+' 국제대회 우승','🏆')}
  if(!badges.length)return '';
  return '<div class="be-player-title-badges" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px">'+badges.slice(0,5).map(x=>'<span style="border:1px solid #c9d9e9;background:#fff;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;color:#214e7c">'+x.icon+' '+esc(x.label)+'</span>').join('')+'</div>';
