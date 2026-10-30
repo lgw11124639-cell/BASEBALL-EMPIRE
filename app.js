@@ -408,7 +408,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const fenceFeet=Math.abs(sprayAngle)<16?400:Math.abs(sprayAngle)<32?365:335;
  const homer=fly&&launchAngle>=20&&launchAngle<=43&&exitVelocity>=92&&carry>=fenceFeet;
  const coverage=(fieldSkill-60)*.0025;
- const hitChance=Math.max(.09,Math.min(.57,(ground?.205:liner?.43:.15)+quality*.15-coverage+(speed-60)*(ground?.001:.0002)));
+ const hitChance=Math.max(.08,Math.min(.68,(ground?.255:liner?.53:.21)+quality*.17-coverage+(speed-60)*(ground?.0014:.0003)));
  const hit=homer||random()<hitChance;
  let bases=1;
  if(homer)bases=4;
