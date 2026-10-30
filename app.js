@@ -338,7 +338,8 @@ function batterZoneProfile(p){
   }
  }
  const total=zones.reduce((n,z)=>n+z.ab,0);
- const values=zones.map(z=>z.ab>=8?(z.h+3)/(z.ab+12):null);
+ const leagueNeutral=total>0?zones.reduce((n,z)=>n+z.h,0)/total:.25;
+ const values=zones.map(z=>z.ab>=8?(z.h+leagueNeutral*24)/(z.ab+24):null);
  const eligible=values.map((v,i)=>v==null?null:i).filter(v=>v!=null);
  const best=eligible.length?eligible.reduce((a,b)=>values[a]>=values[b]?a:b):-1;
  const worst=eligible.length?eligible.reduce((a,b)=>values[a]<=values[b]?a:b):-1;
