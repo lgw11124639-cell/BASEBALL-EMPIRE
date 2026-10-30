@@ -445,7 +445,7 @@ if(appearance&&arsenalInfo&&Array.isArray(arsenalInfo.usage)&&arsenalInfo.usage.
   const matchup=beBatterPitchMatchup(p,pitcher,actual.name),swing=r()<(inside?Math.max(.38,Math.min(.77,.59+(zoneFactor-1)*1.3+(matchup-1)*.16)):Math.max(.04,Math.min(.45,chase+(matchup-1)*.13)));
   let call;
   if(!swing)call=inside?'루킹 스트라이크':'볼';
-  else {const whiff=Math.max(.08,Math.min(.50,.22+(pitchGrade-contact)*.003-(zoneFactor-1)*1.2+trait.whiff-(matchup-1)*.15));call=r()<whiff?'헛스윙':r()<.34?'파울':'인플레이'}
+  else {const whiff=Math.max(.06,Math.min(.42,.17+(pitchGrade-contact)*.003-(zoneFactor-1)*1.2+trait.whiff-(matchup-1)*.15));const contactRoll=r();call=contactRoll<whiff?'헛스윙':contactRoll<whiff+(1-whiff)*.30?'파울':'인플레이'}
   if((call==='볼'||call==='헛스윙')&&bases.some(Boolean)&&r()<catcherMissRisk(actual.name,calling,z.zoneY)){
    const passed=calling.skill<50&&r()<.55;
    z.catchEvent=passed?'포일':'폭투';
