@@ -80,7 +80,8 @@ async function unpackReplayResults(state){
 // Four-game chunks limit repeated upload of unchanged replay data while preserving lossless manifests.
 // One team per shard: unchanged clubs are not retransmitted on daily PATCH.
 // Existing unsharded saves still load; manifests carry per-field chunk sizes.
-const shardArrayFields={players:128,gameResults:4,teams:1};
+// Archive arrays use small chunks; non-array legacy shapes remain untouched.
+const shardArrayFields={players:128,gameResults:4,teams:1,clubNotices:20,clubTransactionArchive:20,trainingReports:20};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
