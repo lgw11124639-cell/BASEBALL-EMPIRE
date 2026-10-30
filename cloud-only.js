@@ -81,7 +81,7 @@ async function unpackReplayResults(state){
 // One team per shard: unchanged clubs are not retransmitted on daily PATCH.
 // Existing unsharded saves still load; manifests carry per-field chunk sizes.
 // Archive arrays use small chunks; non-array legacy shapes remain untouched.
-const shardArrayFields={players:128,gameResults:4,teams:1,clubNotices:20,clubTransactionArchive:20,trainingReports:20};
+const shardArrayFields={players:32,gameResults:4,teams:1,clubNotices:20,clubTransactionArchive:20,trainingReports:20};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
@@ -201,7 +201,7 @@ async function unpackCloudShards(state){
 // Versioned league archive shards; legacy whole-field gzip remains supported.
 const leagueShardFields=['highSchoolBaseball','collegeBaseball','minorLeague','independentBaseball'];
 // Twenty-four players per chunk; the manifest records array lengths and chunk counts for backward compatibility.
-const leagueShardSize=24;
+const leagueShardSize=8;
 function leagueShardName(field,season,name,i){return 'beLeaguePart_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+i}
 async function packLeagueShards(state){
  if(typeof CompressionStream!=='function')return state;
