@@ -411,7 +411,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  // Batted-ball quality and defensive range determine non-HR hits; no league-average correction.
  const hardContact=Math.max(-1,Math.min(1,(exitVelocity-88)/27));
  const placement=Math.max(-1,Math.min(1,(Math.abs(sprayAngle)-18)/28));
- const trajectory=ground?.245:liner?.545:(launchAngle>48?.105:.205);
+ const trajectory=ground?.275:liner?.585:(launchAngle>48?.105:.235);
  const hitChance=Math.max(.035,Math.min(.78,trajectory+quality*.21+hardContact*(ground?.065:.09)+placement*(ground?.015:.055)-coverage+(speed-60)*(ground?.0018:.0004)));
  const hit=homer||random()<hitChance;
  let bases=1;
