@@ -324,7 +324,7 @@ function batterZoneProfile(p){
   if(g.year!=null&&Number(g.year)!==Number(year))continue;
   const events=g.broadcastEvents||[];
   for(const e of events){
-   if(String(e.batterId??e.playerId??e.id)!==key)continue;
+   if(e.batterId!=null||e.playerId!=null||e.id!=null){if(String(e.batterId??e.playerId??e.id)!==key)continue}else if(e.batter!==p?.name||((e.side==='away'?g.away:g.home)!==p?.teamId))continue;
    const pitch=e.pitchSequence?.[e.pitchSequence.length-1];
    if(!pitch||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))continue;
    const x=Number(pitch.zoneX),y=Number(pitch.zoneY);
