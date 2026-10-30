@@ -2602,7 +2602,17 @@ function playerFaContractSummary(p){
   'FA 행사 누적 '+(f.record.faUses||0)+'회 · 현재 계약 잔여 '+years+'년'+(years>0?' · 현 계약 종료 후 FA 신청 가능 여부 재판정':' · FA 신청 가능 여부 시즌 정산 시 판정');
  return {label,detail};
 }
-function playerCareerHighlights(p){const ns=Array.isArray(p.nationalTeamHistory)?p.nationalTeamHistory:[];const win=ns.filter(x=>/우승|금메달|1위/.test(String(x.result||''))).length;const seasons=Object.values(state.history?.seasons||{});const titles=seasons.filter(y=>{const ps=state.postseasons?.[y.year];return ps?.finished&&ps.champion!=null&&(y.players||[]).some(z=>String(z.id)===String(p.id)&&String(z.teamId)===String(ps.champion)&&(Number(z.games)||0)>0)}).length;const rows=[['국가대표',ns.length+'회'],['국제대회 우승',win+'회'],['한국시리즈 우승',titles+'회'],['국제대회 MVP',nationalGameMvpTotal(p.id)+'회']];return '<section style="margin:14px 0 20px"><div class="profile-section-label"><strong>커리어 하이라이트</strong><span>CAREER HIGHLIGHTS</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px">'+rows.map(x=>'<div style="padding:13px;border:1px solid #dce6f1;border-radius:10px;background:#f2f6fb"><small style="color:#647d98">'+x[0]+'</small><strong style="display:block;font-size:23px;color:#183d67;margin-top:5px">'+x[1]+'</strong></div>').join('')+'</div>'+(ns.length?'<div style="margin-top:12px;border:1px solid #dce6f1;border-radius:10px;padding:12px"><strong>국가대표 대회 이력</strong>'+ns.slice().reverse().slice(0,8).map(x=>'<div style="padding:9px 0;border-bottom:1px solid #e8eef5">'+esc(String(x.year))+' '+esc(String(x.event))+' · '+esc(String(x.result||'참가'))+' · '+(Number(x.games)||0)+'경기</div>').join('')+'</div>':'')+'</section>'}
+function playerCareerHighlights(p){
+ const ns=Array.isArray(p.nationalTeamHistory)?p.nationalTeamHistory:[];
+ const wins=ns.filter(x=>/우승|금메달|1위/.test(String(x.result||''))).length;
+ const seasons=Object.values(state.history?.seasons||{});
+ const titles=seasons.filter(y=>{const ps=state.postseasons?.[y.year];return ps?.finished&&ps.champion!=null&&(y.players||[]).some(z=>String(z.id)===String(p.id)&&String(z.teamId)===String(ps.champion)&&(Number(z.games)||0)>0)}).length;
+ const rows=[['국가대표',ns.length],['국제대회 우승',wins],['한국시리즈 우승',titles],['국제대회 MVP',nationalGameMvpTotal(p.id)]].filter(x=>Number(x[1])>0);
+ if(!rows.length&&!ns.length)return '';
+ return '<section style="margin:14px 0 20px"><div class="profile-section-label"><strong>커리어 하이라이트</strong><span>CAREER HIGHLIGHTS</span></div>'
+ +(rows.length?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px">'+rows.map(x=>'<div style="padding:13px;border:1px solid #dce6f1;border-radius:10px;background:#f2f6fb"><small style="color:#647d98">'+x[0]+'</small><strong style="display:block;font-size:23px;color:#183d67;margin-top:5px">'+x[1]+'회</strong></div>').join('')+'</div>':'')
+ +(ns.length?'<div style="margin-top:12px;border:1px solid #dce6f1;border-radius:10px;padding:12px"><strong>국가대표 대회 이력</strong>'+ns.slice().reverse().slice(0,8).map(x=>'<div style="padding:9px 0;border-bottom:1px solid #e8eef5">'+esc(String(x.year))+' '+esc(String(x.event))+' · '+esc(String(x.result||'참가'))+' · '+(Number(x.games)||0)+'경기</div>').join('')+'</div>':'')+'</section>';
+}
 function playerHeaderHighlights(p){
  const awards=Object.entries(state.awards||{}).flatMap(([year,items])=>(Array.isArray(items)?items:[]).filter(a=>String(a.playerId)===String(p.id)).map(a=>({...a,year}))).sort((a,b)=>Number(b.year)-Number(a.year));
  const national=Array.isArray(p.nationalTeamHistory)?p.nationalTeamHistory.filter(x=>x&&x.event):[];
