@@ -320,23 +320,31 @@ function batterZoneProfile(p){
  if(beZoneCache.revision!==revision||beZoneCache.year!==year)beZoneCache={revision,year,profiles:new Map()};
  const key=String(p?.id);if(beZoneCache.profiles.has(key))return beZoneCache.profiles.get(key);
  const zones=Array.from({length:9},()=>({ab:0,h:0,pa:0,k:0}));
- for(const g of games){
-  if(g.year!=null&&Number(g.year)!==Number(year))continue;
-  const events=g.broadcastEvents||[];
-  for(const e of events){
-   if(e.batterId!=null||e.playerId!=null||e.id!=null){if(String(e.batterId??e.playerId??e.id)!==key)continue}else if(e.batter!==p?.name||((e.side==='away'?g.away:g.home)!==p?.teamId))continue;
-   const pitch=e.pitchSequence?.[e.pitchSequence.length-1];
-   if(!pitch||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))continue;
-   const x=Number(pitch.zoneX),y=Number(pitch.zoneY);
-   if(x<0||x>=100||y<0||y>=100)continue;
-   const i=Math.min(2,Math.floor(y/33.3334))*3+Math.min(2,Math.floor(x/33.3334));
-   const outcome=String(e.outcome||'');
-   if(!outcome||outcome==='주루 상황')continue;
-   zones[i].pa++;
-   if(!/볼넷|사구|희생/.test(outcome)){zones[i].ab++;if(/안타|홈런|2루타|3루타/.test(outcome))zones[i].h++}
-   if(/삼진/.test(outcome))zones[i].k++;
+ // Build the season's pitch-zone index once per game-results revision.
+ if(!beZoneCache.index){
+  const index=new Map();
+  for(const g of games){
+   if(g.year!=null&&Number(g.year)!==Number(year))continue;
+   for(const e of g.broadcastEvents||[]){
+    const pitch=e.pitchSequence?.[e.pitchSequence.length-1];
+    if(!pitch||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))continue;
+    const x=Number(pitch.zoneX),y=Number(pitch.zoneY);
+    if(x<0||x>=100||y<0||y>=100)continue;
+    const outcome=String(e.outcome||'');
+    if(!outcome||outcome==='주루 상황')continue;
+    const zone=Math.min(2,Math.floor(y/33.3334))*3+Math.min(2,Math.floor(x/33.3334));
+    const ids=e.batterId??e.playerId??e.id;
+    const key=ids!=null?'id:'+String(ids):'name:'+String(e.batter)+'|'+String(e.side==='away'?g.away:g.home);
+    let bucket=index.get(key);if(!bucket){bucket=Array.from({length:9},()=>({ab:0,h:0,pa:0,k:0}));index.set(key,bucket)}
+    const z=bucket[zone];z.pa++;
+    if(!/볼넷|사구|희생/.test(outcome)){z.ab++;if(/안타|홈런|2루타|3루타/.test(outcome))z.h++}
+    if(/삼진/.test(outcome))z.k++;
+   }
   }
+  beZoneCache.index=index;
  }
+ const indexed=beZoneCache.index.get('id:'+key)||beZoneCache.index.get('name:'+String(p?.name)+'|'+String(p?.teamId));
+ if(indexed)for(let i=0;i<9;i++)Object.assign(zones[i],indexed[i]);
  const total=zones.reduce((n,z)=>n+z.ab,0);
  const leagueNeutral=total>0?zones.reduce((n,z)=>n+z.h,0)/total:.25;
  const values=zones.map(z=>z.ab>=8?(z.h+leagueNeutral*24)/(z.ab+24):null);
