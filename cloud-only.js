@@ -200,8 +200,9 @@ async function unpackCloudShards(state){
 }
 // Versioned league archive shards; legacy whole-field gzip remains supported.
 const leagueShardFields=['highSchoolBaseball','collegeBaseball','minorLeague','independentBaseball'];
-// Twenty-four players per chunk; the manifest records array lengths and chunk counts for backward compatibility.
-const leagueShardSize=8;
+// League records change across most players each day, so larger chunks avoid excessive PATCH keys.
+// Existing manifests retain their recorded chunk counts and remain readable.
+const leagueShardSize=24;
 function leagueShardName(field,season,name,i){return 'beLeaguePart_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+i}
 async function packLeagueShards(state){
  if(typeof CompressionStream!=='function')return state;
