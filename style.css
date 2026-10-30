@@ -716,3 +716,9 @@
 /* Larger club crest in player header */
 @media(min-width:561px){.pro-profile .profile-banner{grid-template-columns:154px minmax(0,1fr)!important;gap:22px!important;padding:20px 24px!important}.pro-profile .profile-banner .profile-art{width:154px!important;min-width:154px!important;max-width:154px!important;height:160px!important;min-height:160px!important;flex-basis:154px!important}.pro-profile .profile-banner .profile-art .club-logo{width:118px!important;height:118px!important;max-width:118px!important}}
 @media(max-width:560px){.pro-profile .profile-banner{grid-template-columns:104px minmax(0,1fr)!important;gap:12px!important}.pro-profile .profile-banner .profile-art{width:104px!important;min-width:104px!important;max-width:104px!important;height:118px!important;min-height:118px!important;flex-basis:104px!important}.pro-profile .profile-banner .profile-art .club-logo{width:88px!important;height:88px!important;max-width:88px!important}}
+
+/* Clean white player header with meaningful earned title chips */
+.pro-profile .profile-banner{background:#fff!important;background-image:none!important}
+.pro-profile .profile-banner .profile-art{background:#fff!important;background-image:none!important}
+.pro-profile .profile-banner .profile-identity{background:transparent!important}
+.pro-profile .be-player-title-badges span{box-shadow:0 1px 2px rgba(18,52,90,.05)}
