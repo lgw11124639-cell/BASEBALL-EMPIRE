@@ -441,8 +441,8 @@ if(appearance&&arsenalInfo&&Array.isArray(arsenalInfo.usage)&&arsenalInfo.usage.
   const trait=pitchTrait(actual.name),pitchSkill=arsenalInfo.pitches.find(x=>x.name===actual.name),pitchGrade=Number(pitchSkill?.grade)||stuff;
   const velocity=Math.max(65,Math.min(arsenalInfo.velocity,Math.round(arsenalInfo.velocity+trait.speed+ri(r,-3,2))));
   const z={type:actual.name,number:pitchIndex+1,velocity,spinRpm:pitchSpin(actual.name,r),pitchStyle:bePitchStyle(arsenalInfo).style,...simulatePitchLocation(pitcher,p,actual.name,r,calling),catcher:calling.catcher?.name||'포수',lead:calling.preference};
-  const framing=(calling.skill-55)*.055,inside=z.zoneX>=18-framing&&z.zoneX<=82+framing&&z.zoneY>=18-framing&&z.zoneY<=82+framing,zoneFactor=batterZoneFactor(p,z),chase=Math.max(.07,Math.min(.39,.24-(eye-60)*.003+(zoneFactor-1)*.4));
-  const matchup=beBatterPitchMatchup(p,pitcher,actual.name),swing=r()<(inside?Math.max(.38,Math.min(.77,.59+(zoneFactor-1)*1.3+(matchup-1)*.16)):Math.max(.04,Math.min(.45,chase+(matchup-1)*.13)));
+  const framing=(calling.skill-55)*.055,inside=z.zoneX>=18-framing&&z.zoneX<=82+framing&&z.zoneY>=18-framing&&z.zoneY<=82+framing,zoneFactor=batterZoneFactor(p,z),chase=Math.max(.06,Math.min(.36,.19-(eye-60)*.003+(zoneFactor-1)*.4));
+  const matchup=beBatterPitchMatchup(p,pitcher,actual.name),countPressure=strikes===2?.09:balls===3?-.07:0,swing=r()<(inside?Math.max(.38,Math.min(.80,.62+(zoneFactor-1)*1.3+(matchup-1)*.16+countPressure)):Math.max(.04,Math.min(.45,chase+(matchup-1)*.13+countPressure)));
   let call;
   if(!swing)call=inside?'루킹 스트라이크':'볼';
   else {const whiff=Math.max(.06,Math.min(.42,.17+(pitchGrade-contact)*.003-(zoneFactor-1)*1.2+trait.whiff-(matchup-1)*.15));const contactRoll=r();call=contactRoll<whiff?'헛스윙':contactRoll<whiff+(1-whiff)*.30?'파울':'인플레이'}
