@@ -407,8 +407,12 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const carry=Math.max(0,exitVelocity*4.32*idealFlight*(1+quality*.10)*park.homer*(1+body.power));
  const fenceFeet=Math.abs(sprayAngle)<16?400:Math.abs(sprayAngle)<32?365:335;
  const homer=fly&&launchAngle>=20&&launchAngle<=43&&exitVelocity>=92&&carry>=fenceFeet;
- const coverage=(fieldSkill-60)*.0025;
- const hitChance=Math.max(.08,Math.min(.68,(ground?.255:liner?.53:.21)+quality*.17-coverage+(speed-60)*(ground?.0014:.0003)));
+ const coverage=(fieldSkill-60)*.0032;
+ // Batted-ball quality and defensive range determine non-HR hits; no league-average correction.
+ const hardContact=Math.max(-1,Math.min(1,(exitVelocity-88)/27));
+ const placement=Math.max(-1,Math.min(1,(Math.abs(sprayAngle)-18)/28));
+ const trajectory=ground?.245:liner?.545:(launchAngle>48?.105:.205);
+ const hitChance=Math.max(.035,Math.min(.78,trajectory+quality*.21+hardContact*(ground?.065:.09)+placement*(ground?.015:.055)-coverage+(speed-60)*(ground?.0018:.0004)));
  const hit=homer||random()<hitChance;
  let bases=1;
  if(homer)bases=4;
