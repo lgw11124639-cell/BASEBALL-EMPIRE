@@ -404,7 +404,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const fieldSkill=defender?batterSkill(defender,'fielding'):60;
  const park=stadiumFactors(fielding?.teamId),body=batterPhysicalBonus(batter);
  const idealFlight=Math.max(0,Math.sin(Math.min(90,Math.max(0,launchAngle*2))*Math.PI/180));
- const carry=Math.max(0,exitVelocity*3.95*idealFlight*(1+quality*.10)*park.homer*(1+body.power));
+ const carry=Math.max(0,exitVelocity*4.32*idealFlight*(1+quality*.10)*park.homer*(1+body.power));
  const fenceFeet=Math.abs(sprayAngle)<16?400:Math.abs(sprayAngle)<32?365:335;
  const homer=fly&&launchAngle>=20&&launchAngle<=43&&exitVelocity>=92&&carry>=fenceFeet;
  const coverage=(fieldSkill-60)*.0025;
@@ -412,7 +412,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const hit=homer||random()<hitChance;
  let bases=1;
  if(homer)bases=4;
- else if(hit&&!ground&&exitVelocity>99&&carry>62)bases=2;
+ else if(hit&&!ground&&exitVelocity>94&&carry>185)bases=2;
  else if(hit&&fly&&speed>72&&carry>75&&random()<.08)bases=3;
  else if(hit&&ground&&speed>78&&random()<.025)bases=2;
  return {hit,hard:exitVelocity>=95,ground,bases,quality,exitVelocity:Math.round(exitVelocity),launchAngle:Math.round(launchAngle),sprayAngle:Math.round(sprayAngle),defenderPosition:target,defenderId:defender?.id??null};
