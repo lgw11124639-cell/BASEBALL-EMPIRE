@@ -616,7 +616,7 @@ return '<section class="dashboard-section fo-section"><div class="fo-heading"><s
 +tile('미지급 운영비',won(f.unpaidOperatingCosts),'다음 결산에서 우선 정산')
 +'</div>'
 +'<div class="fo-heading"><h3>월별 재정 보고</h3><small>최근 12개월</small></div>'
-+'<details class="fo-ledger" '+(history.length?'open':'')+'><summary>월별 현금흐름 <span>'+history.length+'개월</span></summary><div class="fo-transactions">'+(months||'<p class="profile-note">다음 월초 결산부터 기록됩니다.</p>')+'</div></details>'
++'<details class="fo-ledger"><summary>월별 현금흐름 <span>'+history.length+'개월</span></summary><div class="fo-transactions">'+(months||'<p class="profile-note">다음 월초 결산부터 기록됩니다.</p>')+'</div></details>'
 +'<div class="fo-heading" style="margin-top:20px"><h3>시설 투자</h3><small>자동 운영 · 5단계</small></div><div class="fo-facilities">'+facilities+'</div>'
 +'<details class="fo-ledger" style="margin-top:18px"><summary>특별 투자 현황</summary>'+(f.project&&frontProjectActive(t,f.project.id)?'<p class="profile-note">'+esc(f.project.name)+' · '+won(f.project.cost)+' · '+f.project.untilYear+'년 '+f.project.untilMonth+'월까지</p>':'<p class="profile-note">진행 중인 특별 투자가 없습니다.</p>')+'</details>'
 +'<details class="fo-ledger"><summary>최근 재정 거래 <span>'+recent.length+'건</span></summary><div class="fo-transactions">'+(rows||'<p class="profile-note">거래 내역이 없습니다.</p>')+'</div></details></section>';
