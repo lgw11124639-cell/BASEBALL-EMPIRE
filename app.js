@@ -395,7 +395,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const zone=location&&Number.isFinite(Number(location.zoneX))?batterZoneFactor(batter,location):1;
  const quality=(contact-arm)*.004+(power-60)*.0018+(zone-1)*.55+(random()-.5)*.62;
  const exitVelocity=Math.max(55,Math.min(122,85+(power-60)*.19+(contact-60)*.08+quality*20+(random()-.5)*23));
- const launchAngle=Math.max(-15,Math.min(65,(random()-.5)*74+(power-60)*.12));
+ const launchAngle=Math.max(-20,Math.min(65,(random()+random()+random()-1.5)*60+12+(power-60)*.12));
  const sprayAngle=(random()-.5)*90;
  const ground=launchAngle<10,liner=launchAngle>=10&&launchAngle<25,fly=launchAngle>=25;
  const fielders=(fielding?.batters||[]).filter(x=>x.position!=='DH'&&x.position!=='P');
@@ -412,8 +412,8 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const hit=homer||random()<hitChance;
  let bases=1;
  if(homer)bases=4;
- else if(hit&&fly&&carry>185&&carry<fenceFeet&&Math.abs(sprayAngle)>25&&speed>68&&random()<Math.max(.025,Math.min(.16,.055+(speed-68)*.003)))bases=3;
- else if(hit&&!ground&&exitVelocity>94&&carry>185)bases=2;
+ else if(hit&&!ground&&carry>205&&carry<fenceFeet&&Math.abs(sprayAngle)>23&&speed>65&&random()<Math.max(.025,Math.min(.16,.055+(speed-65)*.003)))bases=3;
+ else if(hit&&!ground&&((exitVelocity>88&&carry>125)||(liner&&exitVelocity>91)))bases=2;
  else if(hit&&ground&&speed>78&&random()<.025)bases=2;
  return {hit,hard:exitVelocity>=95,ground,bases,quality,exitVelocity:Math.round(exitVelocity),launchAngle:Math.round(launchAngle),sprayAngle:Math.round(sprayAngle),defenderPosition:target,defenderId:defender?.id??null};
 }
