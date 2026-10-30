@@ -3105,10 +3105,14 @@ function internationalMatchMvp(g){
 }
 function nationalTournamentMvp(record){
  if(!record?.finished)return null;
+ const champion=record.medals?.gold||record.finalStandings?.[0];
+ if(!champion)return null;
  const scores=new Map();
- const games=[...(record.matchResults||[]),...(record.bronzeMatch?[record.bronzeMatch]:[])];
+ const games=[...(record.matchResults||[]),...(record.otherMatches||[]),...(record.bronzeMatch?[record.bronzeMatch]:[])];
  for(const g of games){
-  for(const [side,country] of [['home','KR'],['away',g.opponent||'']]){
+  const koreanGame=g.opponent!=null;
+  for(const [side,country] of [['home',koreanGame?'KR':g.home],['away',koreanGame?g.opponent:g.away]]){
+   if(String(country)!==String(champion))continue;
    for(const p of g[side+'Batters']||[]){
     if(p.id==null)continue;
     const key=country+':'+p.id,old=scores.get(key)||{playerId:p.id,name:p.name,country,score:0,games:0};
@@ -3118,7 +3122,7 @@ function nationalTournamentMvp(record){
    for(const p of g[side+'Pitchers']||[]){
     if(p.id==null)continue;
     const key=country+':'+p.id,old=scores.get(key)||{playerId:p.id,name:p.name,country,score:0,games:0};
-    old.score+=(Number(p.pitchingStrikeouts??p.strikeouts)||0)*1.3+(Number(p.inningsPitched)||0)*1.8-(Number(p.earnedRuns)||0)*2+(Number(p.saves)||0)*3;
+    old.score+=(Number(p.pitchingStrikeouts??p.strikeouts)||0)*1.3+(Number(p.inningsPitched)||((Number(p.outs)||0)/3))*1.8-(Number(p.earnedRuns)||0)*2+(Number(p.saves)||0)*3;
     old.games++;scores.set(key,old);
    }
   }
