@@ -14,7 +14,7 @@ async function run(mode){
  const ctx={state,seasonStepBusy:false,entryMode:'game',tab:'home',
  document:{querySelector:()=>({disabled:false})},window:{},performance:{now:()=>0},structuredClone:clone,
  ensureSeasonCalendar:()=>{},monthlyOwnerReport:()=>{},saveSeasonSnapshot:()=>{},nationalTeamTournamentDay:()=>{},nationalTeamReturnDay:()=>{},
- seasonDate:()=>new Date(mode==='rollover'?'2028-01-01T12:00:00':mode==='offseason'?'2027-02-01T12:00:00':'2027-05-01T12:00:00'),
+ seasonDate:(day)=>{const base=new Date(mode==='rollover'?'2027-11-20T12:00:00':mode==='offseason'?'2027-01-01T12:00:00':'2027-03-20T12:00:00');base.setDate(base.getDate()+Number(day)-1);return base;},
  awardsFinished:()=>mode==='rollover'||mode==='offseason',
  offseasonDay:()=>{ctx.state.day++},
  simulateLeagueDay:()=>{simulations++;ctx.state.day++;if(mode==='engine failure')throw Error('injected simulation failure')},
