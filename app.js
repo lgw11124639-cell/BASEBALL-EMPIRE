@@ -314,9 +314,49 @@ function pitchingArsenal(p){
 function pitchMatchup(p,batter,inning){if(!p)return {hit:1,walk:1,strikeout:1,homer:1};const a=pitchingArsenal(p),f=playerBaseball(p),fatigue=Math.max(0,Math.min(100,Number(f.fatigue)||0)),stuff=a.pitches.reduce((sum,x)=>sum+x.grade,0)/a.pitches.length,quality=(stuff-60)/100,command=(a.control-60)/100,velo=(a.velocity-143)/100,speedBonus=pitcherSpeedBonus(p),stam=(a.stamina-60)/100;const late=Math.max(0,inning-4),wear=Math.max(0,late*(.025-stam*.012)+fatigue*.0013);const breaking=a.pitches.some(x=>x.name==='슬라이더'||x.name==='커브'),offSpeed=a.pitches.some(x=>x.name==='체인지업'||x.name==='포크볼');const same=f.throwHand?.slice(0,1)===playerBaseball(batter).batHand?.slice(0,1);return {hit:Math.max(.78,Math.min(1.27,1-quality*.17-speedBonus.hit*.6-velo*.04+(wear*.6)+(breaking&&same?-.025:0))),walk:Math.max(.70,Math.min(1.55,1-command*.55+wear*.65)),strikeout:Math.max(.73,Math.min(1.35,1+quality*.35+speedBonus.strikeout*.8+velo*.05-wear*.35)),homer:Math.max(.72,Math.min(1.35,1-quality*.12-velo*.13+wear*.55+(offSpeed?-.035:0)))}}
 function sharedHitBases(roll){return roll<.045?4:roll<.065?3:roll<.24?2:1}
 function sharedHitAdvance(batter,pitcher,fieldingTeamId,inning,roll){const power=batterSkill(batter,'power'),park=stadiumFactors(fieldingTeamId),arsenal=pitchMatchup(pitcher,batter,inning),bodyBonus=batterPhysicalBonus(batter);const homerChance=Math.max(.035,Math.min(.18,(.085+(power-60)*.0016)*park.homer*arsenal.homer*(1+bodyBonus.power)));return roll<homerChance?4:roll<homerChance+.025?3:roll<homerChance+.245?2:1}
-function batterZoneProfile(p){const r=rng(((Number(p?.id)||1)*72931+17713)>>>0),contact=batterSkill(p,'contact');const zones=Array.from({length:9},()=>Math.round((r()-.5)*42+(contact-60)*.12));return {zones,best:zones.indexOf(Math.max(...zones)),worst:zones.indexOf(Math.min(...zones))}}
-function batterZoneFactor(p,pitch){if(!pitch||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))return 1;const x=Number(pitch.zoneX),y=Number(pitch.zoneY);if(x<0||x>100||y<0||y>100)return 1;return Math.max(.89,Math.min(1.11,1+batterZoneProfile(p).zones[Math.min(2,Math.floor(y/33.334))*3+Math.min(2,Math.floor(x/33.334))]/200))}
-function batterZonePanel(p){const z=batterZoneProfile(p);return '<section class="pitch-chart-card batter-zone-card"><div class="pitch-chart-heading"><span>타격 핫존 · 콜드존</span><strong>9분할 존</strong></div><p class="pitch-chart-caption">선수별 타격 성향을 반영한 예상 존 · 실제 타구 데이터 기반 통계는 아님</p><div class="batter-zone-grid">'+z.zones.map((n,i)=>'<div class="'+(i===z.best?'hot':i===z.worst?'cold':'neutral')+'"><b>'+(i===z.best?'HOT':i===z.worst?'COLD':'')+'</b><span>'+(n>=9?'강점':n<=-9?'약점':'보통')+'</span></div>').join('')+'</div><p class="pitch-chart-caption">빨강: 강점 구역 · 파랑: 약점 구역 · 타격 결과에 소폭 반영</p></section>'}
+let beZoneCache={revision:-1,year:null,profiles:new Map()};
+function batterZoneProfile(p){
+ const games=state?.gameResults||[],revision=games.length,year=state?.year;
+ if(beZoneCache.revision!==revision||beZoneCache.year!==year)beZoneCache={revision,year,profiles:new Map()};
+ const key=String(p?.id);if(beZoneCache.profiles.has(key))return beZoneCache.profiles.get(key);
+ const zones=Array.from({length:9},()=>({ab:0,h:0,pa:0,k:0}));
+ for(const g of games){
+  if(g.year!=null&&Number(g.year)!==Number(year))continue;
+  const events=g.broadcastEvents||[];
+  for(const e of events){
+   if(String(e.batterId??e.playerId??e.id)!==key)continue;
+   const pitch=e.pitchSequence?.[e.pitchSequence.length-1];
+   if(!pitch||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))continue;
+   const x=Number(pitch.zoneX),y=Number(pitch.zoneY);
+   if(x<0||x>=100||y<0||y>=100)continue;
+   const i=Math.min(2,Math.floor(y/33.3334))*3+Math.min(2,Math.floor(x/33.3334));
+   const outcome=String(e.outcome||'');
+   if(!outcome||outcome==='주루 상황')continue;
+   zones[i].pa++;
+   if(!/볼넷|사구|희생/.test(outcome)){zones[i].ab++;if(/안타|홈런|2루타|3루타/.test(outcome))zones[i].h++}
+   if(/삼진/.test(outcome))zones[i].k++;
+  }
+ }
+ const total=zones.reduce((n,z)=>n+z.ab,0);
+ const values=zones.map(z=>z.ab>=8?(z.h+3)/(z.ab+12):null);
+ const eligible=values.map((v,i)=>v==null?null:i).filter(v=>v!=null);
+ const best=eligible.length?eligible.reduce((a,b)=>values[a]>=values[b]?a:b):-1;
+ const worst=eligible.length?eligible.reduce((a,b)=>values[a]<=values[b]?a:b):-1;
+ const result={zones,values,best,worst,total};
+ beZoneCache.profiles.set(key,result);return result;
+}
+function batterZoneFactor(p,pitch){
+ if(!pitch||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))return 1;
+ const x=Number(pitch.zoneX),y=Number(pitch.zoneY);if(x<0||x>=100||y<0||y>=100)return 1;
+ const z=batterZoneProfile(p),i=Math.min(2,Math.floor(y/33.3334))*3+Math.min(2,Math.floor(x/33.3334));
+ if(z.zones[i].ab<20)return 1;
+ const overall=z.zones.reduce((n,v)=>n+v.h,0)/Math.max(1,z.total);
+ return Math.max(.94,Math.min(1.06,1+(z.values[i]-overall)*.2));
+}
+function batterZonePanel(p){
+ const z=batterZoneProfile(p);
+ return '<section class="pitch-chart-card batter-zone-card"><div class="pitch-chart-heading"><span>타격 핫존 · 콜드존</span><strong>실제 경기 기록 · 9분할</strong></div><p class="pitch-chart-caption">경기별 투구 위치와 타석 결과를 집계합니다. 구역별 8타수 미만은 표본 부족으로 표시합니다.</p><div class="batter-zone-grid">'+z.zones.map((n,i)=>'<div class="'+(i===z.best&&z.best!==z.worst?'hot':i===z.worst&&z.best!==z.worst?'cold':'neutral')+'"><b>'+(i===z.best&&z.best!==z.worst?'HOT':i===z.worst&&z.best!==z.worst?'COLD':'')+'</b><span>'+(n.ab>=8?(n.h/n.ab).toFixed(3).replace(/^0/,''):'—')+'</span><small>'+n.ab+'타수</small></div>').join('')+'</div><p class="pitch-chart-caption">구역별 타율 · 기록이 부족하면 임의의 강점·약점을 생성하지 않습니다.</p></section>';
+}
 function bePitchStyle(arsenal){
  const pitches=arsenal?.pitches||[],fast=pitches.filter(x=>/직구|투심|커터|싱커/.test(x.name)),breaking=pitches.filter(x=>/슬라이더|커브|너클커브|스위퍼|슬러브|포크볼|스플리터/.test(x.name));
  const main=[...pitches].sort((a,b)=>(Number(b.grade)||0)-(Number(a.grade)||0))[0];
