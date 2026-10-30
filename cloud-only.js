@@ -725,14 +725,45 @@ export async function cloudSave(state){
    changedFieldCount:changedFields.length,changedFields:changedFields.slice(0,12),
    removedFields:delta?.unset||[]};
   const uploadStarted=performance.now();
+  // A failed fetch may mean the server committed but the response was lost.
+  // Read the authoritative revision before any retry. Never replay an uncertain write.
+  const guardedUpload=async(method,data,wireJson)=>{
+   let lastError;
+   for(let attempt=0;attempt<3;attempt++){
+    try{return await call('/v2/saves/main',method,data,revision,wireJson)}
+    catch(error){
+     if(error.status!==undefined)throw error;
+     lastError=error;
+     let remote;
+     try{remote=await snapshot()}catch(checkError){
+      if(checkError.status===401||checkError.status===409||checkError.status===412)verified=false;
+      throw Error('저장 응답이 끊겼고 서버 저장 여부를 확인하지 못했습니다. 재로그인 전에는 다시 진행하지 마세요: '+(checkError.message||error.message));
+     }
+     const remoteRevision=revisionOf(remote);
+     if(remoteRevision===null){verified=false;throw Error('저장 서버의 버전을 확인하지 못했습니다. 재로그인이 필요합니다')}
+     if(remoteRevision!==revision){
+      // Compare the exact packed wire snapshot, not the live mutable game.
+      if(remoteRevision===revision+1&&remote?.save&&canonicalCloudValue(remote.save)===canonicalCloudValue(payload)){
+       window.beCloudSaveRecovery={status:'confirmed-committed',attempt:attempt+1,revision:remoteRevision};
+       return {revision:remoteRevision};
+      }
+      verified=false;
+      throw Error('서버 저장 버전이 변경되었습니다. 데이터 충돌 방지를 위해 진행을 중단합니다. 다시 로그인하여 확인하세요');
+     }
+     if(attempt===2)break;
+     await new Promise(resolve=>setTimeout(resolve,1000*(attempt+1)));
+    }
+   }
+   throw Error('저장 서버 연결이 반복해서 끊겼습니다. 서버에는 저장되지 않은 것으로 확인했으나 현재 진행을 중단합니다: '+(lastError?.message||'network error'));
+  };
   if(useDelta){
-   try{result=await call('/v2/saves/main','PATCH',delta,revision,deltaJson);}
+   try{result=await guardedUpload('PATCH',delta,deltaJson);}
    catch(e){
     // Only a definite unsupported-method response permits a safe full PUT retry.
     // Never retry an ambiguous network failure or a revision conflict.
     if(e.status!==404&&e.status!==405&&e.status!==501)throw e;
     incrementalSaveSupported=false;
-    result=await call('/v2/saves/main','PUT',payload,revision);
+    result=await guardedUpload('PUT',payload);
    }
   }else result=await call('/v2/saves/main','PUT',payload,revision);
   window.beCloudSaveStages={...window.beCloudPackingStages,deltaMs:+(uploadStarted-deltaStarted).toFixed(1),uploadMs:+(performance.now()-uploadStarted).toFixed(1),totalMs:+(performance.now()-packStarted).toFixed(1),method:window.beCloudSaveTiming?.method||null,uploadBytes:window.beCloudSaveTiming?.transferred||0};
