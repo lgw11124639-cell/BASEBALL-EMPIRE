@@ -403,8 +403,10 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const defender=fielders.find(x=>x.position===target)||fielders.find(x=>x.position===(ground?'SS':'CF'))||fielders[0];
  const fieldSkill=defender?batterSkill(defender,'fielding'):60;
  const park=stadiumFactors(fielding?.teamId),body=batterPhysicalBonus(batter);
- const carry=Math.max(0,exitVelocity*2.4*Math.max(0,Math.sin((launchAngle+8)*Math.PI/180))*(1+quality*.12)*park.homer*(1+body.power));
- const homer=fly&&launchAngle<48&&carry>=105;
+ const idealFlight=Math.max(0,Math.sin(Math.min(90,Math.max(0,launchAngle*2))*Math.PI/180));
+ const carry=Math.max(0,exitVelocity*3.95*idealFlight*(1+quality*.10)*park.homer*(1+body.power));
+ const fenceFeet=Math.abs(sprayAngle)<16?400:Math.abs(sprayAngle)<32?365:335;
+ const homer=fly&&launchAngle>=20&&launchAngle<=43&&exitVelocity>=92&&carry>=fenceFeet;
  const coverage=(fieldSkill-60)*.0025;
  const hitChance=Math.max(.09,Math.min(.57,(ground?.245:liner?.49:.19)+quality*.15-coverage+(speed-60)*(ground?.001:.0002)));
  const hit=homer||random()<hitChance;
