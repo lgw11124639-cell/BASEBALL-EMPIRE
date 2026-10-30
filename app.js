@@ -1728,14 +1728,14 @@ function seasonProgressPanel(){
   }
  }
  const ordered=[...new Map(events.sort((a,b)=>a.priority-b.priority).map(x=>[x.date+'|'+x.kind+'|'+x.title,x])).values()].sort((a,b)=>a.date.localeCompare(b.date)||a.priority-b.priority);
- if(beCalendarLastDay!==current){beCalendarMonth=current.slice(0,7);beCalendarSelected='';beCalendarManual=false;beCalendarLastDay=current;}
+ if(beCalendarLastDay!==current){if(!beCalendarManual||!beCalendarMonth)beCalendarMonth=current.slice(0,7);beCalendarSelected='';beCalendarLastDay=current;}
  const viewMonth=beCalendarMonth||current.slice(0,7),[cy,cm]=viewMonth.split('-').map(Number),first=new Date(cy,cm-1,1,12),days=new Date(cy,cm,0).getDate(),pad=first.getDay();
  const selected=beCalendarSelected&&beCalendarSelected.startsWith(viewMonth)?beCalendarSelected:current.startsWith(viewMonth)?current:'';
  const monthly=ordered.filter(x=>x.date.startsWith(viewMonth));
  const eventMap=new Map();for(const x of monthly){if(!eventMap.has(x.date))eventMap.set(x.date,[]);eventMap.get(x.date).push(x)}
  const cells=Array.from({length:pad},()=>'<span class="be-cal-empty"></span>').join('')+Array.from({length:days},(_,i)=>{
   const date=viewMonth+'-'+String(i+1).padStart(2,'0'),items=eventMap.get(date)||[],national=items.some(x=>x.kind==='WBC'||x.kind==='올림픽'||x.kind==='아시안게임');
-  return '<button type="button" class="be-cal-day'+(date===current?' is-today':'')+(date===selected?' is-selected':'')+'" onclick="beCalendarPick(\''+date+'\')"><b>'+(i+1)+'</b>'+(items.length?'<span class="be-cal-dot'+(national?' is-national':'')+'"></span>':'')+(items.length?'<small>'+esc(items[0].kind==='KBO'?'경기':items[0].kind)+'</small>':'')+'</button>';
+  return '<button type="button" class="be-cal-day'+(date===current?' is-today':'')+(date===selected?' is-selected':'')+'" onclick="beCalendarPick(\''+date+'\')"><b>'+(i+1)+'</b>'+(items.length?'<span class="be-cal-dot'+(national?' is-national':'')+'"></span>':'')+(items.length?'<small>'+esc(items.some(x=>x.kind==='가을야구')?'가을야구':items[0].kind==='KBO'?'경기':items[0].kind)+'</small>':'')+'</button>';
  }).join('');
  const render=x=>'<div class="be-agenda-line"><span class="be-agenda-date">'+esc(label(new Date(x.date+'T12:00:00')))+'</span><span class="be-agenda-detail"><b>'+esc(x.title)+'</b><small>'+esc(x.kind==='KBO'?'정규시즌 · '+x.detail:x.kind+' · '+x.detail)+'</small>'+'</span>'+(x.date===current?'<em>오늘</em>':'')+'</div>';
  const chosen=selected?(selected===current?[]:(eventMap.get(selected)||[])):monthly.filter(x=>x.date>current).slice(0,6);
