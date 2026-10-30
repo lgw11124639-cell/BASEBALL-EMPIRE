@@ -466,7 +466,7 @@ if(appearance&&arsenalInfo&&Array.isArray(arsenalInfo.usage)&&arsenalInfo.usage.
   z.call=call;z.ballsAfter=balls;z.strikesAfter=strikes;seq.push(z);appearance.pitchMix[actual.name]=(appearance.pitchMix[actual.name]||0)+1;const pitchHistory=playerBaseball(pitcher);if(pitchHistory.pitchMixSeasonYear!==state.year){pitchHistory.pitchMixSeasonYear=state.year;pitchHistory.pitchMixSeason={};}pitchHistory.pitchMixSeason[actual.name]=(pitchHistory.pitchMixSeason[actual.name]||0)+1;
   if(pitchDecision)break;
  }
- if(!pitchDecision){pitchDecision='인플레이';seq[seq.length-1].call='인플레이';seq[seq.length-1].ballsAfter=balls;seq[seq.length-1].strikesAfter=strikes}
+ if(!pitchDecision){const last=seq[seq.length-1];if(balls>=3){pitchDecision='볼넷';last.call='볼넷';last.ballsAfter=4}else if(strikes>=2){pitchDecision='삼진';last.call='루킹 삼진';last.strikesAfter=3}else{pitchDecision='인플레이';last.call='인플레이';last.ballsAfter=balls;last.strikesAfter=strikes}}
  appearance.pitchCount+=seq.length;
  if(bePlate){bePlate.pitch=seq[seq.length-1].type;bePlate.pitchCount=seq.length;bePlate.velocity=seq[seq.length-1].velocity;bePlate.pitchSequence=seq;bePlate.pitchAuthoritative=true}
 }
