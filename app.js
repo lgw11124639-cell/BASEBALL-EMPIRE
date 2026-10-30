@@ -2055,8 +2055,8 @@ function homeInternationalSchedule(){
 }
 
 async function bePrepareTodayScores(){
- if(!state||entryMode!=='game'||tab!=='home'||seasonStepBusy||autoSeasonRunning)return;
- const day=state.day,fixtures=scheduledPairs(day,true);
+ if(!state||entryMode!=='game'||tab!=='home'||seasonStepBusy||autoSeasonRunning||awardsFinished())return;
+ const day=state.day,fixtures=scheduledPairs(day,false);
  if(!fixtures.length||Number(state.beWatchedCompletedDay)===Number(day))return;
  if((state.gameResults||[]).some(g=>Number(g.day)===Number(day)))return;
  await advanceSeason(true);
