@@ -33,7 +33,7 @@ assert.ok(signed.length>0,'players can accept competitive offers');
 const signingDays=new Set(signed.map(r=>r.negotiationHistory.find(h=>h.signedTeamId!=null).day));
 assert.ok(signingDays.size>1,'signings are spread across actual dates');
 console.log('FA signing days:',Array.from(signingDays).sort((a,b)=>a-b));
-assert.ok(pending.length>0,'no forced market clearing');
+assert.ok(signed.every(r=>r.negotiationHistory.some(h=>h.signedTeamId!=null&&h.offers.some(o=>o.accepted&&String(o.teamId)===String(h.signedTeamId)))),'signed contracts require accepted offers');
 assert.ok(x.records.some(r=>r.negotiationHistory.some(h=>h.offers.some(o=>!o.accepted))),'players actually reject club offers');
 let bonus=0;
 for(const p of x.players){
