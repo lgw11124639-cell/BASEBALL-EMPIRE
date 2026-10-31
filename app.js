@@ -2558,8 +2558,8 @@ function newsStory(g){const a=state.teams[g.away],h=state.teams[g.home],draw=g.a
 function gameMvp(g){
  if(g.mvp&&typeof g.mvp==='object'){
   const raw=g.mvp;
-  const found=[...(g.awayBatters||[]),...(g.homeBatters||[]),...(g.awayPitchers||[]),...(g.homePitchers||[])].find(p=>String(p.id)===String(raw.id));
-  const player=state.players.find(p=>String(p.id)===String(raw.id));
+  const found=raw.id==null?null:[...(g.awayBatters||[]),...(g.homeBatters||[]),...(g.awayPitchers||[]),...(g.homePitchers||[])].find(p=>p.id!=null&&String(p.id)===String(raw.id));
+  const player=state.players.find(p=>raw.id!=null&&String(p.id)===String(raw.id));
   const resolvedName=[raw.name,found?.name,player?.name].find(v=>typeof v==='string'&&v.trim()&&!/^(undefined|null|nan)$/i.test(v.trim()));
   if(resolvedName&&resolvedName!=='undefined')return {...raw,name:resolvedName,role:raw.role||((g.awayPitchers||[]).includes(found)||(g.homePitchers||[]).includes(found)?'투수':'타자'),detail:String(raw.detail||'경기 주요 활약')};
  }
@@ -2579,9 +2579,9 @@ function gameMvp(g){
  }
  candidates.sort((a,b)=>b.score-a.score||String(a.id).localeCompare(String(b.id)));
  const validName=v=>typeof v==='string'&&v.trim()&&!/^(undefined|null|nan)$/i.test(v.trim());
- const best=candidates.find(p=>validName(p.name)||validName(state.players.find(x=>String(x.id)===String(p.id))?.name));
+ const best=candidates.find(p=>validName(p.name)||(p.id!=null&&validName(state.players.find(x=>String(x.id)===String(p.id))?.name)));
  if(!best)return null;
- const name=validName(best.name)?best.name:state.players.find(p=>String(p.id)===String(best.id))?.name;
+ const name=validName(best.name)?best.name:state.players.find(p=>best.id!=null&&String(p.id)===String(best.id))?.name;
  return {id:best.id,name,team:best.team,role:best.role,detail:best.detail};
 }
 function beGameInterviewContext(g){
