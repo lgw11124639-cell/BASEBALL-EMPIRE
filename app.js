@@ -1932,14 +1932,28 @@ function negotiateFaContract(p,record){
  }
  record.lastOutcome=offers.length?'선수 제안 거절':'구단 제안 없음';
  record.lastReason=offers.length?offers.slice().sort((a,b)=>b.utility-a.utility)[0].reason:'구단의 전력 계획·재정 조건에 맞는 제안 없음';
- const best=rankedOffers[0];
  const won=n=>money(Math.round(Number(n)||0));
  const teamName=id=>state.teams.find(t=>String(t.id)===String(id))?.name||'해당 구단';
- const headline=best?teamName(best.teamId)+', FA '+p.name+' 협상 결렬…'+best.years+'년 총액 '+won(best.totalValue)+' 제시':'FA '+p.name+', 구단 제안 없이 협상 대기';
- const details=best
-  ?teamName(best.teamId)+'는 '+p.name+'에게 '+best.years+'년 계약을 제시했다. 연봉 '+won(best.annualSalary)+', 계약금 '+won(best.signingBonus)+', 총액 '+won(best.totalValue)+' 규모다. 선수 측 희망 조건은 연봉 '+won(best.askingAnnual)+', 계약기간 '+best.desiredYears+'년으로, 같은 기간 기준 희망 연봉 합계는 '+won(best.askingAnnual*best.desiredYears)+'이다. 협상이 결렬된 주요 사유는 '+best.reason+'이다. 이는 실제 협상 판정 결과이며, 양측은 다음 검토 일정에 재협상할 수 있다.'
-  :'이번 검토에서는 구단의 재정 및 전력 구성 조건에 맞는 공식 제안이 나오지 않았다. 선수는 FA 미계약 상태로 남는다.';
- clubNotice('FA 협상',headline,details,[record.previousTeamId,...(best?[best.teamId]:[])],[p.id]);
+ // One factual article per actual club bid; never report a contact without an offer.
+ const actualBids=[...summaries.values()].sort((a,b)=>b.utility-a.utility||b.totalValue-a.totalValue);
+ record.lastContactTeams=actualBids.map(o=>o.teamId);
+ record.lastContactCount=actualBids.length;
+ for(const bid of actualBids){
+  const key=[state.year,state.day,p.id,record.negotiationRounds,bid.teamId].join(':');
+  record.publishedFaBidKeys=record.publishedFaBidKeys||{};
+  if(record.publishedFaBidKeys[key])continue;
+  const club=teamName(bid.teamId),original=String(bid.teamId)===String(record.previousTeamId);
+  const heading=club+', FA '+p.name+' '+(original?'잔류 협상':'영입 협상')+' 결렬…'+bid.years+'년 총액 '+won(bid.totalValue)+' 제안';
+  const story=club+'는 FA '+p.name+'에게 '+bid.years+'년 계약을 제안했다. 연봉 '+won(bid.annualSalary)+', 계약금 '+won(bid.signingBonus)+', 총액 '+won(bid.totalValue)+'이다. 선수 측은 연봉 '+won(bid.askingAnnual)+', 계약기간 '+bid.desiredYears+'년을 희망했다. 이번 제안에 대한 선수의 판단은 '+bid.reason+'으로, 합의에 이르지 못했다. '+(original?'원소속 구단과의 잔류 협상이다.':'타 구단의 영입 제안이다.')+' 다음 협상 일정에 조건을 다시 검토할 수 있다.';
+  clubNotice('FA 협상',heading,story,[record.previousTeamId,bid.teamId],[p.id]);
+  record.publishedFaBidKeys[key]=true;
+ }
+ if(actualBids.length>1){
+  const contenders=actualBids.map(o=>teamName(o.teamId)).join(', ');
+  clubNotice('FA 시장', 'FA '+p.name+', '+actualBids.length+'개 구단 제안에도 미계약…영입 경쟁',contenders+'이(가) 실제 계약 제안을 제출했다. 각 구단의 제안 금액과 선수 측 거절 사유는 구단별 협상 기사에 기록됐다. 아직 계약이 체결되지 않았으며 다음 협상을 기다리고 있다.',[...new Set([record.previousTeamId,...actualBids.map(o=>o.teamId)])],[p.id]);
+ } else if(!actualBids.length){
+  clubNotice('FA 협상','FA '+p.name+', 구단 제안 없이 협상 대기','이번 검토에서는 실제 계약 제안이 접수되지 않았다. 선수는 미계약 상태로 다음 검토를 기다린다.',[record.previousTeamId],[p.id]);
+ }
  return false;
 }
 function faNegotiationSummary(p){
