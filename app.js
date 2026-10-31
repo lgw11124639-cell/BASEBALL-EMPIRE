@@ -1850,6 +1850,7 @@ function faEvaluateOffer(p,offer,record,projection,preferences){
  if(annualRatio<.78&&guaranteeRatio<.82)reason='연봉·총액 조건 차이';
  else if(offer.opportunity<.35&&preferences.playingTime>.75&&annualRatio<1.05)reason='출전 기회 부족';
  else if(offer.years<desiredYears-2&&preferences.security>.85&&annualRatio<1.05)reason='보장기간 조건 차이';
+ else if(preferences.contention>.75&&offer.contention<.45&&utility<.97)reason='우승 경쟁력에 대한 이견';
  else if(utility<.94)reason=preferences.contention>.75&&offer.contention<.45?'우승 경쟁력에 대한 이견':preferences.loyalty>.75&&String(offer.teamId)!==String(record.previousTeamId)?'원소속 구단 잔류 선호':preferences.security>preferences.money&&guaranteeRatio<annualRatio?'보장기간·총액 재협상 희망':annualRatio<.92?'연봉 조건 차이':'제안 조건 종합 평가 미달';
  return {accepted:reason==='조건 합의',reason,utility,askingAnnual:Math.round(askingAnnual),desiredYears};
 }
