@@ -1746,7 +1746,7 @@ function playerRetirementProbability(p){
  const earnedRuns=Number(p.earnedRuns)||0;
  const homeRuns=Number(p.homeRuns)||0;
  const walks=Number(p.walks)||0;
- const baseline=age<37?.015+(age-35)*.015:age<40?.055+(age-37)*.065:age<44?.29+(age-40)*.115:.75+(age-44)*.055;
+ const baseline=age<37?.008+(age-35)*.008:age<40?.025+(age-37)*.035:age<44?.14+(age-40)*.075:.50+(age-44)*.065;
  let adjustment=0;
  if(competitive)adjustment-=.10;
  else if(struggling)adjustment+=.10;
@@ -1891,7 +1891,7 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
   const clubKey=String(teamId);
   const withdrawal=record.clubWithdrawals?.[clubKey];
   if(withdrawal&&Number(withdrawal.untilYear)>=state.year)return null;
-  const raise=Math.min(.32,Math.floor(rounds/4)*.035)*Math.max(.25,need);
+  const raise=Math.min(.45,Math.floor(rounds/2)*.055)*Math.max(.25,need);
   const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+raise)/1000000)*1000000);
   const bonusRate=Math.max(.08,Math.min(.36,.12+need*.12+contender*.07-longTermRisk*.06));
   const signingBonus=Math.round(annualSalary*years*bonusRate/1000000)*1000000;
@@ -1904,8 +1904,8 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
 }
 function faEvaluateOffer(p,offer,record,projection,preferences){
  const round=Number(record.negotiationRounds)||0,concession=Math.max(.55,Math.pow(.985,round));
- const veteranReservation=(Number(p.age)||0)>=38?(Number(record.previousSalary)||0)*Math.max(.15,.65*Math.pow(.96,round)):0;
- const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.985,round)),Math.min((Number(record.previousSalary)||0)*.65*concession,projection.fairAnnual*(1.6+Math.max(0,3-round)*.08)),Math.min(veteranReservation,projection.fairAnnual*1.7));
+ const veteranReservation=(Number(p.age)||0)>=38?Math.min((Number(record.previousSalary)||0)*Math.max(.10,.40*Math.pow(.92,round)),projection.fairAnnual*1.15):0;
+ const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.985,round)),Math.min((Number(record.previousSalary)||0)*.40*concession,projection.fairAnnual*1.20),Math.min(veteranReservation,projection.fairAnnual*1.7));
  const desiredYears=Math.max(1,Math.min((Number(p.age)||28)>=39?2:5,projection.recommendedYears+(preferences.security>.8&&round<3?1:0)-Math.floor(round/12)));
  const annualRatio=offer.annualSalary/askingAnnual;
  const guaranteeRatio=offer.totalValue/(askingAnnual*desiredYears*1.20);
@@ -1915,7 +1915,7 @@ function faEvaluateOffer(p,offer,record,projection,preferences){
  let reason='조건 합의';
  // A competitive salary and the strongest actual offer should not be rejected
  // solely because the player initially preferred a longer guarantee.
- if(veteranReservation>0&&annualRatio<.88)reason='기존 연봉 대비 보장액 부족';
+ if(veteranReservation>0&&annualRatio<.78)reason='시장 평가 대비 보장액 부족';
  else if(annualRatio<.78&&guaranteeRatio<.82)reason='연봉·총액 조건 차이';
  else if(offer.opportunity<.35&&preferences.playingTime>.75&&annualRatio<1.05)reason='출전 기회 부족';
  else if(offer.years<desiredYears-2&&preferences.security>.85&&annualRatio<1.05)reason='보장기간 조건 차이';
