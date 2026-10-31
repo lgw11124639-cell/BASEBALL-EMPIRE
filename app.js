@@ -2504,7 +2504,7 @@ function cloneDailyRollback(value){
   const array=Array.isArray(node),proto=Object.getPrototypeOf(node);
   if(!array&&proto!==Object.prototype&&proto!==null)throw unsupported;
   const out=array?new Array(node.length):{};seen.set(node,out);
-  for(const key of Object.keys(node)){const value=copy(node[key]);if(key==='__proto__')Object.defineProperty(out,key,{value,enumerable:true,writable:true,configurable:true});else out[key]=value;}
+  for(const key in node){if(!Object.prototype.hasOwnProperty.call(node,key))continue;const value=copy(node[key]);if(key==='__proto__')Object.defineProperty(out,key,{value,enumerable:true,writable:true,configurable:true});else out[key]=value;}
   return out;
  }
  try{return copy(value)}catch(error){if(error!==unsupported)throw error;return structuredClone(value)}
