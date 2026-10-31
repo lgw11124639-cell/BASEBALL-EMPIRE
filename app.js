@@ -1374,6 +1374,10 @@ function retireUnsignedReleasedPlayers(){
   const seed=((Number(p.id)||1)*7919+state.year*104729)>>>0;
   const draw=((Math.imul(seed^seed>>>16,2246822507)>>>0)%1000000)/1000000;
   if(draw>=risk)continue;
+  if(p.level==='FA대기'){
+   const market=(state.faMarket||[]).find(x=>String(x.playerId)===String(p.id)&&!x.signedYear);
+   if(market){market.retiredYear=state.year;market.lastOutcome='현역 은퇴';market.lastReason='미계약 기간과 최근 출전 기록에 따른 은퇴 결정';}
+  }
   p.retired=true;p.level='은퇴';
   if(!state.retiredPlayers.some(x=>String(x.id)===String(p.id))){
    state.retiredPlayers.push({id:p.id,name:p.name,year:state.year,age:p.age,teamId:p.teamId,jerseyNumber:p.jerseyNumber,reason:'장기 미계약 후 은퇴 결정'});
