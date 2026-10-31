@@ -2005,7 +2005,7 @@ function negotiateFaContract(p,record){
  // all clubs already withdrew and the next review was cleared.
  const lastWithdrawalRound=Math.max(0,...Object.values(withdrawnClubs).map(x=>Number(x?.round)||0));
  if(state.teams.length&&state.teams.every(t=>Number(withdrawnClubs[String(t.id)]?.untilYear)>=state.year)&&
-    (Number(record.negotiationRounds)||0)>=lastWithdrawalRound+3){
+    ((Number(record.negotiationRounds)||0)>=lastWithdrawalRound+3||(Number(record.lastReviewYear)===state.year&&state.day-Number(record.lastReviewDay)>=21)||(Number(record.lastReviewYear)<state.year))){
   record.clubWithdrawals={};
   record.lastOutcome='시장 재검토';
   record.lastReason='구단 철수 이후 재협상 가능 여부 재평가';
@@ -2013,7 +2013,7 @@ function negotiateFaContract(p,record){
  if(state.teams.length&&state.teams.every(t=>Number((record.clubWithdrawals||{})[String(t.id)]?.untilYear)>=state.year)){
   record.lastReviewYear=state.year;record.lastReviewDay=state.day;record.lastOutcome='협상 종료';
   record.lastReason='모든 구단이 최종 제안 후 협상 철수';record.lastContactTeams=[];record.lastContactCount=0;
-  record.nextReviewDate=null;return false;
+  scheduleFaReview(p,record,21);return false;
  }
  for(const team of state.teams)for(let years=1;years<=projection.recommendedYears;years++){
   const offer=faBuildOffer(p,team.id,record,projection,years);
