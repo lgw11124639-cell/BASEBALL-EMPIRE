@@ -763,3 +763,19 @@ nav.nav>button[data-tab] .nav-icon{height:22px!important;line-height:22px!import
 .be-news-club-tabs button{min-width:0;max-width:100%;padding:10px 5px;border-radius:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
 .be-news-club-tabs button.active{background:#2866a4;color:#fff;border-color:#2866a4}
 @media(max-width:680px){nav.nav:has(>button[data-tab]){gap:2px!important;padding-left:3px!important;padding-right:3px!important}nav.nav>button[data-tab]{font-size:10px!important;min-height:49px!important}.be-news-club-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}}
+
+/* Player achievements: complete on desktop, compact expandable summary on mobile. */
+.be-player-title-badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.be-player-title-badge{display:inline-flex;align-items:center;max-width:100%;border:1px solid #c9d9e9;background:#fff;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;color:#214e7c;box-sizing:border-box}
+.be-title-mobile{display:none}
+@media(max-width:700px){
+ .be-title-desktop{display:none!important}
+ .be-title-mobile{display:block;min-width:0;max-width:100%;margin-top:8px}
+ .be-title-mobile .be-player-title-badges{gap:5px;margin-top:5px}
+ .be-title-mobile .be-player-title-badge{font-size:11px;padding:5px 7px;line-height:1.35;white-space:normal}
+ .be-title-more{margin-top:7px;max-width:100%}
+ .be-title-more summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;border:1px solid #cad9e9;border-radius:8px;padding:8px 10px;color:#225b93;background:#f2f6fc;font-size:12px;font-weight:700;cursor:pointer;list-style:none}
+ .be-title-more summary::-webkit-details-marker{display:none}
+ .be-title-more summary span{font-size:11px;color:#527297}
+ .be-title-more[open] summary{background:#e7f0fc}
+}
