@@ -107,6 +107,10 @@ jobs:
         run: node tests/complete-game-path.test.cjs
       - name: Historical article club identity
         run: node tests/news-historical-club.test.cjs
+      - name: Live arsenal normalization
+        run: node tests/pitching-arsenal-normalization.test.cjs
+      - name: Medical calendar history
+        run: node tests/medical-history.test.cjs
       - name: Club release news grouping
         run: node tests/release-news.test.cjs
       - name: News publication chronology

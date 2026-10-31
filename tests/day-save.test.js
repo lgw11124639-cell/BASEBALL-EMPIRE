@@ -13,7 +13,7 @@ async function run(mode){
  const state={year:2027,day:42,players:[{id:1,careerStats:{hits:10}}],teams:[],events:[],gameResults:[{day:40,marker:'preserve'}],postseasons:{2027:{finished:true}},offseasonContractsDone:{}};
  if(mode==='watched postseason'||mode==='pending postseason')state.postseasons[2027].finished=false;
  const initial=clone(state);
- const ctx={state,seasonStepBusy:mode==='busy',autoSeasonRunning:mode==='auto',entryMode:'game',tab:'home',
+ const ctx={state,seasonStepBusy:mode==='busy',autoSeasonRunning:mode==='auto'||mode==='auto-fast',autoSeasonSpeed:mode==='auto-fast'?0:300,entryMode:'game',tab:'home',
  document:{querySelector:()=>({disabled:false})},window:{},performance:{now:()=>0},structuredClone:clone,
  ensureSeasonCalendar:()=>{},monthlyOwnerReport:()=>{},saveSeasonSnapshot:()=>{},nationalTeamTournamentDay:()=>{},nationalTeamReturnDay:()=>{},
  seasonDate:(day)=>{const base=new Date(mode==='rollover'?'2027-11-21T12:00:00':['offseason','watched postseason','pending postseason'].includes(mode)?'2027-01-01T12:00:00':'2027-03-20T12:00:00');base.setDate(base.getDate()+Number(day)-1);return base;},
@@ -28,7 +28,7 @@ async function run(mode){
  };
  const fn=new Function('ctx','with(ctx){'+source.slice(start,end)+';return advanceSeason;}')(ctx);
  const watching=mode==='watched regular'||mode==='watched postseason';
- const ok=await fn(watching,mode==='auto'?'auto':'manual');const watched=watching?clone(ctx.state):null;let nextOk=null;if(watching)nextOk=await fn();
+ const ok=await fn(watching,['auto','auto-fast'].includes(mode)?'auto':'manual');const watched=watching?clone(ctx.state):null;let nextOk=null;if(watching)nextOk=await fn();if(mode==='auto-fast')nextOk=await fn(false,'auto');
  for(const callback of timers)callback();await Promise.resolve();
  return {ok,state:ctx.state,saves,simulations,stops,contracts,negotiations,rollovers,prepares,renders,timers:timers.length,errors,initial,watched,nextOk};
 }
@@ -47,6 +47,7 @@ async function run(mode){
  for(const mode of ['pending league','pending postseason']){x=await run(mode);assert.equal(x.ok,true,x.errors.join('\n'));assert.equal(x.state.day,43);assert.equal(x.saves,1);assert.equal(x.timers,1);assert.equal(x.prepares,1);assert.equal(x.renders,0);}
  x=await run('auto');assert.equal(x.ok,true,x.errors.join('\n'));assert.equal(x.timers,0);assert.equal(x.renders,1);assert.equal(x.stops,0);
  for(const mode of ['watched regular','watched postseason']){x=await run(mode);assert.equal(x.ok,true,x.errors.join('\n'));assert.equal(x.watched.day,42);assert.equal(x.watched.beWatchedCompletedDay,42);assert.equal(x.nextOk,true);assert.equal(x.state.day,43);assert.equal(x.state.beWatchedCompletedDay,undefined);assert.equal(x.saves,2);assert.equal(x.simulations,mode==='watched regular'?1:0);}
+ x=await run('auto-fast');assert.equal(x.ok,true,x.errors.join('\n'));assert.equal(x.nextOk,true);assert.equal(x.saves,2,'fast mode saves each day');assert.equal(x.state.day,44);assert.equal(x.renders,1,'fast mode coalesces redundant layouts');
  x=await run('busy');assert.equal(x.ok,false);assert.equal(x.state.day,42);assert.equal(x.saves,0);assert.equal(x.simulations,0);
- console.log('PASS: 11 daily progression, deferred rendering, watched games, rollback and rollover scenarios');
+ console.log('PASS: 12 daily progression, deferred rendering, watched games, rollback and rollover scenarios');
 })().catch(e=>{console.error(e);process.exitCode=1});

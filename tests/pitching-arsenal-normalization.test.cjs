@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');
+const c=require('./helpers/game-context.cjs')(),run=code=>vm.runInContext(code,c);
+run(`state=world(0);const arsenalPlayer=state.players.find(p=>p.position==='P');const initialArsenal=pitchingArsenal(arsenalPlayer);const initialPitches=initialArsenal.pitches;`);
+assert.equal(run('pitchingArsenal(arsenalPlayer).pitches===initialPitches'),true,'normalized arsenal avoids repeated array allocation');
+run(`initialArsenal.pitches[0].grade+=10;initialArsenal.velocity+=2;`);
+assert.equal(run('pitchingArsenal(arsenalPlayer).velocity'),run('initialArsenal.velocity'),'live edits remain visible');
+run(`initialArsenal.pitches=[{name:'슬라이더',grade:50,command:45},{name:'슬라이더',grade:60,command:55},{name:'없는구종',grade:99}];initialArsenal.usage=[{name:'없는구종',percent:100}];pitchingArsenal(arsenalPlayer);`);
+assert.equal(run("initialArsenal.pitches.some(p=>p.name==='직구')"),true,'missing fastball restored');
+assert.equal(run('new Set(initialArsenal.pitches.map(p=>p.name)).size===initialArsenal.pitches.length'),true);
+assert.equal(run("initialArsenal.pitches.every(p=>PITCH_TYPES.includes(p.name)&&Number.isFinite(Number(p.command)))"),true);
+assert.equal(run('initialArsenal.usage.reduce((n,p)=>n+p.percent,0)'),100);
+run('initialArsenal.pitches[0].command=undefined;pitchingArsenal(arsenalPlayer);');
+assert.equal(run('Number.isFinite(initialArsenal.pitches[0].command)'),true,'in-place invalid edits are repaired');
+console.log('PASS allocation-free valid arsenals, live changes and legacy/mutated arsenal repair');
