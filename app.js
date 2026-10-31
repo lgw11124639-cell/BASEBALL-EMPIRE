@@ -1841,7 +1841,8 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
 }
 function faEvaluateOffer(p,offer,record,projection,preferences){
  const round=Number(record.negotiationRounds)||0,concession=Math.max(.55,Math.pow(.985,round));
- const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.985,round)),(Number(record.previousSalary)||0)*.65*concession);
+ const veteranReservation=(Number(p.age)||0)>=38?(Number(record.previousSalary)||0)*Math.max(.72,.95-round*.003):0;
+ const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.985,round)),(Number(record.previousSalary)||0)*.65*concession,veteranReservation);
  const desiredYears=Math.max(1,projection.recommendedYears+(preferences.security>.8&&round<3?1:0)-Math.floor(round/12));
  const annualRatio=offer.annualSalary/askingAnnual;
  const guaranteeRatio=offer.totalValue/(askingAnnual*desiredYears*1.20);
@@ -1851,7 +1852,8 @@ function faEvaluateOffer(p,offer,record,projection,preferences){
  let reason='조건 합의';
  // A competitive salary and the strongest actual offer should not be rejected
  // solely because the player initially preferred a longer guarantee.
- if(annualRatio<.78&&guaranteeRatio<.82)reason='연봉·총액 조건 차이';
+ if(veteranReservation>0&&annualRatio<.88)reason='기존 연봉 대비 보장액 부족';
+ else if(annualRatio<.78&&guaranteeRatio<.82)reason='연봉·총액 조건 차이';
  else if(offer.opportunity<.35&&preferences.playingTime>.75&&annualRatio<1.05)reason='출전 기회 부족';
  else if(offer.years<desiredYears-2&&preferences.security>.85&&annualRatio<1.05)reason='보장기간 조건 차이';
  else if(preferences.contention>.75&&offer.contention<.45&&utility<.97)reason='우승 경쟁력에 대한 이견';
@@ -1924,7 +1926,7 @@ function negotiateFaContract(p,record){
  record.lastBestAnnual=topOffer?.annualSalary??0;
  record.lastBestTotal=topOffer?.totalValue??0;
  record.lastBestYears=topOffer?.years??0;
- if(topOffer&&!topOffer.accepted&&topOffer.utility>=.97&&topOffer.annualSalary>=topOffer.askingAnnual*.86&&topOffer.years>=Math.max(1,topOffer.desiredYears-1)&&topOffer.opportunity>=.45){topOffer.accepted=true;topOffer.reason='최고 제안 조건 합의';}
+ if(topOffer&&!topOffer.accepted&&!(Number(p.age)>=38&&topOffer.annualSalary<topOffer.askingAnnual*.88)&&topOffer.utility>=.97&&topOffer.annualSalary>=topOffer.askingAnnual*.86&&topOffer.years>=Math.max(1,topOffer.desiredYears-1)&&topOffer.opportunity>=.45){topOffer.accepted=true;topOffer.reason='최고 제안 조건 합의';}
  const accepted=offers.filter(o=>o.accepted).sort((a,b)=>b.utility-a.utility||b.totalValue-a.totalValue);
  // Retain the best accepted/rejected terms per club, not every term permutation.
  const summaries=new Map();
