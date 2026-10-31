@@ -24,7 +24,10 @@ for(const age of [28,33,37,40]){
 assert.ok(ageReport[0].years>=3,'healthy productive prime player can receive a long guarantee');
 assert.ok(ageReport[3].years<=2,'40-year-old does not receive an arbitrary four-year guarantee');
 assert.ok(ageReport[3].annual<ageReport[0].annual,'aging projections change offered value');
-assert.equal(project({...p,salary:50000000}).fairAnnual,project({...p,salary:2000000000}).fairAnnual,'club valuation is not a raise on previous salary');
+const lowSalary=project({...p,salary:50000000}).fairAnnual;
+const highSalary=project({...p,salary:2000000000}).fairAnnual;
+assert.ok(highSalary>=lowSalary,'productive established player keeps a meaningful previous-salary market anchor');
+assert.ok(highSalary<2000000000*1.5,'previous salary does not guarantee an automatic raise');
 const healthy=project(p),injured=project({...p,profile:{...p.profile,injury:{days:120}}});
 assert.ok(injured.recommendedYears<healthy.recommendedYears,'serious injury shortens guarantee');
 assert.ok(injured.fairAnnual<healthy.fairAnnual,'injury risk changes valuation');
