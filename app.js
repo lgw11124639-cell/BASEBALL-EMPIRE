@@ -2397,7 +2397,7 @@ function coachDevelopmentDay(offseason){const d=seasonDate(state.day),month=d.ge
    '【선수별 월간 변동】 '+(details.length?details.join(' / '):'이번 달 기록된 능력 변화 없음'),
    '【코칭스태프 종합 의견】 성장 선수는 역할 확대와 실전 출전 기회를 검토합니다. 기량 저하 선수는 피로도·부상 이력·기용 부담을 점검하고 회복을 우선합니다. 실제 1군 등록과 말소는 감독·프런트 판단에 따라 별도 결정됩니다.',
    '【다음 달 점검 과제】 1군과 2군 경기 기록, 훈련 경과, 부상 회복 및 포지션별 선수층을 재평가합니다. 개별 능력치 수치는 공개하지 않습니다.'
-  ].join('\\n\\n');
+  ].join('\n\n');
   clubNotice('육성 보고',t.city+' '+t.name+' '+state.year+'년 '+month+'월 종합 육성 보고',body,[t.id],[...playerEvents.keys()].filter(id=>id!=='undefined'));
   report.published=true;
  }
