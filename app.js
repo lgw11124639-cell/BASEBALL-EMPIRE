@@ -1858,7 +1858,10 @@ function faPlayerProjection(p){
  const leaguePay=leagueEstablished.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
  const upperMarket=leaguePay.length>=8?leaguePay[Math.floor((leaguePay.length-1)*.80)]:valuationBase;
  const roleAnchor=(highLeverage||eliteStarter||eliteHitter)?Math.max(valuationBase,upperMarket):valuationBase;
- const fairAnnual=Math.max(floor,Math.round(Math.max(roleAnchor,salaryAnchor)*projections[0]*(.75+.25*marketConfidence)/1000000)*1000000);
+ const previousPay=Number((state.faMarket||[]).find(x=>String(x.playerId)===String(p.id)&&!x.signedYear)?.previousSalary)||Number(p.salary)||0;
+ const productive=sample/Math.max(1,weight)>=(isPitcher?45:250)&&relative>=.95;
+ const careerAnchor=productive&&previousPay>=300000000?previousPay*Math.max(.55,Math.min(1.12,.75+(relative-1)*.35)):0;
+ const fairAnnual=Math.max(floor,Math.round(Math.max(roleAnchor*projections[0]*(.75+.25*marketConfidence),salaryAnchor*projections[0]*(.75+.25*marketConfidence),careerAnchor)/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
 function faBuildOffer(p,teamId,record,projection,requestedYears=null){
