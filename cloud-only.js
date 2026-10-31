@@ -207,7 +207,23 @@ async function packCloudShards(state){
    }
    const gzipBefore=window.beCloudGzipSnapshot();
    const encodingStarted=performance.now();
-   const entries=await Promise.all(jobs.map(async([name,raw])=>[name,await encodeCloudShard(raw,name)]));
+   // Reuse byte-identical cached shards immediately. Only changed shards need
+   // compression; feed those through a bounded worker pool instead of creating
+   // hundreds of promises waiting in the shared gzip queue.
+   const entries=new Array(jobs.length);
+   const changedJobs=[];
+   for(let i=0;i<jobs.length;i++){
+    const [name,raw]=jobs[i],cached=shardGzipCache.get(name);
+    if(cached?.raw===raw)entries[i]=[name,cached.encoded];
+    else changedJobs.push(i);
+   }
+   let nextJob=0;
+   await Promise.all(Array.from({length:Math.min(shardGzipConcurrency,changedJobs.length)},async()=>{
+    while(nextJob<changedJobs.length){
+     const i=changedJobs[nextJob++], [name,raw]=jobs[i];
+     entries[i]=[name,await encodeCloudShard(raw,name)];
+    }
+   }));
    const encodingMs=performance.now()-encodingStarted;
    const gzipDelta=window.beCloudGzipSince(gzipBefore);
    window.bePlayerShardDetail={chunks:count*2,changed,cacheHits,splitMs:+splitMs.toFixed(1),serializeMs:+serializeMs.toFixed(1),encodingMs:+encodingMs.toFixed(1),gzipTasks:gzipDelta.tasks,gzipQueued:gzipDelta.queued,gzipWaitSumMs:gzipDelta.waitMs,gzipWorkSumMs:gzipDelta.workMs,totalMs:+(performance.now()-started).toFixed(1)};
