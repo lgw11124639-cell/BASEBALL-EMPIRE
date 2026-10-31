@@ -1845,10 +1845,12 @@ function faEvaluateOffer(p,offer,record,projection,preferences){
  const fit=(offer.opportunity-.65)*.30*preferences.playingTime+(offer.contention-.5)*.20*preferences.contention+(String(offer.teamId)===String(record.previousTeamId)?.06:-.025)*preferences.loyalty;
  const utility=(Math.min(1.6,annualRatio)*weights.money+Math.min(1.6,guaranteeRatio)*weights.security)/(weights.money+weights.security)+fit;
  let reason='조건 합의';
- if(annualRatio<.72&&guaranteeRatio<.85)reason='연봉·총액 조건 차이';
- else if(offer.opportunity<.45&&preferences.playingTime>.5&&annualRatio<1.3)reason='출전 기회 부족';
- else if(offer.years<desiredYears-1&&preferences.security>.6&&annualRatio<1.3)reason='보장기간 조건 차이';
- else if(utility<1)reason=preferences.security>preferences.money&&guaranteeRatio<annualRatio?'보장기간·총액 재협상 희망':'다른 구단 제안 대기';
+ // A competitive salary and the strongest actual offer should not be rejected
+ // solely because the player initially preferred a longer guarantee.
+ if(annualRatio<.78&&guaranteeRatio<.82)reason='연봉·총액 조건 차이';
+ else if(offer.opportunity<.35&&preferences.playingTime>.75&&annualRatio<1.05)reason='출전 기회 부족';
+ else if(offer.years<desiredYears-2&&preferences.security>.85&&annualRatio<1.05)reason='보장기간 조건 차이';
+ else if(utility<.94&&annualRatio<.92)reason=preferences.security>preferences.money&&guaranteeRatio<annualRatio?'보장기간·총액 재협상 희망':'다른 구단 제안 대기';
  return {accepted:reason==='조건 합의',reason,utility,askingAnnual:Math.round(askingAnnual),desiredYears};
 }
 function faRegisterMarketPlayer(p,from,grade,previousSalary,year){
@@ -1910,6 +1912,12 @@ function negotiateFaContract(p,record){
  // A strong best offer can be acceptable even when an isolated annual/term test is marginal.
  const rankedOffers=offers.slice().sort((a,b)=>b.utility-a.utility||b.totalValue-a.totalValue);
  const topOffer=rankedOffers[0];
+ // Expose the actual asking price and the strongest bid in the FA screen.
+ record.lastAskingAnnual=topOffer?.askingAnnual??Math.round(projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.965,Number(record.negotiationRounds)||0)));
+ record.lastDesiredYears=topOffer?.desiredYears??projection.recommendedYears;
+ record.lastBestAnnual=topOffer?.annualSalary??0;
+ record.lastBestTotal=topOffer?.totalValue??0;
+ record.lastBestYears=topOffer?.years??0;
  if(topOffer&&!topOffer.accepted&&topOffer.utility>=.97&&topOffer.annualSalary>=topOffer.askingAnnual*.86&&topOffer.years>=Math.max(1,topOffer.desiredYears-1)&&topOffer.opportunity>=.45){topOffer.accepted=true;topOffer.reason='최고 제안 조건 합의';}
  const accepted=offers.filter(o=>o.accepted).sort((a,b)=>b.utility-a.utility||b.totalValue-a.totalValue);
  // Retain the best accepted/rejected terms per club, not every term permutation.
@@ -1929,7 +1937,11 @@ function negotiateFaContract(p,record){
 }
 function faNegotiationSummary(p){
  const record=(state.faMarket||[]).find(x=>String(x.playerId)===String(p.id)&&!x.signedYear);
- return record?.lastReason?record.lastOutcome+' · '+record.lastReason+(record.nextReviewDate&&!record.signedYear?' · 다음 검토 '+record.nextReviewDate:''):'구단 제안 대기';
+ if(!record)return '구단 제안 대기';
+ const money=n=>(Number(n)/100000000).toFixed(2).replace(/\\.?0+$/,'')+'억';
+ const demand=record.lastAskingAnnual?' · 요구 연봉 '+money(record.lastAskingAnnual)+' / '+(record.lastDesiredYears||1)+'년':'';
+ const bid=record.lastBestAnnual?' · 최고 제안 연봉 '+money(record.lastBestAnnual)+' / '+record.lastBestYears+'년':' · 구단 제안 없음';
+ return (record.lastOutcome||'협상 대기')+' · '+(record.lastReason||'조건 검토 중')+demand+bid+(record.nextReviewDate&&!record.signedYear?' · 다음 검토 '+record.nextReviewDate:'');
 }
 function playerContractStatus(p,seasonYear){
  const profile=p.profile||{},contract=profile.faContract;
