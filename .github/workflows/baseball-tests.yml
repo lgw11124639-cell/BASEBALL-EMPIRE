@@ -121,6 +121,12 @@ jobs:
         run: node tests/roster-filters.test.cjs
       - name: Manager plan cache and live evaluations
         run: node tests/manager-plan-cache.test.cjs
+      - name: Small gzip and bounded preparation scheduler
+        run: node tests/cloud-compression-scheduler.test.cjs
+      - name: Batter fatigue and specialist rotation
+        run: node tests/batter-fatigue-rotation.test.cjs
+      - name: Historical club identity after trades
+        run: node tests/historical-season-clubs.test.cjs
       - name: Large-save preparation and monthly report PATCH
         run: node tests/cloud-save-preparation.test.cjs
       - name: Lossless training archive packing and upload recovery

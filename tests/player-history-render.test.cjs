@@ -18,7 +18,7 @@ const context=vm.createContext({state,Number,Math,Map,Set,Object,
  hasPlayedFirstTeamSeason:v=>(Number(v.games)||0)>0,
  esc:x=>String(x),baseballIP:x=>String(x),
 });
-vm.runInContext(source.slice(start,end),context);
+const helperStart=source.indexOf('function playerSeasonClubIds(');vm.runInContext(source.slice(helperStart,start)+source.slice(start,end),context);
 const render=()=>vm.runInContext('playerSeasonHistory(state.players[0])',context);
 const cells=html=>[...html.matchAll(/<tr[^>]*><th[^>]*>(2026|2027|통산[^<]*)<\/th>(.*?)<\/tr>/g)].map(m=>({year:m[1],html:m[2]}));
 let html=render();

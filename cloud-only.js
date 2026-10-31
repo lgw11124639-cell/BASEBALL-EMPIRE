@@ -93,11 +93,18 @@ let gameShardFastCache=null;
 const shardGzipConcurrency=6;
 let shardGzipActive=0;
 const shardGzipQueue=[];
-const shardGzipMetrics={tasks:0,queued:0,waitMs:0,workMs:0,maxActive:0};
+const shardGzipMetrics={tasks:0,queued:0,waitMs:0,workMs:0,maxActive:0,fastTasks:0,nativeTasks:0};
 window.beCloudGzipMetrics=shardGzipMetrics;
 // A snapshot is more useful than lifetime totals when investigating one-day saves.
 window.beCloudGzipSnapshot=()=>({tasks:shardGzipMetrics.tasks,queued:shardGzipMetrics.queued,waitMs:shardGzipMetrics.waitMs,workMs:shardGzipMetrics.workMs,maxActive:shardGzipMetrics.maxActive,active:shardGzipActive,pending:shardGzipQueue.length});
 window.beCloudGzipSince=(before)=>{const now=window.beCloudGzipSnapshot();return {tasks:now.tasks-(before?.tasks||0),queued:now.queued-(before?.queued||0),waitMs:+(now.waitMs-(before?.waitMs||0)).toFixed(1),workMs:+(now.workMs-(before?.workMs||0)).toFixed(1),maxActive:now.maxActive,active:now.active,pending:now.pending};};
+// Supply bounded work rather than eagerly creating hundreds of gzip promises.
+async function mapCloudWork(items,limit,work){
+ const results=new Array(items.length);let next=0;
+ await Promise.all(Array.from({length:Math.min(limit,items.length)},async()=>{
+  while(next<items.length){const index=next++;results[index]=await work(items[index],index)}
+ }));return results;
+}
 async function withShardGzipSlot(work){
  const requestedAt=performance.now();
  if(shardGzipActive>=shardGzipConcurrency){
@@ -110,7 +117,7 @@ async function withShardGzipSlot(work){
  shardGzipMetrics.maxActive=Math.max(shardGzipMetrics.maxActive,shardGzipActive);
  try{return await work()}
  finally{
-  shardGzipMetrics.tasks++;
+  shardGzipMetrics.tasks++;shardGzipMetrics.nativeTasks++;
   shardGzipMetrics.workMs+=performance.now()-enteredAt;
   shardGzipActive--;
   const next=shardGzipQueue.shift();
@@ -121,6 +128,18 @@ const shardGzipInFlight=new Map();
 async function encodeCloudShard(raw,cacheKey){
  const prior=shardGzipCache.get(cacheKey);
  if(prior?.raw===raw)return prior.encoded;
+ // Native streams are costly for hundreds of small shards, especially when
+ // their callbacks wait behind league JSON work. These bytes are ordinary gzip
+ // and retain the same decoder, exact-content cache and revision protocol.
+ if(typeof window.fflate?.gzipSync==='function'&&raw.length<=524288){
+  const start=performance.now();
+  try{
+   const zipped=window.fflate.gzipSync(new TextEncoder().encode(raw),{level:1,mtime:0});let binary='';
+   for(let i=0;i<zipped.length;i+=8192)binary+=String.fromCharCode(...zipped.subarray(i,i+8192));
+   const encoded=btoa(binary);shardGzipCache.set(cacheKey,{raw,encoded});
+   shardGzipMetrics.tasks++;shardGzipMetrics.fastTasks++;shardGzipMetrics.workMs+=performance.now()-start;return encoded;
+  }catch(error){window.beFastGzipFallback=String(error?.message||error)}
+ }
  const pending=shardGzipInFlight.get(cacheKey);
  if(pending?.raw===raw)return pending.promise;
  const promise=withShardGzipSlot(async()=>{
@@ -136,7 +155,7 @@ async function encodeCloudShard(raw,cacheKey){
 }
 // Separate frequently changing counters from biographies/contracts/training history.
 // Both halves are serialized and compared exactly on every save; no dirty flags.
-const beDynamicPitchProfileFields=new Set(['fatigue','lastAppearance','pitchMixSeasonYear','pitchMixSeason']);
+const beDynamicPitchProfileFields=new Set(['fatigue','lastAppearance','pitchMixSeasonYear','pitchMixSeason','batterWorkload','batterRecoveryKey']);
 const livePlayerFields=new Set(['games','plateAppearances','atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','runsBattedIn','runs','strikeouts','stolenBases','caughtStealing','sacrificeBunts','sacrificeFlies','groundedIntoDoublePlays','fieldingErrors','inningsPitched','innings','wins','losses','rbi','pitchCount','earnedRuns','pitchingWins','pitchingLosses','saves','holds','pitchingStrikeouts','gamesStarted','hitsAllowed','walksAllowed','homeRunsAllowed','battersFaced','qualityStarts','blownSaves','completeGames','shutouts','totalPitches','lastAppearance','lastPitchDay','minorLastPitchDay','minorStats','registeredDays','faRegisteredDaysByYear','lastTraining']);
 function splitCloudPlayer(p){
  if(!p||typeof p!=='object'||Array.isArray(p))return {base:p,live:null};
@@ -182,7 +201,7 @@ async function packCloudShards(state){
  const yearArchive=archive&&typeof archive==='object'&&!Array.isArray(archive)&&Object.entries(archive).every(([year,items])=>/^\d{4}$/.test(year)&&Array.isArray(items));
  if(!targets.length&&!yearArchive&&!hasReportMap)return state;
  const copy={...state},manifest={version:1,fields:{}};
- const packed=await Promise.all(targets.map(async([key,size])=>{
+ const packed=await mapCloudWork(targets,1,async([key,size])=>{
   const started=performance.now();
   const array=state[key],count=Math.ceil(array.length/size);
   if(key==='players'){
@@ -241,7 +260,7 @@ async function packCloudShards(state){
   }
   let cacheHits=0,changed=0,rawBytes=0,serializeMs=0,gzipMs=0,fastReused=0;
   const gameCacheReason=key==='gameResults'?{prior:!!gameShardFastCache,sameArray:gameShardFastCache?.array===array,priorLength:gameShardFastCache?.length??null,currentLength:array.length,priorVersion:gameShardFastCache?.version??null,currentVersion:window.beGameResultsRevision,sizeMatch:gameShardFastCache?.size===size}:null;
-  const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
+  const entries=await mapCloudWork(Array.from({length:count},(_,i)=>i),shardGzipConcurrency,async i=>{
    const serializeStart=performance.now();
    const gameFast=key==='gameResults'&&gameShardFastCache&&gameShardFastCache.array===array&&gameShardFastCache.version===window.beGameResultsRevision&&Number.isSafeInteger(window.beGameResultsRevision)&&gameShardFastCache.size===size;
    const previousGame=gameShardFastCache;
@@ -257,12 +276,12 @@ async function packCloudShards(state){
    const encoded=await encodeCloudShard(raw,cacheKey);
    gzipMs+=performance.now()-gzipStart;
    return [`beShard_${key}_${i}`,encoded];
-  }));
+  });
   if(key==='gameResults'&&Number.isSafeInteger(window.beGameResultsRevision)){
    gameShardFastCache={array,version:window.beGameResultsRevision,length:array.length,size,parts:entries.map((_,i)=>shardGzipCache.get('gameResults:'+i)?.raw)};
   }else if(key==='gameResults')gameShardFastCache=null;
   return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,fastReused,gameCacheReason,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
- }));
+ });
  window.beCloudArrayShardTiming=packed.map(x=>x.diagnostic);
  window.beCloudShardSummary=packed.map(x=>({field:x.key,chunks:x.diagnostic.chunks,changed:x.diagnostic.changed,cacheHits:x.diagnostic.cacheHits,serializeMs:x.diagnostic.serializeMs,wallMs:x.diagnostic.ms,gzipTaskSumMs:x.diagnostic.gzipWaitSumMs,rawKB:Math.round(x.diagnostic.rawBytes/1024)}));
  for(const {key,size,length,count,entries,kind} of packed){
@@ -377,24 +396,26 @@ function leagueRowName(field,season,name,group,i){return 'beLeagueRows_'+field+'
 function leagueDayName(field,season,name,day,i){return 'beLeagueDay_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+day+'_'+i}
 const leagueSeasonPreparationCache=new Map();
 let leagueSeasonPreparationBytes=0;
+const leagueSeasonPreparationSkipped=new Set();
 function rememberLeagueSeason(key,entry){
  for(const descriptor of entry.descriptors){if(descriptor.days){for(const day of descriptor.days)Object.freeze(day);Object.freeze(descriptor.days)}Object.freeze(descriptor)}Object.freeze(entry.descriptors);
  const previous=leagueSeasonPreparationCache.get(key);if(previous)leagueSeasonPreparationBytes-=previous.raw.length;
  leagueSeasonPreparationCache.delete(key);
- if(entry.raw.length<=4000000){leagueSeasonPreparationCache.set(key,entry);leagueSeasonPreparationBytes+=entry.raw.length}
- while(leagueSeasonPreparationBytes>24000000){const oldest=leagueSeasonPreparationCache.keys().next().value;leagueSeasonPreparationBytes-=leagueSeasonPreparationCache.get(oldest).raw.length;leagueSeasonPreparationCache.delete(oldest)}
+ if(entry.raw.length<=4000000&&leagueSeasonPreparationBytes+entry.raw.length<=24000000){leagueSeasonPreparationCache.set(key,entry);leagueSeasonPreparationBytes+=entry.raw.length}
+ else leagueSeasonPreparationSkipped.add(key);
+
 }
 async function packLeagueShards(state){
  if(typeof CompressionStream!=='function')return state;
  const targets=leagueShardFields.filter(field=>state?.[field]&&typeof state[field]==='object'&&!Array.isArray(state[field]));
  if(!targets.length)return state;
  const copy={...state},manifest={version:1,fields:{}};
- const packed=await Promise.all(targets.map(async field=>{
+ const packed=await mapCloudWork(targets,1,async field=>{
   const seasons={},parts=[];
   for(const [season,node] of Object.entries(state[field])){
    if(!node||typeof node!=='object'||Array.isArray(node))return null;
-   const rawNode=JSON.stringify(node),cacheKey=field+':'+season,cached=leagueSeasonPreparationCache.get(cacheKey);
-   if(cached?.raw===rawNode){seasons[season]=cached.descriptors;parts.push(...cached.parts);continue}
+   const cacheKey=field+':'+season,cached=leagueSeasonPreparationCache.get(cacheKey),cacheEligible=!!cached||(!leagueSeasonPreparationSkipped.has(cacheKey)&&leagueSeasonPreparationBytes<24000000),rawNode=cacheEligible?JSON.stringify(node):null;
+   if(cached&&cached.raw===rawNode){seasons[season]=cached.descriptors;parts.push(...cached.parts);continue}
    const partStart=parts.length,descriptors=[];
    for(const [name,value] of Object.entries(node)){
     const isArray=Array.isArray(value),count=isArray?Math.ceil(value.length/leagueShardSize):1;
@@ -420,22 +441,22 @@ async function packLeagueShards(state){
     else for(let i=0;i<count;i++)parts.push({name:leagueShardName(field,season,name,i),raw:JSON.stringify(isArray?value.slice(i*leagueShardSize,(i+1)*leagueShardSize):value)});
    }
    seasons[season]=descriptors;
-   rememberLeagueSeason(cacheKey,{raw:rawNode,descriptors,parts:parts.slice(partStart)});
+   if(cacheEligible)rememberLeagueSeason(cacheKey,{raw:rawNode,descriptors,parts:parts.slice(partStart)});
   }
   const started=performance.now();
   let cacheHits=0,changed=0,rawBytes=0,encodedBytes=0;
   const changedFields=Object.create(null);
   const changedPlayerChunks=Object.create(null);
   const changedPlayerProperties=Object.create(null);
-  const encoded=await Promise.all(parts.map(async p=>{
+  const encoded=await mapCloudWork(parts,shardGzipConcurrency,async p=>{
    rawBytes+=p.raw.length;
    if(shardGzipCache.get(p.name)?.raw===p.raw)cacheHits++;else{changed++;const fieldName=p.name.split('_').slice(2,-1).join('_');changedFields[fieldName]=(changedFields[fieldName]||0)+1;if(window.beCloudDeepPlayerDiagnostics===true&&(fieldName.includes('players')||fieldName.includes('prospects'))){const prior=shardGzipCache.get(p.name)?.raw;try{const before=prior?JSON.parse(prior):null;const after=JSON.parse(p.raw);if(Array.isArray(before)&&Array.isArray(after)){let altered=0;for(let i=0;i<after.length;i++)if(JSON.stringify(before[i])!==JSON.stringify(after[i])){altered++;if(before[i]&&after[i]&&typeof before[i]==='object'&&typeof after[i]==='object'){for(const k of new Set([...Object.keys(before[i]),...Object.keys(after[i])])){if(JSON.stringify(before[i][k])!==JSON.stringify(after[i][k])){const label=fieldName+'/'+k;changedPlayerProperties[label]=(changedPlayerProperties[label]||0)+1;}}}}changedPlayerChunks[fieldName]=(changedPlayerChunks[fieldName]||0)+altered;}}catch(_){}}}
    const value=await encodeCloudShard(p.raw,p.name);
    encodedBytes+=value.length;
    return [p.name,value];
-  }));
+  });
   return {field,seasons,encoded,diagnostic:{field,parts:parts.length,cacheHits,changed,rawBytes,encodedBytes,changedFields,changedPlayerChunks,changedPlayerProperties,gzipMs:+(performance.now()-started).toFixed(1)}};
- }));
+ });
  if(packed.some(x=>!x))return state;
  window.beCloudLeagueShardTiming=packed.map(x=>x.diagnostic);
  for(const {field,seasons,encoded} of packed){
@@ -524,9 +545,9 @@ async function packYearAmateurBuckets(state,data){
  const copy={...state},parts={};
  for(const year of [...bins.keys()].sort()){
   const buckets=bins.get(year),indices=[...buckets.keys()].sort((a,b)=>a-b);parts[year]=indices;
-  const encoded=await Promise.all(indices.map(async index=>{
+  const encoded=await mapCloudWork(indices,shardGzipConcurrency,async index=>{
    const name='beAmateurYear_'+year+'_'+index;return [name,await encodeCloudShard(JSON.stringify(buckets.get(index)),name)];
-  }));for(const [name,value] of encoded)copy[name]=value;
+  });for(const [name,value] of encoded)copy[name]=value;
  }
  copy.beAmateurBucketManifest={version:2,count:amateurBucketCount,entries:Object.keys(data).length,parts,empty};
  delete copy.amateurCareerArchive;return copy;
@@ -972,9 +993,9 @@ export async function cloudSave(state){
   const replayPackedAt=performance.now();
   const stages={};
   const prepare=async(name,work)=>{const start=performance.now();const value=await work(replayPacked);stages[name]=+(performance.now()-start).toFixed(1);return value};
-  // These packers own disjoint fields and never mutate live state. Let gzip run
-  // while the next archive is inspected, within the same bounded gzip queue.
-  const prepared=await Promise.all([prepare('shardsMs',packCloudShards),prepare('amateurMs',packAmateurBuckets),prepare('leaguesMs',packLeagueShards),prepare('historyMs',packHistoryShards)]);
+  // Complete each archive before starting the next. This keeps league JSON
+  // inspection from blocking player gzip callbacks or flooding the same queue.
+  const prepared=[];for(const [name,work] of [['shardsMs',packCloudShards],['amateurMs',packAmateurBuckets],['leaguesMs',packLeagueShards],['historyMs',packHistoryShards]])prepared.push(await prepare(name,work));
   const combined={...replayPacked};
   for(const part of prepared){
    for(const key of Object.keys(replayPacked))if(!Object.prototype.hasOwnProperty.call(part,key))delete combined[key];
@@ -982,7 +1003,7 @@ export async function cloudSave(state){
   }
   const auxiliaryAt=performance.now();payload=await packAuxiliaryFields(combined);
   const auxiliaryPackedAt=performance.now();
-  window.beCloudPackingStages={...stages,auxiliaryMs:+(auxiliaryPackedAt-auxiliaryAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),overlapped:true,deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
+  window.beCloudPackingStages={...stages,auxiliaryMs:+(auxiliaryPackedAt-auxiliaryAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),overlapped:false,deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
   lastPackingAuditPayload=payload;
   lastPackingAuditState=state;
   // Use PATCH only when a full, server-acknowledged baseline exists.

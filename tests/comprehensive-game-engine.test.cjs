@@ -7,7 +7,7 @@ function extract(name){const start=src.indexOf('function '+name+'(');assert.ok(s
 let seed=0x20261026;
 const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
 const state={players:[],day:1};
-const context=vm.createContext({state,Math,Number,
+const context=vm.createContext({state,Math,Number,bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
  batterSkill:(p,k)=>({contact:70,eye:60,power:65,speed:60,fielding:60,arm:60}[k]||60),
  stadiumFactors:()=>({hit:1,homer:1}),
  deliveryFactors:()=>({hit:1,walk:1,strikeout:1}),
@@ -24,7 +24,7 @@ const context=vm.createContext({state,Math,Number,
  ri:(r,a,b)=>a+Math.floor(r()*(b-a+1)),
  markBlownSave:()=>{},
 });
-vm.runInContext(extract('sharedHitAdvance')+extract('sharedPlateOutcome')+extract('extraBaseHitBases')+extract('recordPlayerExperience')+extract('assignedFieldingPosition')+extract('fieldingPositionPenalty')+extract('resolveBattedBall')+extract('starterPitchLimit')+extract('playHalf'),context);
+vm.runInContext(extract('sharedHitAdvance')+extract('sharedPlateOutcome')+extract('extraBaseHitBases')+extract('recordBatterFatigue')+extract('recordPlayerExperience')+extract('assignedFieldingPosition')+extract('fieldingPositionPenalty')+extract('resolveBattedBall')+extract('starterPitchLimit')+extract('playHalf'),context);
 const batter={id:1,position:'OF'},pitcher={id:99,position:'P',overall:60};
 const outcome=vm.runInContext('sharedPlateOutcome',context);
 const advance=vm.runInContext('sharedHitAdvance',context);

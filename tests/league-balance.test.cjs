@@ -18,7 +18,7 @@ for (let day=1;day<=365;day++) {
   context.auditDay=day;
   vm.runInContext(`state.day=auditDay;
     for(const p of state.players){
-      if(p.position==='P'){const b=playerBaseball(p);b.fatigue=Math.max(0,(Number(b.fatigue)||0)-(Number(b.recovery)||10));}
+      if(p.position==='P'){const b=playerBaseball(p);b.fatigue=Math.max(0,(Number(b.fatigue)||0)-(Number(b.recovery)||10));}else recoverBatterFatigue(p);
       if(p.profile?.injury?.days>0)p.profile.injury.days--;
     }`, context);
   playDay.runInContext(context);

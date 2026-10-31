@@ -1,0 +1,18 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),vm=require('node:vm');
+function context(fast=false){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});if(fast){vm.runInContext(fs.readFileSync('vendor/fflate/fflate-0.8.2.min.js','utf8'),c);vm.runInContext('window.fflate=fflate',c)}vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^export /gm,''),c);return c}
+const plain=x=>JSON.parse(JSON.stringify(x));
+(async()=>{
+const fast=context(true),native=context(),run=(c,s)=>vm.runInContext(s,c);
+const data={year:2040,players:Array.from({length:256},(_,id)=>({id,name:'선수 😀 '+id,games:10,teamId:id%10,profile:{skills:{stuff:60},baseball:{fatigue:5},history:'이전 기록 '.repeat(80)}})),trainingReports:{'2040-1-0':{year:2040,month:1,events:[{name:'선수',detail:'기록 보존'}]}},highSchoolBaseball:{2039:{players:[{id:700,name:'과거 선수',notes:'과거 정보'.repeat(1000)}]},2040:{players:Array.from({length:300},(_,id)=>({id,name:'고교 '+id,games:10,profile:{skills:{contact:60},baseball:{fatigue:0}}}))}}};
+fast.data=data;const wire=await run(fast,'(async()=>packLeagueShards(await packCloudShards(data)))()');assert.ok(run(fast,'shardGzipMetrics.fastTasks')>0,'actual vendored gzip path is exercised');assert.equal(run(fast,'shardGzipMetrics.queued'),0,'bounded producers do not flood the native queue');
+native.wire=structuredClone(wire);assert.deepEqual(plain(await run(native,'(async()=>unpackCloudShards(await unpackLeagueShards(wire)))()')),data,'fast gzip restores through the unchanged native decoder');
+const tasks=run(fast,'shardGzipMetrics.tasks');await run(fast,'(async()=>packLeagueShards(await packCloudShards(data)))()');assert.equal(run(fast,'shardGzipMetrics.tasks'),tasks,'byte-identical shards remain cached');
+// Old cached gzip is valid after the codec changes; compression never decides identity.
+native.data=structuredClone(data);const oldWire=await run(native,'packCloudShards(data)');fast.oldWire=structuredClone(oldWire);assert.deepEqual(plain(await run(fast,'unpackCloudShards(oldWire)')),data);
+run(fast,"window.fflate={gzipSync:()=>{throw Error('codec unavailable')}}");fast.raw='fallback 유니코드 😀';const fallback=await run(fast,"encodeCloudShard(raw,'fallback-test')");native.fallback=fallback;
+assert.equal(await run(native,"(async()=>{const bytes=Uint8Array.from(atob(fallback),c=>c.charCodeAt(0));return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text()})()"),fast.raw,'codec failure falls back without losing data');
+const queue=context();await run(queue,"mapCloudWork(Array.from({length:100},(_,i)=>i),6,i=>encodeCloudShard(JSON.stringify({i,text:'large row '.repeat(100)}),'queue-'+i))");assert.equal(run(queue,'shardGzipMetrics.queued'),0);assert.ok(run(queue,'shardGzipMetrics.maxActive')<=6,'gzip concurrency is bounded');
+// Admission must not evict old seasons on every linear archive scan.
+run(queue,"rememberLeagueSeason('first',{raw:'x'.repeat(4000000),descriptors:[],parts:[]});for(let i=0;i<10;i++)rememberLeagueSeason('other-'+i,{raw:'y'.repeat(4000000),descriptors:[],parts:[]})");assert.equal(run(queue,"leagueSeasonPreparationCache.has('first')"),true);assert.ok(run(queue,'leagueSeasonPreparationBytes')<=24000000);assert.ok(run(queue,'leagueSeasonPreparationSkipped.size')>0);
+console.log('PASS vendored gzip/native cross-restore, exact cache, codec fallback, bounded work and non-thrashing archive admission');
+})().catch(e=>{console.error(e);process.exitCode=1});

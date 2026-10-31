@@ -12,7 +12,7 @@ const appearance={p:pitcher,outs:0,er:0,pitchCount:0,battersFaced:0,hits:0,walks
 const batting={teamId:0,league:'major',batters,index:0,runs:0};
 const fielding={teamId:1,league:'major',batters:[{id:200,position:'SS'}],runs:0,usage:[appearance],used:new Set(),inheritedRunners:0};
 const state={players:[...batters,pitcher],day:1};
-const context=vm.createContext({state,Math,Number,
+const context=vm.createContext({state,Math,Number,bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
  selectPitcher:()=>pitcher,recordPitch:()=>appearance,
  pitchingArsenal:()=>({stamina:65,usage:[]}),
  catcherGameCalling:()=>({preference:'바깥쪽',skill:50}),
@@ -28,7 +28,8 @@ const context=vm.createContext({state,Math,Number,
 const limitStart=src.indexOf('function starterPitchLimit('),limitEnd=src.indexOf('function selectPitcher(',limitStart);
  assert.ok(limitStart>=0&&limitEnd>limitStart,'actual starter limit dependency found');
  const positionStart=src.indexOf('function recordPlayerExperience('),positionEnd=src.indexOf('function catcherGameCalling(',positionStart);
- vm.runInContext(src.slice(positionStart,positionEnd)+src.slice(limitStart,limitEnd)+src.slice(start,end),context);
+ const fatigueStart=src.indexOf('function recordBatterFatigue(');
+ vm.runInContext(src.slice(fatigueStart,positionStart)+src.slice(positionStart,positionEnd)+src.slice(limitStart,limitEnd)+src.slice(start,end),context);
 const half=vm.runInContext('playHalf',context);
 for(let i=0;i<1000;i++){
  const before=batters.reduce((n,p)=>n+p.atBats,0);

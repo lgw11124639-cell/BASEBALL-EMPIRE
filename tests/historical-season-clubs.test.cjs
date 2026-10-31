@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);state.year=2040;state.day=160;const historicPlayer=state.players.find(p=>p.position==='C');historicPlayer.joinYear=2027;historicPlayer.teamId=0;historicPlayer.teamHistory=[{year:2035,day:120,from:0,to:1},{year:2040,day:150,from:1,to:0}];state.history.seasons={};for(const year of [2027,2034,2035,2039])state.history.seasons[year]={year,complete:true,players:[{id:historicPlayer.id,teamId:1,games:100,atBats:400,hits:year===2027?100:120,homeRuns:10}]};
+state.history.seasons[2035].teamPlayerStats=[{id:historicPlayer.id,teamId:0,games:40},{id:historicPlayer.id,teamId:1,games:60}];
+state.gameResults=[{year:2040,day:100,away:1,home:2,awayBatters:[{id:historicPlayer.id,name:historicPlayer.name,atBats:4,hits:1}]},{year:2040,day:155,away:0,home:3,awayBatters:[{id:historicPlayer.id,name:historicPlayer.name,atBats:4,hits:2}]}];const originalHistoricState=JSON.stringify(state);`);
+assert.equal(run("playerSeasonClubLabel(historicPlayer,2027,state.history.seasons[2027].players[0])"),'로열스','old last-club labels recover from dated move history');
+assert.equal(run("playerSeasonClubLabel(historicPlayer,2039,state.history.seasons[2039].players[0])"),'마리너스');
+assert.equal(run("playerSeasonClubLabel(historicPlayer,2035,state.history.seasons[2035].players[0])"),'로열스 / 마리너스','both actual clubs persist for a traded season');
+const html=run('playerSeasonHistory(historicPlayer)');assert.match(html,/>2027<\/th><td[^>]*>로열스<\/td>/);assert.match(html,/>2039<\/th><td[^>]*>마리너스<\/td>/);assert.match(html,/>2040<\/th><td[^>]*>마리너스 \/ 로열스<\/td>/);
+assert.equal(run('JSON.stringify(state)'),run('originalHistoricState'),'display repair does not rewrite statistics or archived rows');
+run(`historicPlayer.teamId=4;historicPlayer.teamHistory.push({year:2040,day:160,from:0,to:4});`);assert.match(run('playerSeasonHistory(historicPlayer)'),/>2027<\/th><td[^>]*>로열스<\/td>/,'another trade cannot change old clubs');
+assert.equal(run('currentSeasonBoxStats(historicPlayer).hits'),3,'same-season hits remain summed without duplication');
+console.log('PASS dated historical-club recovery, actual multi-club seasons, later trades and immutable statistics');
