@@ -59,3 +59,7 @@ jobs:
         run: node tests/retirement-probability.test.cjs
       - name: Unsigned released player retirement regression
         run: node tests/unsigned-retirement.test.cjs
+      - name: Broadcast-independent production engine
+        run: node tests/engine-event-independence.test.cjs
+      - name: Actual 720-game league balance audit
+        run: node tests/league-balance.test.cjs

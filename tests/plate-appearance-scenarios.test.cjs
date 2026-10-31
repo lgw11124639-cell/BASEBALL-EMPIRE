@@ -24,6 +24,7 @@ function runScenario(name,events,expected,{walkoff=false,homeRuns=0}={}){
   batterSkill:()=>60,stadiumFactors:()=>({}),pitchMatchup:()=>({strikeout:1}),
   batterPhysicalBonus:()=>({speed:0}),deliveryFactors:()=>({strikeout:1}),
   sharedPlateOutcome:()=>{const e=events[next++]||'out';return {baseOnBalls:e==='walk',hitByPitch:e==='hbp',walk:e==='walk'||e==='hbp',hit:['single','double','triple','homer'].includes(e)}},
+  resolveBattedBall:()=>{const e=events[next-1];return {hit:['single','double','triple','homer'].includes(e),bases:{single:1,double:2,triple:3,homer:4}[e]||1,ground:true}},
   sharedHitAdvance:()=>{const e=events[next-1];return {single:1,double:2,triple:3,homer:4}[e]||1},
   ri:()=>3,markBlownSave:()=>{},
  });

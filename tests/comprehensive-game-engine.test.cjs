@@ -24,7 +24,7 @@ const context=vm.createContext({state,Math,Number,
  ri:(r,a,b)=>a+Math.floor(r()*(b-a+1)),
  markBlownSave:()=>{},
 });
-vm.runInContext(extract('sharedHitAdvance')+extract('sharedPlateOutcome')+extract('playHalf'),context);
+vm.runInContext(extract('sharedHitAdvance')+extract('sharedPlateOutcome')+extract('resolveBattedBall')+extract('playHalf'),context);
 const batter={id:1,position:'OF'},pitcher={id:99,position:'P',overall:60};
 const outcome=vm.runInContext('sharedPlateOutcome',context);
 const advance=vm.runInContext('sharedHitAdvance',context);

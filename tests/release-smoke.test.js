@@ -14,7 +14,13 @@ for(const file of ['app.js','sw.js','update.js']){
 }
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert(/app\.js\?v=[^"'\s]+/.test(html),'versioned app.js URL missing');
-console.log('PASS: versioned PWA app entry');
+const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'));
+const updater=fs.readFileSync(path.join(root,'update.js'),'utf8');
+assert.ok(html.includes('app.js?v='+version.build),'HTML build matches version manifest');
+assert.ok(html.includes('update.js?v='+version.build),'updater cache key matches build');
+assert.ok(updater.includes("CURRENT='"+version.version+"'"),'displayed version matches manifest');
+assert.ok(updater.includes("BUILD='"+version.build+"'"),'updater build matches manifest');
+console.log('PASS: consistent versioned PWA app entry and updater');
 for(const file of ['pitching-awards.test.js','minor-record-audit.test.js','minor-season-totals.test.js','inning-progression.test.js','day-save.test.js']){
   const result=spawnSync(process.execPath,[path.join(__dirname,file)],{encoding:'utf8',timeout:30000});
   if(result.stdout)process.stdout.write(result.stdout);
