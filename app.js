@@ -1806,7 +1806,11 @@ function faPlayerProjection(p){
  const horizon=confidence>=.65?5:confidence>=.35?3:1;
  let recommendedYears=1;
  for(let i=1;i<horizon;i++)if(injuryRisk<.55&&(projections[i]>=Math.max(.35,projections[0]*.60)||(confidence>.8&&injuryRisk<.3&&projections[i]>=.85)))recommendedYears=i+1;else break;
- const fairAnnual=Math.max(floor,Math.round(median*projections[0]/1000000)*1000000);
+ // FA market benchmark: comparable established players rather than the entire league's median salary.
+ const comparable=peers.filter(x=>x.position===p.position&&String(x.id)!==String(p.id)&&((isPitcher?(Number(x.inningsPitched)||0)>=35:(Number(x.plateAppearances)||Number(x.atBats)||0)>=180)));
+ const comparableSalaries=comparable.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
+ const reference=comparableSalaries.length>=3?comparableSalaries[Math.floor((comparableSalaries.length-1)*.65)]:salaries.length>=5?salaries[Math.floor((salaries.length-1)*.75)]:median;
+ const fairAnnual=Math.max(floor,Math.round(reference*projections[0]/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
 function faBuildOffer(p,teamId,record,projection,requestedYears=null){
