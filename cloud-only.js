@@ -2,7 +2,7 @@
 const API='https://baseball-empire-save.duckdns.org';
 const KEY='be-cloud-session-v1';
 let token=null,username='',revision=null,verified=false,baseline=null;
-let gzipSaveSupported=false; // Temporarily disable gzip uploads: Content-Encoding can fail CORS preflight; retain uncompressed cloud-only PUT with If-Match.
+let gzipSaveSupported=true; // Server supports gzip request bodies and CORS Content-Encoding; fallback to uncompressed on HTTP 400/415.
 let gzipRejectedStatus=null;
 // Snapshot of the last server-acknowledged wire representation. Never stored locally.
 let acknowledgedWireSave=null;
