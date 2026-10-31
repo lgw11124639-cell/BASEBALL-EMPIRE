@@ -1362,9 +1362,12 @@ function retireUnsignedReleasedPlayers(){
   if(!Number.isFinite(since)||since<=0||state.year-since<2)continue;
   // A long spell without a club increases retirement risk, but is not an automatic retirement.
   const age=Number(p.age)||0,yearsUnsigned=state.year-since;
-  const evaluation=bePlayerEvaluation(p);
-  const risk=Math.min(.90,Math.max(0,(age>=40?.35:age>=35?.16:age>=30?.045:.005)+(yearsUnsigned-2)*.09+(evaluation<48?.12:evaluation>=65?-.16:0)));
-  const draw=rng(((Number(p.id)||1)*7919+state.year*104729)>>>0)();
+  const appearances=Number(p.careerStats?.games)||Number(p.games)||0;
+  const productive=Number(p.careerStats?.hits||0)>=500||Number(p.careerStats?.inningsPitched||0)>=500;
+  const risk=Math.min(.90,Math.max(0,(age>=40?.35:age>=35?.16:age>=30?.045:.005)+(yearsUnsigned-2)*.09+(appearances<50?.08:0)-(productive?.12:0)));
+  // Stable per-player annual draw, independent of external simulation helpers.
+  const seed=((Number(p.id)||1)*7919+state.year*104729)>>>0;
+  const draw=((Math.imul(seed^seed>>>16,2246822507)>>>0)%1000000)/1000000;
   if(draw>=risk)continue;
   p.retired=true;p.level='은퇴';
   if(!state.retiredPlayers.some(x=>String(x.id)===String(p.id))){
