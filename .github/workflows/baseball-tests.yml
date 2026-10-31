@@ -119,6 +119,8 @@ jobs:
         run: node tests/trade-article-direction.test.cjs
       - name: News publication chronology
         run: node tests/news-order.test.cjs
+      - name: Ten-club registration and foreign ownership status
+        run: node tests/club-roster-status.test.cjs
       - name: Roster combined filters
         run: node tests/roster-filters.test.cjs
       - name: Manager plan cache and live evaluations
