@@ -25,7 +25,9 @@ const context=vm.createContext({
 });
 context.nationalTeamPreparationDay=()=>{};
 context.INTERNATIONAL_COUNTRIES={KR:'대한민국',JP:'일본',TW:'대만',US:'미국',AU:'호주',DO:'도미니카공화국'};
-vm.runInContext(source.slice(start,end),context);
+const calendarStart=source.indexOf('function internationalEventsForYear('),calendarEnd=source.indexOf('function nationalTeamPreparationDay(',calendarStart);
+assert.ok(calendarStart>=0&&calendarEnd>calendarStart);
+vm.runInContext(source.slice(calendarStart,calendarEnd)+source.slice(start,end),context);
 for(let day=1;day<=20;day++){
  current=new Date(2028,7,day,12);
  state.day=day;

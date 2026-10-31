@@ -146,7 +146,7 @@ function splitCloudPlayer(p){
  if(source&&typeof source==='object'&&!Array.isArray(source)){
   const profile={},dynamic={};let moving;
   for(const key of Object.keys(source)){
-   if(key==='injury')continue;
+   if(key==='injury'||key==='fieldingPositions'||key==='playingExperience')continue;
    const value=source[key];
    if(key==='baseball'&&value&&typeof value==='object'&&!Array.isArray(value)){
     const baseball={};moving={};for(const name of Object.keys(value)){
@@ -157,6 +157,8 @@ function splitCloudPlayer(p){
    }else put(profile,key,value);
   }
   if(Object.prototype.hasOwnProperty.call(source,'injury'))dynamic.injury=source.injury;
+  if(Object.prototype.hasOwnProperty.call(source,'fieldingPositions'))dynamic.fieldingPositions=source.fieldingPositions;
+  if(Object.prototype.hasOwnProperty.call(source,'playingExperience'))dynamic.playingExperience=source.playingExperience;
   if(moving&&Object.keys(moving).length)dynamic.baseball=moving;
   if(Object.keys(dynamic).length)live.profile=dynamic;
   base.profile=profile;

@@ -27,7 +27,8 @@ const context=vm.createContext({state,Math,Number,
 });
 const limitStart=src.indexOf('function starterPitchLimit('),limitEnd=src.indexOf('function selectPitcher(',limitStart);
  assert.ok(limitStart>=0&&limitEnd>limitStart,'actual starter limit dependency found');
- vm.runInContext(src.slice(limitStart,limitEnd)+src.slice(start,end),context);
+ const positionStart=src.indexOf('function recordPlayerExperience('),positionEnd=src.indexOf('function catcherGameCalling(',positionStart);
+ vm.runInContext(src.slice(positionStart,positionEnd)+src.slice(limitStart,limitEnd)+src.slice(start,end),context);
 const half=vm.runInContext('playHalf',context);
 for(let i=0;i<1000;i++){
  const before=batters.reduce((n,p)=>n+p.atBats,0);

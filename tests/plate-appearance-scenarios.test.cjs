@@ -30,7 +30,8 @@ function runScenario(name,events,expected,{walkoff=false,homeRuns=0}={}){
  });
  const limitStart=source.indexOf('function starterPitchLimit('),limitEnd=source.indexOf('function selectPitcher(',limitStart);
  assert.ok(limitStart>=0&&limitEnd>limitStart,'actual starter limit dependency found');
- vm.runInContext(source.slice(limitStart,limitEnd)+source.slice(start,end),context);
+ const positionStart=source.indexOf('function recordPlayerExperience('),positionEnd=source.indexOf('function catcherGameCalling(',positionStart);
+ vm.runInContext(source.slice(positionStart,positionEnd)+source.slice(limitStart,limitEnd)+source.slice(start,end),context);
  const half=vm.runInContext('playHalf',context);
  const scored=half(batting,fielding,9,()=>0.99,walkoff);
  const sum=k=>batters.reduce((n,p)=>n+(p[k]||0),0);

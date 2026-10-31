@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')();const run=s=>vm.runInContext(s,c);
+run('state=world(0)');
+assert.equal(run("internationalEventsForYear(2026).find(e=>e.event==='WBC').month"),3);
+assert.ok(run("!internationalEventsForYear(2027).some(e=>e.event==='WBC')"));
+assert.equal(run("internationalEventsForYear(2028).find(e=>e.event==='올림픽').month"),7);
+assert.ok(run("!internationalEventsForYear(2032).some(e=>e.event==='올림픽')"),'unconfirmed Olympic inclusion is not assumed');
+assert.equal(run("internationalEventsForYear(2030).find(e=>e.event==='아시안게임').month"),11);
+assert.equal(run("internationalEventsForYear(2030).find(e=>e.event==='WBC').projected"),true,'future projection explicitly labelled');
+run("state.internationalCalendar={2032:[{event:'올림픽',month:7,confirmed:true}]}");assert.equal(run("internationalEventsForYear(2032)[0].event"),'올림픽');
+run("state=world(0);state.year=2028;state.seasonStartDate='2028-01-01';state.day=183;Math.random=()=>.9;nationalTeamTournamentDay();");
+assert.equal(run("state.nationalTeamResults['2028-올림픽'].lineup.pitchers.length"),12);
+const html=run('nationalTeamPanel()');assert.match(html,/<th>역할<\/th><th>투구<\/th><th>선수<\/th><th>소속<\/th>/);assert.doesNotMatch(html,/투수진 · /);assert.match(html,/가상 연장 일정/);
+const record=run("state.nationalTeamResults['2028-올림픽']");for(const p of record.lineup.pitchers)assert.ok(html.includes(p.name));
+assert.equal(record.lineup.battingOrder.filter(p=>p.emergency).length,0,'national team has qualified defensive coverage');
+console.log('PASS: one international calendar, confirmed Olympic inclusion, explicit projections, real roster coverage and pitcher table');

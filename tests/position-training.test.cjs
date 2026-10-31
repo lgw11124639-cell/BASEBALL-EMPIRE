@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const context=require('./helpers/game-context.cjs');
+function fixture(skill){const c=context();c.teaching=skill;vm.runInContext(`state=world(0);state.teams=state.teams.slice(0,1);state.players=[{id:9000,name:'수비 적응',position:'1B',age:24,teamId:0,level:'2군'},{id:9001,name:'그대로 투수',position:'P',age:24,teamId:0,level:'1군'}];for(const s of Object.values(officeAI(0)))s.skill=teaching;const trainee=state.players[0];const roles=playerFieldingPositions(trainee);playerBaseball(trainee).fatigue=0;`,c);return c;}
+const fast=fixture(85),slow=fixture(40);const read=(c,s)=>vm.runInContext(s,c);
+const pitcherBefore=read(fast,'JSON.stringify(state.players[1])');
+assert.equal(read(fast,"fieldingPositionPenalty(trainee,'1B')"),0);assert.ok(read(fast,"fieldingPositionPenalty(trainee,'LF')")>10);assert.ok(read(fast,"fieldingPositionPenalty(trainee,'C')")>20);
+for(let day=1;day<=180;day++){for(const c of [fast,slow]){c.trainingDay=day;read(c,'state.day=trainingDay;positionTrainingDay(true)')}}
+assert.ok(read(fast,"roles.proficiency.LF")>read(slow,"roles.proficiency.LF"),'coaching changes rate of adaptation');assert.ok(read(fast,"roles.secondary.includes('LF')"));assert.equal(read(slow,"roles.secondary.includes('LF')"),false,'insufficient training does not grant a secondary position');
+assert.ok(read(fast,"fieldingPositionPenalty(trainee,'LF')")<10);assert.equal(read(fast,'trainee.position'),'1B','registered primary stays unchanged');assert.equal(read(fast,'roles.primary'),'1B');assert.equal(read(fast,'JSON.stringify(state.players[1])'),pitcherBefore,'pitcher profile and role untouched');
+const trained=read(fast,'roles.proficiency.LF');read(fast,'positionTrainingDay(true)');assert.equal(read(fast,'roles.proficiency.LF'),trained,'same-day training cannot be duplicated');read(fast,"trainee.profile.injury={days:30};state.day++;positionTrainingDay(true)");assert.equal(read(fast,'roles.proficiency.LF'),trained,'rehabilitation pauses fielding training');
+assert.match(read(fast,'fieldingTrainingLabel(trainee)'),/훈련 중/);assert.match(read(fast,'fieldingPositionLabel(trainee)'),/적응 중/);
+console.log('PASS: primary/secondary proficiency, graded defensive penalties, gradual coaching, same-day guard, rehab protection and unchanged pitchers/primary positions');

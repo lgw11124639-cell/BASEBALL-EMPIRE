@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')();const run=s=>vm.runInContext(s,c);
+run(`state=world(0);state.day=168;state.teams[0].wins=20;state.teams[0].losses=70;state.teams[1].wins=60;state.teams[1].losses=30;`);
+assert.equal(run('clubCompetitivePlan(0).mode'),'리빌딩');assert.equal(run('clubCompetitivePlan(1).mode'),'우승 경쟁');
+run(`const youth={id:99000,name:'유망주',teamId:0,age:23,position:'SS',minorStats:{seasonYear:state.year,games:20}};`);assert.ok(run('rebuildingOpportunity(youth)')>0);assert.equal(run('rebuildingOpportunity({...youth,age:32})'),0);
+run(`state.teams=state.teams.slice(0,2);state.players=[];
+function fixture(id,teamId,position,age,rating,extra={}){return {id,name:'선수'+id,teamId,position,age,level:'1군',salary:33000000,potential:rating+5,profile:{contractYears:1,skills:Object.fromEntries(['contact','power','eye','speed','fielding','arm','stuff','control','stamina'].map(k=>[k,rating]))},...extra}}
+state.teams[0].competitivePlan={year:2027,month:6,mode:'우승 경쟁'};state.teams[1].competitivePlan={year:2027,month:6,mode:'리빌딩'};
+const prospect=fixture(1,0,'SS',23,72,{level:'2군',potential:90}),veteran=fixture(2,1,'RF',31,82,{salary:200000000,games:80,atBats:300,plateAppearances:330});
+state.players=[prospect,veteran,fixture(3,0,'RF',30,40),fixture(4,0,'C',30,60),fixture(5,0,'C',25,60),fixture(6,0,'SS',28,65),fixture(7,0,'SS',25,60),fixture(8,1,'C',30,60),fixture(9,1,'C',25,60),fixture(10,1,'SS',28,65),fixture(11,1,'SS',25,60),fixture(12,1,'RF',24,65)];
+const buyer=state.teams[0],seller=state.teams[1];buyer.budget=seller.budget=10000000000;const deal=evaluateClubTrade(buyer,seller,veteran,prospect);`);
+assert.ok(run('deal'),'contender receives immediate help while rebuilding seller receives a credible young player');
+run('buyer.budget=0');assert.equal(run('evaluateClubTrade(buyer,seller,veteran,prospect)'),null,'buyer must afford extra salary');run('buyer.budget=10000000000;seller.budget=-1000000000');assert.ok(run('evaluateClubTrade(buyer,seller,veteran,prospect)'),'cash-poor seller may reduce salary commitments');run('seller.budget=10000000000');
+run('prospect.noTrade=true');assert.equal(run('evaluateClubTrade(buyer,seller,veteran,prospect)'),null);run('prospect.noTrade=false');
+run('const weak=fixture(90,0,"SS",23,40,{potential:50});state.players.push(weak)');assert.equal(run('evaluateClubTrade(buyer,seller,veteran,weak)'),null,'established star is not dumped for an uncompetitive prospect');
+run('completeClubTrade(buyer,seller,veteran,prospect,deal)');assert.equal(run('veteran.teamId'),0);assert.equal(run('prospect.teamId'),1);assert.equal(run('state.trades.length'),1);assert.equal(run('veteran.teamHistory.at(-1).day'),168);assert.equal(run('tradeCandidate(veteran)'),false,'recently traded player cannot be immediately recycled');
+// Compare the same eligible posting player with replacement depth and different club windows.
+run(`veteran.teamId=1;veteran.postingService={creditedSeasons:7};postingServiceStatus=()=>({creditedSeasons:7});const rebuildingApproval=overseasPostingApproval(veteran,2027);seller.competitivePlan={year:2027,month:6,mode:'우승 경쟁'};state.players=state.players.filter(p=>p.id!==12);const contenderApproval=overseasPostingApproval(veteran,2027);`);
+assert.ok(run('rebuildingApproval.chance>contenderApproval.chance'));
+assert.ok(run('rebuildingApproval.chance<=.95&&contenderApproval.chance>=.25'));
+assert.equal(run('veteran.teamId'),1,'approval assessment does not itself transfer the player');
+const full=require('./helpers/game-context.cjs')();vm.runInContext(`state=world(0);state.teams=state.teams.slice(0,2);state.players=state.players.filter(p=>p.teamId<2);const a=state.players.find(p=>p.teamId===0&&p.level==='1군'&&p.position==='RF'),b=state.players.find(p=>p.teamId===1&&p.level==='1군'&&p.position==='RF');const unchanged=state.players.filter(p=>p!==a&&p!==b).map(p=>[p.id,p.level]);completeClubTrade(state.teams[0],state.teams[1],b,a,{buyerMode:'균형',sellerMode:'균형'});`,full);
+assert.equal(vm.runInContext('state.players.filter(p=>p.teamId===0&&p.level==="1군").length',full),28);assert.equal(vm.runInContext('state.players.filter(p=>p.teamId===1&&p.level==="1군").length',full),28);assert.equal(vm.runInContext('unchanged.every(([id,level])=>state.players.find(p=>p.id===id).level===level)',full),true,'a full-roster 1-for-1 trade does not unnecessarily demote a third player');
+console.log('PASS: rebuild/contender decisions, earned youth opportunities, mutual trade value and protections, transfer records and context-based posting approval');

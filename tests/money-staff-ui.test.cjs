@@ -1,0 +1,6 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')();const run=s=>vm.runInContext(s,c);
+for(const [amount,text] of [[0,'0원'],[5000,'5,000원'],[33000000,'3,300만원'],[798070000,'7억9,807만원'],[100000000,'1억원'],[1000000000000,'1조원'],[-123456789,'−1억2,345만6,789원']]){c.amount=amount;assert.equal(run('formatKoreanWon(amount)'),text);assert.equal(run('money(amount)'),text);c.formatted=text;assert.equal(run('normalizeMoneyText(formatted)'),text,'compound units remain idempotent');}
+assert.equal(run("normalizeMoneyText('연봉 79,807만원 · 총액 2.9억')"),'연봉 7억9,807만원 · 총액 2억9,000만원');assert.equal(run("normalizeMoneyText('7억9,807만원')"),'7억9,807만원','already formatted values are idempotent');
+run("state=world(0);state.year=2039;state.day=314;state.teams[0].staff.manager.salary=798070000;financeTeam(0);state.teams[0].finance.ledger=[{year:2039,day:314,amount:-25000000,kind:'신인 계약금',detail:'계약'}]");
+const html=run('frontOfficePanel()');assert.match(html,/class="fo-staff-age"/);assert.doesNotMatch(html,/<span class="profile-note">\d+세/);assert.match(html,/fo-staff-pay/);assert.match(html,/7억9,807만원/);assert.match(html,/2,500만원/);assert.doesNotMatch(html,/0\.3억원/);
+console.log('PASS: exact Korean currency units, small and large amounts, legacy display normalization and dedicated staff identity/age/contract/pay layout');

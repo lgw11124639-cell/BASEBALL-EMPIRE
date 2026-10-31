@@ -81,6 +81,20 @@ jobs:
         run: node tests/fa-market-simulation.test.cjs
       - name: FA review dates and year rollover
         run: node tests/fa-schedule.test.cjs
+      - name: Defensive replacements and actual playing experience
+        run: node tests/bench-experience.test.cjs
+      - name: Fielding specialization and gradual coaching
+        run: node tests/position-training.test.cjs
+      - name: Korean currency and staff layout
+        run: node tests/money-staff-ui.test.cjs
+      - name: Registered fielding positions and specialist roster coverage
+        run: node tests/position-eligibility.test.cjs
+      - name: International calendar and pitcher roster presentation
+        run: node tests/international-calendar-ui.test.cjs
+      - name: Club rebuild, trades and overseas posting approval
+        run: node tests/club-strategy-trade-posting.test.cjs
+      - name: Readable FA negotiation articles
+        run: node tests/fa-article-readability.test.cjs
       - name: Staff contracts, age and manager employment
         run: node tests/staff-lifecycle.test.cjs
       - name: Long inactive roster and retirement flow
