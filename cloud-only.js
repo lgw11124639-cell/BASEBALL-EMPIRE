@@ -182,16 +182,24 @@ async function packCloudShards(state){
   const started=performance.now();
   const array=state[key],count=Math.ceil(array.length/size);
   if(key==='players'){
-   const rows=array.map(splitCloudPlayer);let changed=0,cacheHits=0,rawBytes=0;
-   // Prepare both halves in one pass and let the existing gzip queue bound concurrency.
-   // Exact JSON comparisons remain mandatory because player objects mutate in place.
+   let changed=0,cacheHits=0,rawBytes=0;
+   // Split only one chunk at a time, rather than allocating an entire second
+   // player array plus two sliced arrays for every base/live shard.
+   // Exact JSON comparisons remain mandatory because players mutate in place.
    const jobs=[];
-   for(const group of ['base','live'])for(let i=0;i<count;i++){
-    const name='beShard_players_'+group+'_'+i;
-    const raw=JSON.stringify(rows.slice(i*size,(i+1)*size).map(row=>row[group]));
-    rawBytes+=raw.length;
-    if(shardGzipCache.get(name)?.raw===raw)cacheHits++;else changed++;
-    jobs.push([name,raw]);
+   for(let i=0;i<count;i++){
+    const base=[],live=[],end=Math.min(array.length,(i+1)*size);
+    for(let j=i*size;j<end;j++){
+     const halves=splitCloudPlayer(array[j]);
+     base.push(halves.base);
+     live.push(halves.live);
+    }
+    for(const [group,rows] of [['base',base],['live',live]]){
+     const name='beShard_players_'+group+'_'+i,raw=JSON.stringify(rows);
+     rawBytes+=raw.length;
+     if(shardGzipCache.get(name)?.raw===raw)cacheHits++;else changed++;
+     jobs.push([name,raw]);
+    }
    }
    const entries=await Promise.all(jobs.map(async([name,raw])=>[name,await encodeCloudShard(raw,name)]));
    return {key,size,length:array.length,count,kind:'splitRows',entries,diagnostic:{key,chunks:count*2,cacheHits,changed,rawBytes,serializeMs:0,gzipWaitSumMs:0,ms:+(performance.now()-started).toFixed(1)}};
