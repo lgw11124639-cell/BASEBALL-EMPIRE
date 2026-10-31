@@ -1988,7 +1988,7 @@ function faSettleAcceptedOffer(p,record,offer){
  const activeCount=state.players.filter(x=>String(x.id)!==String(p.id)&&String(x.teamId)===String(to)&&x.level==='1군'&&!x.retired).length;
  p.teamId=to;p.level=offer.opportunity>=.65&&activeCount<28?'1군':'2군';p.contractSigned=true;p.salary=offer.annualSalary;
  profile.contractYears=offer.years;
- const startYear=Number(state.year)+(state.postseasons?.[state.year]?.finished?1:0);
+ const startYear=Math.max(Number(state.year)||0,(Number(record.year)||Number(state.year))+1);
  profile.faContract={signedYear:state.year,startYear,endYear:startYear+offer.years-1,teamId:to,years:offer.years,
   annualSalary:offer.annualSalary,signingBonus:offer.signingBonus,totalValue:offer.totalValue,previousTeamId:from,previousSalary,grade:record.grade,negotiated:true,expectedRole:offer.expectedRole};
  history.push({...profile.faContract});
