@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')();
+vm.runInContext(`state=world(0);state.players=Array.from({length:20},(_,i)=>({id:100+i,teamId:i%10,name:'프로'+i,age:20,position:'CF',level:'2군',profile:{skills:{contact:50+i,power:50,eye:50,speed:50,fielding:50,arm:50}}}));
+state.players.push({id:1,teamId:0,name:'은퇴',age:20,position:'CF',level:'은퇴',retired:true},{id:2,teamId:0,name:'외국인',age:20,position:'CF',level:'2군',foreignPlayer:true},{id:3,teamId:0,name:'주전',age:20,position:'CF',level:'1군',atBats:290,walks:50},{id:4,teamId:0,name:'과거주전',age:20,position:'P',level:'1군'});
+state.history.seasons={2026:{players:[{id:4,inningsPitched:70}]}};
+state.highSchoolBaseball={2027:{schools:[{id:0,name:'고교'}],prospects:Array.from({length:6},(_,i)=>({id:i,name:'고교'+i,age:18,position:'P',schoolId:0}))}};
+state.collegeBaseball={2027:{teams:[{id:0,name:'대학'}],players:Array.from({length:6},(_,i)=>({id:i,name:'대학'+i,age:22,position:'CF',teamId:0}))}};
+state.independentBaseball={2027:{teams:[{id:0,name:'독립'}],players:[{id:0,name:'독립',age:23,position:'P',teamId:0},{id:1,name:'계약완료',age:22,position:'P',teamId:0,contracted:true}]}};
+`,c);
+const snapshot=vm.runInContext('JSON.stringify(state)',c);
+const pro=vm.runInContext("prospectRankingRows('pro')",c);assert.equal(pro.length,10);assert.ok(pro.every(x=>x.p.id>=100));assert.equal(pro[0].p.id,119);
+const amateur=vm.runInContext("prospectRankingRows('amateur')",c);assert.equal(amateur.length,10);assert.ok(amateur.every(x=>!x.p.contracted));assert.equal(new Set(amateur.map(x=>x.kind+':'+x.p.id)).size,10,'cross-league numeric ID overlap must not merge players');
+vm.runInContext("leaguePane='prospects';prospectPane='pro'",c);const html=vm.runInContext('league()',c);assert.match(html,/data-league-pane="prospects"/);assert.doesNotMatch(html,/data-league-pane="(?:highSchool|college|independent)"/);assert.equal((html.match(/data-prospect-player=/g)||[]).length,10);assert.match(html,/data-prospect-pane="amateur"/);assert.doesNotMatch(html,/오버롤|잠재력\s*\d/);
+vm.runInContext("prospectPane='amateur'",c);const ahtml=vm.runInContext('prospectsPanel()',c);assert.equal((ahtml.match(/data-amateur-player=/g)||[]).length,10);assert.match(ahtml,/data-amateur-kind="college"/);
+assert.equal(vm.runInContext('JSON.stringify(state)',c),snapshot,'viewing rankings never changes simulation/save data');
+vm.runInContext('state.players=[];state.highSchoolBaseball={};state.collegeBaseball={};state.independentBaseball={}',c);assert.match(vm.runInContext('prospectsPanel()',c),/조건에 맞는 유망주가 없습니다/);
+console.log('PASS prospect top tens, eligibility/history, combined amateur sources, routes, empty state and read-only ranking');

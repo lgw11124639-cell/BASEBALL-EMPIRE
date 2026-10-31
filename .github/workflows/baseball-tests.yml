@@ -89,3 +89,5 @@ jobs:
         run: node tests/daily-copy.test.cjs
       - name: Prospect readiness and five-year development
         run: node tests/prospect-development.test.cjs
+      - name: Prospect panels and eligibility
+        run: node tests/prospect-panel.test.cjs
