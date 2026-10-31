@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261031-prospectui11';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261031-replay12';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
 function ballpark(team){return BALLPARKS[team?.id]||((team?.city||'구단')+' 야구장')}
@@ -2540,9 +2540,11 @@ function beOpenPostseasonReplay(day,away){
 }
 window.beOpenPostseasonReplay=beOpenPostseasonReplay;
 function beAppendReplayLine(out,html){
- const followLatest=out.scrollHeight-out.clientHeight-out.scrollTop<=32;
- out.insertAdjacentHTML('beforeend',html);
- if(followLatest)out.scrollTop=out.scrollHeight;
+ const previousTop=out.scrollTop,previousHeight=out.scrollHeight;
+ const followLatest=previousTop<=32;
+ // Newest first for pitches, plate results, substitutions and inning markers.
+ out.insertAdjacentHTML('afterbegin',html);
+ out.scrollTop=followLatest?0:previousTop+(out.scrollHeight-previousHeight);
 }
 function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  // Resolve the saved game before dismissing the article.
