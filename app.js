@@ -2578,8 +2578,11 @@ function gameMvp(g){
   }
  }
  candidates.sort((a,b)=>b.score-a.score||String(a.id).localeCompare(String(b.id)));
- const best=candidates[0];
- return best?{id:best.id,name:best.name,team:best.team,role:best.role,detail:best.detail}:null;
+ const validName=v=>typeof v==='string'&&v.trim()&&!/^(undefined|null|nan)$/i.test(v.trim());
+ const best=candidates.find(p=>validName(p.name)||validName(state.players.find(x=>String(x.id)===String(p.id))?.name));
+ if(!best)return null;
+ const name=validName(best.name)?best.name:state.players.find(p=>String(p.id)===String(best.id))?.name;
+ return {id:best.id,name,team:best.team,role:best.role,detail:best.detail};
 }
 function beGameInterviewContext(g){
  const margin=Math.abs((Number(g.awayRuns)||0)-(Number(g.homeRuns)||0));
