@@ -1906,6 +1906,11 @@ function negotiateFaContract(p,record){
  }
  const offers=[...proposed.values()].map(offer=>({...offer,...faEvaluateOffer(p,offer,record,projection,preferences)}));
  record.lastReviewYear=state.year;record.lastReviewDay=state.day;record.negotiationRounds=(Number(record.negotiationRounds)||0)+1;
+ // Compare all actual bids before deciding whether the player should sign.
+ // A strong best offer can be acceptable even when an isolated annual/term test is marginal.
+ const rankedOffers=offers.slice().sort((a,b)=>b.utility-a.utility||b.totalValue-a.totalValue);
+ const topOffer=rankedOffers[0];
+ if(topOffer&&!topOffer.accepted&&topOffer.utility>=.97&&topOffer.annualSalary>=topOffer.askingAnnual*.86&&topOffer.years>=Math.max(1,topOffer.desiredYears-1)&&topOffer.opportunity>=.45){topOffer.accepted=true;topOffer.reason='최고 제안 조건 합의';}
  const accepted=offers.filter(o=>o.accepted).sort((a,b)=>b.utility-a.utility||b.totalValue-a.totalValue);
  // Retain the best accepted/rejected terms per club, not every term permutation.
  const summaries=new Map();
