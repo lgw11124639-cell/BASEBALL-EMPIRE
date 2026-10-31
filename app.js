@@ -3655,7 +3655,7 @@ function openBaseballNewsArticle(id){
  const body=beUnifiedNoticeArticle(n).paragraphs.join('\n\n');
  const clubIds=(Array.isArray(n.teams)?n.teams:[]).map(Number).filter(Number.isFinite);
  const articleClubs=clubIds.map(id=>state.teams.find(t=>Number(t.id)===id)).filter(Boolean);
- const isNational=n.kind==='국가대표 기사'||(n.kind==='국가대표'&&/대회 종료|WBC|결승|준결승|조별리그|8강|3위 결정전/.test(n.title||''));
+ const isNational=n.kind==='국가대표 기사'||n.kind==='국가대표';
  const nationalFlagFeature='';
  const articlePlayerIds=new Set();
  const nationalRoster=(Array.isArray(n.players)?n.players:[]).map(id=>state.players.find(p=>String(p.id)===String(id))).filter(p=>{
@@ -3960,7 +3960,12 @@ let lastRenderPreparedState=null;function newsHub(){
   const previous=latestNegotiations.get(key);
   if(!previous||Number(n.day)>Number(previous.day)||(Number(n.day)===Number(previous.day)&&Number(n.id)>Number(previous.id)))latestNegotiations.set(key,n);
  }
+ // The preparation stage is published both as a short notice and a full article.
+ // Prefer the full roster article and hide the duplicate short notice in News.
+ const nationalFeatureKeys=new Set(notices.filter(n=>n.kind==='국가대표 기사').map(n=>[n.year,n.day,String(n.title||'').replace(/ · .*$/,'').trim()].join(':')));
+ const nationalDuplicate=n=>n.kind==='국가대표'&&/예비 명단 발표|최종 명단 확정|대표팀 소집/.test(String(n.title||''))&&nationalFeatureKeys.has([n.year,n.day,String(n.title||'').trim()].join(':'));
  const visibleNotices=notices.filter(n=>{
+  if(nationalDuplicate(n))return false;
   if(String(n.kind)!=='FA 협상'||!(n.players||[]).length)return true;
   const key=String(n.players[0]);
   return !signedFaPlayers.has(key)&&latestNegotiations.get(key)===n;
