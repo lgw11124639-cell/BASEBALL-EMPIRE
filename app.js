@@ -1880,7 +1880,9 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  for(let years=maxYears;years>=1;years--){
   const average=projection.projections.slice(0,years).reduce((n,x)=>n+x,0)/years;
   const valueFactor=projection.projections[0]>0?average/projection.projections[0]:1;
-  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+Math.min(.12,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000);
+  const rounds=Number(record.negotiationRounds)||0;
+  const raise=Math.min(.32,Math.floor(rounds/4)*.035)*Math.max(.25,need);
+  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+raise)/1000000)*1000000);
   const bonusRate=Math.max(.08,Math.min(.36,.12+need*.12+contender*.07-longTermRisk*.06));
   const signingBonus=Math.round(annualSalary*years*bonusRate/1000000)*1000000;
   const reserve=annualSalary+annualSalary*(years-1)*.25;
