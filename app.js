@@ -1887,7 +1887,7 @@ function faSettleAcceptedOffer(p,record,offer){
 function queueFaNegotiation(p,record){
  if(record.nextReviewDate||record.signedYear)return;
  record.openedDate=seasonDate(state.day).toISOString().slice(0,10);
- record.lastOutcome='협상 준비';record.lastReason='구단 전력 검토 · 선수 조건 확인 중';
+ record.lastOutcome='원소속 구단 우선협상';record.lastReason='원소속 구단이 먼저 계약 조건을 검토합니다';
  scheduleFaReview(p,record,1+((Math.imul(Number(p.id)||1,7919)>>>0)%21));
 }
 function scheduleFaReview(p,record,delay){
@@ -1900,7 +1900,7 @@ function negotiateFaContract(p,record){
  scheduleFaReview(p,record,5+((Math.imul((Number(p.id)||1)+(Number(record.negotiationRounds)||0)*31,2039)>>>0)%10));
  const projection=faPlayerProjection(p),preferences=faPlayerPreferences(p);
  const proposed=new Map();
- for(const team of state.teams)for(let years=1;years<=projection.recommendedYears;years++){
+ for(const team of state.teams.filter(t=>(Number(record.negotiationRounds)||0)>=2||String(t.id)===String(record.previousTeamId)))for(let years=1;years<=projection.recommendedYears;years++){
   const offer=faBuildOffer(p,team.id,record,projection,years);
   if(offer)proposed.set(team.id+':'+offer.years,offer);
  }
@@ -1918,7 +1918,7 @@ function negotiateFaContract(p,record){
   record.lastOutcome='정산 보류';record.lastReason='계약금·보상금 정산 실패';return false;
  }
  record.lastOutcome=offers.length?'선수 제안 거절':'구단 제안 없음';
- record.lastReason=offers.length?offers.slice().sort((a,b)=>b.utility-a.utility)[0].reason:'구단의 전력 계획·재정 조건에 맞는 제안 없음';
+ record.lastReason=offers.length?offers.slice().sort((a,b)=>b.utility-a.utility)[0].reason:((Number(record.negotiationRounds)||0)<=2?'원소속 구단 우선협상 중 · 제안 조건 미충족':'구단의 전력 계획·재정 조건에 맞는 제안 없음');
  clubNotice('FA 협상',p.name+' '+record.lastOutcome,record.lastReason+' · 미계약 상태로 다음 협상을 기다립니다.',[record.previousTeamId],[p.id]);
  return false;
 }
