@@ -138,17 +138,24 @@ async function encodeCloudShard(raw,cacheKey){
 const livePlayerFields=new Set(['games','plateAppearances','atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','runsBattedIn','runs','strikeouts','stolenBases','caughtStealing','sacrificeBunts','sacrificeFlies','groundedIntoDoublePlays','fieldingErrors','inningsPitched','innings','wins','losses','rbi','pitchCount','earnedRuns','pitchingWins','pitchingLosses','saves','holds','pitchingStrikeouts','gamesStarted','hitsAllowed','walksAllowed','homeRunsAllowed','battersFaced','qualityStarts','blownSaves','completeGames','shutouts','totalPitches','lastAppearance','lastPitchDay','minorLastPitchDay','minorStats','registeredDays','faRegisteredDaysByYear','lastTraining']);
 function splitCloudPlayer(p){
  if(!p||typeof p!=='object'||Array.isArray(p))return {base:p,live:null};
- const base={...p},live={};
- for(const key of livePlayerFields)if(Object.prototype.hasOwnProperty.call(base,key)){live[key]=base[key];delete base[key];}
- if(base.profile&&typeof base.profile==='object'&&!Array.isArray(base.profile)){
-  const profile={...base.profile},dynamic={};
-  if(Object.prototype.hasOwnProperty.call(profile,'injury')){dynamic.injury=profile.injury;delete profile.injury;}
-  if(profile.baseball&&typeof profile.baseball==='object'&&!Array.isArray(profile.baseball)){
-   const baseball={...profile.baseball},moving={};
-   for(const key of ['fatigue','lastAppearance'])if(Object.prototype.hasOwnProperty.call(baseball,key)){moving[key]=baseball[key];delete baseball[key];}
-   if(Object.keys(moving).length)dynamic.baseball=moving;
-   profile.baseball=baseball;
+ const base={},live={};
+ const put=(out,key,value)=>{if(key==='__proto__')Object.defineProperty(out,key,{value,enumerable:true,writable:true,configurable:true});else out[key]=value;};
+ for(const key of Object.keys(p))put(livePlayerFields.has(key)?live:base,key,p[key]);
+ const source=base.profile;
+ if(source&&typeof source==='object'&&!Array.isArray(source)){
+  const profile={},dynamic={};let moving;
+  for(const key of Object.keys(source)){
+   if(key==='injury')continue;
+   const value=source[key];
+   if(key==='baseball'&&value&&typeof value==='object'&&!Array.isArray(value)){
+    const baseball={};moving={};const fields=['fatigue','lastAppearance','pitchMixSeasonYear','pitchMixSeason'];
+    for(const name of Object.keys(value))if(!fields.includes(name))put(baseball,name,value[name]);
+    for(const name of fields)if(Object.prototype.hasOwnProperty.call(value,name))moving[name]=value[name];
+    profile.baseball=baseball;
+   }else put(profile,key,value);
   }
+  if(Object.prototype.hasOwnProperty.call(source,'injury'))dynamic.injury=source.injury;
+  if(moving&&Object.keys(moving).length)dynamic.baseball=moving;
   if(Object.keys(dynamic).length)live.profile=dynamic;
   base.profile=profile;
  }
@@ -289,6 +296,7 @@ const leagueShardFields=['highSchoolBaseball','collegeBaseball','minorLeague','i
 const leagueShardSize=24;
 function leagueShardName(field,season,name,i){return 'beLeaguePart_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+i}
 function leagueRowName(field,season,name,group,i){return 'beLeagueRows_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+group+'_'+i}
+function leagueDayName(field,season,name,day,i){return 'beLeagueDay_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+day+'_'+i}
 async function packLeagueShards(state){
  if(typeof CompressionStream!=='function')return state;
  const targets=leagueShardFields.filter(field=>state?.[field]&&typeof state[field]==='object'&&!Array.isArray(state[field]));
@@ -301,6 +309,11 @@ async function packLeagueShards(state){
    const descriptors=[];
    for(const [name,value] of Object.entries(node)){
     const isArray=Array.isArray(value),count=isArray?Math.ceil(value.length/leagueShardSize):1;
+    const dayLog=isArray&&name==='gameLog'&&value.every((row,i)=>row&&typeof row==='object'&&!Array.isArray(row)&&Number.isSafeInteger(row.day)&&row.day>=0&&(i===0||row.day>=value[i-1].day));
+    if(dayLog){
+     const days=[];for(let at=0;at<value.length;){const day=value[at].day;let end=at+1;while(end<value.length&&value[end].day===day)end++;const rows=value.slice(at,end),chunks=Math.ceil(rows.length/leagueShardSize);days.push({day,count:chunks,length:rows.length});for(let i=0;i<chunks;i++)parts.push({name:leagueDayName(field,season,name,day,i),raw:JSON.stringify(rows.slice(i*leagueShardSize,(i+1)*leagueShardSize))});at=end;}
+     descriptors.push({name,kind:'dayLog',length:value.length,count:days.reduce((n,d)=>n+d.count,0),days});continue;
+    }
     const splitRows=isArray&&['players','prospects'].includes(name);
     descriptors.push({name,kind:splitRows?'splitRows':isArray?'array':'value',length:isArray?value.length:null,count});
     if(splitRows){const rows=value.map(splitCloudPlayer);for(const group of ['base','live'])for(let i=0;i<count;i++)parts.push({name:leagueRowName(field,season,name,group,i),raw:JSON.stringify(rows.slice(i*leagueShardSize,(i+1)*leagueShardSize).map(row=>row[group]))});}
@@ -343,7 +356,20 @@ async function unpackLeagueShards(state){
   for(const [season,descriptors] of Object.entries(meta.seasons)){
    if(!Array.isArray(descriptors))throw Error('리그 시즌 메타데이터 오류');
    const entries=await Promise.all(descriptors.map(async d=>{
-    if(typeof d.name!=='string'||!Number.isSafeInteger(d.count)||d.count<0||d.count>100000||!['array','value','splitRows'].includes(d.kind)||d.kind!=='value'&&(!Number.isSafeInteger(d.length)||d.length<0)||d.kind==='value'&&d.count!==1)throw Error('리그 묶음 메타데이터 오류');
+    if(typeof d.name!=='string'||!Number.isSafeInteger(d.count)||d.count<0||d.count>100000||!['array','value','splitRows','dayLog'].includes(d.kind)||d.kind!=='value'&&(!Number.isSafeInteger(d.length)||d.length<0)||d.kind==='value'&&d.count!==1)throw Error('리그 묶음 메타데이터 오류');
+    if(d.kind==='dayLog'){
+     if(!Array.isArray(d.days)||d.days.some((part,i)=>!Number.isSafeInteger(part.day)||part.day<0||(i>0&&part.day<=d.days[i-1].day)||!Number.isSafeInteger(part.count)||part.count<1||part.count>100000||!Number.isSafeInteger(part.length)||part.length<1)||d.days.reduce((n,x)=>n+x.count,0)!==d.count)throw Error('경기 로그 날짜 메타데이터 오류');
+     const keys=[],rows=[];
+     for(const part of d.days){
+      const chunks=await Promise.all(Array.from({length:part.count},async(_,i)=>{
+       const key=leagueDayName(field,season,d.name,part.day,i),encoded=state[key];if(typeof encoded!=='string')throw Error('경기 로그 일부 누락: '+key);
+       const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+       const value=JSON.parse(raw);if(!Array.isArray(value)||value.some(row=>!row||row.day!==part.day))throw Error('경기 로그 날짜 오류');shardGzipCache.set(key,{raw,encoded});keys.push(key);return value;
+      }));
+      const values=chunks.flat();if(values.length!==part.length)throw Error('경기 로그 날짜별 길이 불일치');rows.push(...values);
+     }
+     if(rows.length!==d.length)throw Error('경기 로그 전체 길이 불일치');return {name:d.name,value:rows,keys};
+    }
     if(d.kind==='splitRows'){
      const groups={},keys=[];
      for(const group of ['base','live'])groups[group]=(await Promise.all(Array.from({length:d.count},async(_,i)=>{
@@ -824,7 +850,7 @@ export async function cloudSave(state){
   })).sort((a,b)=>b.bytes-a.bytes):[];
   const changedGroups=Object.create(null);
   for(const {key,bytes} of changedFields){
-   const group=(key.startsWith('beLeaguePart_')||key.startsWith('beLeagueRows_'))?'league archive':
+   const group=(key.startsWith('beLeaguePart_')||key.startsWith('beLeagueRows_')||key.startsWith('beLeagueDay_'))?'league archive':
     key.startsWith('beShard_clubTransactionArchive_')?'transaction archive':
     key.startsWith('beShard_')?'player/game shards':
     key.startsWith('beAmateur')?'amateur archive':

@@ -95,3 +95,5 @@ jobs:
         run: node tests/cloud-archive-shards.test.cjs
       - name: Player/live shards, career years and real-day round-trip
         run: node tests/cloud-player-split.test.cjs
+      - name: Rolling log dates, pitch counters and save preparation
+        run: node tests/cloud-rolling-log.test.cjs
