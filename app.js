@@ -325,7 +325,7 @@ function pitchingArsenal(p){
 }
 function pitchMatchup(p,batter,inning){if(!p)return {hit:1,walk:1,strikeout:1,homer:1};const a=pitchingArsenal(p),f=playerBaseball(p),fatigue=Math.max(0,Math.min(100,Number(f.fatigue)||0)),stuff=a.pitches.reduce((sum,x)=>sum+x.grade,0)/a.pitches.length,quality=(stuff-60)/100,command=(a.control-60)/100,velo=(a.velocity-143)/100,speedBonus=pitcherSpeedBonus(p),stam=(a.stamina-60)/100;const late=Math.max(0,inning-4),wear=Math.max(0,late*(.025-stam*.012)+fatigue*.0013);const breaking=a.pitches.some(x=>x.name==='슬라이더'||x.name==='커브'),offSpeed=a.pitches.some(x=>x.name==='체인지업'||x.name==='포크볼');const same=f.throwHand?.slice(0,1)===playerBaseball(batter).batHand?.slice(0,1);return {hit:Math.max(.78,Math.min(1.27,1-quality*.17-speedBonus.hit*.6-velo*.04+(wear*.6)+(breaking&&same?-.025:0))),walk:Math.max(.70,Math.min(1.55,1-command*.55+wear*.65)),strikeout:Math.max(.73,Math.min(1.35,1+quality*.35+speedBonus.strikeout*.8+velo*.05-wear*.35)),homer:Math.max(.72,Math.min(1.35,1-quality*.12-velo*.13+wear*.55+(offSpeed?-.035:0)))}}
 function sharedHitBases(roll){return roll<.045?4:roll<.065?3:roll<.24?2:1}
-function sharedHitAdvance(batter,pitcher,fieldingTeamId,inning,roll){const power=batterSkill(batter,'power'),park=stadiumFactors(fieldingTeamId),arsenal=pitchMatchup(pitcher,batter,inning),bodyBonus=batterPhysicalBonus(batter);const homerChance=Math.max(.035,Math.min(.18,(.085+(power-60)*.0016)*park.homer*arsenal.homer*(1+bodyBonus.power)));return roll<homerChance?4:roll<homerChance+.025?3:roll<homerChance+.245?2:1}
+function sharedHitAdvance(batter,pitcher,fieldingTeamId,inning,roll){const power=batterSkill(batter,'power'),park=stadiumFactors(fieldingTeamId),arsenal=pitchMatchup(pitcher,batter,inning),bodyBonus=batterPhysicalBonus(batter);const homerChance=Math.max(.018,Math.min(.14,(.065+(power-60)*.00135)*park.homer*arsenal.homer*(1+bodyBonus.power)));return roll<homerChance?4:roll<homerChance+.025?3:roll<homerChance+.245?2:1}
 let beZoneCache={revision:-1,year:null,profiles:new Map()};
 function batterZoneProfile(p){
  const games=state?.gameResults||[],revision=games.length,year=state?.year;
@@ -456,7 +456,7 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  const fieldSkill=defender?batterSkill(defender,'fielding'):60;
  const park=stadiumFactors(fielding?.teamId),body=batterPhysicalBonus(batter);
  const idealFlight=Math.max(0,Math.sin(Math.min(90,Math.max(0,launchAngle*2))*Math.PI/180));
- const carry=Math.max(0,exitVelocity*3.90*idealFlight*(1+quality*.10)*park.homer*(1+body.power));
+ const carry=Math.max(0,exitVelocity*3.65*idealFlight*(1+quality*.10)*park.homer*(1+body.power));
  const fenceFeet=Math.abs(sprayAngle)<16?400:Math.abs(sprayAngle)<32?365:335;
  const homer=fly&&launchAngle>=20&&launchAngle<=43&&exitVelocity>=92&&carry>=fenceFeet;
  const coverage=(fieldSkill-60)*.0032;
