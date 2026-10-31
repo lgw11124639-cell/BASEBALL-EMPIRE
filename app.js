@@ -2000,20 +2000,28 @@ function negotiateFaContract(p,record){
  const projection=faPlayerProjection(p),preferences=faPlayerPreferences(p);
  const proposed=new Map();
  const withdrawnClubs=record.clubWithdrawals||{};
- // A withdrawal ends that negotiation round, not the player's entire FA career.
- // Reopen the market after a cooling period, including legacy saves where
- // all clubs already withdrew and the next review was cleared.
- const lastWithdrawalRound=Math.max(0,...Object.values(withdrawnClubs).map(x=>Number(x?.round)||0));
- if(state.teams.length&&state.teams.every(t=>Number(withdrawnClubs[String(t.id)]?.untilYear)>=state.year)&&
-    ((Number(record.negotiationRounds)||0)>=lastWithdrawalRound+3||(Number(record.lastReviewYear)===state.year&&state.day-Number(record.lastReviewDay)>=21)||(Number(record.lastReviewYear)<state.year))){
-  record.clubWithdrawals={};
-  record.lastOutcome='시장 재검토';
-  record.lastReason='구단 철수 이후 재협상 가능 여부 재평가';
+ // Final withdrawal closes this year's market for that club. The next
+ // offseason is a new decision, not a 21-day reset of rejected offers.
+ if(Number(record.marketClosedYear)===state.year){
+  record.lastOutcome='시장 철수';
+  record.lastReason='구단별 최종 협상 종료 · 다음 시즌 재도전 또는 은퇴 검토';
+  record.lastContactTeams=[];record.lastContactCount=0;
+  record.lastReviewYear=state.year;record.lastReviewDay=state.day;
+  scheduleFaReview(p,record,35);
+  return false;
  }
- if(state.teams.length&&state.teams.every(t=>Number((record.clubWithdrawals||{})[String(t.id)]?.untilYear)>=state.year)){
-  record.lastReviewYear=state.year;record.lastReviewDay=state.day;record.lastOutcome='협상 종료';
-  record.lastReason='모든 구단이 최종 제안 후 협상 철수';record.lastContactTeams=[];record.lastContactCount=0;
-  scheduleFaReview(p,record,21);return false;
+ if(Number(record.marketClosedYear)<state.year){
+  record.clubWithdrawals={};record.marketClosedYear=null;
+  record.negotiationRounds=0;
+ }
+ if(state.teams.length&&state.teams.every(t=>Number(withdrawnClubs[String(t.id)]?.untilYear)>=state.year)){
+  record.marketClosedYear=state.year;
+  record.lastOutcome='시장 철수';
+  record.lastReason='모든 구단 최종 철수 · 재협상은 다음 시즌부터 가능';
+  record.lastContactTeams=[];record.lastContactCount=0;
+  record.lastReviewYear=state.year;record.lastReviewDay=state.day;
+  scheduleFaReview(p,record,35);
+  return false;
  }
  for(const team of state.teams)for(let years=1;years<=projection.recommendedYears;years++){
   const offer=faBuildOffer(p,team.id,record,projection,years);
@@ -2065,6 +2073,12 @@ function negotiateFaContract(p,record){
    const repeats=(record.negotiationHistory||[]).slice(-4).filter(h=>(h.offers||[]).some(x=>String(x.teamId)===key&&!x.accepted&&x.years===o.years&&x.annualSalary===o.annualSalary&&x.signingBonus===o.signingBonus));
    if(!o.accepted&&repeats.length>=3)record.clubWithdrawals[key]={untilYear:state.year,reason:'최종 제안 거절 및 협상 철수',round:record.negotiationRounds};
   }
+ }
+ if(!accepted.length&&state.teams.length&&state.teams.every(t=>Number(record.clubWithdrawals?.[String(t.id)]?.untilYear)>=state.year)){
+  record.marketClosedYear=state.year;
+  record.lastOutcome='시장 철수';
+  record.lastReason='모든 구단이 최종 제안을 철회함';
+  scheduleFaReview(p,record,35);
  }
  if(accepted.length){
   const offer=accepted[0];
