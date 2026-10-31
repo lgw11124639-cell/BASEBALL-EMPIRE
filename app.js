@@ -1360,10 +1360,15 @@ function retireUnsignedReleasedPlayers(){
   if(p.retired||p.foreignPlayer||!['방출','계약종료','FA대기'].includes(p.level))continue;
   const since=p.level==='FA대기'?Number(p.faMarketSince):Number(p.releaseYear);
   if(!Number.isFinite(since)||since<=0||state.year-since<2)continue;
-  // Two full seasons without a contract: the player leaves professional baseball.
+  // A long spell without a club increases retirement risk, but is not an automatic retirement.
+  const age=Number(p.age)||0,yearsUnsigned=state.year-since;
+  const evaluation=bePlayerEvaluation(p);
+  const risk=Math.min(.90,Math.max(0,(age>=40?.35:age>=35?.16:age>=30?.045:.005)+(yearsUnsigned-2)*.09+(evaluation<48?.12:evaluation>=65?-.16:0)));
+  const draw=rng(((Number(p.id)||1)*7919+state.year*104729)>>>0)();
+  if(draw>=risk)continue;
   p.retired=true;p.level='은퇴';
   if(!state.retiredPlayers.some(x=>String(x.id)===String(p.id))){
-   state.retiredPlayers.push({id:p.id,name:p.name,year:state.year,age:p.age,teamId:p.teamId,jerseyNumber:p.jerseyNumber,reason:'장기 미계약'});
+   state.retiredPlayers.push({id:p.id,name:p.name,year:state.year,age:p.age,teamId:p.teamId,jerseyNumber:p.jerseyNumber,reason:'장기 미계약 후 은퇴 결정'});
   }
   clubNotice('은퇴',p.name+' 선수 은퇴','방출·계약 종료 후 2시즌 이상 미계약으로 현역 은퇴',[p.teamId],[p.id]);
  }
@@ -1898,7 +1903,8 @@ function queueFaNegotiation(p,record){
  if(record.nextReviewDate||record.signedYear)return;
  record.openedDate=seasonDate(state.day).toISOString().slice(0,10);
  record.lastOutcome='협상 준비';record.lastReason='원소속 구단을 포함한 전 구단이 협상 조건을 검토합니다';
- scheduleFaReview(p,record,1);
+ // Clubs open negotiations on different days; once opened, unsigned players are reviewed daily.
+ scheduleFaReview(p,record,1+((Math.imul(Number(p.id)||1,7919)>>>0)%4));
 }
 function scheduleFaReview(p,record,delay){
  const date=seasonDate(state.day);date.setDate(date.getDate()+delay);
