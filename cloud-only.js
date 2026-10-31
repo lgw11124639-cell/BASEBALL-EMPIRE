@@ -503,7 +503,7 @@ async function unpackAmateurBuckets(state){
  return state;
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports','clubTransactionArchive','draftResults'];
+const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports','clubTransactionArchive','draftResults','faMarket'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
