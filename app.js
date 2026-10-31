@@ -2543,7 +2543,7 @@ function beOpenPostseasonReplay(day,away){
  const ps=state.postseasons?.[state.year],g=(ps?.games||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));
  if(!g)return;
  // Historical postseason records retain inning scores but not pitch-by-pitch events.
- beOpenGameReplay(day,away,{...g,broadcastEvents:[],awayBatters:[],homeBatters:[],awayPitchers:[],homePitchers:[]});
+ beOpenGameReplay(day,away,g);
 }
 window.beOpenPostseasonReplay=beOpenPostseasonReplay;
 function beAppendReplayLine(out,html){
