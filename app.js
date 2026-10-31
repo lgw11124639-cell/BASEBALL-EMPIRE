@@ -1846,10 +1846,18 @@ function faPlayerProjection(p){
  // Established closers and setup pitchers compete for scarce high-leverage roles.
  // Use upper-tier salaries from the actual save, rather than a fabricated FA minimum.
  const highLeverage=isPitcher&&!starter&&sample/Math.max(1,weight)>=30&&(seasonSaves>=20||seasonHolds>=22);
+ // Full-season starters and middle-of-order hitters also command the upper end
+ // of the actual league salary market, not the median for their position.
+ const seasonIP=stats.inningsPitched/Math.max(1,weight);
+ const seasonAB=stats.atBats/Math.max(1,weight);
+ const seasonHR=stats.homeRuns/Math.max(1,weight);
+ const seasonH=stats.hits/Math.max(1,weight);
+ const eliteStarter=isPitcher&&starter&&seasonIP>=125&&relative>=1.20;
+ const eliteHitter=!isPitcher&&seasonAB>=400&&relative>=1.20&&(seasonHR>=18||seasonH>=145);
  const leagueEstablished=peers.filter(x=>!x.foreignPlayer&&((x.position==='P'&&(Number(x.inningsPitched)||0)>=40)||(x.position!=='P'&&(Number(x.plateAppearances)||Number(x.atBats)||0)>=300)));
  const leaguePay=leagueEstablished.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
  const upperMarket=leaguePay.length>=8?leaguePay[Math.floor((leaguePay.length-1)*.80)]:valuationBase;
- const roleAnchor=highLeverage?Math.max(valuationBase,upperMarket):valuationBase;
+ const roleAnchor=(highLeverage||eliteStarter||eliteHitter)?Math.max(valuationBase,upperMarket):valuationBase;
  const fairAnnual=Math.max(floor,Math.round(Math.max(roleAnchor,salaryAnchor)*projections[0]*(.75+.25*marketConfidence)/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
