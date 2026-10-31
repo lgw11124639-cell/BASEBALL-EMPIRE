@@ -115,6 +115,8 @@ jobs:
         run: node tests/medical-history.test.cjs
       - name: Club release news grouping
         run: node tests/release-news.test.cjs
+      - name: Explicit trade arrival and departure headlines
+        run: node tests/trade-article-direction.test.cjs
       - name: News publication chronology
         run: node tests/news-order.test.cjs
       - name: Roster combined filters
