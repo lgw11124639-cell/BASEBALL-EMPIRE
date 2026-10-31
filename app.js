@@ -1821,8 +1821,7 @@ function faPlayerProjection(p){
  const comparable=peers.filter(x=>x.position===p.position&&String(x.id)!==String(p.id)&&((isPitcher?(Number(x.inningsPitched)||0)>=35:(Number(x.plateAppearances)||Number(x.atBats)||0)>=180)));
  const comparableSalaries=comparable.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
  const reference=comparableSalaries.length>=3?comparableSalaries[Math.floor((comparableSalaries.length-1)*.65)]:salaries.length>=5?salaries[Math.floor((salaries.length-1)*.75)]:median;
- const priorSalary=Math.max(0,Number(p.salary)||0);
- const fairAnnual=Math.max(floor,Math.round(reference*projections[0]/1000000)*1000000,Math.round(priorSalary*(.55+.25*confidence)/1000000)*1000000);
+ const fairAnnual=Math.max(floor,Math.round(reference*projections[0]/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
 function faBuildOffer(p,teamId,record,projection,requestedYears=null){
