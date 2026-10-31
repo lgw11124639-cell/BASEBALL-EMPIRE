@@ -1899,6 +1899,8 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  if(String(teamId)!==String(record.previousTeamId)&&qualified.length>=(isPitcher?7:2)&&youthCover>=.5&&need<.48)return null;
  // Clubs without a meaningful role or sufficient financial headroom do not bid.
  if(need<.17&&String(teamId)!==String(record.previousTeamId))return null;
+ const retention=String(teamId)===String(record.previousTeamId)&&Number(record.previousSalary)>=500000000&&projection.confidence>=.45;
+ const effectiveNeed=retention?Math.max(.65,need):need;
  const annualHeadroom=Math.max(0,available-compensation);
  if(annualHeadroom<projection.floor*1.3)return null;
  const valueMultiplier=Math.max(.55,Math.min(1.65,.70+urgency*.54+contender*.13+futureFit*.12-projection.injuryRisk*.18));
@@ -1912,8 +1914,8 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
   const clubKey=String(teamId);
   const withdrawal=record.clubWithdrawals?.[clubKey];
   if(withdrawal&&Number(withdrawal.untilYear)>=state.year)return null;
-  const raise=Math.min(.45,Math.floor(rounds/2)*.055)*Math.max(.25,need);
-  const clubCeiling=Math.max(projection.floor,Math.round(projection.fairAnnual*(1.04+need*.35+contender*.10+futureFit*.08)/1000000)*1000000);
+  const raise=Math.min(.45,Math.floor(rounds/2)*.055)*Math.max(.25,effectiveNeed);
+  const clubCeiling=Math.max(projection.floor,Math.round(projection.fairAnnual*(1.04+effectiveNeed*.35+contender*.10+futureFit*.08)/1000000)*1000000);
   const annualSalary=Math.min(clubCeiling,Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+raise)/1000000)*1000000));
   const bonusRate=Math.max(.08,Math.min(.36,.12+need*.12+contender*.07-longTermRisk*.06));
   const signingBonus=Math.round(annualSalary*years*bonusRate/1000000)*1000000;
