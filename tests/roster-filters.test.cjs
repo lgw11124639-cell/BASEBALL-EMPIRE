@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');
+const c=require('./helpers/game-context.cjs')();
+vm.runInContext('state=world(0)',c);
+assert.equal(vm.runInContext('rosterSelection().all.length',c),70);
+vm.runInContext("rosterLevel='2군';rosterType='pitchers'",c);
+assert.ok(vm.runInContext("rosterSelection().players.length>0&&rosterSelection().players.every(p=>p.level==='2군'&&p.position==='P')",c));
+assert.equal(vm.runInContext('rosterSelection().sections.length',c),1,'filtered view does not show unrelated empty groups');
+vm.runInContext("rosterLevel='all';rosterType='hitters';rosterPosition='C'",c);
+assert.ok(vm.runInContext("rosterSelection().players.length>0&&rosterSelection().players.every(p=>p.position==='C')",c));
+vm.runInContext("rosterQuery='존재하지않는선수'",c);assert.equal(vm.runInContext('rosterSelection().players.length',c),0);
+vm.runInContext("rosterQuery='';rosterLevel=rosterType=rosterPosition='all';const member=state.players.find(p=>p.teamId===0);member.level='FA대기'",c);
+assert.equal(vm.runInContext('rosterSelection().all.length',c),69,'unsigned FA is excluded consistently from initial and filtered list');
+const html=vm.runInContext('rosterBody()',c);
+for(const title of ['1군 · 투수','1군 · 타자','2군 · 투수','2군 · 타자'])assert.ok(html.includes(title));
+console.log('Roster level/type/position/search grouping and unsigned exclusion PASS');

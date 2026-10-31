@@ -42,7 +42,9 @@ vm.runInContext(`const testPlayer={id:70,name:'FA 계약 검증',teamId:0,level:
  faService:{creditedSeasons:7,carryDays:0,faUses:0},faApplicationDecisions:{2027:true},faPreferences:{money:0,security:0,playingTime:0,contention:0,loyalty:0},careerStats:{hits:700}};
  ensureProfile(testPlayer);testPlayer.profile.contractYears=1;state.players=[testPlayer,{id:71,name:'동시대 선수',teamId:0,level:'2군',position:'SS',age:27,salary:200000000,profile:{contractYears:1},atBats:500,hits:140,homeRuns:15,registeredDays:100}];
  state.teams[0].budget=1000000;state.teams[1].budget=10000000000;
- runOffseasonContracts();`,c);
+ runOffseasonContracts();
+ const scheduled=state.faMarket.find(x=>x.playerId===testPlayer.id);
+ state.day=Math.round((new Date(scheduled.nextReviewDate+'T12:00:00')-new Date(state.seasonStartDate+'T12:00:00'))/86400000)+1;reviewUnsignedFaMarket();`,c);
 let p=vm.runInContext('testPlayer',c);
 assert.equal(p.teamId,1);
 assert.ok(p.profile.faContract.years>=2);

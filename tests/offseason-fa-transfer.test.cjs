@@ -10,6 +10,7 @@ const player={id:7,name:'Free Agent',age:29,position:'OF',teamId:0,level:'1군',
 const state={year:2026,day:350,teamId:0,players:[player],teams:[{id:0,name:'Old',budget:10000000},{id:1,name:'New',budget:900000000}],postseasons:{2026:{finished:true}},history:{seasons:{2026:{complete:true,players:[{id:7,hits:100}]}}}};
 const ledger=[];
 const context=vm.createContext({state,Math,Number,Map,Set,
+ seasonDate:day=>{const d=new Date('2026-01-01T12:00:00');d.setDate(d.getDate()+day-1);return d},
  awardsFinished:()=>true,snapshotOverseasInterest:()=>{},processOverseasPosting:()=>{},resolveOverseasNegotiations:()=>{},saveSeasonSnapshot:()=>{},renewStaffContracts:()=>{},hireRetiredCoaches:()=>{},
  rng:()=>()=>0.1,ensureProfile:p=>p.profile,creditFaSeason:()=>{},
  faServiceStatus:p=>({eligible:true,record:p.faService}),
@@ -23,6 +24,7 @@ const context=vm.createContext({state,Math,Number,Map,Set,
 vm.runInContext(source.slice(source.indexOf('function playerRetirementProbability('),source.indexOf('function runOffseasonContracts(')),context);
 vm.runInContext(source.slice(start,end),context);
 vm.runInContext('runOffseasonContracts()',context);
+vm.runInContext('state.day+=22;negotiateFaContract(state.players[0],state.faMarket[0])',context);
 assert.equal(player.teamId,1,'FA signs with new club');
 assert.equal(player.profile.faContract.previousTeamId,0,'original club in contract');
 assert.equal(player.profile.faContract.teamId,1,'destination in contract');

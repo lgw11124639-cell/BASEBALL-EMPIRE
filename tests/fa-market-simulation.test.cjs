@@ -20,7 +20,8 @@ vm.runInContext(`state=world(0);state.year=2027;state.day=314;state.seasonStartD
  for(const p of state.players){ensureProfile(p);p.profile.contractYears=1;if(!candidates.includes(p.id)){p.faService={creditedSeasons:0,carryDays:0,faUses:0};p.registeredDays=0;}}
  const initialBudget=state.teams.reduce((n,t)=>n+t.budget,0);
  runOffseasonContracts();
- for(const day of [322,336,350,364]){state.day=day;reviewUnsignedFaMarket();}
+ if(state.faMarket.some(r=>r.signedYear))throw Error('contracts signed on registration day');
+ for(let day=315;day<=364;day++){state.day=day;reviewUnsignedFaMarket();}
  const beforeRepeat=JSON.stringify(state.faMarket);reviewUnsignedFaMarket();
  const experiment={candidates,initialBudget,beforeRepeat,afterRepeat:JSON.stringify(state.faMarket),
   records:state.faMarket,players:state.players.filter(p=>candidates.includes(p.id)),teams:state.teams};`,context);
@@ -29,6 +30,9 @@ assert.equal(x.records.length,20,'20 actual eligible candidates across 10 clubs'
 assert.equal(x.beforeRepeat,x.afterRepeat,'same-day reviews cannot accelerate concessions or duplicate contracts');
 const signed=x.records.filter(r=>r.signedYear),pending=x.records.filter(r=>!r.signedYear);
 assert.ok(signed.length>0,'players can accept competitive offers');
+const signingDays=new Set(signed.map(r=>r.negotiationHistory.find(h=>h.signedTeamId!=null).day));
+assert.ok(signingDays.size>1,'signings are spread across actual dates');
+console.log('FA signing days:',Array.from(signingDays).sort((a,b)=>a-b));
 assert.ok(pending.length>0,'no forced market clearing');
 assert.ok(x.records.some(r=>r.negotiationHistory.some(h=>h.offers.some(o=>!o.accepted))),'players actually reject club offers');
 let bonus=0;

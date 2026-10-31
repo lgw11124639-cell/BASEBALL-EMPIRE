@@ -77,3 +77,9 @@ jobs:
         run: node tests/fa-negotiation.test.cjs
       - name: Ten-club FA negotiation and cash conservation
         run: node tests/fa-market-simulation.test.cjs
+      - name: FA review dates and year rollover
+        run: node tests/fa-schedule.test.cjs
+      - name: Roster combined filters
+        run: node tests/roster-filters.test.cjs
+      - name: Manager plan cache and live evaluations
+        run: node tests/manager-plan-cache.test.cjs

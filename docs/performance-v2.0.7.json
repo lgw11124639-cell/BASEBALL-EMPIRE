@@ -1,0 +1,20 @@
+{
+  "runtime": "Node.js 22.23.4",
+  "baselineCommit": "f685bda",
+  "season": {
+    "games": 720,
+    "beforeSeconds": 25.596673464,
+    "afterSeconds": 13.491482084,
+    "reductionPercent": 47.29204908999264,
+    "allCountersEqual": true
+  },
+  "daily": {
+    "days": 3,
+    "games": 10,
+    "beforeMilliseconds": 2651.300095,
+    "afterMilliseconds": 2320.108962,
+    "reductionPercent": 12.49165017662779,
+    "identicalStateSHA256": "5aa67cc97f30ca592ec608b3e9ae671882c91b6230ea28c7a1f885e603b7561e"
+  },
+  "scope": "Local simulation only. Excludes browser render, automatic timer wait and cloud save/network time. Single sequential before/after samples, not a performance guarantee."
+}

@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');const vm=require('node:vm');
+const c=require('./helpers/game-context.cjs')();
+vm.runInContext(`state=world(0);state.players=state.players.slice(0,3);state.year=2027;state.day=365;state.seasonStartDate='2027-01-01';
+ state.faMarket=state.players.map((p,i)=>{p.id=100+i;p.foreignPlayer=false;p.level='FA대기';return {playerId:p.id,year:2027,previousTeamId:0};});
+ for(const p of state.players)queueFaNegotiation(p,state.faMarket.find(r=>r.playerId===p.id));
+ const dates=state.faMarket.map(r=>r.nextReviewDate);const calls=[];
+ negotiateFaContract=(p,r)=>{calls.push(seasonDate(state.day).toISOString().slice(0,10));r.signedYear=state.year;};
+ state.year=2028;state.day=1;state.seasonStartDate='2028-01-01';awardsFinished=()=>false;reviewUnsignedFaMarket();`,c);
+assert.equal(vm.runInContext('calls.length',c),0,'rollover does not cause all old schedules to execute January 1');
+vm.runInContext('for(let day=2;day<=31;day++){state.day=day;reviewUnsignedFaMarket();}',c);
+assert.deepEqual(Array.from(vm.runInContext('calls',c)).sort(),Array.from(vm.runInContext('dates',c)).sort());
+assert.equal(new Set(vm.runInContext('calls',c)).size,3,'independent cross-year review dates');
+vm.runInContext(`state.players[0].level='FA대기';state.faMarket=[{year:2027,playerId:state.players[0].id}];state.day=32;const before=calls.length;reviewUnsignedFaMarket();`,c);
+assert.equal(vm.runInContext('calls.length===before',c),true,'legacy pending records are queued without immediate mass signing');
+assert.ok(vm.runInContext('!!state.faMarket[0].nextReviewDate',c));
+console.log('FA calendar scheduling, rollover and legacy pending migration PASS');

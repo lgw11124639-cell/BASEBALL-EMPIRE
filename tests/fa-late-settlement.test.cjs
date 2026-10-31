@@ -8,7 +8,7 @@ for(const failure of ['bonus','compensation-credit',null]){
  state.players=[{id:7,name:'미계약 FA',age:29,position:'SS',teamId:0,level:'FA대기',salary:100000000,
  profile:{contractYears:0,faContractHistory:[{signedYear:2020,years:2,totalValue:300000000}]},
  faService:{creditedSeasons:8,carryDays:0,faUses:0},careerStats:{hits:800}}];
- state.faMarket=[{year:2027,playerId:7,previousTeamId:0,grade:'B',previousSalary:100000000}];
+ state.faMarket=[{year:2027,playerId:7,previousTeamId:0,grade:'B',previousSalary:100000000,nextReviewDate:'2027-01-01'}];
  state.postseasons={2027:{finished:true}};awardsFinished=()=>true;
  // Isolate payment failure paths after a player has agreed to the terms.
  faEvaluateOffer=()=>({accepted:true,reason:'조건 합의',utility:1,askingAnnual:33000000,desiredYears:1});
