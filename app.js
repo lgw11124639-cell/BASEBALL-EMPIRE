@@ -2407,15 +2407,20 @@ function beArticleTeamPlayerNames(value,notice){
  let result=String(value||'');
  if(!notice||!Array.isArray(notice.players)||!notice.players.length)return result;
  const players=notice.players.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(p=>p&&p.name).sort((a,b)=>b.name.length-a.name.length);
- const escapePattern=str=>Array.from(String(str)).map(ch=>'\\^$.*+?()[]{}|'.includes(ch)?'\\'+ch:ch).join('');
  for(const p of players){
   const team=state.teams.find(t=>String(t.id)===String(p.teamId))||((notice.teams||[]).length===1?state.teams.find(t=>String(t.id)===String(notice.teams[0])):null);
   const prefix=String(team?.name||'').trim();
-  if(!prefix)continue;
-  result=result.replace(new RegExp('(^|[^가-힣A-Za-z0-9])('+escapePattern(p.name)+')','g'),(full,before,matched,offset,whole)=>{
-   const preceding=whole.slice(Math.max(0,offset-60),offset+before.length).trimEnd();
-   return preceding.endsWith(prefix)?full:before+prefix+' '+matched;
-  });
+  if(!prefix||!p.name)continue;
+  const parts=result.split(p.name);
+  if(parts.length<2)continue;
+  let rebuilt=parts[0];
+  for(let n=1;n<parts.length;n++){
+   const before=parts[n-1],preceding=rebuilt.trimEnd();
+   const last=before.slice(-1);
+   const boundary=!last||!/[가-힣A-Za-z0-9]/.test(last);
+   rebuilt+=(boundary&&!preceding.endsWith(prefix)?prefix+' ':'')+p.name+parts[n];
+  }
+  result=rebuilt;
  }
  return result;
 }
