@@ -366,7 +366,8 @@ function batterZoneProfile(p){
  const eligible=values.map((v,i)=>v==null?null:i).filter(v=>v!=null);
  const best=eligible.length?eligible.reduce((a,b)=>values[a]>=values[b]?a:b):-1;
  const worst=eligible.length?eligible.reduce((a,b)=>values[a]<=values[b]?a:b):-1;
- const result={zones,values,best,worst,total};
+ const overall=total>0?zones.reduce((n,z)=>n+z.h,0)/total:0;
+ const result={zones,values,best,worst,total,overall};
  beZoneCache.profiles.set(key,result);return result;
 }
 function batterZoneFactor(p,pitch){
@@ -374,7 +375,7 @@ function batterZoneFactor(p,pitch){
  const x=Number(pitch.zoneX),y=Number(pitch.zoneY);if(x<0||x>=100||y<0||y>=100)return 1;
  const z=batterZoneProfile(p),i=Math.min(2,Math.floor(y/33.3334))*3+Math.min(2,Math.floor(x/33.3334));
  if(z.zones[i].ab<20)return 1;
- const overall=z.zones.reduce((n,v)=>n+v.h,0)/Math.max(1,z.total);
+ const overall=z.overall;
  return Math.max(.94,Math.min(1.06,1+(z.values[i]-overall)*.2));
 }
 function batterZonePanel(p){
