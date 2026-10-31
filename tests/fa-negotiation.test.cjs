@@ -37,6 +37,11 @@ assert.ok(weak.fairAnnual<healthy.fairAnnual,'recent performance changes price')
 const reliever={...p,id:300,position:'P',age:30,atBats:0,hits:0,doubles:0,triples:0,homeRuns:0,
  inningsPitched:62,earnedRuns:18,games:58,gamesStarted:0,saves:0,holds:0,
  profile:{...p.profile,baseball:{role:'불펜'}}};
+// Supply a league pitching baseline so ERA-relative valuation is meaningful.
+vm.runInContext(`state.players.push(
+ {id:401,teamId:1,position:'P',level:'1군',salary:900000000,inningsPitched:160,earnedRuns:65,age:29},
+ {id:402,teamId:2,position:'P',level:'1군',salary:700000000,inningsPitched:140,earnedRuns:60,age:30}
+);`,context);
 const middle=project(reliever);
 const closer=project({...reliever,saves:37});
 const setup=project({...reliever,holds:28});
