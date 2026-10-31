@@ -6,3 +6,14 @@
 .league-club-content .lineup-grid-columns{min-width:0}
 .league-club-content .league-roster-archive{background:#fff;padding:14px;border:1px solid #dce6f0;border-radius:12px}
 @media(max-width:600px){#league-team-overlay .league-club-dialog{padding-left:12px;padding-right:12px}.league-club-content .dashboard-section{padding:14px 10px}.league-club-content .roster-modes{gap:5px}.league-club-content .roster-modes button{padding:10px 5px;font-size:12px}}
+
+/* The dialog is the vertical scroller; the header must not exceed its width. */
+#league-team-overlay{overflow-x:hidden!important;overscroll-behavior-x:none!important;touch-action:pan-y!important}
+#league-team-overlay .league-club-dialog{padding:0!important;min-width:0!important;max-width:1120px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-x:none!important;touch-action:pan-y!important}
+#league-team-overlay .league-club-dialog>header{margin:0!important;top:0!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;padding:calc(14px + env(safe-area-inset-top)) 18px 15px!important;touch-action:pan-y!important}
+#league-team-overlay .league-club-dialog>header>div{min-width:0;overflow-wrap:anywhere}
+#league-team-overlay .league-club-content{box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:16px 18px 28px;overflow-x:hidden;overflow-x:clip}
+#league-team-overlay .roster-filter-toolbar,#league-team-overlay .roster-modes,#league-team-overlay .roster-list{min-width:0;max-width:100%;touch-action:pan-y}
+#league-team-overlay[data-roster-pane="lineup"],#league-team-overlay[data-roster-pane="lineup"] .league-club-dialog{touch-action:pan-x pan-y!important}
+#league-team-overlay .lineup-grid{min-width:0;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
+@media(max-width:600px){#league-team-overlay .league-club-content{padding:12px 12px 28px}#league-team-overlay .league-club-dialog>header{padding-left:12px!important;padding-right:12px!important}}

@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-club52';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-pan53';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
 function ballpark(team){return BALLPARKS[team?.id]||((team?.city||'구단')+' 야구장')}
@@ -4460,6 +4460,7 @@ function openLeagueTeam(id){
  const overlay=document.querySelector('#league-team-overlay'),workspace=overlay.querySelector('#league-roster-workspace');
  const refresh=()=>{const selection=rosterSelection(team.id,filters);const result=workspace.querySelector('#league-roster-results');if(result)result.innerHTML=rosterResults(selection.sections,selection.players.length,filters.sort)};
  const renderPane=()=>{
+  overlay.dataset.rosterPane=mode;
   workspace.innerHTML=mode==='list'?rosterBody(team.id,filters,'league-roster',false):mode==='lineup'?lineupSquadPanel(team.id,squad):entryPanel(mode,team.id,filters.sort);
   overlay.querySelectorAll('[data-league-roster-mode]').forEach(button=>button.classList.toggle('active',button.dataset.leagueRosterMode===mode));
   if(mode==='list'){
