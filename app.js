@@ -1876,6 +1876,8 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  const age=Number(p.age)||28;
  const futureFit=Math.max(0,Math.min(1,(35-age)/12))*(1-projection.injuryRisk);
  const urgency=need*(.78+.22*contender);
+ // Avoid bidding against an established, younger in-house core for a redundant position.
+ if(String(teamId)!==String(record.previousTeamId)&&qualified.length>=(isPitcher?7:2)&&youthCover>=.5&&need<.48)return null;
  // Clubs without a meaningful role or sufficient financial headroom do not bid.
  if(need<.17&&String(teamId)!==String(record.previousTeamId))return null;
  const annualHeadroom=Math.max(0,available-compensation);
@@ -1892,7 +1894,8 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
   const withdrawal=record.clubWithdrawals?.[clubKey];
   if(withdrawal&&Number(withdrawal.untilYear)>=state.year)return null;
   const raise=Math.min(.45,Math.floor(rounds/2)*.055)*Math.max(.25,need);
-  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+raise)/1000000)*1000000);
+  const clubCeiling=Math.max(projection.floor,Math.round(projection.fairAnnual*(1.04+need*.35+contender*.10+futureFit*.08)/1000000)*1000000);
+  const annualSalary=Math.min(clubCeiling,Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+raise)/1000000)*1000000));
   const bonusRate=Math.max(.08,Math.min(.36,.12+need*.12+contender*.07-longTermRisk*.06));
   const signingBonus=Math.round(annualSalary*years*bonusRate/1000000)*1000000;
   const reserve=annualSalary+annualSalary*(years-1)*.25;
@@ -1975,6 +1978,12 @@ function negotiateFaContract(p,record){
  scheduleFaReview(p,record,3);
  const projection=faPlayerProjection(p),preferences=faPlayerPreferences(p);
  const proposed=new Map();
+ const withdrawnClubs=record.clubWithdrawals||{};
+ if(state.teams.length&&state.teams.every(t=>Number(withdrawnClubs[String(t.id)]?.untilYear)>=state.year)){
+  record.lastReviewYear=state.year;record.lastReviewDay=state.day;record.lastOutcome='협상 종료';
+  record.lastReason='모든 구단이 최종 제안 후 협상 철수';record.lastContactTeams=[];record.lastContactCount=0;
+  record.nextReviewDate=null;return false;
+ }
  for(const team of state.teams)for(let years=1;years<=projection.recommendedYears;years++){
   const offer=faBuildOffer(p,team.id,record,projection,years);
   if(offer)proposed.set(team.id+':'+offer.years,offer);
@@ -2017,6 +2026,13 @@ function negotiateFaContract(p,record){
  record.negotiationHistory.push(report);
  if(record.negotiationHistory.length>40)record.negotiationHistory.shift();
  const changed=!previousReport||JSON.stringify(previousReport.offers?.map(o=>[o.teamId,o.years,o.annualSalary,o.signingBonus]))!==JSON.stringify(report.offers.map(o=>[o.teamId,o.years,o.annualSalary,o.signingBonus]));
+ if(Number(record.negotiationRounds)>=5){
+  for(const o of report.offers){
+   const key=String(o.teamId);
+   const repeats=(record.negotiationHistory||[]).slice(-4).filter(h=>(h.offers||[]).some(x=>String(x.teamId)===key&&!x.accepted&&x.years===o.years&&x.annualSalary===o.annualSalary&&x.signingBonus===o.signingBonus));
+   if(!o.accepted&&repeats.length>=3)record.clubWithdrawals[key]={untilYear:state.year,reason:'최종 제안 거절 및 협상 철수',round:record.negotiationRounds};
+  }
+ }
  if(accepted.length){
   const offer=accepted[0];
   if(faSettleAcceptedOffer(p,record,offer)){record.lastOutcome='계약 체결';record.lastReason='선수·구단 조건 합의';report.signedTeamId=offer.teamId;return true;}
