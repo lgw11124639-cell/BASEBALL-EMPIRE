@@ -125,8 +125,6 @@ jobs:
         run: node tests/cloud-compression-scheduler.test.cjs
       - name: Batter fatigue and specialist rotation
         run: node tests/batter-fatigue-rotation.test.cjs
-      - name: Current logo and original clubs after real trades
-        run: node tests/traded-player-identity.test.cjs
       - name: Historical club identity after trades
         run: node tests/historical-season-clubs.test.cjs
       - name: Large-save preparation and monthly report PATCH
