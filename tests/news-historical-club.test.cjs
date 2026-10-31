@@ -1,0 +1,26 @@
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+const gameContext=require('./helpers/game-context.cjs');
+const c=gameContext();
+vm.runInContext(`state=world(0);state.year=2039;state.day=314;state.players=[{id:1,name:'서준혁',teamId:0}];state.clubNotices=[];
+clubNotice('해외 진출','서준혁 포스팅 자격 검토','서준혁의 해외 진출 검토',[0],[1]);
+const posting=state.clubNotices.at(-1);
+state.day=316;state.players[0].teamId=5;
+clubNotice('FA 계약','서준혁 FA 협상 합의','서준혁 계약 합의',[0,5],[1]);
+const signing=state.clubNotices.at(-1);`,c);
+const format=expression=>vm.runInContext(expression,c);
+assert.equal(format('beArticleTeamPlayerNames(posting.title,posting)'),'로열스 서준혁 포스팅 자격 검토');
+assert.equal(format('beArticleTeamPlayerNames(posting.body,posting)'),'로열스 서준혁의 해외 진출 검토');
+assert.equal(format('beArticleTeamPlayerNames(signing.title,signing)'),'이글스 서준혁 FA 협상 합의');
+// Existing saves have event club IDs but no new publication snapshots.
+vm.runInContext(`const legacy={players:[1],teams:[0]};const ambiguous={players:[1],teams:[0,5]};`,c);
+assert.equal(format("beArticleTeamPlayerNames('서준혁 포스팅 자격 검토',legacy)"),'로열스 서준혁 포스팅 자격 검토');
+assert.equal(format("beArticleTeamPlayerNames('서준혁 이적',ambiguous)"),'서준혁 이적','do not guess a historical side from current membership');
+assert.equal(format("beArticleTeamPlayerNames('로열스 서준혁 포스팅 자격 검토',signing)"),'로열스 서준혁 포스팅 자격 검토','preserve an explicitly recorded club');
+const saved=format('JSON.stringify(posting)');
+vm.runInContext("state.players[0].teamId=2;state.players[0].name='개명 선수';state.teams[0].name='변경 구단'",c);
+assert.equal(format('beArticleTeamPlayerNames(posting.title,posting)'),'로열스 서준혁 포스팅 자격 검토');
+vm.runInContext('state.players=[]',c);
+assert.equal(format('beArticleTeamPlayerNames(posting.title,posting)'),'로열스 서준혁 포스팅 자격 검토','retired/removed players retain publication identity');
+assert.equal(format('JSON.stringify(posting)'),saved,'rendering does not rewrite saved articles');
+console.log('PASS: pre-transfer overseas news, post-transfer FA, legacy clubs, ambiguous events and immutable publication identity');

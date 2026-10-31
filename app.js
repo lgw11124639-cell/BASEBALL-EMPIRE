@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-news39';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-news40';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
 function ballpark(team){return BALLPARKS[team?.id]||((team?.city||'구단')+' 야구장')}
@@ -646,7 +646,7 @@ function publishMajorFaArticle(p,from,to,contract){
  clubNotice('FA 특집',headline,article,[from,to],[p.id]);
  state.majorFaArticleKeys[key]=true;
 }
-function clubNotice(kind,title,body,teams,players){if(!state.clubNotices)state.clubNotices=[];state.clubNotices.push({id:(state.clubNoticeSeq=(state.clubNoticeSeq||0)+1),day:state.day,year:state.year,kind,title,body,teams,players});const rosterKinds=['방출','영입','트레이드','FA 계약','1군 콜업','1군 말소','1군 등록','부상자 명단','웨이버','육성선수 등록'];if(rosterKinds.some(k=>String(kind).includes(k))){state.clubTransactionArchive=state.clubTransactionArchive||{};const year=String(state.year);state.clubTransactionArchive[year]=state.clubTransactionArchive[year]||[];state.clubTransactionArchive[year].push({...state.clubNotices[state.clubNotices.length-1]})}if(state.clubNotices.length>1500)state.clubNotices.shift()}
+function clubNotice(kind,title,body,teams,players){if(!state.clubNotices)state.clubNotices=[];const playerSnapshots=(players||[]).map(id=>{const p=state.players.find(x=>String(x.id)===String(id));if(!p)return null;const team=state.teams.find(t=>String(t.id)===String(p.teamId));return {id:p.id,name:p.name,teamId:p.teamId,teamName:team?.name||''}}).filter(Boolean);state.clubNotices.push({playerSnapshots,id:(state.clubNoticeSeq=(state.clubNoticeSeq||0)+1),day:state.day,year:state.year,kind,title,body,teams,players});const rosterKinds=['방출','영입','트레이드','FA 계약','1군 콜업','1군 말소','1군 등록','부상자 명단','웨이버','육성선수 등록'];if(rosterKinds.some(k=>String(kind).includes(k))){state.clubTransactionArchive=state.clubTransactionArchive||{};const year=String(state.year);state.clubTransactionArchive[year]=state.clubTransactionArchive[year]||[];state.clubTransactionArchive[year].push({...state.clubNotices[state.clubNotices.length-1]})}if(state.clubNotices.length>1500)state.clubNotices.shift()}
 function reviewUnsignedFaMarket(){
  if(!state.faMarket?.length)return;
  for(const record of state.faMarket){
@@ -2652,10 +2652,16 @@ function gameBroadcastArticle(g){
 function beArticleTeamPlayerNames(value,notice){
  let result=String(value||'');
  if(!notice||!Array.isArray(notice.players)||!notice.players.length)return result;
- const players=notice.players.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(p=>p&&p.name).sort((a,b)=>b.name.length-a.name.length);
+ // Historical headlines must never acquire a player's current club after a transfer.
+ const players=notice.players.map(id=>(notice.playerSnapshots||[]).find(p=>String(p.id)===String(id))||state.players.find(p=>String(p.id)===String(id))).filter(p=>p&&p.name).sort((a,b)=>b.name.length-a.name.length);
  for(const p of players){
-  const team=state.teams.find(t=>String(t.id)===String(p.teamId))||((notice.teams||[]).length===1?state.teams.find(t=>String(t.id)===String(notice.teams[0])):null);
-  const prefix=String(team?.name||'').trim();
+  const snapshot=(notice.playerSnapshots||[]).find(x=>String(x.id)===String(p.id));
+  const teamIds=notice.teams||[];
+  // Old saves retain the event's clubs. A single club is authoritative;
+  // multi-club events without a snapshot cannot identify each player's side.
+  const teamId=snapshot?snapshot.teamId:teamIds.length===1?teamIds[0]:null;
+  const team=teamId==null?null:state.teams.find(t=>String(t.id)===String(teamId));
+  const prefix=String(snapshot?.teamName||team?.name||'').trim();
   if(!prefix||!p.name)continue;
   const parts=result.split(p.name);
   if(parts.length<2)continue;
@@ -2664,7 +2670,7 @@ function beArticleTeamPlayerNames(value,notice){
    const before=parts[n-1],preceding=rebuilt.trimEnd();
    const last=before.slice(-1);
    const boundary=!last||!/[가-힣A-Za-z0-9]/.test(last);
-   rebuilt+=(boundary&&!preceding.endsWith(prefix)?prefix+' ':'')+p.name+parts[n];
+   rebuilt+=(boundary&&![prefix,...state.teams.map(t=>t.name)].some(name=>name&&preceding.endsWith(name))?prefix+' ':'')+p.name+parts[n];
   }
   result=rebuilt;
  }

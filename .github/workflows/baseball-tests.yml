@@ -81,6 +81,8 @@ jobs:
         run: node tests/fa-market-simulation.test.cjs
       - name: FA review dates and year rollover
         run: node tests/fa-schedule.test.cjs
+      - name: Historical article club identity
+        run: node tests/news-historical-club.test.cjs
       - name: News publication chronology
         run: node tests/news-order.test.cjs
       - name: Roster combined filters
