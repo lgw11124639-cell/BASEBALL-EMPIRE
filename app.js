@@ -1770,17 +1770,18 @@ function faPlayerPreferences(p){
 }
 function faPlayerProjection(p){
  const floor=state.year>=2027?33000000:30000000,isPitcher=p.position==='P';
- const years=Object.entries(state.history?.seasons||{}).filter(([y])=>Number(y)<=state.year&&Number(y)>=state.year-2);
+ const years=Object.entries(state.history?.seasons||{}).filter(([y])=>Number(y)<=state.year&&Number(y)>=state.year-3);
  const lines=new Map(years.map(([y,s])=>[Number(y),(s.players||[]).find(x=>String(x.id)===String(p.id))]).filter(([,line])=>line));
- if(!lines.has(Number(state.year)))lines.set(Number(state.year),p);
- const keys=['atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','plateAppearances','inningsPitched','earnedRuns','games','gamesStarted','sacrificeFlies'];
+ if(!lines.has(Number(state.year))&&((Number(p.inningsPitched)||0)>=5||(Number(p.atBats)||0)>=30))lines.set(Number(state.year),p);
+ if(!lines.size)lines.set(Number(state.year),p);
+ const keys=['atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','plateAppearances','inningsPitched','earnedRuns','games','gamesStarted','sacrificeFlies','saves','holds'];
  const stats=Object.fromEntries(keys.map(k=>[k,0]));let weight=0;
  for(const [year,line] of lines){const w=Math.pow(.65,Number(state.year)-year);weight+=w;for(const k of keys)stats[k]+=(Number(line[k])||0)*w;}
  const sample=isPitcher?stats.inningsPitched:stats.atBats+stats.walks+stats.hitByPitch;
  const careerGames=Number(p.careerStats?.games??p.career?.games??p.careerGames??0);
  const careerIP=Number(p.careerStats?.inningsPitched??p.career?.inningsPitched??0);
  const experienceSample=Math.max(sample,isPitcher?Math.min(100,careerIP*.20,careerGames*.8):Math.min(350,careerGames*1.5));
- const starter=isPitcher&&(stats.gamesStarted/Math.max(1,weight)>=10||p.profile?.baseball?.role==='선발');
+ const starter=isPitcher&&(stats.gamesStarted/Math.max(1,weight)>=10||(stats.gamesStarted===0&&p.profile?.baseball?.role==='선발'&&stats.saves<5));
  const workload=isPitcher?(starter?150:60):550;
  const confidence=Math.min(1,experienceSample/(isPitcher?(starter?100:40):350));
  const availability=Math.min(1.2,sample/Math.max(1,weight)/workload);
@@ -1804,7 +1805,8 @@ function faPlayerProjection(p){
   relative=league>0?Math.max(.35,Math.min(2.5,Math.pow(actual/league,1.6))):1;
  }
  const scouting=Math.max(.25,Math.min(2.2,(bePlayerEvaluation(p)-30)/35));
- const contribution=(scouting*(1-confidence*.75)+relative*availability*confidence*.75)*(.45+.55*confidence);
+ const bullpenImpact=isPitcher&&!starter?Math.min(1.9,1+Math.max(0,stats.saves/Math.max(1,weight)-8)*.018+Math.max(0,stats.holds/Math.max(1,weight)-12)*.008):1;
+ const contribution=(scouting*(1-confidence*.75)+relative*availability*confidence*.75)*(.45+.55*confidence)*bullpenImpact;
  const injury=p.profile?.injury||p.injury||{};
  const recordedInjuries=[...(Array.isArray(p.injuryHistory)?p.injuryHistory:[]),...(Array.isArray(p.profile?.injuryHistory)?p.profile.injuryHistory:[])].filter(x=>Number(x.year)>=state.year-2&&Number(x.year)<=state.year);
  const recentInjuries=[...new Map(recordedInjuries.map(x=>[[x.year,x.day??x.occurredDay,x.type].join(':'),x])).values()];
