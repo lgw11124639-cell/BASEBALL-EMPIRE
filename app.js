@@ -1999,8 +1999,12 @@ function seasonProgressPanel(){
  // Preview mode deliberately ignores completed-game totals without modifying saved results.
  const calendarStart=new Date(d.getFullYear(),0,1,12),calendarEnd=new Date(d.getFullYear()+1,0,1,12);
  const calendarRegularCount=new Map();
+ const previewCacheKey=state.year+':'+state.day+':'+state.teamId+':'+played;
+ if(seasonProgressPanel.previewCacheKey!==previewCacheKey){seasonProgressPanel.previewCacheKey=previewCacheKey;seasonProgressPanel.previewPairs=new Map();}
  for(let date=new Date(calendarStart);date<calendarEnd;date.setDate(date.getDate()+1)){
-  const day=state.day+Math.round((date-d)/86400000),pairs=scheduledPairs(day,true);
+  const day=state.day+Math.round((date-d)/86400000);
+  let pairs=seasonProgressPanel.previewPairs.get(day);
+  if(!pairs){pairs=scheduledPairs(day,true);seasonProgressPanel.previewPairs.set(day,pairs);}
   const mine=pairs.find(([a,b])=>a===state.teamId||b===state.teamId);
   if(mine && (calendarRegularCount.get(state.teamId)||0)<144 && !(played>=144&&date>d)){
    calendarRegularCount.set(state.teamId,(calendarRegularCount.get(state.teamId)||0)+1);
