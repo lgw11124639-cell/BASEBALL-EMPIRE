@@ -1886,6 +1886,9 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
   const average=projection.projections.slice(0,years).reduce((n,x)=>n+x,0)/years;
   const valueFactor=projection.projections[0]>0?average/projection.projections[0]:1;
   const rounds=Number(record.negotiationRounds)||0;
+  const clubKey=String(teamId);
+  const withdrawal=record.clubWithdrawals?.[clubKey];
+  if(withdrawal&&Number(withdrawal.untilYear)>=state.year)return null;
   const raise=Math.min(.32,Math.floor(rounds/4)*.035)*Math.max(.25,need);
   const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+raise)/1000000)*1000000);
   const bonusRate=Math.max(.08,Math.min(.36,.12+need*.12+contender*.07-longTermRisk*.06));
@@ -1966,7 +1969,7 @@ function scheduleFaReview(p,record,delay){
 function negotiateFaContract(p,record){
  if(p.level!=='FA대기'||record.signedYear||p.retired||p.foreignPlayer)return false;
  if(record.lastReviewYear===state.year&&record.lastReviewDay===state.day)return false;
- scheduleFaReview(p,record,1);
+ scheduleFaReview(p,record,3);
  const projection=faPlayerProjection(p),preferences=faPlayerPreferences(p);
  const proposed=new Map();
  for(const team of state.teams)for(let years=1;years<=projection.recommendedYears;years++){
@@ -1991,6 +1994,21 @@ function negotiateFaContract(p,record){
  const summaries=new Map();
  for(const offer of offers){const previous=summaries.get(offer.teamId);if(!previous||(offer.accepted&&!previous.accepted)||(offer.accepted===previous.accepted&&offer.utility>previous.utility))summaries.set(offer.teamId,offer);}
  const report={year:state.year,day:state.day,round:record.negotiationRounds,proposalCount:offers.length,offers:[...summaries.values()].map(({utility,...offer})=>offer)};
+ // Front offices have finite negotiation patience. Withdraw after repeated rejected offers,
+ // especially when the roster need is weak; the former club receives a longer window.
+ record.clubWithdrawals=record.clubWithdrawals||{};
+ if(Number(record.negotiationRounds)>=6){
+  const prior=record.negotiationHistory||[];
+  for(const o of offers){
+   const club=String(o.teamId);
+   if(o.accepted||record.clubWithdrawals[club])continue;
+   const rejections=prior.slice(-10).filter(h=>(h.offers||[]).some(x=>String(x.teamId)===club&&!x.accepted)).length;
+   const limit=String(o.teamId)===String(record.previousTeamId)?12:o.need<.35?4:8;
+   if(rejections>=limit){
+    record.clubWithdrawals[club]={untilYear:state.year,reason:'반복된 조건 불일치로 협상 철수',round:record.negotiationRounds};
+   }
+  }
+ }
  record.negotiationHistory=record.negotiationHistory||[];
  const previousReport=record.negotiationHistory[record.negotiationHistory.length-1];
  record.negotiationHistory.push(report);
