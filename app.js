@@ -3909,7 +3909,22 @@ let lastRenderPreparedState=null;function newsHub(){
  const selectedClub=window.beNewsClub==='all'?'all':String(window.beNewsClub??'all');
  const clubId=n=>{const ids=(n.teams||n.teamIds||[]).map(String);if(ids.length)return ids;return (n.players||[]).map(id=>state.players.find(p=>String(p.id)===String(id))?.teamId).filter(x=>x!=null).map(String);};
  const classify=n=>/FA|포스팅|해외 진출|트레이드|방출|웨이버|영입/.test(String(n.kind))?'transfer':/국가대표|WBC|올림픽|아시안게임/.test(String(n.kind))?'national':'club';
- const entries=[...notices.map(n=>({type:'notice',day:Number(n.day)||0,year:Number(n.year)||0,n,category:classify(n)})),...games.map(g=>({type:'game',day:Number(g.day)||0,year:Number(state.year),g,category:'game'}))].filter(x=>(category==='all'||x.category===category)&&(category!=='club'||selectedClub==='all'||(x.type==='notice'&&clubId(x.n).includes(selectedClub)))).sort((a,b)=>b.year-a.year||b.day-a.day).slice(0,300);
+ // Show one current negotiation report per player. Keep historical records intact for the FA panel.
+ const signedFaPlayers=new Set(notices.filter(n=>['FA 계약','FA 잔류','FA 특집'].includes(String(n.kind))).flatMap(n=>(n.players||[]).map(String)));
+ const latestNegotiations=new Map();
+ for(const n of notices){
+  if(String(n.kind)!=='FA 협상'||!(n.players||[]).length)continue;
+  const key=String(n.players[0]);
+  const previous=latestNegotiations.get(key);
+  if(!previous||Number(n.day)>Number(previous.day)||(Number(n.day)===Number(previous.day)&&Number(n.id)>Number(previous.id)))latestNegotiations.set(key,n);
+ }
+ const visibleNotices=notices.filter(n=>{
+  if(String(n.kind)!=='FA 협상'||!(n.players||[]).length)return true;
+  const key=String(n.players[0]);
+  return !signedFaPlayers.has(key)&&latestNegotiations.get(key)===n;
+ });
+ const priority=n=>['FA 계약','FA 잔류','FA 특집'].includes(String(n?.kind))?2:0;
+ const entries=[...visibleNotices.map(n=>({type:'notice',day:Number(n.day)||0,year:Number(n.year)||0,n,category:classify(n)})),...games.map(g=>({type:'game',day:Number(g.day)||0,year:Number(state.year),g,category:'game'}))].filter(x=>(category==='all'||x.category===category)&&(category!=='club'||selectedClub==='all'||(x.type==='notice'&&clubId(x.n).includes(selectedClub)))).sort((a,b)=>b.year-a.year||b.day-a.day||(b.type==='notice'?priority(b.n):0)-(a.type==='notice'?priority(a.n):0)).slice(0,300);
  const tabs=[['all','전체'],['game','경기'],['transfer','이적·FA'],['club','구단'],['national','국가대표']];
  const clubTabs=category==='club'?'<div class="be-news-club-tabs"><button type="button" data-news-club="all"'+(selectedClub==='all'?' class="active"':'')+'>전체 구단</button>'+state.teams.map(t=>'<button type="button" data-news-club="'+esc(t.id)+'"'+(selectedClub===String(t.id)?' class="active"':'')+'>'+esc(t.name)+'</button>').join('')+'</div>':'';
  return '<section class="dashboard-section"><div class="section-title"><div><span class="section-kicker">BASEBALL EMPIRE SPORTS</span><h2>야구 뉴스</h2></div></div><div class="league-pane-nav">'+tabs.map(([key,label])=>'<button type="button" data-news-category="'+key+'"'+(category===key?' class="active"':'')+'>'+label+'</button>').join('')+'</div>'+clubTabs+'<div class="be-report-list baseball-news-list">'+(entries.length?entries.map(item=>item.type==='game'?'<button type="button" class="be-report-item" data-game-article-day="'+Number(item.g.day)+'" data-game-article-away="'+Number(item.g.away)+'"><span><small>KBO 경기 · '+esc(seasonDateLabel(item.day))+'</small><strong>'+esc(newsStory(item.g).title)+'</strong></span><span>›</span></button>':'<button type="button" class="be-report-item" data-club-notice="'+esc(item.n.id)+'"><span><small>'+esc(item.n.kind)+' · '+esc(seasonDateLabel(item.day))+'</small><strong>'+esc(beArticleTeamPlayerNames(item.n.title,item.n))+'</strong></span><span>›</span></button>').join(''):'<p class="profile-note">해당 기사가 없습니다.</p>')+'</div></section>';
