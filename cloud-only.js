@@ -836,11 +836,13 @@ export async function cloudSave(state){
   const deltaStarted=performance.now();
   const delta=incrementalSaveSupported?makeCloudDelta(acknowledgedWireSave,payload):null;
   const deltaJson=delta?JSON.stringify(delta):null;
+  const deltaEncodedAt=performance.now();
   // Estimate full size without another multi-megabyte JSON.stringify.
   // The estimate is conservative for normal ASCII keys and compressed shards.
   const fullJsonLength=delta?Object.entries(payload).reduce((n,[key,value])=>
    n+JSON.stringify(key).length+1+(typeof value==='string'?value.length+2:JSON.stringify(value)?.length||4)+1,1):0;
   const useDelta=!!deltaJson&&deltaJson.length<fullJsonLength*.85;
+  window.beCloudDeltaPrepTiming={compareAndEncodeMs:+(deltaEncodedAt-deltaStarted).toFixed(1),fullSizeEstimateMs:+(performance.now()-deltaEncodedAt).toFixed(1),changedFields:delta?Object.keys(delta.set).length:0,deltaBytes:deltaJson?.length||0,fullBytesEstimated:fullJsonLength};
   // Record what actually changes; the full snapshot size is not the upload size.
   // Field-level diagnostics identify whether a finer-grained protocol is worthwhile.
   // A field-by-field breakdown of the actual PATCH payload. Avoid re-stringifying
