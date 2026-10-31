@@ -306,11 +306,13 @@ function pitchingArsenal(p){
   unique.add('직구');
   a.usage=null;
  }
- const minimum=2;
- const candidates=PITCH_TYPES.filter(name=>!unique.has(name)).map(name=>({name,grade:Math.max(20,base+ri(r,-23,14)),command:Math.max(20,control+ri(r,-18,12))})).sort((x,y)=>y.grade-x.grade);
- if(!a.pitches.length){a.pitches.push({name:'직구',grade:Math.max(20,base+ri(r,-7,7))});unique.add('직구');}
- const desired=2+Math.floor(r()*2);
- while(a.pitches.length<Math.min(5,desired)&&candidates.length){const next=candidates.shift();if(unique.has(next.name))continue;a.pitches.push(next);unique.add(next.name);}
+ // 구종 후보 생성·정렬은 최초 구종 구성에만 필요하다.
+ // 기존 선수의 구종이 완성된 경우 매 투구마다 재계산하지 않는다.
+ if(a.pitches.length<2){
+  const candidates=PITCH_TYPES.filter(name=>!unique.has(name)).map(name=>({name,grade:Math.max(20,base+ri(r,-23,14)),command:Math.max(20,control+ri(r,-18,12))})).sort((x,y)=>y.grade-x.grade);
+  const desired=2+Math.floor(r()*2);
+  while(a.pitches.length<Math.min(5,desired)&&candidates.length){const next=candidates.shift();if(unique.has(next.name))continue;a.pitches.push(next);unique.add(next.name);}
+ }
  for(const x of a.pitches){if(!Number.isFinite(Number(x.command)))x.command=Math.max(20,control+ri(r,-16,12));}
  if(!Array.isArray(a.usage)||a.usage.length!==a.pitches.length||a.usage.some(x=>!unique.has(x.name)||!Number.isFinite(Number(x.percent)))){
   const weights=a.pitches.map(x=>Math.max(10,(Number(x.grade)||40)-25));
