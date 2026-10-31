@@ -83,3 +83,5 @@ jobs:
         run: node tests/roster-filters.test.cjs
       - name: Manager plan cache and live evaluations
         run: node tests/manager-plan-cache.test.cjs
+      - name: Lossless training archive packing and upload recovery
+        run: node tests/cloud-training-reports.test.cjs

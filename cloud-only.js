@@ -321,7 +321,7 @@ async function unpackAmateurBuckets(state){
  return state;
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players'];
+const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
@@ -770,7 +770,7 @@ export async function cloudSave(state){
     incrementalSaveSupported=false;
     result=await guardedUpload('PUT',payload);
    }
-  }else result=await call('/v2/saves/main','PUT',payload,revision);
+  }else result=await guardedUpload('PUT',payload);
   window.beCloudSaveStages={...window.beCloudPackingStages,deltaMs:+(uploadStarted-deltaStarted).toFixed(1),uploadMs:+(performance.now()-uploadStarted).toFixed(1),totalMs:+(performance.now()-packStarted).toFixed(1),method:window.beCloudSaveTiming?.method||null,uploadBytes:window.beCloudSaveTiming?.transferred||0};
   window.beCloudDeltaTiming.actualMethod=window.beCloudSaveTiming?.method||null;
   window.beCloudDeltaTiming.actualUploadBytes=window.beCloudSaveTiming?.transferred||0;
