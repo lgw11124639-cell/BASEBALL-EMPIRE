@@ -1768,9 +1768,12 @@ function faPlayerProjection(p){
  const stats=Object.fromEntries(keys.map(k=>[k,0]));let weight=0;
  for(const [year,line] of lines){const w=Math.pow(.65,Number(state.year)-year);weight+=w;for(const k of keys)stats[k]+=(Number(line[k])||0)*w;}
  const sample=isPitcher?stats.inningsPitched:stats.atBats+stats.walks+stats.hitByPitch;
+ const careerGames=Number(p.careerStats?.games??p.career?.games??p.careerGames??0);
+ const careerIP=Number(p.careerStats?.inningsPitched??p.career?.inningsPitched??0);
+ const experienceSample=Math.max(sample,isPitcher?Math.min(100,careerIP*.20,careerGames*.8):Math.min(350,careerGames*1.5));
  const starter=isPitcher&&(stats.gamesStarted/Math.max(1,weight)>=10||p.profile?.baseball?.role==='선발');
  const workload=isPitcher?(starter?150:60):550;
- const confidence=Math.min(1,sample/(isPitcher?(starter?100:40):350));
+ const confidence=Math.min(1,experienceSample/(isPitcher?(starter?100:40):350));
  const availability=Math.min(1.2,sample/Math.max(1,weight)/workload);
  const peers=state.players.filter(x=>!x.foreignPlayer&&!x.retired&&!['방출','계약종료','FA대기','은퇴'].includes(x.level));
  const salaries=peers.filter(x=>String(x.id)!==String(p.id)).map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
@@ -1811,14 +1814,15 @@ function faPlayerProjection(p){
   retained*=Math.max(.35,Math.min(.995,1-Math.max(0,age-29)*.012-Math.pow(Math.max(0,age-35),2)*.006-injuryRisk*.12));
   projections.push(contribution*retained);
  }
- const horizon=confidence>=.65?5:confidence>=.35?3:1;
+ const horizon=confidence>=.65?5:confidence>=.35?3:careerGames>=250?3:1;
  let recommendedYears=1;
  for(let i=1;i<horizon;i++)if(injuryRisk<.55&&(projections[i]>=Math.max(.35,projections[0]*.60)||(confidence>.8&&injuryRisk<.3&&projections[i]>=.85)))recommendedYears=i+1;else break;
  // FA market benchmark: comparable established players rather than the entire league's median salary.
  const comparable=peers.filter(x=>x.position===p.position&&String(x.id)!==String(p.id)&&((isPitcher?(Number(x.inningsPitched)||0)>=35:(Number(x.plateAppearances)||Number(x.atBats)||0)>=180)));
  const comparableSalaries=comparable.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
  const reference=comparableSalaries.length>=3?comparableSalaries[Math.floor((comparableSalaries.length-1)*.65)]:salaries.length>=5?salaries[Math.floor((salaries.length-1)*.75)]:median;
- const fairAnnual=Math.max(floor,Math.round(reference*projections[0]/1000000)*1000000);
+ const priorSalary=Math.max(0,Number(p.salary)||0);
+ const fairAnnual=Math.max(floor,Math.round(reference*projections[0]/1000000)*1000000,Math.round(priorSalary*(.55+.25*confidence)/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
 function faBuildOffer(p,teamId,record,projection,requestedYears=null){
@@ -1859,7 +1863,7 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  const valueMultiplier=Math.max(.55,Math.min(1.65,.70+urgency*.54+contender*.13+futureFit*.12-projection.injuryRisk*.18));
  const longTermRisk=Math.max(0,(age-31)*.045+projection.injuryRisk*.45);
  const preferredYears=Math.max(1,Math.min(projection.recommendedYears,Math.round(1+need*1.5+futureFit*1.4+contender*.45-longTermRisk*2)));
- const maxYears=opportunity<.45?1:Math.max(1,Math.min(preferredYears,requestedYears||preferredYears));
+ const maxYears=Math.max(1,Math.min(preferredYears,requestedYears||preferredYears));
  for(let years=maxYears;years>=1;years--){
   const average=projection.projections.slice(0,years).reduce((n,x)=>n+x,0)/years;
   const valueFactor=projection.projections[0]>0?average/projection.projections[0]:1;
@@ -1985,7 +1989,7 @@ function negotiateFaContract(p,record){
   const top=actualBids[0],clubs=actualBids.map(o=>teamName(o.teamId));
   const lines=actualBids.map(o=>teamName(o.teamId)+' — '+o.years+'년 총액 '+won(o.totalValue)+' (연봉 '+won(o.annualSalary)+', 계약금 '+won(o.signingBonus)+') / 선수 희망 '+o.desiredYears+'년, 연봉 '+won(o.askingAnnual)+' / 거절 사유: '+o.reason);
   const headline='FA '+p.name+', '+actualBids.length+'개 구단 제안에도 협상 난항…최고 '+top.years+'년 '+won(top.totalValue);
-  const article='FA '+p.name+'을 두고 '+clubs.join(', ')+'이(가) 실제 계약을 제안했으나 아직 합의에 이르지 못했다. 구단별 협상 내역은 다음과 같다.\\n'+lines.join('\\n')+'\\n다음 협상 검토일: '+(record.nextReviewDate||'미정')+'.';
+  const article='FA '+p.name+'을 두고 '+clubs.join(', ')+'이(가) 실제 계약을 제안했으나 아직 합의에 이르지 못했다. 구단별 협상 내역은 다음과 같다.\n'+lines.join('\n')+'\n다음 협상 검토일: '+(record.nextReviewDate||'미정')+'.';
   clubNotice('FA 협상',headline,article,[...new Set([record.previousTeamId,...actualBids.map(o=>o.teamId)])],[p.id]);
  } else {
   clubNotice('FA 협상','FA '+p.name+', 구단 제안 없이 협상 대기','이번 검토에서는 실제 계약 제안이 접수되지 않았다. 선수는 미계약 상태로 다음 검토를 기다린다.',[record.previousTeamId],[p.id]);
