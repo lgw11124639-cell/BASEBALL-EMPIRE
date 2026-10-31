@@ -3749,7 +3749,8 @@ function nationalTeamPanel(){
 }
 let lastRenderPreparedState=null;function newsHub(){
  const seenNotices=new Set();
- const notices=[...(state.clubNotices||[]),...Object.values(state.clubTransactionArchive||{}).flat()].filter(n=>{if(!n||Number(n.year)!==Number(state.year))return false;const key=String(n.year)+':'+String(n.id);if(seenNotices.has(key))return false;seenNotices.add(key);return true;});
+ const internalReport=n=>/육성 보고|선수 육성|월간 운영보고|재정 보고|스카우트 보고|단장 보고|운영보고|훈련 보고|내부 보고|구단 주요 보고|연봉협상 보고/.test(String(n.kind||'')+' '+String(n.title||''));
+ const notices=[...(state.clubNotices||[]),...Object.values(state.clubTransactionArchive||{}).flat()].filter(n=>{if(!n||Number(n.year)!==Number(state.year)||internalReport(n))return false;const key=String(n.year)+':'+String(n.id);if(seenNotices.has(key))return false;seenNotices.add(key);return true;});
  const games=(state.gameResults||[]).filter(g=>Number.isFinite(Number(g.day))&&state.teams?.[g.away]&&state.teams?.[g.home]);
  const category=window.beNewsCategory||'all';
  const selectedClub=window.beNewsClub==='all'?'all':String(window.beNewsClub??'all');
