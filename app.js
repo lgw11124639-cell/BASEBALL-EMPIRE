@@ -1359,12 +1359,12 @@ function retireUnsignedReleasedPlayers(){
  for(const p of state.players){
   if(p.retired||p.foreignPlayer||!['방출','계약종료','FA대기'].includes(p.level))continue;
   const since=p.level==='FA대기'?Number(p.faMarketSince):Number(p.releaseYear);
-  if(!Number.isFinite(since)||since<=0||state.year-since<2)continue;
+  if(!Number.isFinite(since)||since<=0||state.year-since<((Number(p.age)||0)>=38?1:2))continue;
   // A long spell without a club increases retirement risk, but is not an automatic retirement.
   const age=Number(p.age)||0,yearsUnsigned=state.year-since;
   const appearances=Number(p.careerStats?.games)||Number(p.games)||0;
   const productive=Number(p.careerStats?.hits||0)>=500||Number(p.careerStats?.inningsPitched||0)>=500;
-  const risk=age<30&&yearsUnsigned<5?0:Math.min(.90,Math.max(0,(age>=40?.35:age>=35?.16:age>=30?.045:0)+(yearsUnsigned-2)*.09+(appearances<50?.08:0)-(productive?.12:0)));
+  const risk=age<30&&yearsUnsigned<5?0:Math.min(.90,Math.max(0,(age>=42?.52:age>=40?.35:age>=38?.22:age>=35?.16:age>=30?.045:0)+(yearsUnsigned-2)*.09+(appearances<50?.08:0)-(productive?.12:0)));
   // Stable per-player annual draw, independent of external simulation helpers.
   const seed=((Number(p.id)||1)*7919+state.year*104729)>>>0;
   const draw=((Math.imul(seed^seed>>>16,2246822507)>>>0)%1000000)/1000000;
