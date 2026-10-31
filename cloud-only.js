@@ -315,9 +315,20 @@ async function packLeagueShards(state){
    const descriptors=[];
    for(const [name,value] of Object.entries(node)){
     const isArray=Array.isArray(value),count=isArray?Math.ceil(value.length/leagueShardSize):1;
-    const dayLog=isArray&&name==='gameLog'&&value.every((row,i)=>row&&typeof row==='object'&&!Array.isArray(row)&&Number.isSafeInteger(row.day)&&row.day>=0&&(i===0||row.day>=value[i-1].day));
+    let dayLog=isArray&&name==='gameLog';
+    const dayRanges=[];
     if(dayLog){
-     const days=[];for(let at=0;at<value.length;){const day=value[at].day;let end=at+1;while(end<value.length&&value[end].day===day)end++;const length=end-at,chunks=Math.ceil(length/leagueShardSize);days.push({day,count:chunks,length});for(let i=0;i<chunks;i++)parts.push({name:leagueDayName(field,season,name,day,i),raw:JSON.stringify(value.slice(at+i*leagueShardSize,Math.min(end,at+(i+1)*leagueShardSize)))});at=end;}
+     let priorDay=-1;
+     for(let i=0;i<value.length;i++){
+      const row=value[i],day=row?.day;
+      if(!row||typeof row!=='object'||Array.isArray(row)||!Number.isSafeInteger(day)||day<0||day<priorDay){dayLog=false;break;}
+      if(day!==priorDay)dayRanges.push({day,start:i,end:i+1});
+      else dayRanges[dayRanges.length-1].end=i+1;
+      priorDay=day;
+     }
+    }
+    if(dayLog){
+     const days=[];for(const {day,start,end} of dayRanges){const length=end-start,chunks=Math.ceil(length/leagueShardSize);days.push({day,count:chunks,length});for(let i=0;i<chunks;i++)parts.push({name:leagueDayName(field,season,name,day,i),raw:JSON.stringify(value.slice(start+i*leagueShardSize,Math.min(end,start+(i+1)*leagueShardSize)))});}
      descriptors.push({name,kind:'dayLog',length:value.length,count:days.reduce((n,d)=>n+d.count,0),days});continue;
     }
     const splitRows=isArray&&['players','prospects'].includes(name);
