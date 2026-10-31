@@ -296,6 +296,16 @@ function pitchingArsenal(p){
  const a=b.arsenal;
  if(!Array.isArray(a.pitches))a.pitches=[];
  const unique=new Set();a.pitches=a.pitches.filter(x=>x&&PITCH_TYPES.includes(x.name)&&!unique.has(x.name)&&(unique.add(x.name),true));
+ // 직구는 모든 투수의 필수 기본 구종이다. 기존 세이브의 누락도 복원한다.
+ if(!unique.has('직구')){
+  if(a.pitches.length>=5){
+   const removable=a.pitches.reduce((x,y)=>Number(x.grade)<Number(y.grade)?x:y);
+   a.pitches=a.pitches.filter(x=>x!==removable);
+  }
+  a.pitches.unshift({name:'직구',grade:Math.max(20,base+ri(r,-7,7)),command:Math.max(20,control+ri(r,-16,12))});
+  unique.add('직구');
+  a.usage=null;
+ }
  const minimum=2;
  const candidates=PITCH_TYPES.filter(name=>!unique.has(name)).map(name=>({name,grade:Math.max(20,base+ri(r,-23,14)),command:Math.max(20,control+ri(r,-18,12))})).sort((x,y)=>y.grade-x.grade);
  if(!a.pitches.length){a.pitches.push({name:'직구',grade:Math.max(20,base+ri(r,-7,7))});unique.add('직구');}
@@ -1295,7 +1305,7 @@ function waiverMarketDay(){const date=seasonDate(state.day),month=date.getMonth(
 function runBaseballInnings(away,home,r,options={}){const maxInnings=options.international?Infinity:(options.maxInnings||12);for(let inning=1;inning<=maxInnings;inning++){if(!options.historical)gameInjuryCheck(away,inning,r);managerSubstitutions(away,inning,home.runs-away.runs,r);home.opponentRuns=away.runs;const ar=playHalf(away,home,inning,r);away.innings.push(ar);if(inning>=9&&home.runs>away.runs){home.innings.push(null);break}if(!options.historical)gameInjuryCheck(home,inning,r);managerSubstitutions(home,inning,away.runs-home.runs,r);away.opponentRuns=home.runs;const hr=playHalf(home,away,inning,r,inning>=9);home.innings.push(hr);if(inning>=9&&home.runs!==away.runs)break}return {awayRuns:away.runs,homeRuns:home.runs,awayInnings:away.innings,homeInnings:home.innings}}
 function simulateLeagueDay(){for(const p of state.players){if(p.level==='군복무'){p.level='2군';if(p.military)p.military.status='폐지';p.militaryStatus='해당 없음'}}financeMonth();waiverMarketDay();const waiverInconsistencies=activeRosterConsistency();if(waiverInconsistencies.length){for(const id of waiverInconsistencies){const p=state.players.find(x=>String(x.id)===String(id));if(p)p.level='웨이버 대기'}}releasedPlayerSigningDay();retireUnsignedReleasedPlayers();highSchoolBaseballDay();collegeBaseballDay();independentBaseballDay();developmentScoutDay();calendarNotice();activateDraftRookies();backfillMinorLeague();minorLeagueDay();foreignMidseasonDay();coachDevelopmentDay(false);medicalRosterDay();aiRosterOpportunityDay();countDailyFaRegistration();draftScoutReport();prospectInterestNews();officeDraft();frontOfficeDay();ensureSeasonCalendar();if(!state.gameResults){state.gameResults=[];if(typeof window!=='undefined')window.beGameResultsRevision=(window.beGameResultsRevision||0)+1;}recordPlayerDevelopmentSnapshot();for(const p of state.players){if(p.position!=='P')continue;const b=playerBaseball(p);b.fatigue=Math.max(0,(Number(b.fatigue)||0)-(Number(b.recovery)||10));const a=pitchingArsenal(p);const rrGrowth=rng(((p.id||1)*2039+state.day*173+state.year*17)>>>0);if(p.age<=36&&rrGrowth()<.0015){const trained=a.pitches[Math.floor(rrGrowth()*a.pitches.length)];if(trained){trained.grade=(Number(trained.grade)||50)+1;trained.command=(Number(trained.command)||50)+1;a.usage=null;}}if(a.pitches.length>2&&p.age<=34&&rrGrowth()<.00025*Math.max(.5,Math.min(1.6,.75+((Number((p.level==='2군'?officeAI(p.teamId).minorPitchCoach:officeAI(p.teamId).pitchCoach)?.skill)||55)-50)*.018))){const replaceable=a.pitches.filter(x=>x.name!=='직구');const weakest=replaceable.length?replaceable.reduce((x,y)=>Number(x.grade)<Number(y.grade)?x:y):null;const alternatives=PITCH_TYPES.filter(x=>x!=='직구'&&!a.pitches.some(y=>y.name===x));if(alternatives.length&&weakest){const pool=alternatives.filter(x=>x!=='너클볼'||rrGrowth()<.005);if(pool.length){const name=pool[Math.floor(rrGrowth()*pool.length)];a.pitches=a.pitches.filter(x=>x!==weakest);a.pitches.push({name,grade:Math.max(25,(Number(weakest.grade)||45)-5),command:Math.max(20,(Number(weakest.command)||45)-7)});a.usage=null;recordPitchDevelopment(p,'교체',name,weakest.name);}}}// 속구를 잃은 강속구 투수도 코치 지도 아래 직구를 재습득할 수 있다.
  // 과거 직구를 교체한 저장 데이터도 그대로 유지하며, 성공 시에만 구종을 추가/교체한다.
- if(p.age<=36&&Number(a.velocity)>=145&&!a.pitches.some(x=>/^(직구|투심|커터|싱커)$/.test(x.name))){
+ if(false && p.age<=36&&Number(a.velocity)>=145&&!a.pitches.some(x=>/^(직구|투심|커터|싱커)$/.test(x.name))){
   const staff=officeAI(p.teamId),minor=p.level==='2군',coach=minor?staff.minorPitchCoach:staff.pitchCoach;
   const coachSkill=Number(coach?.skill)||55;
   const fastballChance=.00075*Math.max(.5,Math.min(1.7,1+(coachSkill-55)*.018))*(p.age<=30?1.3:.8);
