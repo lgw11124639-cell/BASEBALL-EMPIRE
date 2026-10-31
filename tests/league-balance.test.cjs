@@ -9,7 +9,9 @@ const source = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
 const start = source.indexOf('const day=state.day,r=rng(', source.indexOf('function simulateLeagueDay('));
 const end = source.indexOf('state.day++;finalizeAwards()', start);
 assert.ok(start > 0 && end > start, 'production major-league game loop found');
-const playDay = new vm.Script('{'+source.slice(start, end)+'}');
+const seedOffset=Number(process.env.BALANCE_SEED||0)>>>0;
+context.auditSeedOffset=seedOffset;
+const playDay = new vm.Script('{'+source.slice(start, end).replace('day*7919)>>>0','day*7919+auditSeedOffset)>>>0')+'}');
 vm.runInContext(`state=world(0);state.gameResults=[];for(const p of state.players)ensureProfile(p);`, context);
 const started = performance.now();
 for (let day=1;day<=365;day++) {
@@ -41,7 +43,7 @@ for(const g of data.games){
   }
 }
 assert.ok(totals.hits>=totals.homeRuns+totals.doubles+totals.triples);
-const report={seed:'world=20271001; games=year*100003+day*7919',games:data.games.length,
+const report={seed:'world=20271001; games=year*100003+day*7919+'+seedOffset,games:data.games.length,
   gamesPerTeam:data.teams.map(t=>t.wins+t.losses+t.draws),...totals,outs,earnedRuns,pitches,
   battingAverage:totals.hits/totals.atBats,ERA:earnedRuns*27/outs,
   runsPerTeamGame:totals.runs/1440,runsHistogram:histogram,

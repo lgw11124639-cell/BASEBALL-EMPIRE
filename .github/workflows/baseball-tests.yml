@@ -63,3 +63,7 @@ jobs:
         run: node tests/engine-event-independence.test.cjs
       - name: Actual 720-game league balance audit
         run: node tests/league-balance.test.cjs
+      - name: Continuous extra-base hit regression
+        run: node tests/extra-base-hit.test.cjs
+      - name: Hit-by-pitch and dead-ball regression
+        run: node tests/hit-by-pitch.test.cjs
