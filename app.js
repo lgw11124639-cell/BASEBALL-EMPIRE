@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-recovery48';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-recovery49';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
 function ballpark(team){return BALLPARKS[team?.id]||((team?.city||'구단')+' 야구장')}
@@ -466,9 +466,12 @@ function recordBatterFatigue(p,kind,amount,club){
  if(kind==='batting')workload.plateAppearances+=amount;else workload.defensiveOuts+=amount;
  workload.position=slot;workload.fatigueAdded+=added;b.batterWorkload=workload;b.fatigue=Math.min(100,(Number(b.fatigue)||0)+added);
 }
+const batterRecoveryPasses=new WeakMap();
 function recoverBatterFatigue(p){
  if(!p||p.position==='P')return;
- const b=playerBaseball(p),key=state.year+':'+state.day;if(b.batterRecoveryKey===key)return;b.batterRecoveryKey=key;
+ const b=playerBaseball(p),key=state.year+':'+state.day;if(b.batterRecoveryKey===key||batterRecoveryPasses.get(p)===key)return;batterRecoveryPasses.set(p,key);
+ if(!(Number(b.fatigue)>0))return; // Resting/retired zero-fatigue players must not dirty save shards.
+ b.batterRecoveryKey=key;
  const recent=b.batterWorkload,played=!!recent&&recent.year===state.year&&state.day-recent.day<=1&&state.day>=recent.day&&(recent.plateAppearances>=2||recent.defensiveOuts>=9);
  const trainer=beMedicalTrainer(p).skill,endurance=bePlayerEndurance(p),recovery=Number(b.recovery)||12;
  const recovered=played?3.5+recovery*.06+trainer*.015+endurance*.012:9+recovery*.2+trainer*.025+endurance*.025;
