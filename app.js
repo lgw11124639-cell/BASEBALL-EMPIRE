@@ -1950,8 +1950,7 @@ function negotiateFaContract(p,record){
   const headline='FA '+p.name+', '+actualBids.length+'개 구단 제안에도 협상 난항…최고 '+top.years+'년 '+won(top.totalValue);
   const article='FA '+p.name+'을 두고 '+clubs.join(', ')+'이(가) 실제 계약을 제안했으나 아직 합의에 이르지 못했다. 구단별 협상 내역은 다음과 같다.\\n'+lines.join('\\n')+'\\n다음 협상 검토일: '+(record.nextReviewDate||'미정')+'.';
   clubNotice('FA 협상',headline,article,[...new Set([record.previousTeamId,...actualBids.map(o=>o.teamId)])],[p.id]);
- }
- } else if(!actualBids.length){
+ } else {
   clubNotice('FA 협상','FA '+p.name+', 구단 제안 없이 협상 대기','이번 검토에서는 실제 계약 제안이 접수되지 않았다. 선수는 미계약 상태로 다음 검토를 기다린다.',[record.previousTeamId],[p.id]);
  }
  return false;
