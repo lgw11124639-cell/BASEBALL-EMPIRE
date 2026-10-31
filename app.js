@@ -329,13 +329,16 @@ function sharedHitAdvance(batter,pitcher,fieldingTeamId,inning,roll){const power
 let beZoneCache={revision:-1,year:null,profiles:new Map()};
 function batterZoneProfile(p){
  const games=state?.gameResults||[],revision=games.length,year=state?.year;
- if(beZoneCache.revision!==revision||beZoneCache.year!==year)beZoneCache={revision,year,profiles:new Map()};
+ // Retain the indexed games and only process newly appended results.
+ if(beZoneCache.year!==year||revision<(beZoneCache.indexedCount||0)||!beZoneCache.index)beZoneCache={revision,year,profiles:new Map(),index:new Map(),indexedCount:0};
+ else if(beZoneCache.revision!==revision){beZoneCache.revision=revision;beZoneCache.profiles=new Map()}
  const key=String(p?.id);if(beZoneCache.profiles.has(key))return beZoneCache.profiles.get(key);
  const zones=Array.from({length:9},()=>({ab:0,h:0,pa:0,k:0}));
- // Build the season's pitch-zone index once per game-results revision.
- if(!beZoneCache.index){
-  const index=new Map();
-  for(const g of games){
+ // Incremental append-only index: do not rescan earlier games.
+ if(beZoneCache.indexedCount<revision){
+  const index=beZoneCache.index;
+  for(let gameIndex=beZoneCache.indexedCount;gameIndex<revision;gameIndex++){
+   const g=games[gameIndex];
    if(g.year!=null&&Number(g.year)!==Number(year))continue;
    for(const e of g.broadcastEvents||[]){
     const pitch=e.pitchSequence?.[e.pitchSequence.length-1];
@@ -353,7 +356,7 @@ function batterZoneProfile(p){
     if(/삼진/.test(outcome))z.k++;
    }
   }
-  beZoneCache.index=index;
+  beZoneCache.indexedCount=revision;
  }
  const indexed=beZoneCache.index.get('id:'+key)||beZoneCache.index.get('name:'+String(p?.name)+'|'+String(p?.teamId));
  if(indexed)for(let i=0;i<9;i++)Object.assign(zones[i],indexed[i]);
