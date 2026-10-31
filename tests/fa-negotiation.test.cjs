@@ -76,6 +76,9 @@ assert.ok(!olderRefusal.accepted&&/보장기간/.test(olderRefusal.reason),'olde
 // Same-day reviews are idempotent; refusal consumes no money and does not exercise FA.
 vm.runInContext(`candidate.age=40;candidate.faPreferences={money:1,security:1,playingTime:1,contention:1,loyalty:1};
  state.faMarket=[{...baseRecord}];const beforeBudgets=state.teams.map(t=>t.budget);
+ // Exercise the refusal lifecycle explicitly: competitive real offers may now be accepted.
+ const originalFaEvaluateOffer=faEvaluateOffer;
+ faEvaluateOffer=(...args)=>({...originalFaEvaluateOffer(...args),accepted:false,reason:'연봉 조건 차이'});
  negotiateFaContract(candidate,state.faMarket[0]);`,context);
 let state=vm.runInContext('state',context),market=state.faMarket[0];
 assert.equal(p.level,'FA대기');assert.equal(p.faService.faUses,0);
@@ -93,6 +96,7 @@ assert.ok(market.negotiationHistory[1].offers[0].askingAnnual<initialAsk,'waitin
 // No affordable offer remains a distinct state, not a fabricated rejection.
 vm.runInContext('state.day+=14;for(const t of state.teams)t.budget=0;negotiateFaContract(candidate,state.faMarket[0])',context);
 assert.equal(market.lastOutcome,'구단 제안 없음');assert.equal(p.faService.faUses,0);
+vm.runInContext('faEvaluateOffer=originalFaEvaluateOffer',context);
 // A previously signed four-year contract is not rewritten by the new model.
 vm.runInContext(`candidate.level='1군';candidate.salary=1500000000;candidate.profile.contractYears=3;
  candidate.profile.faContract={signedYear:2026,startYear:2027,endYear:2030,years:4,annualSalary:1500000000,signingBonus:1980000000,totalValue:7980000000};
