@@ -435,13 +435,13 @@ function resolveBattedBall(batter,pitcher,fielding,location,random){
  // Batted-ball quality and defensive range determine non-HR hits; no league-average correction.
  const hardContact=Math.max(-1,Math.min(1,(exitVelocity-88)/27));
  const placement=Math.max(-1,Math.min(1,(Math.abs(sprayAngle)-18)/28));
- const trajectory=ground?.292:liner?.605:(launchAngle>48?.105:.245);
- const hitChance=Math.max(.035,Math.min(.78,trajectory+quality*.21+hardContact*(ground?.065:.09)+placement*(ground?.015:.055)-coverage+(speed-60)*(ground?.0018:.0004)));
+ const trajectory=ground?.235:liner?.585:(launchAngle>48?.085:.175);
+ const hitChance=Math.max(.035,Math.min(.78,trajectory+quality*.15+hardContact*(ground?.055:.075)+placement*(ground?.015:.055)-coverage+(speed-60)*(ground?.0018:.0004)));
  const hit=homer||random()<hitChance;
  let bases=1;
  if(homer)bases=4;
  else if(hit&&!ground&&carry>180&&carry<fenceFeet&&Math.abs(sprayAngle)>18&&speed>62&&random()<Math.max(.035,Math.min(.24,.095+(speed-65)*.004-(fieldSkill-60)*.001)))bases=3;
- else if(hit&&!ground&&((exitVelocity>88&&carry>125)||(liner&&exitVelocity>91)))bases=2;
+ else if(hit&&!ground&&((exitVelocity>99&&carry>185)||(liner&&exitVelocity>103&&carry>155)))bases=2;
  else if(hit&&ground&&speed>78&&random()<.025)bases=2;
  return {hit,hard:exitVelocity>=95,ground,bases,quality,exitVelocity:Math.round(exitVelocity),launchAngle:Math.round(launchAngle),sprayAngle:Math.round(sprayAngle),defenderPosition:target,defenderId:defender?.id??null};
 }
@@ -2708,11 +2708,11 @@ function playerContractMoneyPanel(p){
  const profile=p.profile||{},current=profile.faContract,history=Array.isArray(profile.faContractHistory)?profile.faContractHistory:[];
  const contracts=[...history];if(current&&Number.isFinite(Number(current.totalValue))&&!contracts.some(x=>Number(x.signedYear)===Number(current.signedYear)&&String(x.teamId)===String(current.teamId)))contracts.push(current);
  const total=contracts.reduce((sum,x)=>sum+Math.max(0,Number(x.totalValue)||0),0),latest=current&&Number(current.totalValue)>0?current:null;
- const years=Math.max(0,Number(profile.contractYears)||0),fa=faServiceStatus(p),posting=postingServiceStatus(p);
+ const years=Math.max(0,Number(profile.contractYears)||0),fa=faServiceStatus(p),posting=postingServiceStatus(p),isMultiYear=!!(current&&Number(current.years)>1&&Number(current.totalValue)>0);
  const metric=(label,value,sub)=>'<div class="be-contract-metric"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>';
  const historyRows=contracts.slice().sort((a,b)=>(Number(b.signedYear)||0)-(Number(a.signedYear)||0)).map(x=>'<tr><td>'+esc(String(x.signedYear||'-'))+'</td><td>'+esc(String(x.years||'-'))+'년</td><td>'+money(Number(x.annualSalary)||0)+'</td><td>'+money(Number(x.signingBonus)||0)+'</td><td><strong>'+money(Number(x.totalValue)||0)+'</strong></td></tr>').join('');
  return '<style>.be-contract-dashboard{margin:4px 0 22px}.be-contract-head{background:linear-gradient(125deg,#102b4b,#16477a 72%,#176ba0);border-radius:14px;color:#fff;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.be-contract-head small{display:block;color:#b8d4ec;font-size:12px;letter-spacing:.08em;margin-bottom:7px}.be-contract-head strong{font-size:clamp(26px,3.5vw,38px);letter-spacing:-.04em}.be-contract-head .be-contract-term{background:#ffffff20;border:1px solid #ffffff35;border-radius:10px;padding:10px 16px}.be-contract-term strong{font-size:22px}.be-contract-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.be-contract-metric{background:#f1f6fc;border:1px solid #dce7f3;border-radius:11px;padding:16px;min-width:0}.be-contract-metric span,.be-contract-metric small{display:block;color:#58718c;font-size:12px}.be-contract-metric strong{display:block;font-size:21px;color:#142e4e;margin:8px 0;word-break:keep-all}.be-contract-progress{margin-top:14px;background:#f5f8fc;border:1px solid #dce7f3;border-radius:11px;padding:15px}.be-contract-progress>div:first-child{display:flex;justify-content:space-between;gap:8px;color:#254563;font-size:13px}.be-contract-track{height:9px;border-radius:12px;background:#dce7f3;overflow:hidden;margin:11px 0}.be-contract-fill{height:100%;background:linear-gradient(90deg,#1773bb,#25a8ce);border-radius:12px}.be-contract-progress small{color:#5c728a}.be-contract-history{margin-top:18px}.be-contract-history h4{margin:0 0 10px;color:#193c60}.be-contract-table-wrap{overflow-x:auto;border:1px solid #dce7f3;border-radius:10px}.be-contract-table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}.be-contract-table th{background:#eaf1f9;color:#46617e;text-align:left;padding:11px}.be-contract-table td{padding:12px 11px;border-top:1px solid #e4ebf4}.be-contract-empty{background:#f4f7fb;border:1px dashed #cbd9e8;border-radius:10px;padding:18px;color:#58718c;font-size:13px}.be-contract-note{color:#61758c;font-size:12px;margin:10px 0}@media(max-width:640px){.be-contract-head{padding:17px}.be-contract-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.be-contract-metric{padding:12px}.be-contract-metric strong{font-size:17px}}</style>'
- +'<section class="be-contract-dashboard"><div class="be-contract-head"><div><small>PLAYER CONTRACT · 현재 계약</small><strong>'+money(Number(p.salary)||0)+'</strong><small>시즌 연봉</small></div><div class="be-contract-term"><small>계약 잔여</small><strong>'+years+'년</strong></div></div>'
+ +'<section class="be-contract-dashboard"><div class="be-contract-head"><div><small>PLAYER CONTRACT · 현재 계약</small><strong>'+money(Number(p.salary)||0)+'</strong><small>시즌 연봉</small></div><div class="be-contract-term"><small>'+(isMultiYear?'계약 잔여':'계약 방식')+'</small><strong>'+(isMultiYear?years+'년':'매년 갱신')+'</strong></div></div>'
  +'<div class="be-contract-grid">'
  +metric('최근 FA 계약 총액',latest?money(Number(latest.totalValue)):'계약 이력 없음',latest?String(latest.signedYear)+'년 체결':'FA 계약 체결 후 표시')
  +metric('기록된 FA 계약 누적',contracts.length?money(total):'기록 없음','기록된 계약 총액 기준')
