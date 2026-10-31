@@ -1987,7 +1987,11 @@ function negotiateFaContract(p,record){
  const summaries=new Map();
  for(const offer of offers){const previous=summaries.get(offer.teamId);if(!previous||(offer.accepted&&!previous.accepted)||(offer.accepted===previous.accepted&&offer.utility>previous.utility))summaries.set(offer.teamId,offer);}
  const report={year:state.year,day:state.day,round:record.negotiationRounds,proposalCount:offers.length,offers:[...summaries.values()].map(({utility,...offer})=>offer)};
- record.negotiationHistory=record.negotiationHistory||[];record.negotiationHistory.push(report);
+ record.negotiationHistory=record.negotiationHistory||[];
+ const previousReport=record.negotiationHistory[record.negotiationHistory.length-1];
+ record.negotiationHistory.push(report);
+ if(record.negotiationHistory.length>40)record.negotiationHistory.shift();
+ const changed=!previousReport||JSON.stringify(previousReport.offers?.map(o=>[o.teamId,o.years,o.annualSalary,o.signingBonus]))!==JSON.stringify(report.offers.map(o=>[o.teamId,o.years,o.annualSalary,o.signingBonus]));
  if(accepted.length){
   const offer=accepted[0];
   if(faSettleAcceptedOffer(p,record,offer)){record.lastOutcome='계약 체결';record.lastReason='선수·구단 조건 합의';report.signedTeamId=offer.teamId;return true;}
@@ -2001,13 +2005,13 @@ function negotiateFaContract(p,record){
  const actualBids=[...summaries.values()].sort((a,b)=>b.utility-a.utility||b.totalValue-a.totalValue);
  record.lastContactTeams=actualBids.map(o=>o.teamId);
  record.lastContactCount=actualBids.length;
- if(actualBids.length){
+ if(actualBids.length&&changed){
   const top=actualBids[0],clubs=actualBids.map(o=>teamName(o.teamId));
   const lines=actualBids.map(o=>teamName(o.teamId)+' — '+o.years+'년 총액 '+won(o.totalValue)+' (연봉 '+won(o.annualSalary)+', 계약금 '+won(o.signingBonus)+') / 선수 희망 '+o.desiredYears+'년, 연봉 '+won(o.askingAnnual)+' / 거절 사유: '+o.reason);
   const headline='FA '+p.name+', '+actualBids.length+'개 구단 제안에도 협상 난항…최고 '+top.years+'년 '+won(top.totalValue);
   const article='FA '+p.name+'을 두고 '+clubs.join(', ')+'이(가) 실제 계약을 제안했으나 아직 합의에 이르지 못했다. 구단별 협상 내역은 다음과 같다. '+lines.join(' / ')+' 다음 협상 검토일: '+(record.nextReviewDate||'미정')+'.';
   clubNotice('FA 협상',headline,article,[...new Set([record.previousTeamId,...actualBids.map(o=>o.teamId)])],[p.id]);
- } else {
+ } else if(!actualBids.length&&changed){
   clubNotice('FA 협상','FA '+p.name+', 구단 제안 없이 협상 대기','이번 검토에서는 실제 계약 제안이 접수되지 않았다. 선수는 미계약 상태로 다음 검토를 기다린다.',[record.previousTeamId],[p.id]);
  }
  return false;
