@@ -3,6 +3,7 @@ const source=fs.readFileSync('app.js','utf8');
 const start=source.indexOf('function cloneDailyRollback('),end=source.indexOf('\nbackup=cloneDailyRollback',start);
 assert.ok(start>0&&end>start);
 const clone=new Function(source.slice(start,end)+';return cloneDailyRollback')();
+const extraArray=new Array(2);extraArray[1]='value';extraArray.note={keep:true};const denseArray=[{n:1},{n:2}];assert.deepEqual(clone({extraArray,denseArray}),structuredClone({extraArray,denseArray}));
 const shared={x:undefined,n:NaN,text:'기록'.repeat(500)},value={a:shared,b:shared,sparse:new Array(5)};value.self=value;value.sparse[3]=shared;Object.defineProperty(value,'__proto__',{value:{safe:true},enumerable:true});
 assert.deepEqual(clone(value),structuredClone(value));const copied=clone(value);assert.equal(copied.a,copied.b);assert.equal(copied.self,copied);assert.notEqual(copied.a,shared);copied.a.text='changed';assert.notEqual(copied.a.text,shared.text);
 for(const special of [new Date(),new Map([['a',1]]),new Set([2]),new Uint8Array([1,2])])assert.deepEqual(clone({special}),structuredClone({special}));

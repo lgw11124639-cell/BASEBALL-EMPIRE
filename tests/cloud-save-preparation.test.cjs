@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+function context(){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^export /gm,''),c);return c}
+const plain=x=>JSON.parse(JSON.stringify(x));
+(async()=>{
+const c=context(),run=s=>vm.runInContext(s,c),reports={};
+for(let y=2027;y<=2040;y++)for(let m=1;m<=12;m++)for(let t=0;t<10;t++)reports[y+'-'+m+'-'+t]={year:y,month:m,teamId:t,events:[{day:10,playerId:t,name:'이전 훈련 기록 '+y+'-'+m,notes:'기존 기록 보존 '.repeat(80)}]};
+Object.defineProperty(reports,'__proto__',{value:{preserve:'사용자 키'},enumerable:true});
+c.data={year:2040,day:20,trainingReports:reports,custom:{contract:'보존'},highSchoolBaseball:{2039:{players:[{id:1,name:'이전 선수',profile:{skills:{contact:50}}}]},2040:{players:[{id:2,name:'현재 선수',games:4}]}}};
+const original=structuredClone(c.data),first=await run('packCloudShards(data)');
+assert.deepEqual(c.data,original,'packing leaves live state untouched');assert.equal(first.beShardManifest.fields.trainingReports.kind,'monthlyReports');
+c.wire=structuredClone(first);const restored=await run('unpackCloudShards(wire)');assert.deepEqual(plain(restored),plain(original),'all reports and prototype-like keys restore');assert.equal(JSON.stringify(restored.trainingReports),JSON.stringify(original.trainingReports),'original insertion order restores exactly');
+const tasks=run('shardGzipMetrics.tasks');await run('packCloudShards(data)');assert.equal(run('shardGzipMetrics.tasks'),tasks,'restored monthly shards are not recompressed');
+reports['2040-1-0'].events.push({day:21,playerId:5,name:'새 훈련'});const next=await run('packCloudShards(data)');c.first=first;c.next=next;const delta=run('makeCloudDelta(first,next)');
+assert.deepEqual(Object.keys(delta.set),['beShard_trainingReports_month_2040-1'],'only the changed month is sent');
+assert.ok(JSON.stringify(delta).length<JSON.stringify(reports).length*.02,'daily report PATCH avoids resending the full archive');
+const bad=structuredClone(next);delete bad['beShard_trainingReports_month_2027-1'];c.bad=bad;await assert.rejects(()=>run('unpackCloudShards(bad)'),/누락/);
+c.bad=structuredClone(next);c.bad.beShardManifest.fields.trainingReports.length++;await assert.rejects(()=>run('unpackCloudShards(bad)'),/길이/);
+delete reports['2027-1-0'];const deleted=await run('packCloudShards(data)');c.deleted=structuredClone(deleted);assert.deepEqual(plain(await run('unpackCloudShards(deleted)')).trainingReports,plain(reports),'deletions and original key order survive');
+const leagueFirst=await run('packLeagueShards(data)');const entry=run("leagueSeasonPreparationCache.get('highSchoolBaseball:2039')");await run('packLeagueShards(data)');assert.equal(run("leagueSeasonPreparationCache.get('highSchoolBaseball:2039')"),entry,'unchanged season reuses preparation after exact JSON comparison');
+c.data.highSchoolBaseball[2039].players[0].profile.skills.contact=79;const leagueNext=await run('packLeagueShards(data)');c.l1=leagueFirst;c.l2=leagueNext;
+assert.ok(Object.keys(run('makeCloudDelta(l1,l2)').set).includes('beLeagueRows_highSchoolBaseball_2039_players_base_0'),'in-place corrections to historical seasons invalidate preparation cache');
+c.leagueWire=structuredClone(leagueNext);assert.deepEqual(plain(await run('unpackLeagueShards(leagueWire)')),plain(c.data));
+c.legacyWire=await run('packAuxiliaryFields(data)');
+run(`token='test';verified=true;revision=1;acknowledgedWireSave=structuredClone(legacyWire);let migrationFails=true;let migrationServer=structuredClone(legacyWire);call=async(path,method,body)=>{if(migrationFails){const error=Error('migration upload failed');error.status=503;throw error}if(method==='PATCH'){for(const key of body.unset)delete migrationServer[key];Object.assign(migrationServer,body.set)}else migrationServer=structuredClone(body);return {revision:revision+1}}`);
+await assert.rejects(()=>run('cloudSave(data)'),/migration upload failed/);assert.equal(run('revision'),1);assert.deepEqual(plain(run('acknowledgedWireSave')),plain(c.legacyWire),'failed migration retains the acknowledged old-format save');
+run('migrationFails=false');await run('cloudSave(data)');
+c.migrated=structuredClone(run('migrationServer'));assert.deepEqual(plain(await run('(async()=>unpackCloudShards(await unpackLeagueShards(await unpackHistoryShards(await unpackAuxiliaryFields(migrated)))))()')),plain(c.data),'old gzip to monthly shards migrates atomically with exact restore');const manifest=run('acknowledgedWireSave.beLeagueShardManifest');await run('cloudSave(data)');assert.equal(run('acknowledgedWireSave.beLeagueShardManifest'),manifest,'unchanged acknowledged metadata avoids a repeated deep copy');
+run('lastPackingAuditPayload.beLeagueShardManifest.fields.highSchoolBaseball.seasons[2039]=[]');assert.notEqual(run('acknowledgedWireSave.beLeagueShardManifest.fields.highSchoolBaseball.seasons[2039].length'),0,'acknowledged metadata stays detached from mutable packing output');
+console.log('PASS monthly report PATCH, exact old-year edits, deletion/corruption, preparation cache and detached acknowledged metadata');
+})().catch(e=>{console.error(e);process.exitCode=1});

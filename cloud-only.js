@@ -12,7 +12,8 @@ function makeCloudDelta(previous,current){
  if(!previous||typeof previous!=='object'||!current||typeof current!=='object')return null;
  const set=Object.create(null),unset=[];
  for(const key of Object.keys(previous))if(!Object.prototype.hasOwnProperty.call(current,key))unset.push(key);
- for(const [key,value] of Object.entries(current)){
+ for(const key of Object.keys(current)){
+  const value=current[key];
   if(!Object.prototype.hasOwnProperty.call(previous,key)){set[key]=value;continue;}
   const before=previous[key];
   // Shard payloads are immutable base64 strings. Compare them directly rather
@@ -81,7 +82,7 @@ async function unpackReplayResults(state){
 // One team per shard: unchanged clubs are not retransmitted on daily PATCH.
 // Existing unsharded saves still load; manifests carry per-field chunk sizes.
 // Archive arrays use small chunks; non-array legacy shapes remain untouched.
-const shardArrayFields={players:8,gameResults:4,teams:1,clubNotices:20,clubTransactionArchive:20,trainingReports:20};
+const shardArrayFields={players:16,gameResults:4,teams:1,clubNotices:20,clubTransactionArchive:20,trainingReports:20};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
@@ -177,8 +178,9 @@ async function packCloudShards(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
  const targets=Object.entries(shardArrayFields).filter(([key])=>Array.isArray(state?.[key]));
  const archive=state?.clubTransactionArchive;
+ const reportMap=state?.trainingReports,hasReportMap=reportMap&&Object.prototype.toString.call(reportMap)==='[object Object]';
  const yearArchive=archive&&typeof archive==='object'&&!Array.isArray(archive)&&Object.entries(archive).every(([year,items])=>/^\d{4}$/.test(year)&&Array.isArray(items));
- if(!targets.length&&!yearArchive)return state;
+ if(!targets.length&&!yearArchive&&!hasReportMap)return state;
  const copy={...state},manifest={version:1,fields:{}};
  const packed=await Promise.all(targets.map(async([key,size])=>{
   const started=performance.now();
@@ -280,6 +282,19 @@ async function packCloudShards(state){
   }
   manifest.fields.clubTransactionArchive={kind:'yearArrays',seasons};delete copy.clubTransactionArchive;
  }
+ if(hasReportMap){
+  // Monthly reports mutate daily, while previous months are retained verbatim.
+  // Keep the exact insertion order in tuple indices, including unusual old keys.
+  const buckets=new Map(),entries=Object.entries(reportMap);
+  entries.forEach(([key,value],index)=>{
+   const match=key.match(/^(\d{4})-(\d{1,2})-/),month=Number(value?.month||match?.[2]),year=Number(value?.year||match?.[1]);
+   const group=Number.isSafeInteger(year)&&year>=1900&&month>=1&&month<=12?year+'-'+month:'legacy-'+amateurBucket(key);
+   if(!buckets.has(group))buckets.set(group,[]);buckets.get(group).push([index,key,value]);
+  });
+  const groups=[...buckets.keys()];
+  await Promise.all(groups.map(async group=>{const name='beShard_trainingReports_month_'+group;copy[name]=await encodeCloudShard(JSON.stringify(buckets.get(group)),name)}));
+  manifest.fields.trainingReports={kind:'monthlyReports',length:entries.length,groups};delete copy.trainingReports;
+ }
  copy.beShardManifest=manifest;
  return copy;
 }
@@ -289,6 +304,22 @@ async function unpackCloudShards(state){
  if(manifest.version!==1||!manifest.fields||typeof manifest.fields!=='object')throw Error('클라우드 분할 저장 형식이 올바르지 않습니다');
  if(typeof DecompressionStream!=='function')throw Error('클라우드 분할 저장을 해제할 수 없는 브라우저입니다');
  for(const [key,meta] of Object.entries(manifest.fields)){
+  if(key==='trainingReports'&&meta?.kind==='monthlyReports'){
+   if(!Number.isSafeInteger(meta.length)||meta.length<0||!Array.isArray(meta.groups)||meta.groups.length>100000||new Set(meta.groups).size!==meta.groups.length)throw Error('훈련 보고서 분할 메타데이터 오류');
+   const entries=await Promise.all(meta.groups.map(async group=>{
+    if(typeof group!=='string'||!/^([0-9]{4}-([1-9]|1[0-2])|legacy-[0-9]+)$/.test(group))throw Error('훈련 보고서 묶음 형식 오류');
+    const name='beShard_trainingReports_month_'+group,encoded=state[name];if(typeof encoded!=='string')throw Error('훈련 보고서 일부 누락: '+name);
+    const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+    const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text(),rows=JSON.parse(raw);
+    if(!Array.isArray(rows))throw Error('훈련 보고서 묶음 오류');
+    shardGzipCache.set(name,{raw,encoded});return {name,rows};
+   }));
+   const ordered=new Array(meta.length),keys=new Set();
+   for(const {rows} of entries)for(const tuple of rows){if(!Array.isArray(tuple)||tuple.length!==3||!Number.isSafeInteger(tuple[0])||tuple[0]<0||tuple[0]>=meta.length||ordered[tuple[0]]||typeof tuple[1]!=='string'||keys.has(tuple[1]))throw Error('훈련 보고서 순서·중복 오류');ordered[tuple[0]]=tuple;keys.add(tuple[1])}
+   if(keys.size!==meta.length)throw Error('훈련 보고서 복원 길이 오류');
+   const reports={};for(const [,name,value] of ordered)Object.defineProperty(reports,name,{value,writable:true,configurable:true,enumerable:true});
+   for(const {name} of entries)delete state[name];state.trainingReports=reports;continue;
+  }
   if(key==='clubTransactionArchive'&&meta?.kind==='yearArrays'){
    if(!meta.seasons||typeof meta.seasons!=='object'||Array.isArray(meta.seasons))throw Error('구단 변동 기록 메타데이터 오류');
    const archive={};
@@ -344,6 +375,15 @@ const leagueShardSize=24;
 function leagueShardName(field,season,name,i){return 'beLeaguePart_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+i}
 function leagueRowName(field,season,name,group,i){return 'beLeagueRows_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+group+'_'+i}
 function leagueDayName(field,season,name,day,i){return 'beLeagueDay_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+day+'_'+i}
+const leagueSeasonPreparationCache=new Map();
+let leagueSeasonPreparationBytes=0;
+function rememberLeagueSeason(key,entry){
+ for(const descriptor of entry.descriptors){if(descriptor.days){for(const day of descriptor.days)Object.freeze(day);Object.freeze(descriptor.days)}Object.freeze(descriptor)}Object.freeze(entry.descriptors);
+ const previous=leagueSeasonPreparationCache.get(key);if(previous)leagueSeasonPreparationBytes-=previous.raw.length;
+ leagueSeasonPreparationCache.delete(key);
+ if(entry.raw.length<=4000000){leagueSeasonPreparationCache.set(key,entry);leagueSeasonPreparationBytes+=entry.raw.length}
+ while(leagueSeasonPreparationBytes>24000000){const oldest=leagueSeasonPreparationCache.keys().next().value;leagueSeasonPreparationBytes-=leagueSeasonPreparationCache.get(oldest).raw.length;leagueSeasonPreparationCache.delete(oldest)}
+}
 async function packLeagueShards(state){
  if(typeof CompressionStream!=='function')return state;
  const targets=leagueShardFields.filter(field=>state?.[field]&&typeof state[field]==='object'&&!Array.isArray(state[field]));
@@ -353,7 +393,9 @@ async function packLeagueShards(state){
   const seasons={},parts=[];
   for(const [season,node] of Object.entries(state[field])){
    if(!node||typeof node!=='object'||Array.isArray(node))return null;
-   const descriptors=[];
+   const rawNode=JSON.stringify(node),cacheKey=field+':'+season,cached=leagueSeasonPreparationCache.get(cacheKey);
+   if(cached?.raw===rawNode){seasons[season]=cached.descriptors;parts.push(...cached.parts);continue}
+   const partStart=parts.length,descriptors=[];
    for(const [name,value] of Object.entries(node)){
     const isArray=Array.isArray(value),count=isArray?Math.ceil(value.length/leagueShardSize):1;
     let dayLog=isArray&&name==='gameLog';
@@ -378,6 +420,7 @@ async function packLeagueShards(state){
     else for(let i=0;i<count;i++)parts.push({name:leagueShardName(field,season,name,i),raw:JSON.stringify(isArray?value.slice(i*leagueShardSize,(i+1)*leagueShardSize):value)});
    }
    seasons[season]=descriptors;
+   rememberLeagueSeason(cacheKey,{raw:rawNode,descriptors,parts:parts.slice(partStart)});
   }
   const started=performance.now();
   let cacheHits=0,changed=0,rawBytes=0,encodedBytes=0;
@@ -918,6 +961,7 @@ export async function cloudSave(state){
  // A 409/412 still blocks progress and requires a fresh login/load.
  let result;
  let payload;
+ const reusableManifests={};
  try{
   const packStarted=performance.now();
   window.beCloudSaveStartAt=packStarted;
@@ -926,21 +970,26 @@ export async function cloudSave(state){
   // Legacy bePackedBroadcastGzip saves are still decoded by unpackReplayResults on load.
   const replayPacked=state;
   const replayPackedAt=performance.now();
-  const shards=await packCloudShards(replayPacked);
-  const shardPackedAt=performance.now();
-  const amateur=await packAmateurBuckets(shards);
-  const amateurPackedAt=performance.now();
-  const leagues=await packLeagueShards(amateur);
-  const leaguePackedAt=performance.now();
-  payload=await packHistoryShards(await packAuxiliaryFields(leagues));
+  const stages={};
+  const prepare=async(name,work)=>{const start=performance.now();const value=await work(replayPacked);stages[name]=+(performance.now()-start).toFixed(1);return value};
+  // These packers own disjoint fields and never mutate live state. Let gzip run
+  // while the next archive is inspected, within the same bounded gzip queue.
+  const prepared=await Promise.all([prepare('shardsMs',packCloudShards),prepare('amateurMs',packAmateurBuckets),prepare('leaguesMs',packLeagueShards),prepare('historyMs',packHistoryShards)]);
+  const combined={...replayPacked};
+  for(const part of prepared){
+   for(const key of Object.keys(replayPacked))if(!Object.prototype.hasOwnProperty.call(part,key))delete combined[key];
+   for(const [key,value] of Object.entries(part))if(!Object.prototype.hasOwnProperty.call(replayPacked,key)||value!==replayPacked[key])combined[key]=value;
+  }
+  const auxiliaryAt=performance.now();payload=await packAuxiliaryFields(combined);
   const auxiliaryPackedAt=performance.now();
-  window.beCloudPackingStages={shardsMs:+(shardPackedAt-replayPackedAt).toFixed(1),amateurMs:+(amateurPackedAt-shardPackedAt).toFixed(1),leaguesMs:+(leaguePackedAt-amateurPackedAt).toFixed(1),auxiliaryMs:+(auxiliaryPackedAt-leaguePackedAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
+  window.beCloudPackingStages={...stages,auxiliaryMs:+(auxiliaryPackedAt-auxiliaryAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),overlapped:true,deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
   lastPackingAuditPayload=payload;
   lastPackingAuditState=state;
   // Use PATCH only when a full, server-acknowledged baseline exists.
   // Compare the exact packed wire fields, not the mutable in-game state.
   const deltaStarted=performance.now();
   const delta=incrementalSaveSupported?makeCloudDelta(acknowledgedWireSave,payload):null;
+  if(delta)for(const key of Object.keys(payload))if(/^be.*Manifest$/.test(key)&&payload[key]&&typeof payload[key]==='object'&&!Object.prototype.hasOwnProperty.call(delta.set,key)&&Object.prototype.hasOwnProperty.call(acknowledgedWireSave,key))reusableManifests[key]=acknowledgedWireSave[key];
   const deltaJson=delta?JSON.stringify(delta):null;
   const deltaEncodedAt=performance.now();
   // Estimate full size without another multi-megabyte JSON.stringify.
@@ -959,6 +1008,7 @@ export async function cloudSave(state){
   const changedGroups=Object.create(null);
   for(const {key,bytes} of changedFields){
    const group=(key.startsWith('beLeaguePart_')||key.startsWith('beLeagueRows_')||key.startsWith('beLeagueDay_'))?'league archive':
+    key.startsWith('beShard_trainingReports_month_')?'monthly training reports':
     key.startsWith('beShard_clubTransactionArchive_')?'transaction archive':
     key.startsWith('beShard_')?'player/game shards':
     key.startsWith('beAmateur')?'amateur archive':
@@ -1076,9 +1126,9 @@ export async function cloudSave(state){
  // Packed strings are immutable: retain them without copying megabytes of base64.
  // Clone all mutable fields together, preserving their cross-field aliases.
  const mutable={};
- for(const [key,value] of Object.entries(payload))if(value!==null&&typeof value==='object')mutable[key]=value;
+ for(const [key,value] of Object.entries(payload))if(value!==null&&typeof value==='object'&&!Object.prototype.hasOwnProperty.call(reusableManifests,key))mutable[key]=value;
  const detached=structuredClone(mutable);
- revision=next;acknowledgedWireSave={...payload,...detached};baseline={save:state,revision:next};
+ revision=next;acknowledgedWireSave={...payload,...detached,...reusableManifests};baseline={save:state,revision:next};
  window.beCloudSaveStages={...window.beCloudSaveStages,postSaveCloneMs:+(performance.now()-snapshotStarted).toFixed(1),fullSaveMs:+(performance.now()-window.beCloudSaveStartAt).toFixed(1)};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
 export async function cloudGate(onReady){

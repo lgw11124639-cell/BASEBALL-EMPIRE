@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-foreign46';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-save47';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
 function ballpark(team){return BALLPARKS[team?.id]||((team?.city||'구단')+' 야구장')}
@@ -2898,7 +2898,9 @@ function cloneDailyRollback(value){
   const array=Array.isArray(node),proto=Object.getPrototypeOf(node);
   if(!array&&proto!==Object.prototype&&proto!==null)throw unsupported;
   const out=array?new Array(node.length):{};seen.set(node,out);
-  for(const key in node){if(!Object.prototype.hasOwnProperty.call(node,key))continue;const value=copy(node[key]);if(key==='__proto__')Object.defineProperty(out,key,{value,enumerable:true,writable:true,configurable:true});else out[key]=value;}
+  const keys=Object.keys(node);
+  if(array&&keys.length===node.length&&(keys.length===0||keys[keys.length-1]===String(node.length-1))){for(let i=0;i<node.length;i++){const v=node[i];out[i]=v===null||typeof v!=='object'?v:copy(v)}return out;}
+  for(const key of keys){const v=node[key],value=v===null||typeof v!=='object'?v:copy(v);if(key==='__proto__')Object.defineProperty(out,key,{value,enumerable:true,writable:true,configurable:true});else out[key]=value;}
   return out;
  }
  try{return copy(value)}catch(error){if(error!==unsupported)throw error;return structuredClone(value)}
