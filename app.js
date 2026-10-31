@@ -1848,7 +1848,7 @@ function seasonProgressPanel(){
   });
  }
  const postseasonSelectedGames=selected?(state.postseasons?.[state.year]?.games||[]).filter(g=>String(g.date||iso(seasonDate(Number(g.day))))===selected):[];
- const postseasonRows=postseasonSelectedGames.map(g=>{const home=state.teams.find(t=>String(t.id)===String(g.home)),away=state.teams.find(t=>String(t.id)===String(g.away));return '<div class="be-today-match"><div class="be-today-teams"><strong>'+esc(away?.name||'원정')+'</strong><span>'+Number(g.awayRuns)+' : '+Number(g.homeRuns)+'</span><strong>'+esc(home?.name||'홈')+'</strong></div><div class="be-today-actions"><small>'+esc(g.stage||'포스트시즌')+' · 경기 종료</small></div></div>'}).join('');
+ const postseasonRows=postseasonSelectedGames.map(g=>{const home=state.teams.find(t=>String(t.id)===String(g.home)),away=state.teams.find(t=>String(t.id)===String(g.away));return '<div class="be-today-match"><div class="be-today-teams"><strong>'+esc(away?.name||'원정')+'</strong><span>'+Number(g.awayRuns)+' : '+Number(g.homeRuns)+'</span><strong>'+esc(home?.name||'홈')+'</strong></div><div class="be-today-actions"><small>'+esc(g.stage||'포스트시즌')+' · 경기 종료</small><button type="button" onclick="beOpenPostseasonReplay('+Number(g.day)+','+Number(g.away)+')">▶ 경기 다시보기</button></div></div>'}).join('');
  const selectedMatches=selected?'<div class="be-calendar-match-list"><details class="be-calendar-fold"'+(kboRows?' open':'')+'><summary>오늘의 경기 · KBO</summary>'+(kboRows||'<p class="profile-note">이 날짜에는 KBO 경기가 없습니다.</p>')+'</details><details class="be-calendar-fold"'+(postseasonRows?' open':'')+'><summary>오늘의 포스트시즌 경기</summary>'+(postseasonRows||'<p class="profile-note">이 날짜에는 포스트시즌 경기가 없습니다.</p>')+'</details><details class="be-calendar-fold"'+(nationalRows.length?' open':'')+'><summary>오늘의 국가대표 경기</summary>'+(nationalRows.join('')||'<p class="profile-note">이 날짜에는 국가대표 경기가 없습니다.</p>')+'</details></div>':'';
  const upcoming=ordered.filter(x=>x.date>=current&&(!selected||x.date!==selected)).slice(0,4);
  return '<div class="be-season-progress be-season-unified be-season-compact"><div class="be-compact-head"><div><small>'+esc(state.year)+'년 시즌</small><strong>'+esc(seasonDateLabel(state.day))+' · '+esc(calendarPhase(d))+'</strong></div><div class="be-compact-stat"><b>'+pct+'%</b><span>'+played+' / 144경기</span></div></div><div class="be-progress-track"><div style="width:'+pct+'%"></div></div><div class="be-calendar-layout"><div class="be-calendar-panel"><div class="be-cal-header"><button type="button" onclick="beCalendarMove(-1)">‹</button><strong>'+cy+'년 '+cm+'월</strong><button type="button" onclick="beCalendarToday()">오늘</button><button type="button" onclick="beCalendarMove(1)">›</button></div><div class="be-cal-grid">'+['일','월','화','수','목','금','토'].map(x=>'<span class="be-cal-weekday">'+x+'</span>').join('')+cells+'</div><div class="be-cal-legend">● 경기·구단 일정　<span>● 국가대표 일정</span></div></div><div class="be-compact-agenda"><h3>'+(selected?esc(selected.replace(/-/g,'.'))+' 일정':'이번 달 일정')+'</h3>'+(chosen.length?chosen.map(render).join(''):(selected&&selected!==current?'<p>선택한 날짜에 등록된 일정이 없습니다.</p>':''))+selectedMatches+'<details class="be-calendar-fold be-calendar-upcoming"><summary>다가오는 주요 일정</summary>'+(upcoming.length?upcoming.map(render).join(''):'<p>확인된 다음 일정이 없습니다.</p>')+'</details>'+'</div></div></div>';
@@ -2216,6 +2216,13 @@ function beReplayFinalRecordCard(g){
  const row=(label,value)=>'<div class="be-final-record-row"><span>'+label+'</span><strong>'+value+'</strong></div>';
  return '<section class="be-final-record-card"><h3>경기 주요 기록</h3>'+row('결승타',g.awayRuns===g.homeRuns?'무승부':winningHit)+row('승리투수',pitching('win'))+row('세이브',pitching('save'))+row('홀드',pitching('hold'))+row('홈런',homers)+'</section>';
 }
+function beOpenPostseasonReplay(day,away){
+ const ps=state.postseasons?.[state.year],g=(ps?.games||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));
+ if(!g)return;
+ // Historical postseason records retain inning scores but not pitch-by-pitch events.
+ beOpenGameReplay(day,away,{...g,broadcastEvents:[],awayBatters:[],homeBatters:[],awayPitchers:[],homePitchers:[]});
+}
+window.beOpenPostseasonReplay=beOpenPostseasonReplay;
 function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  // Resolve the saved game before dismissing the article.
  const g=overrideGame||(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));if(!g)return;
