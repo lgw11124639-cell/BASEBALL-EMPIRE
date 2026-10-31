@@ -1833,22 +1833,43 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  const compensation=String(teamId)===String(record.previousTeamId)?0:Math.round(previousSalary*(record.grade==='A'?3:record.grade==='B'?2:1.5));
  const payroll=roster.reduce((n,x)=>n+(Number(x.salary)||0),0);
  const available=(Number(team.budget)||0)-(Number(team.finance?.unpaidOperatingCosts)||0)-payroll*.25;
- // Each club has its own valuation and contract-length strategy.
- const clubSeed=Array.from(String(teamId)).reduce((n,ch)=>Math.imul(n,31)+ch.charCodeAt(0)|0,17);
- const bidSeed=(Math.imul(clubSeed,2654435761)^Math.imul(Number(p.id)||1,1597334677))>>>0;
- const salaryFactor=.87+(bidSeed%29)/100;
- const termAdjustment=(Math.floor(bidSeed/29)%3)-1;
- const maxYears=opportunity<.45?1:Math.max(1,Math.min(6,(requestedYears||projection.recommendedYears),projection.recommendedYears+termAdjustment));
+ // Front office valuation is derived from roster need, finances, projected production and competitive window.
+ const activeSame=roster.filter(x=>x.position===p.position);
+ const evaluation=bePlayerEvaluation(p);
+ const qualified=activeSame.filter(x=>bePlayerEvaluation(x)>=evaluation-5);
+ const major=activeSame.filter(x=>x.level==='1군');
+ const young=activeSame.filter(x=>(Number(x.age)||30)<=25&&bePlayerEvaluation(x)>=evaluation-12);
+ const isPitcher=p.position==='P';
+ const desiredDepth=isPitcher?16:3;
+ const depthGap=Math.max(0,desiredDepth-activeSame.length)/desiredDepth;
+ const starterGap=isPitcher?Math.max(0,11-major.length)/11:major.length===0?1:Math.max(0,(evaluation-best)/Math.max(20,evaluation));
+ const competition=qualified.length/(isPitcher?8:2);
+ const youthCover=Math.min(1,young.length/(isPitcher?5:2));
+ const need=Math.max(0,Math.min(1,.18+depthGap*.48+starterGap*.46-competition*.22-youthCover*.18));
+ const wins=Number(team.wins)||0,losses=Number(team.losses)||0;
+ const winRate=(wins+losses)>0?wins/(wins+losses):.5;
+ const contender=Math.max(0,Math.min(1,(winRate-.38)/.24));
+ const age=Number(p.age)||28;
+ const futureFit=Math.max(0,Math.min(1,(35-age)/12))*(1-projection.injuryRisk);
+ const urgency=need*(.78+.22*contender);
+ // Clubs without a meaningful role or sufficient financial headroom do not bid.
+ if(need<.17&&String(teamId)!==String(record.previousTeamId))return null;
+ const annualHeadroom=Math.max(0,available-compensation);
+ if(annualHeadroom<projection.floor*1.3)return null;
+ const valueMultiplier=Math.max(.55,Math.min(1.65,.70+urgency*.54+contender*.13+futureFit*.12-projection.injuryRisk*.18));
+ const longTermRisk=Math.max(0,(age-31)*.045+projection.injuryRisk*.45);
+ const preferredYears=Math.max(1,Math.min(projection.recommendedYears,Math.round(1+need*1.5+futureFit*1.4+contender*.45-longTermRisk*2)));
+ const maxYears=opportunity<.45?1:Math.max(1,Math.min(preferredYears,requestedYears||preferredYears));
  for(let years=maxYears;years>=1;years--){
   const average=projection.projections.slice(0,years).reduce((n,x)=>n+x,0)/years;
   const valueFactor=projection.projections[0]>0?average/projection.projections[0]:1;
-  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*salaryFactor*(.98+opportunity*.20+Math.min(.15,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000);
-  const signingBonus=Math.round(annualSalary*years*(.14+(Math.floor(bidSeed/87)%15)/100+Math.min(.12,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000;
-  // Reserve a year of salary and part of future guarantees, without paying salary twice.
+  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*valueMultiplier*(1+Math.min(.12,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000);
+  const bonusRate=Math.max(.08,Math.min(.36,.12+need*.12+contender*.07-longTermRisk*.06));
+  const signingBonus=Math.round(annualSalary*years*bonusRate/1000000)*1000000;
   const reserve=annualSalary+annualSalary*(years-1)*.25;
   if(available<signingBonus+compensation+reserve)continue;
   return {teamId,years,annualSalary,signingBonus,totalValue:annualSalary*years+signingBonus,
-   opportunity,contention,expectedRole:opportunity>=.75?(p.position==='P'?'주요 투수 역할':'주전 경쟁'):opportunity>=.45?'출전 경쟁':'백업 역할'};
+   opportunity,contention,need,expectedRole:opportunity>=.75?(isPitcher?'주요 투수 역할':'주전 경쟁'):opportunity>=.45?'출전 경쟁':'백업 역할'};
  }
  return null;
 }
