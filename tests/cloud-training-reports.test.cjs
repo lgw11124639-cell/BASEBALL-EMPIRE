@@ -8,7 +8,7 @@ const plain=x=>JSON.parse(JSON.stringify(x));
 (async()=>{
  const c=context();
  const reports={};for(let i=0;i<3500;i++)reports['2027-'+(i%12+1)+'-'+Math.floor(i/120)+'-'+i]={year:2027,day:i%365+1,teamId:i%10,improved:i%3,declined:i%2};
- const data={schema:1,year:2035,day:8,trainingReports:reports,custom:{preserve:'기존 계약·기록 😀'},unchangedArchive:'x'.repeat(100000)};
+ const data={schema:1,year:2035,day:8,trainingReports:reports,clubTransactionArchive:{2027:Array.from({length:25},(_,i)=>({id:i,kind:'FA 계약',body:'기존 구단 변동 기록',teams:[i%10]}))},custom:{preserve:'기존 계약·기록 😀'},unchangedArchive:'x'.repeat(100000)};
  const original=structuredClone(data);c.data=data;
  const packed=await vm.runInContext('packAuxiliaryFields(data)',c);
  assert.deepEqual(data,original,'packing never changes live state');
@@ -49,6 +49,7 @@ const plain=x=>JSON.parse(JSON.stringify(x));
   if(method==='PATCH'){for(const key of body.unset)delete serverWire[key];Object.assign(serverWire,body.set)}else serverWire=structuredClone(body);
   serverRevision++;if(loseResponse){loseResponse=false;throw Error('response lost after commit')}return {revision:serverRevision};
  };`,c);
+ c.snapshotData.clubTransactionArchive[2027].push({id:26,kind:'1군 등록',body:'신규 등록 기록'});
  c.snapshotData.trainingReports['2035-1-8-0']={year:2035,day:8,teamId:0,improved:1,declined:0};
  await assert.rejects(()=>vm.runInContext('cloudSave(snapshotData)',c));
  assert.equal(vm.runInContext('revision',c),1);

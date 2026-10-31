@@ -136,7 +136,9 @@ async function encodeCloudShard(raw,cacheKey){
 async function packCloudShards(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
  const targets=Object.entries(shardArrayFields).filter(([key])=>Array.isArray(state?.[key]));
- if(!targets.length)return state;
+ const archive=state?.clubTransactionArchive;
+ const yearArchive=archive&&typeof archive==='object'&&!Array.isArray(archive)&&Object.entries(archive).every(([year,items])=>/^\d{4}$/.test(year)&&Array.isArray(items));
+ if(!targets.length&&!yearArchive)return state;
  const copy={...state},manifest={version:1,fields:{}};
  const packed=await Promise.all(targets.map(async([key,size])=>{
   const started=performance.now();
@@ -172,6 +174,18 @@ async function packCloudShards(state){
   for(const [name,encoded] of entries)copy[name]=encoded;
   delete copy[key];
  }
+ if(yearArchive){
+  const seasons={},size=shardArrayFields.clubTransactionArchive;
+  for(const [year,items] of Object.entries(archive)){
+   const count=Math.ceil(items.length/size);seasons[year]={count,length:items.length,size};
+   const pieces=await Promise.all(Array.from({length:count},async(_,i)=>{
+    const name='beShard_clubTransactionArchive_'+year+'_'+i;
+    return [name,await encodeCloudShard(JSON.stringify(items.slice(i*size,(i+1)*size)),name)];
+   }));
+   for(const [name,value] of pieces)copy[name]=value;
+  }
+  manifest.fields.clubTransactionArchive={kind:'yearArrays',seasons};delete copy.clubTransactionArchive;
+ }
  copy.beShardManifest=manifest;
  return copy;
 }
@@ -181,6 +195,23 @@ async function unpackCloudShards(state){
  if(manifest.version!==1||!manifest.fields||typeof manifest.fields!=='object')throw Error('클라우드 분할 저장 형식이 올바르지 않습니다');
  if(typeof DecompressionStream!=='function')throw Error('클라우드 분할 저장을 해제할 수 없는 브라우저입니다');
  for(const [key,meta] of Object.entries(manifest.fields)){
+  if(key==='clubTransactionArchive'&&meta?.kind==='yearArrays'){
+   if(!meta.seasons||typeof meta.seasons!=='object'||Array.isArray(meta.seasons))throw Error('구단 변동 기록 메타데이터 오류');
+   const archive={};
+   for(const [year,part] of Object.entries(meta.seasons)){
+    if(!/^\d{4}$/.test(year)||!Number.isSafeInteger(part.count)||part.count<0||part.count>100000||!Number.isSafeInteger(part.length)||part.length<0||!Number.isSafeInteger(part.size)||part.size<1||part.size>10000||part.length>part.count*part.size)throw Error('구단 변동 기록 길이 오류');
+    const pieces=await Promise.all(Array.from({length:part.count},async(_,i)=>{
+     const name='beShard_clubTransactionArchive_'+year+'_'+i,encoded=state[name];
+     if(typeof encoded!=='string')throw Error('구단 변동 기록 일부 누락: '+name);
+     const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+     const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+     const value=JSON.parse(raw);if(!Array.isArray(value))throw Error('구단 변동 기록 배열 오류');
+     shardGzipCache.set(name,{raw,encoded});delete state[name];return value;
+    }));
+    archive[year]=pieces.flat();if(archive[year].length!==part.length)throw Error('구단 변동 기록 복원 길이 오류');
+   }
+   state[key]=archive;continue;
+  }
   if(!Object.prototype.hasOwnProperty.call(shardArrayFields,key)||!Number.isSafeInteger(meta.count)||meta.count<0||meta.count>100000||!Number.isSafeInteger(meta.length)||meta.length<0)throw Error('클라우드 분할 저장 메타데이터가 올바르지 않습니다');
   const pieces=await Promise.all(Array.from({length:meta.count},async(_,i)=>{
    const name=`beShard_${key}_${i}`,encoded=state[name];
@@ -190,6 +221,7 @@ async function unpackCloudShards(state){
    const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
    const decoded=JSON.parse(raw);
    if(!Array.isArray(decoded))throw Error('클라우드 저장 배열 형식 오류: '+name);
+   shardGzipCache.set(key+':'+i,{raw,encoded});
    delete state[name];return decoded;
   }));
   state[key]=pieces.flat();
@@ -262,7 +294,7 @@ async function unpackLeagueShards(state){
      if(typeof encoded!=='string')throw Error('리그 기록 누락: '+key);
      const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
      const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
-     return {key,value:JSON.parse(raw)};
+     const value=JSON.parse(raw);shardGzipCache.set(key,{raw,encoded});return {key,value};
     }));
     const value=d.kind==='array'?pieces.flatMap(p=>{
      if(!Array.isArray(p.value))throw Error('리그 배열 형식 오류');
@@ -307,7 +339,7 @@ async function unpackAmateurBuckets(state){
   const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
   const obj=JSON.parse(raw);
   if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error('아마추어 경력 묶음 오류');
-  return obj;
+  shardGzipCache.set('amateur:'+i,{raw,encoded});return obj;
  }));
  const restored={};
  for(const chunk of chunks)for(const [key,value] of Object.entries(chunk)){
@@ -321,7 +353,7 @@ async function unpackAmateurBuckets(state){
  return state;
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports'];
+const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports','clubTransactionArchive'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
@@ -433,7 +465,8 @@ async function unpackAuxiliaryFields(state){
   const binary=atob(encoded),bytes=new Uint8Array(binary.length);
   for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
   const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-  state[key]=JSON.parse(await new Response(stream).text());
+  const raw=await new Response(stream).text();state[key]=JSON.parse(raw);
+  const cacheEntry={key,raw,encoded};auxiliaryLastCompressed.set(key,cacheEntry);if(state[key]&&typeof state[key]==='object')auxiliaryCompressionCache.set(state[key],cacheEntry);
   delete state['bePackedAux_'+key];
  }
  delete state.bePackedAuxiliaryGzip;
@@ -667,6 +700,7 @@ export async function cloudSave(state){
   const changedGroups=Object.create(null);
   for(const {key,bytes} of changedFields){
    const group=key.startsWith('beLeaguePart_')?'league archive':
+    key.startsWith('beShard_clubTransactionArchive_')?'transaction archive':
     key.startsWith('beShard_')?'player/game shards':
     key.startsWith('beAmateur')?'amateur archive':
     key.startsWith('bePackedAux_')?'auxiliary archive':'other state';

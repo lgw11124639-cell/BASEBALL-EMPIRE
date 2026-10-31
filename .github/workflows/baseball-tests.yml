@@ -91,3 +91,5 @@ jobs:
         run: node tests/prospect-development.test.cjs
       - name: Prospect panels and eligibility
         run: node tests/prospect-panel.test.cjs
+      - name: Transaction archive shards and load cache reuse
+        run: node tests/cloud-archive-shards.test.cjs
