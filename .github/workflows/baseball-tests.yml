@@ -73,6 +73,8 @@ jobs:
         run: node tests/fa-late-settlement.test.cjs
       - name: FA contract season and stale-market guarantees
         run: node tests/fa-contract-season.test.cjs
+      - name: Unique foreign names and career continuity
+        run: node tests/foreign-names-career.test.cjs
       - name: Separate foreign and Asian-quota renewals
         run: node tests/foreign-contracts.test.cjs
       - name: FA valuations and player refusal decisions
