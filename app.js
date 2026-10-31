@@ -2719,8 +2719,17 @@ function homeInternationalSchedule(){
 }
 
 async function bePrepareTodayScores(){
- if(!state||entryMode!=='game'||tab!=='home'||seasonStepBusy||autoSeasonRunning||awardsFinished())return;
- const day=state.day,fixtures=scheduledPairs(day,false);
+ if(!state||entryMode!=='game'||tab!=='home'||seasonStepBusy||autoSeasonRunning)return;
+ const day=state.day,ps=state.postseasons?.[state.year];
+ if(awardsFinished()){
+  // Generate the current postseason game before the user watches it, just as for KBO fixtures.
+  // Keep the same day selected; replay and article buttons become available immediately.
+  if(!ps||ps.finished||Number(state.beWatchedCompletedDay)===Number(day))return;
+  if((ps.games||[]).some(g=>Number(g.day)===Number(day)))return;
+  await advanceSeason(true);
+  return;
+ }
+ const fixtures=scheduledPairs(day,false);
  if(!fixtures.length||Number(state.beWatchedCompletedDay)===Number(day))return;
  if((state.gameResults||[]).some(g=>Number(g.day)===Number(day)))return;
  await advanceSeason(true);
