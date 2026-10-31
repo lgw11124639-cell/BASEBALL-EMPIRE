@@ -317,12 +317,12 @@ async function packLeagueShards(state){
     const isArray=Array.isArray(value),count=isArray?Math.ceil(value.length/leagueShardSize):1;
     const dayLog=isArray&&name==='gameLog'&&value.every((row,i)=>row&&typeof row==='object'&&!Array.isArray(row)&&Number.isSafeInteger(row.day)&&row.day>=0&&(i===0||row.day>=value[i-1].day));
     if(dayLog){
-     const days=[];for(let at=0;at<value.length;){const day=value[at].day;let end=at+1;while(end<value.length&&value[end].day===day)end++;const rows=value.slice(at,end),chunks=Math.ceil(rows.length/leagueShardSize);days.push({day,count:chunks,length:rows.length});for(let i=0;i<chunks;i++)parts.push({name:leagueDayName(field,season,name,day,i),raw:JSON.stringify(rows.slice(i*leagueShardSize,(i+1)*leagueShardSize))});at=end;}
+     const days=[];for(let at=0;at<value.length;){const day=value[at].day;let end=at+1;while(end<value.length&&value[end].day===day)end++;const length=end-at,chunks=Math.ceil(length/leagueShardSize);days.push({day,count:chunks,length});for(let i=0;i<chunks;i++)parts.push({name:leagueDayName(field,season,name,day,i),raw:JSON.stringify(value.slice(at+i*leagueShardSize,Math.min(end,at+(i+1)*leagueShardSize)))});at=end;}
      descriptors.push({name,kind:'dayLog',length:value.length,count:days.reduce((n,d)=>n+d.count,0),days});continue;
     }
     const splitRows=isArray&&['players','prospects'].includes(name);
     descriptors.push({name,kind:splitRows?'splitRows':isArray?'array':'value',length:isArray?value.length:null,count});
-    if(splitRows){const rows=value.map(splitCloudPlayer);for(const group of ['base','live'])for(let i=0;i<count;i++)parts.push({name:leagueRowName(field,season,name,group,i),raw:JSON.stringify(rows.slice(i*leagueShardSize,(i+1)*leagueShardSize).map(row=>row[group]))});}
+    if(splitRows){for(let i=0;i<count;i++){const rows=value.slice(i*leagueShardSize,(i+1)*leagueShardSize).map(splitCloudPlayer);for(const group of ['base','live'])parts.push({name:leagueRowName(field,season,name,group,i),raw:JSON.stringify(rows.map(row=>row[group]))});}}
     else for(let i=0;i<count;i++)parts.push({name:leagueShardName(field,season,name,i),raw:JSON.stringify(isArray?value.slice(i*leagueShardSize,(i+1)*leagueShardSize):value)});
    }
    seasons[season]=descriptors;
