@@ -2560,7 +2560,7 @@ function gameMvp(g){
   const raw=g.mvp;
   const found=[...(g.awayBatters||[]),...(g.homeBatters||[]),...(g.awayPitchers||[]),...(g.homePitchers||[])].find(p=>String(p.id)===String(raw.id));
   const player=state.players.find(p=>String(p.id)===String(raw.id));
-  const resolvedName=raw.name||found?.name||player?.name;
+  const resolvedName=[raw.name,found?.name,player?.name].find(v=>typeof v==='string'&&v.trim()&&!/^(undefined|null|nan)$/i.test(v.trim()));
   if(resolvedName&&resolvedName!=='undefined')return {...raw,name:resolvedName,role:raw.role||((g.awayPitchers||[]).includes(found)||(g.homePitchers||[]).includes(found)?'투수':'타자'),detail:String(raw.detail||'경기 주요 활약')};
  }
 
