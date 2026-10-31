@@ -780,7 +780,12 @@ export async function cloudSave(state){
  const next=revisionOf(result);
  if(next===null){verified=false;throw Error('서버 저장 성공 응답의 버전이 확인되지 않았습니다. 다시 로그인하여 상태를 확인하세요')}
  const snapshotStarted=performance.now();
- revision=next;acknowledgedWireSave=structuredClone(payload);baseline={save:state,revision:next};
+ // Packed strings are immutable: retain them without copying megabytes of base64.
+ // Clone all mutable fields together, preserving their cross-field aliases.
+ const mutable={};
+ for(const [key,value] of Object.entries(payload))if(value!==null&&typeof value==='object')mutable[key]=value;
+ const detached=structuredClone(mutable);
+ revision=next;acknowledgedWireSave={...payload,...detached};baseline={save:state,revision:next};
  window.beCloudSaveStages={...window.beCloudSaveStages,postSaveCloneMs:+(performance.now()-snapshotStarted).toFixed(1),fullSaveMs:+(performance.now()-window.beCloudSaveStartAt).toFixed(1)};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
 export async function cloudGate(onReady){

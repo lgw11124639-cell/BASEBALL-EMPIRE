@@ -85,3 +85,5 @@ jobs:
         run: node tests/manager-plan-cache.test.cjs
       - name: Lossless training archive packing and upload recovery
         run: node tests/cloud-training-reports.test.cjs
+      - name: Daily rollback copy integrity and speed control
+        run: node tests/daily-copy.test.cjs
