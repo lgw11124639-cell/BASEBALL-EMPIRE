@@ -1826,6 +1826,7 @@ function faPlayerProjection(p){
  const comparable=peers.filter(x=>x.position===p.position&&String(x.id)!==String(p.id)&&((isPitcher?(Number(x.inningsPitched)||0)>=35:(Number(x.plateAppearances)||Number(x.atBats)||0)>=180)));
  const comparableSalaries=comparable.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
  const reference=comparableSalaries.length>=3?comparableSalaries[Math.floor((comparableSalaries.length-1)*.65)]:salaries.length>=5?salaries[Math.floor((salaries.length-1)*.75)]:median;
+ const salaryAnchor=Math.max(reference,comparableSalaries.length>=3?comparableSalaries[Math.floor((comparableSalaries.length-1)*.8)]:reference);
  // Use a league salary anchor when comparable salaries are distorted by a young or empty save.
  // Production, durability and age still determine the final price; this is not a fixed FA salary.
  const established=peers.filter(x=>x.position===p.position&&(isPitcher?(Number(x.inningsPitched)||0)>=45:(Number(x.plateAppearances)||Number(x.atBats)||0)>=300));
@@ -1835,7 +1836,7 @@ function faPlayerProjection(p){
  const serviceEvidence=Math.min(1,careerGames/(isPitcher?220:500));
  const marketConfidence=Math.max(recentEvidence,serviceEvidence*.55);
  const valuationBase=Math.max(reference,marketBase);
- const fairAnnual=Math.max(floor,Math.round(valuationBase*projections[0]*(.75+.25*marketConfidence)/1000000)*1000000);
+ const fairAnnual=Math.max(floor,Math.round(Math.max(valuationBase,salaryAnchor)*projections[0]*(.75+.25*marketConfidence)/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
 function faBuildOffer(p,teamId,record,projection,requestedYears=null){
