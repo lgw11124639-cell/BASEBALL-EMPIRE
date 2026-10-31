@@ -3749,8 +3749,11 @@ function nationalTeamPanel(){
 }
 let lastRenderPreparedState=null;function newsHub(){
  const seenNotices=new Set();
- const internalReport=n=>/육성 보고|선수 육성|월간 운영보고|재정 보고|스카우트 보고|단장 보고|운영보고|훈련 보고|내부 보고|구단 주요 보고|연봉협상 보고/.test(String(n.kind||'')+' '+String(n.title||''));
- const notices=[...(state.clubNotices||[]),...Object.values(state.clubTransactionArchive||{}).flat()].filter(n=>{if(!n||Number(n.year)!==Number(state.year)||internalReport(n))return false;const key=String(n.year)+':'+String(n.id);if(seenNotices.has(key))return false;seenNotices.add(key);return true;});
+ // Only public-facing baseball events belong in News. All internal reports,
+ // front-office investments, training plans and calendar notices stay outside it.
+ const publicKinds=new Set(['FA 특집','FA 협상','FA 보상','FA 미신청','트레이드','방출','방출선수 영입','웨이버 공시','웨이버 결과','보류선수 명단','신인 드래프트','드래프트 결과','드래프트 전망','외국인 영입','외국인 시즌 중 영입','외국인 교체','외국인 계약 종료','외국인 재계약','아시아쿼터 영입','아시아쿼터 재계약','아시아쿼터 계약 종료','육성선수 영입','1군 콜업','1군 말소','부상 복귀','부상자 명단','선수 부상','감독 교체','지도자 교체','지도자 재계약','코치 선임','은퇴','명예의 전당','영구결번','시즌 시상','시즌 개막','포스트시즌','포스트시즌 경기','한국시리즈 우승','대기록','국가대표','국가대표 기사','국가대표 복귀','포스팅','해외 진출','해외 복귀']);
+ const isPublicNews=n=>publicKinds.has(String(n.kind||'').trim())||/^(FA 계약|FA 계약 체결|외국인 영입|아시아쿼터 영입)$/.test(String(n.kind||'').trim());
+ const notices=[...(state.clubNotices||[]),...Object.values(state.clubTransactionArchive||{}).flat()].filter(n=>{if(!n||Number(n.year)!==Number(state.year)||!isPublicNews(n))return false;const key=String(n.year)+':'+String(n.id);if(seenNotices.has(key))return false;seenNotices.add(key);return true;});
  const games=(state.gameResults||[]).filter(g=>Number.isFinite(Number(g.day))&&state.teams?.[g.away]&&state.teams?.[g.home]);
  const category=window.beNewsCategory||'all';
  const selectedClub=window.beNewsClub==='all'?'all':String(window.beNewsClub??'all');
