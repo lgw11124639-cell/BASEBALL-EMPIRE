@@ -1905,7 +1905,7 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
 function faEvaluateOffer(p,offer,record,projection,preferences){
  const round=Number(record.negotiationRounds)||0,concession=Math.max(.55,Math.pow(.985,round));
  const veteranReservation=(Number(p.age)||0)>=38?(Number(record.previousSalary)||0)*Math.max(.15,.65*Math.pow(.96,round)):0;
- const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.985,round)),(Number(record.previousSalary)||0)*.65*concession,veteranReservation);
+ const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.985,round)),Math.min((Number(record.previousSalary)||0)*.65*concession,projection.fairAnnual*(1.6+Math.max(0,3-round)*.08)),Math.min(veteranReservation,projection.fairAnnual*1.7));
  const desiredYears=Math.max(1,Math.min((Number(p.age)||28)>=39?2:5,projection.recommendedYears+(preferences.security>.8&&round<3?1:0)-Math.floor(round/12)));
  const annualRatio=offer.annualSalary/askingAnnual;
  const guaranteeRatio=offer.totalValue/(askingAnnual*desiredYears*1.20);
