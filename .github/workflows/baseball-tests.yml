@@ -117,6 +117,8 @@ jobs:
         run: node tests/release-news.test.cjs
       - name: Explicit trade arrival and departure headlines
         run: node tests/trade-article-direction.test.cjs
+      - name: History entry, panes, categories and partial archives
+        run: node tests/history-navigation.test.cjs
       - name: News publication chronology
         run: node tests/news-order.test.cjs
       - name: Ten-club registration and foreign ownership status
