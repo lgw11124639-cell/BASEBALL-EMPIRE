@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261031-pack15';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-ci38';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
 function ballpark(team){return BALLPARKS[team?.id]||((team?.city||'구단')+' 야구장')}
@@ -1847,7 +1847,7 @@ function faPlayerProjection(p){
  }
  const faAge=Number(p.age)||28;const horizon=faAge>=39?2:faAge>=36?3:faAge>=33?4:5;
  let recommendedYears=1;
- for(let i=1;i<horizon;i++){const futureRatio=projections[0]>0?projections[i]/projections[0]:0;const minimumRatio=faAge>=36?.74:.58;if(injuryRisk<.65&&futureRatio>=minimumRatio&&(confidence>=.25||careerGames>=150||i<=1))recommendedYears=i+1;else break;}
+ for(let i=1;i<horizon;i++){const futureRatio=projections[0]>0?projections[i]/projections[0]:0;const minimumRatio=faAge>=36?.74:.58;if(injuryRisk<.65&&futureRatio>=minimumRatio&&(confidence>=.25||careerGames>=150))recommendedYears=i+1;else break;}
  // FA market benchmark: comparable established players rather than the entire league's median salary.
  const comparable=peers.filter(x=>x.position===p.position&&String(x.id)!==String(p.id)&&((isPitcher?(Number(x.inningsPitched)||0)>=35:(Number(x.plateAppearances)||Number(x.atBats)||0)>=180)));
  const comparableSalaries=comparable.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
@@ -1988,7 +1988,10 @@ function faSettleAcceptedOffer(p,record,offer){
  const activeCount=state.players.filter(x=>String(x.id)!==String(p.id)&&String(x.teamId)===String(to)&&x.level==='1군'&&!x.retired).length;
  p.teamId=to;p.level=offer.opportunity>=.65&&activeCount<28?'1군':'2군';p.contractSigned=true;p.salary=offer.annualSalary;
  profile.contractYears=offer.years;
- const startYear=Number(record.year||state.year)+1;
+ // A market opens for the following season. After rollover, that season
+ // must not advance again; a much older unsigned market cannot backdate a new deal.
+ const marketYear=Number(record.year),signingSeason=Number(state.year)+(state.postseasons?.[state.year]?.finished?1:0);
+ const startYear=Math.max(Number.isInteger(marketYear)&&marketYear>=1900?marketYear+1:signingSeason,signingSeason);
  profile.faContract={signedYear:state.year,startYear,endYear:startYear+offer.years-1,teamId:to,years:offer.years,
   annualSalary:offer.annualSalary,signingBonus:offer.signingBonus,totalValue:offer.totalValue,previousTeamId:from,previousSalary,grade:record.grade,negotiated:true,expectedRole:offer.expectedRole};
  history.push({...profile.faContract});

@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const gameContext=require('./helpers/game-context.cjs');
+const cases=[{year:2027,market:2027,finished:true,start:2028,label:'offseason signing'},{year:2028,market:2027,finished:false,start:2028,label:'spring rollover'},{year:2029,market:2027,finished:false,start:2029,label:'old unsigned spring market'},{year:2028,market:2027,finished:true,start:2029,label:'old market next offseason'},{year:2028,finished:false,start:2028,label:'legacy missing market year'},{year:2028,finished:true,start:2029,label:'legacy missing market year offseason'}];
+for(const entry of cases)for(const years of [1,3]){
+ const c=gameContext();c.entry=entry;c.term=years;
+ vm.runInContext(`state=world(0);state.year=entry.year;state.day=entry.finished?335:45;state.seasonStartDate=entry.year+'-01-01';state.teams=state.teams.slice(0,2);for(const t of state.teams)t.budget=20000000000;state.postseasons={[entry.year]:{finished:entry.finished}};
+ const player={id:9001,name:'계약 연도 검증',teamId:0,level:'FA대기',position:'SS',age:29,salary:100000000,profile:{contractYears:0,faContractHistory:[{signedYear:2020,years:2,totalValue:300000000}]},faService:{creditedSeasons:8,carryDays:0,faUses:0}};state.players=[player];
+ const record={playerId:player.id,previousTeamId:0,grade:'C',previousSalary:player.salary,...(entry.market==null?{}:{year:entry.market})};state.faMarket=[record];
+ const offer={teamId:1,years:term,annualSalary:100000000,signingBonus:20000000,totalValue:100000000*term+20000000,opportunity:.8,expectedRole:'주전 경쟁'};
+ if(!faSettleAcceptedOffer(player,record,offer))throw Error('fixture settlement failed');`,c);
+ const contract=vm.runInContext('player.profile.faContract',c);assert.equal(contract.startYear,entry.start,entry.label);assert.equal(contract.endYear,entry.start+years-1,entry.label);assert.equal(contract.signedYear,entry.year);assert.equal(vm.runInContext('player.profile.faContractHistory.length',c),2);assert.equal(vm.runInContext('player.faService.faUses',c),1);
+ c.start=entry.start;assert.equal(vm.runInContext('playerContractStatus(player,start).remainingYears',c),years);c.expired=entry.start+years;assert.equal(vm.runInContext('playerContractStatus(player,expired).type',c),'annual');assert.equal(vm.runInContext('playerContractStatus(player,expired).currentFa',c),null);
+ vm.runInContext('annualSalaryNegotiations()',c);assert.equal(vm.runInContext('player.salary',c),100000000,'guaranteed salary preserved');assert.equal(vm.runInContext('player.profile.faContractHistory.length',c),2,'no duplicate contract history');
+}
+const c=gameContext();vm.runInContext(`state=world(0);state.year=2028;state.gameResults=[];const unproven={id:99001,name:'최근 기록 없음',age:29,position:'SS',teamId:0,salary:100000000,profile:{skills:{contact:70,power:65,eye:65}},careerStats:{hits:800}};`,c);assert.equal(vm.runInContext('faPlayerProjection(unproven).recommendedYears',c),1);
+vm.runInContext('unproven.careerStats.games=250',c);assert.ok(vm.runInContext('faPlayerProjection(unproven).recommendedYears',c)>1,'proven career evidence can still justify a comeback guarantee');
+console.log('PASS: 12 FA signing/rollover/stale-market term cases, guarantees, history and missing-evidence annual term');
