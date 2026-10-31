@@ -1829,9 +1829,9 @@ function faPlayerProjection(p){
   retained*=Math.max(.35,Math.min(.995,1-Math.max(0,age-29)*.012-Math.pow(Math.max(0,age-35),2)*.006-injuryRisk*.12));
   projections.push(contribution*retained);
  }
- const horizon=confidence>=.65?5:confidence>=.35?3:careerGames>=250?3:1;
+ const faAge=Number(p.age)||28;const horizon=faAge>=39?2:faAge>=36?3:faAge>=33?4:5;
  let recommendedYears=1;
- for(let i=1;i<horizon;i++)if(injuryRisk<.55&&(projections[i]>=Math.max(.35,projections[0]*.60)||(confidence>.8&&injuryRisk<.3&&projections[i]>=.85)))recommendedYears=i+1;else break;
+ for(let i=1;i<horizon;i++){const futureRatio=projections[0]>0?projections[i]/projections[0]:0;const minimumRatio=faAge>=36?.74:.58;if(injuryRisk<.65&&futureRatio>=minimumRatio&&(confidence>=.25||careerGames>=150||i<=1))recommendedYears=i+1;else break;}
  // FA market benchmark: comparable established players rather than the entire league's median salary.
  const comparable=peers.filter(x=>x.position===p.position&&String(x.id)!==String(p.id)&&((isPitcher?(Number(x.inningsPitched)||0)>=35:(Number(x.plateAppearances)||Number(x.atBats)||0)>=180)));
  const comparableSalaries=comparable.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
@@ -1909,7 +1909,7 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  if(annualHeadroom<projection.floor*1.3)return null;
  const valueMultiplier=Math.max(.55,Math.min(1.65,.70+urgency*.54+contender*.13+futureFit*.12-projection.injuryRisk*.18));
  const longTermRisk=Math.max(0,(age-31)*.045+projection.injuryRisk*.45);
- const preferredYears=Math.max(1,Math.min(projection.recommendedYears,Math.round(1+need*1.5+futureFit*1.4+contender*.45-longTermRisk*2)));
+ const preferredYears=Math.max(1,Math.min(projection.recommendedYears,Math.round(projection.recommendedYears-(1-need)*.55-projection.injuryRisk*.65+(retention?.4:0)+(need>.65?.35:0))));
  const maxYears=Math.max(1,Math.min(preferredYears,requestedYears||preferredYears));
  for(let years=maxYears;years>=1;years--){
   const average=projection.projections.slice(0,years).reduce((n,x)=>n+x,0)/years;
