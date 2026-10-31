@@ -1850,7 +1850,7 @@ function faEvaluateOffer(p,offer,record,projection,preferences){
  if(annualRatio<.78&&guaranteeRatio<.82)reason='연봉·총액 조건 차이';
  else if(offer.opportunity<.35&&preferences.playingTime>.75&&annualRatio<1.05)reason='출전 기회 부족';
  else if(offer.years<desiredYears-2&&preferences.security>.85&&annualRatio<1.05)reason='보장기간 조건 차이';
- else if(utility<.94&&annualRatio<.92)reason=preferences.security>preferences.money&&guaranteeRatio<annualRatio?'보장기간·총액 재협상 희망':'다른 구단 제안 대기';
+ else if(utility<.94)reason=preferences.contention>.75&&offer.contention<.45?'우승 경쟁력에 대한 이견':preferences.loyalty>.75&&String(offer.teamId)!==String(record.previousTeamId)?'원소속 구단 잔류 선호':preferences.security>preferences.money&&guaranteeRatio<annualRatio?'보장기간·총액 재협상 희망':annualRatio<.92?'연봉 조건 차이':'제안 조건 종합 평가 미달';
  return {accepted:reason==='조건 합의',reason,utility,askingAnnual:Math.round(askingAnnual),desiredYears};
 }
 function faRegisterMarketPlayer(p,from,grade,previousSalary,year){
@@ -1932,7 +1932,14 @@ function negotiateFaContract(p,record){
  }
  record.lastOutcome=offers.length?'선수 제안 거절':'구단 제안 없음';
  record.lastReason=offers.length?offers.slice().sort((a,b)=>b.utility-a.utility)[0].reason:'구단의 전력 계획·재정 조건에 맞는 제안 없음';
- clubNotice('FA 협상',p.name+' '+record.lastOutcome,record.lastReason+' · 미계약 상태로 다음 협상을 기다립니다.',[record.previousTeamId],[p.id]);
+ const best=rankedOffers[0];
+ const won=n=>money(Math.round(Number(n)||0));
+ const teamName=id=>state.teams.find(t=>String(t.id)===String(id))?.name||'해당 구단';
+ const headline=best?teamName(best.teamId)+', FA '+p.name+' 협상 결렬…'+best.years+'년 총액 '+won(best.totalValue)+' 제시':'FA '+p.name+', 구단 제안 없이 협상 대기';
+ const details=best
+  ?teamName(best.teamId)+'는 '+p.name+'에게 '+best.years+'년 계약을 제시했다. 연봉 '+won(best.annualSalary)+', 계약금 '+won(best.signingBonus)+', 총액 '+won(best.totalValue)+' 규모다. 선수 측 희망 조건은 연봉 '+won(best.askingAnnual)+', 계약기간 '+best.desiredYears+'년으로, 같은 기간 기준 희망 연봉 합계는 '+won(best.askingAnnual*best.desiredYears)+'이다. 협상이 결렬된 주요 사유는 '+best.reason+'이다. 이는 실제 협상 판정 결과이며, 양측은 다음 검토 일정에 재협상할 수 있다.'
+  :'이번 검토에서는 구단의 재정 및 전력 구성 조건에 맞는 공식 제안이 나오지 않았다. 선수는 FA 미계약 상태로 남는다.';
+ clubNotice('FA 협상',headline,details,[record.previousTeamId,...(best?[best.teamId]:[])],[p.id]);
  return false;
 }
 function faNegotiationSummary(p){
