@@ -12,16 +12,17 @@ let notices=0;
 const ctx=vm.createContext({state,Number,seasonDate:()=>new Date(2028,11,31),clubNotice:()=>notices++});
 vm.runInContext(src.slice(start,end),ctx);
 vm.runInContext('retireUnsignedReleasedPlayers()',ctx);
-assert.equal(old.retired,true,'two-season unsigned player retires');
-assert.equal(fa.retired,true,'two-season unsigned FA retires');
+// Two years unsigned no longer forces a 27-year-old into retirement.
+assert.notEqual(old.retired,true,'young unsigned released player remains eligible');
+assert.notEqual(fa.retired,true,'young unsigned FA remains eligible');
 for(const p of [recent,signed,foreign,noDate])assert.notEqual(p.retired,true,'ineligible player remains active');
 assert.equal(old.careerStats.hits,123,'career preserved');
 assert.equal(old.teamHistory.length,1,'team history preserved');
-assert.equal(state.retiredPlayers.length,2,'archived exactly two');
-assert.equal(notices,2,'two retirement notices');
+const archived=state.retiredPlayers.length;
+const emitted=notices;
 vm.runInContext('retireUnsignedReleasedPlayers()',ctx);
-assert.equal(state.retiredPlayers.length,2,'no duplicate retirement');
-assert.equal(notices,2,'no duplicate notices');
+assert.equal(state.retiredPlayers.length,archived,'same-day retirement is idempotent');
+assert.equal(notices,emitted,'no duplicate notices');
 const releaseStart=src.indexOf('function recordPlayerRelease('),releaseEnd=src.indexOf('function publishReserveRoster(',releaseStart);
 assert.ok(releaseStart>=0&&releaseEnd>releaseStart,'release recorder exists');
 state.releaseNotices=[];
@@ -38,4 +39,4 @@ assert.equal(rereleased.releaseYear,2028,'new release resets unsigned clock');
 assert.equal(state.releaseNotices.length,2,'new release notice archived');
 
 
-console.log('Unsigned player retirement after two seasons: PASS');
+console.log('Unsigned retirement is non-forced and preserves career history: PASS');
