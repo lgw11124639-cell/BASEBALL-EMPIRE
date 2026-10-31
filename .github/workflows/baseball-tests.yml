@@ -73,3 +73,7 @@ jobs:
         run: node tests/fa-late-settlement.test.cjs
       - name: Separate foreign and Asian-quota renewals
         run: node tests/foreign-contracts.test.cjs
+      - name: FA valuations and player refusal decisions
+        run: node tests/fa-negotiation.test.cjs
+      - name: Ten-club FA negotiation and cash conservation
+        run: node tests/fa-market-simulation.test.cjs

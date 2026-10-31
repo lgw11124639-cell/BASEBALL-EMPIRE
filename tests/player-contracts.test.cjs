@@ -39,8 +39,8 @@ for(const [p,expected,absent] of [
 // Real offseason signing followed by salary negotiations, every guaranteed year, and expiry.
 vm.runInContext(`const testPlayer={id:70,name:'FA 계약 검증',teamId:0,level:'1군',position:'SS',age:28,salary:100000000,
  registeredDays:145,games:144,atBats:550,hits:170,homeRuns:25,profile:{contractYears:1},
- faService:{creditedSeasons:7,carryDays:0,faUses:0},faApplicationDecisions:{2027:true},careerStats:{hits:700}};
- ensureProfile(testPlayer);testPlayer.profile.contractYears=1;state.players=[testPlayer];
+ faService:{creditedSeasons:7,carryDays:0,faUses:0},faApplicationDecisions:{2027:true},faPreferences:{money:0,security:0,playingTime:0,contention:0,loyalty:0},careerStats:{hits:700}};
+ ensureProfile(testPlayer);testPlayer.profile.contractYears=1;state.players=[testPlayer,{id:71,name:'동시대 선수',teamId:0,level:'2군',position:'SS',age:27,salary:200000000,profile:{contractYears:1},atBats:500,hits:140,homeRuns:15,registeredDays:100}];
  state.teams[0].budget=1000000;state.teams[1].budget=10000000000;
  runOffseasonContracts();`,c);
 let p=vm.runInContext('testPlayer',c);

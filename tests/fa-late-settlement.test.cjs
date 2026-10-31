@@ -10,6 +10,8 @@ for(const failure of ['bonus','compensation-credit',null]){
  faService:{creditedSeasons:8,carryDays:0,faUses:0},careerStats:{hits:800}}];
  state.faMarket=[{year:2027,playerId:7,previousTeamId:0,grade:'B',previousSalary:100000000}];
  state.postseasons={2027:{finished:true}};awardsFinished=()=>true;
+ // Isolate payment failure paths after a player has agreed to the terms.
+ faEvaluateOffer=()=>({accepted:true,reason:'조건 합의',utility:1,askingAnnual:33000000,desiredYears:1});
  const realFinanceEntry=financeEntry;financeEntry=(id,amount,kind,detail)=>{
   if(failure==='bonus'&&kind==='FA 계약금'&&amount<0)return false;
   if(failure==='compensation-credit'&&id===0&&kind==='FA 이적 보상금'&&amount>0)return false;
@@ -30,14 +32,15 @@ for(const failure of ['bonus','compensation-credit',null]){
   assert.equal((state.faCompensations||[]).length,0,'no phantom compensation records');
   assert.ok(!(state.clubNotices||[]).some(n=>n.kind==='FA 보상'),'no false successful transfer notice');
  }else{
-  assert.equal(p.teamId,1);assert.equal(p.level,'2군');assert.equal(p.faService.faUses,1);
+  assert.equal(p.teamId,1);assert.equal(p.level,'1군','accepted major-league opportunity is reflected in roster level');assert.equal(p.faService.faUses,1);
   assert.equal(p.profile.faContract.startYear,2028);assert.equal(p.profile.faContract.endYear,2028);
   assert.equal(state.teams[0].budget,200000000);
-  const fee=Math.round(85000000*.35);
+  const fee=p.profile.faContract.signingBonus;
+  const agreedSalary=p.salary;
   assert.equal(state.teams[1].budget,1000000000-200000000-fee);
   assert.equal(state.faCompensations.length,1);
   vm.runInContext('state.offseasonContractsDone={2027:true};annualSalaryNegotiations();reviewUnsignedFaMarket()',c);
-  assert.equal(p.salary,85000000,'one-year late FA salary is guaranteed');
+  assert.equal(p.salary,agreedSalary,'one-year late FA salary is guaranteed');
   assert.equal(state.faCompensations.length,1,'repeat review does not duplicate compensation');
   assert.equal(p.profile.faContractHistory.length,2);
  }

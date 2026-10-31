@@ -749,3 +749,6 @@
  padding:10px 14px calc(10px + env(safe-area-inset-bottom))!important;
 }
 #be-replay-overlay #be-replay-all{grid-column:1/-1}
+
+/* Keep FA refusal reasons readable without pushing names off narrow screens. */
+.fa-market-player-main .fa-negotiation-note{font-size:11px;line-height:1.5;color:#58708e;white-space:normal;overflow-wrap:anywhere}
