@@ -81,6 +81,8 @@ jobs:
         run: node tests/fa-market-simulation.test.cjs
       - name: FA review dates and year rollover
         run: node tests/fa-schedule.test.cjs
+      - name: Injured specialist substitution and emergency fielding
+        run: node tests/injury-fielding-substitution.test.cjs
       - name: Defensive replacements and actual playing experience
         run: node tests/bench-experience.test.cjs
       - name: Fielding specialization and gradual coaching

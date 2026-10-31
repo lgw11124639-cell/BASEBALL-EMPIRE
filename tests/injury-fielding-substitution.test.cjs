@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const context=require('./helpers/game-context.cjs');
+for(const qualified of [false,true]){
+ const c=context();c.haveCatcher=qualified;vm.runInContext(`state=world(0);state.day=150;const injuryClub=inningClub(0,150,'우투');const catcher=injuryClub.batters.find(p=>assignedFieldingPosition(injuryClub,p)==='C');injuryClub.batters=[catcher,...injuryClub.batters.filter(p=>p.id!==catcher.id)];
+ const emergencyCandidate={id:99971,name:'임시 후보',teamId:0,age:25,position:'3B',profile:{skills:{contact:90,fielding:70,arm:70}}},qualifiedCandidate={id:99972,name:'전문 포수',teamId:0,age:25,position:'C',profile:{skills:{contact:40,fielding:65,arm:65}}};
+ injuryClub.plan.first=[...injuryClub.batters,emergencyCandidate,...(haveCatcher?[qualifiedCandidate]:[])];state.players.push(emergencyCandidate,qualifiedCandidate);beInjuryDiagnosis=()=>({type:'타박상',severity:'경상',days:30});beRecordMedicalInjury=p=>{ensureProfile(p).injury={days:30};return true};gameInjuryCheck(injuryClub,7,()=>0);`,c);
+ const read=s=>vm.runInContext(s,c);assert.notEqual(read('injuryClub.batters[0].id'),read('catcher.id'),'injured catcher must leave the field');assert.equal(read('injuryClub.injuries.length'),1);assert.equal(read('injuryClub.substitutions.length'),1);
+ if(qualified){assert.equal(read('injuryClub.batters[0].id'),99972,'qualified catcher preferred despite weaker hitting');assert.equal(read('injuryClub.substitutions[0].reason'),'부상 교체');}
+ else{assert.equal(read('injuryClub.batters[0].id'),99971);assert.match(read('injuryClub.substitutions[0].reason'),/임시 수비/);assert.equal(read('emergencyCandidate.position'),'3B','emergency use does not grant a new registered position');assert.equal(read('assignedFieldingPosition(injuryClub,emergencyCandidate)'),'C');assert.ok(read("fieldingPositionPenalty(emergencyCandidate,'C')")>20);assert.equal(read('emergencyCandidate.profile.playingExperience.leagues.major.substitutions'),1);}
+}
+console.log('PASS: injured catcher exits, qualified reserve priority and explicitly penalized emergency fielding without position conversion');
