@@ -32,6 +32,18 @@ const missing=project({...p,atBats:0,hits:0,homeRuns:0,doubles:0,triples:0,walks
 assert.equal(missing.recommendedYears,1,'lack of recent appearances does not justify a long guarantee');
 const weak=project({...p,hits:95,homeRuns:3,walks:10,doubles:12,triples:0});
 assert.ok(weak.fairAnnual<healthy.fairAnnual,'recent performance changes price');
+// Market valuation regressions: identical pitcher with a proven closer role
+// must be worth more than a middle reliever, without a fixed FA minimum.
+const reliever={...p,id:300,position:'P',age:30,atBats:0,hits:0,doubles:0,triples:0,homeRuns:0,
+ inningsPitched:62,earnedRuns:18,games:58,gamesStarted:0,saves:0,holds:0,
+ profile:{...p.profile,baseball:{role:'불펜'}}};
+const middle=project(reliever);
+const closer=project({...reliever,saves:37});
+const setup=project({...reliever,holds:28});
+assert.ok(closer.fairAnnual>middle.fairAnnual,'37-save closer earns a higher market valuation than middle relief');
+assert.ok(setup.fairAnnual>middle.fairAnnual,'28-hold setup pitcher earns a higher market valuation than middle relief');
+assert.ok(project({...reliever,earnedRuns:9}).fairAnnual>project({...reliever,earnedRuns:35}).fairAnnual,
+ 'pitching run prevention changes market value');
 // Salary, playing time, security, contention and loyalty each have independent refusal paths.
 const projection=healthy;
 const clean={money:0,security:0,playingTime:0,contention:0,loyalty:0};
