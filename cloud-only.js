@@ -217,16 +217,22 @@ async function packCloudShards(state){
     if(cached?.raw===raw)entries[i]=[name,cached.encoded];
     else changedJobs.push(i);
    }
-   let nextJob=0;
+   let nextJob=0,playerCompressSumMs=0,playerCompressMaxMs=0,playerJobsFinished=0;
    await Promise.all(Array.from({length:Math.min(shardGzipConcurrency,changedJobs.length)},async()=>{
     while(nextJob<changedJobs.length){
-     const i=changedJobs[nextJob++], [name,raw]=jobs[i];
+     const i=changedJobs[nextJob++], [name,raw]=jobs[i],jobStarted=performance.now();
      entries[i]=[name,await encodeCloudShard(raw,name)];
+     const elapsed=performance.now()-jobStarted;
+     playerCompressSumMs+=elapsed;
+     playerCompressMaxMs=Math.max(playerCompressMaxMs,elapsed);
+     playerJobsFinished++;
     }
    }));
    const encodingMs=performance.now()-encodingStarted;
    const gzipDelta=window.beCloudGzipSince(gzipBefore);
-   window.bePlayerShardDetail={chunks:count*2,changed,cacheHits,splitMs:+splitMs.toFixed(1),serializeMs:+serializeMs.toFixed(1),encodingMs:+encodingMs.toFixed(1),gzipTasks:gzipDelta.tasks,gzipQueued:gzipDelta.queued,gzipWaitSumMs:gzipDelta.waitMs,gzipWorkSumMs:gzipDelta.workMs,totalMs:+(performance.now()-started).toFixed(1)};
+   // Global gzip counters include other concurrent archives; use player-local
+   // completed jobs for the authoritative player count.
+   window.bePlayerShardDetail={chunks:count*2,changed,cacheHits,splitMs:+splitMs.toFixed(1),serializeMs:+serializeMs.toFixed(1),encodingMs:+encodingMs.toFixed(1),gzipTasks:playerJobsFinished,gzipQueued:gzipDelta.queued,gzipWaitSumMs:gzipDelta.waitMs,gzipWorkSumMs:gzipDelta.workMs,playerCompressSumMs:+playerCompressSumMs.toFixed(1),playerCompressMaxMs:+playerCompressMaxMs.toFixed(1),globalGzipTasks:gzipDelta.tasks,totalMs:+(performance.now()-started).toFixed(1)};
    return {key,size,length:array.length,count,kind:'splitRows',entries,diagnostic:{key,chunks:count*2,cacheHits,changed,rawBytes,serializeMs:+serializeMs.toFixed(1),splitMs:+splitMs.toFixed(1),encodingMs:+encodingMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
   }
   let cacheHits=0,changed=0,rawBytes=0,serializeMs=0,gzipMs=0,fastReused=0;
