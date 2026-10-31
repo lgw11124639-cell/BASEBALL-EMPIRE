@@ -12,7 +12,7 @@ const notices=[];let snapshotCalls=0,faCredits=0;
 const context=vm.createContext({state,Math,Number,Map,Set,
  awardsFinished:()=>true,
  snapshotOverseasInterest:()=>{},processOverseasPosting:()=>{},resolveOverseasNegotiations:()=>{},
- saveSeasonSnapshot:()=>snapshotCalls++,renewStaffContracts:()=>{},hireRetiredCoaches:()=>{},
+ reviewInactiveRoster:()=>{},saveSeasonSnapshot:()=>snapshotCalls++,renewStaffContracts:()=>{},hireRetiredCoaches:()=>{},
  rng:()=>()=>0,ensureProfile:p=>p.profile,
  creditFaSeason:()=>faCredits++,honorRetiredPlayers:()=>{},publishReserveRoster:()=>{},
  clubNotice:(...args)=>notices.push(args),

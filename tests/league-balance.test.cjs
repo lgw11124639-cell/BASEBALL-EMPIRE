@@ -28,7 +28,7 @@ assert.equal(data.games.length,720,'720 actual games completed');
 for(const t of data.teams)assert.equal(t.wins+t.losses+t.draws,144,'144 games per team');
 const keys=['atBats','hits','doubles','triples','homeRuns','walks','strikeouts','runs','hitByPitch','sacrificeBunts','sacrificeFlies'];
 const totals=Object.fromEntries(keys.map(k=>[k,0]));
-let outs=0,earnedRuns=0,pitches=0;
+let outs=0,earnedRuns=0,pitches=0,completeGames=0,shutouts=0;
 const histogram={};
 for(const g of data.games){
   assert.ok(!g.recordAudit?.length,'batting and pitching records agree');
@@ -39,12 +39,12 @@ for(const g of data.games){
     assert.equal(bats.reduce((n,p)=>n+p.runs,0),runs,'player runs agree');
     histogram[runs]=(histogram[runs]||0)+1;
     for(const p of bats)for(const k of keys)totals[k]+=p[k]||0;
-    for(const p of arms){outs+=p.outs;earnedRuns+=p.earnedRuns;pitches+=p.pitchCount;}
+    for(const p of arms){if(p.completeGame){completeGames++;assert.equal(arms.length,1,'one pitcher finishes a complete game');assert.equal(p.outs,g[(side==='away'?'home':'away')+'Innings'].filter(x=>x!==null).length*3,'complete game covers actual defensive outs');}if(p.shutout){shutouts++;assert.ok(p.completeGame);assert.equal(g[(side==='away'?'home':'away')+'Runs'],0);}outs+=p.outs;earnedRuns+=p.earnedRuns;pitches+=p.pitchCount;}
   }
 }
 assert.ok(totals.hits>=totals.homeRuns+totals.doubles+totals.triples);
 const report={seed:'world=20271001; games=year*100003+day*7919+'+seedOffset,games:data.games.length,
-  gamesPerTeam:data.teams.map(t=>t.wins+t.losses+t.draws),...totals,outs,earnedRuns,pitches,
+  gamesPerTeam:data.teams.map(t=>t.wins+t.losses+t.draws),...totals,outs,earnedRuns,pitches,completeGames,shutouts,
   battingAverage:totals.hits/totals.atBats,ERA:earnedRuns*27/outs,
   runsPerTeamGame:totals.runs/1440,runsHistogram:histogram,
   elapsedSeconds:(performance.now()-started)/1000,

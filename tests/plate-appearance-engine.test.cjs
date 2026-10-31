@@ -25,7 +25,9 @@ const context=vm.createContext({state,Math,Number,
  clubBattingPhilosophy:()=> '빅볼',ri:()=>3,
  markBlownSave:()=>{},
 });
-vm.runInContext(src.slice(start,end),context);
+const limitStart=src.indexOf('function starterPitchLimit('),limitEnd=src.indexOf('function selectPitcher(',limitStart);
+ assert.ok(limitStart>=0&&limitEnd>limitStart,'actual starter limit dependency found');
+ vm.runInContext(src.slice(limitStart,limitEnd)+src.slice(start,end),context);
 const half=vm.runInContext('playHalf',context);
 for(let i=0;i<1000;i++){
  const before=batters.reduce((n,p)=>n+p.atBats,0);

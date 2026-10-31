@@ -28,7 +28,9 @@ function runScenario(name,events,expected,{walkoff=false,homeRuns=0}={}){
   sharedHitAdvance:()=>{const e=events[next-1];return {single:1,double:2,triple:3,homer:4}[e]||1},
   ri:()=>3,markBlownSave:()=>{},
  });
- vm.runInContext(source.slice(start,end),context);
+ const limitStart=source.indexOf('function starterPitchLimit('),limitEnd=source.indexOf('function selectPitcher(',limitStart);
+ assert.ok(limitStart>=0&&limitEnd>limitStart,'actual starter limit dependency found');
+ vm.runInContext(source.slice(limitStart,limitEnd)+source.slice(start,end),context);
  const half=vm.runInContext('playHalf',context);
  const scored=half(batting,fielding,9,()=>0.99,walkoff);
  const sum=k=>batters.reduce((n,p)=>n+(p[k]||0),0);

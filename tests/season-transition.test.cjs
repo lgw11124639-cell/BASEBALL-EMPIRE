@@ -14,6 +14,7 @@ const notices=[],snapshots=[],archived=[];
 const context=vm.createContext({
  state,Math,Number,Map,Set,
  awardsFinished:()=>true,
+ advanceStaffCalendar:()=>{},
  simulateOverseasSeason:()=>{},
  trackExportedPlayerSeasons:()=>{},
  snapshotInternationalPool:()=>{},

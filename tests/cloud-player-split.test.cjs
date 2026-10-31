@@ -7,7 +7,7 @@ async function unpack(c,wire){c.wire=structuredClone(wire);return vm.runInContex
 function delta(c,before,after){c.before=before;c.after=after;return vm.runInContext('makeCloudDelta(before,after)',c)}
 const player=i=>({id:i,name:'선수'+i,age:22,teamId:i%10,games:12,atBats:40,hits:10,unknown:{preserve:'추가 필드 😀'},teamHistory:Array.from({length:80},(_,j)=>({year:2027+j%9,teamId:(i+j)%10,reason:'선수 '+i+'의 과거 소속과 계약 기록 '+j})),profile:{skills:{contact:50+i%20,stuff:60},injury:{days:2,status:'회복'},baseball:{fatigue:15,lastAppearance:150,arsenal:{pitches:[{name:'직구',grade:60}],control:60}},growth:Array.from({length:40},(_,j)=>({year:2027+j%9,day:j*3,kind:'성장 관찰 '+i+'-'+j}))},minorStats:{seasonYear:2035,games:12,atBats:30,hits:7}});
 (async()=>{
- const c=context(),state={year:2035,day:160,players:Array.from({length:320},(_,i)=>player(i)),amateurCareerArchive:{},highSchoolBaseball:{2035:{prospects:Array.from({length:96},(_,i)=>player(1000+i)),gameLog:[]}},draftResults:{2035:Array.from({length:110},(_,i)=>({playerId:i,round:i%11+1,name:'드래프트'+i,notes:'관찰 기록'.repeat(80)}))}};
+ const c=context(),state={year:2035,day:160,teams:[{id:0,staff:{manager:{name:'감독',birthYear:1980,age:55,contractStartYear:2035,contractEndYear:2037,contractHistory:[{startYear:2035,endYear:2037}]}}}],staffRetirements:[{name:'은퇴 감독',retiredYear:2034}],players:Array.from({length:320},(_,i)=>player(i)),amateurCareerArchive:{},highSchoolBaseball:{2035:{prospects:Array.from({length:96},(_,i)=>player(1000+i)),gameLog:[]}},draftResults:{2035:Array.from({length:110},(_,i)=>({playerId:i,round:i%11+1,name:'드래프트'+i,notes:'관찰 기록'.repeat(80)}))}};
  for(let i=0;i<1200;i++)state.amateurCareerArchive['career-'+i]=Array.from({length:6},(_,n)=>({year:2030+n,league:'highSchool',games:20+n,atBats:60+n,hits:15+n,team:'학교'+i}));
  state.amateurCareerArchive.empty=[];
  state.amateurCareerArchive.unsorted=[{year:2035,games:10},{year:2030,games:2},{year:2035,games:3}];
@@ -39,7 +39,11 @@ const player=i=>({id:i,name:'선수'+i,age:22,teamId:i%10,games:12,atBats:40,hit
  const gameContext=require('./helpers/game-context.cjs');const originalEngine=gameContext();
  vm.runInContext("state=world(0);state.created='2027-01-01T00:00:00.000Z';state.day=100;state.gameResults=[];simulateLeagueDay()",originalEngine);
  const engineState=plain(vm.runInContext('state',originalEngine));const restoredEngineState=await unpack(c,await pack(c,engineState));assert.deepEqual(plain(restoredEngineState),engineState);
- const restoredEngine=gameContext();restoredEngine.loaded=restoredEngineState;vm.runInContext('state=loaded;simulateLeagueDay()',restoredEngine);vm.runInContext('simulateLeagueDay()',originalEngine);
+ const restoredEngine=gameContext();restoredEngine.loaded=restoredEngineState;vm.runInContext('state=loaded',restoredEngine);
+ // Medical injury checks use Math.random, including college games. Compare the
+ // same future random stream, rather than two independent injury lotteries.
+ const nextDay=engine=>vm.runInContext('globalThis.roundTripRandomSeed=20391001;Math.random=()=>((globalThis.roundTripRandomSeed=(Math.imul(globalThis.roundTripRandomSeed,1664525)+1013904223)>>>0)/4294967296);simulateLeagueDay()',engine);
+ nextDay(restoredEngine);nextDay(originalEngine);
  c.left=vm.runInContext('state',originalEngine);c.right=vm.runInContext('state',restoredEngine);assert.equal(vm.runInContext('canonicalCloudValue(left)===canonicalCloudValue(right)',c),true,'production day after round-trip has identical results, finances and development');
  console.log('PASS real production day before/after complete save round-trip');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -11,7 +11,7 @@ const state={year:2026,day:350,teamId:0,players:[player],teams:[{id:0,name:'Old'
 const ledger=[];
 const context=vm.createContext({state,Math,Number,Map,Set,
  seasonDate:day=>{const d=new Date('2026-01-01T12:00:00');d.setDate(d.getDate()+day-1);return d},
- awardsFinished:()=>true,snapshotOverseasInterest:()=>{},processOverseasPosting:()=>{},resolveOverseasNegotiations:()=>{},saveSeasonSnapshot:()=>{},renewStaffContracts:()=>{},hireRetiredCoaches:()=>{},
+ reviewInactiveRoster:()=>{},awardsFinished:()=>true,snapshotOverseasInterest:()=>{},processOverseasPosting:()=>{},resolveOverseasNegotiations:()=>{},saveSeasonSnapshot:()=>{},renewStaffContracts:()=>{},hireRetiredCoaches:()=>{},
  rng:()=>()=>0.1,ensureProfile:p=>p.profile,creditFaSeason:()=>{},
  faServiceStatus:p=>({eligible:true,record:p.faService}),
  bePlayerEvaluation:()=>85,
@@ -22,6 +22,9 @@ const context=vm.createContext({state,Math,Number,Map,Set,
  publishMajorFaArticle:()=>{},honorRetiredPlayers:()=>{},publishReserveRoster:()=>{},clubNotice:()=>{},money:x=>String(x),
 });
 vm.runInContext(source.slice(source.indexOf('function playerRetirementProbability('),source.indexOf('function runOffseasonContracts(')),context);
+const reportStart=source.indexOf('function publishFaCompensationNotice('),reportEnd=source.indexOf('function recordPlayerRelease(',reportStart);
+assert.ok(reportStart>=0&&reportEnd>reportStart);
+vm.runInContext(source.slice(reportStart,reportEnd),context);
 vm.runInContext(source.slice(start,end),context);
 vm.runInContext('runOffseasonContracts()',context);
 vm.runInContext('state.day+=22;negotiateFaContract(state.players[0],state.faMarket[0])',context);

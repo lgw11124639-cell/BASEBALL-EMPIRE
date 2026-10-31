@@ -81,6 +81,14 @@ jobs:
         run: node tests/fa-market-simulation.test.cjs
       - name: FA review dates and year rollover
         run: node tests/fa-schedule.test.cjs
+      - name: Staff contracts, age and manager employment
+        run: node tests/staff-lifecycle.test.cjs
+      - name: Long inactive roster and retirement flow
+        run: node tests/roster-inactivity.test.cjs
+      - name: FA agreement and compensation publication
+        run: node tests/fa-news-flow.test.cjs
+      - name: Real complete-game and shutout path
+        run: node tests/complete-game-path.test.cjs
       - name: Historical article club identity
         run: node tests/news-historical-club.test.cjs
       - name: News publication chronology
