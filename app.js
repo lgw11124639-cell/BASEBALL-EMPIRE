@@ -1863,7 +1863,8 @@ function faPlayerProjection(p){
  const roleAnchor=(highLeverage||eliteStarter||eliteHitter)?Math.max(valuationBase,upperMarket):valuationBase;
  const previousPay=Number((state.faMarket||[]).find(x=>String(x.playerId)===String(p.id)&&!x.signedYear)?.previousSalary)||Number(p.salary)||0;
  const productive=sample/Math.max(1,weight)>=(isPitcher?45:250)&&relative>=.95;
- const careerAnchor=productive&&previousPay>=300000000?previousPay*Math.max(.55,Math.min(1.12,.75+(relative-1)*.35))*(1-injuryRisk*.50):0;
+ const leveragePremium=isPitcher&&!starter&&sample/Math.max(1,weight)>=30?Math.min(1.45,1+Math.max(0,seasonSaves-8)*.022+Math.max(0,seasonHolds-12)*.012):1;
+ const careerAnchor=productive&&previousPay>=300000000?previousPay*Math.max(.55,Math.min(1.12,.75+(relative-1)*.35))*(1-injuryRisk*.50)*leveragePremium:0;
  const fairAnnual=Math.max(floor,Math.round(Math.max(roleAnchor*projections[0]*(.75+.25*marketConfidence),salaryAnchor*projections[0]*(.75+.25*marketConfidence),careerAnchor)/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
