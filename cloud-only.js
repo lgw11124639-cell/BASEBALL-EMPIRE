@@ -642,7 +642,7 @@ async function call(path,method='GET',data,rev,preSerializedJson){
  // Large saves are transferred compressed only when the browser supports it.
  // Retry uncompressed on unsupported-content-encoding responses; never retry conflicts.
  let compressed=false;
- if(path==='/v2/saves/main'&&method==='PUT'&&json&&json.length>100000&&gzipSaveSupported&&typeof CompressionStream==='function'){
+ if(path==='/v2/saves/main'&&(method==='PUT'||method==='PATCH')&&json&&json.length>100000&&gzipSaveSupported&&typeof CompressionStream==='function'){
   try{
    const stream=new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));
    body=await new Response(stream).arrayBuffer();
