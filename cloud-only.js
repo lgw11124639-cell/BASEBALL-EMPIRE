@@ -81,7 +81,7 @@ async function unpackReplayResults(state){
 // One team per shard: unchanged clubs are not retransmitted on daily PATCH.
 // Existing unsharded saves still load; manifests carry per-field chunk sizes.
 // Archive arrays use small chunks; non-array legacy shapes remain untouched.
-const shardArrayFields={players:32,gameResults:4,teams:1,clubNotices:20,clubTransactionArchive:20,trainingReports:20};
+const shardArrayFields={players:8,gameResults:4,teams:1,clubNotices:20,clubTransactionArchive:20,trainingReports:20};
 // Auxiliary archives may contain nested objects, not arrays; inspect their shape
 // before selecting a lossless sharding strategy. Read-only diagnostics only.
 const shardGzipCache=new Map();
@@ -133,6 +133,35 @@ async function encodeCloudShard(raw,cacheKey){
  try{return await promise}
  finally{if(shardGzipInFlight.get(cacheKey)?.promise===promise)shardGzipInFlight.delete(cacheKey)}
 }
+// Separate frequently changing counters from biographies/contracts/training history.
+// Both halves are serialized and compared exactly on every save; no dirty flags.
+const livePlayerFields=new Set(['games','plateAppearances','atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','runsBattedIn','runs','strikeouts','stolenBases','caughtStealing','sacrificeBunts','sacrificeFlies','groundedIntoDoublePlays','fieldingErrors','inningsPitched','innings','wins','losses','rbi','pitchCount','earnedRuns','pitchingWins','pitchingLosses','saves','holds','pitchingStrikeouts','gamesStarted','hitsAllowed','walksAllowed','homeRunsAllowed','battersFaced','qualityStarts','blownSaves','completeGames','shutouts','totalPitches','lastAppearance','lastPitchDay','minorLastPitchDay','minorStats','registeredDays','faRegisteredDaysByYear','lastTraining']);
+function splitCloudPlayer(p){
+ if(!p||typeof p!=='object'||Array.isArray(p))return {base:p,live:null};
+ const base={...p},live={};
+ for(const key of livePlayerFields)if(Object.prototype.hasOwnProperty.call(base,key)){live[key]=base[key];delete base[key];}
+ if(base.profile&&typeof base.profile==='object'&&!Array.isArray(base.profile)){
+  const profile={...base.profile},dynamic={};
+  if(Object.prototype.hasOwnProperty.call(profile,'injury')){dynamic.injury=profile.injury;delete profile.injury;}
+  if(profile.baseball&&typeof profile.baseball==='object'&&!Array.isArray(profile.baseball)){
+   const baseball={...profile.baseball},moving={};
+   for(const key of ['fatigue','lastAppearance'])if(Object.prototype.hasOwnProperty.call(baseball,key)){moving[key]=baseball[key];delete baseball[key];}
+   if(Object.keys(moving).length)dynamic.baseball=moving;
+   profile.baseball=baseball;
+  }
+  if(Object.keys(dynamic).length)live.profile=dynamic;
+  base.profile=profile;
+ }
+ return {base,live};
+}
+function joinCloudPlayer(base,live){
+ if(live===null)return base;
+ if(!base||typeof base!=='object'||!live||typeof live!=='object'||Array.isArray(base)||Array.isArray(live))throw Error('선수 분할 기록 형식 오류');
+ const p={...base,...live};
+ if(live.profile&&(!base.profile||typeof base.profile!=='object'||Array.isArray(base.profile)||typeof live.profile!=='object'||Array.isArray(live.profile)))throw Error('선수 프로필 분할 형식 오류');
+ if(live.profile){p.profile={...base.profile,...live.profile};if(live.profile.baseball)p.profile.baseball={...base.profile?.baseball,...live.profile.baseball};}
+ return p;
+}
 async function packCloudShards(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined')return state;
  const targets=Object.entries(shardArrayFields).filter(([key])=>Array.isArray(state?.[key]));
@@ -143,6 +172,17 @@ async function packCloudShards(state){
  const packed=await Promise.all(targets.map(async([key,size])=>{
   const started=performance.now();
   const array=state[key],count=Math.ceil(array.length/size);
+  if(key==='players'){
+   const rows=array.map(splitCloudPlayer),entries=[];let changed=0,cacheHits=0,rawBytes=0;
+   for(const group of ['base','live']){
+    const parts=await Promise.all(Array.from({length:count},async(_,i)=>{
+     const name='beShard_players_'+group+'_'+i,raw=JSON.stringify(rows.slice(i*size,(i+1)*size).map(row=>row[group]));rawBytes+=raw.length;
+     if(shardGzipCache.get(name)?.raw===raw)cacheHits++;else changed++;
+     return [name,await encodeCloudShard(raw,name)];
+    }));entries.push(...parts);
+   }
+   return {key,size,length:array.length,count,kind:'splitRows',entries,diagnostic:{key,chunks:count*2,cacheHits,changed,rawBytes,serializeMs:0,gzipWaitSumMs:0,ms:+(performance.now()-started).toFixed(1)}};
+  }
   let cacheHits=0,changed=0,rawBytes=0,serializeMs=0,gzipMs=0,fastReused=0;
   const gameCacheReason=key==='gameResults'?{prior:!!gameShardFastCache,sameArray:gameShardFastCache?.array===array,priorLength:gameShardFastCache?.length??null,currentLength:array.length,priorVersion:gameShardFastCache?.version??null,currentVersion:window.beGameResultsRevision,sizeMatch:gameShardFastCache?.size===size}:null;
   const entries=await Promise.all(Array.from({length:count},async(_,i)=>{
@@ -168,9 +208,9 @@ async function packCloudShards(state){
   return {key,size,length:array.length,count,entries,diagnostic:{key,chunks:count,cacheHits,changed,fastReused,gameCacheReason,rawBytes,serializeMs:+serializeMs.toFixed(1),gzipWaitSumMs:+gzipMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
  }));
  window.beCloudArrayShardTiming=packed.map(x=>x.diagnostic);
- window.beCloudShardSummary=packed.map(x=>({field:x.key,chunks:x.count,changed:x.diagnostic.changed,cacheHits:x.diagnostic.cacheHits,serializeMs:x.diagnostic.serializeMs,wallMs:x.diagnostic.ms,gzipTaskSumMs:x.diagnostic.gzipWaitSumMs,rawKB:Math.round(x.diagnostic.rawBytes/1024)}));
- for(const {key,size,length,count,entries} of packed){
-  manifest.fields[key]={count,length,size};
+ window.beCloudShardSummary=packed.map(x=>({field:x.key,chunks:x.diagnostic.chunks,changed:x.diagnostic.changed,cacheHits:x.diagnostic.cacheHits,serializeMs:x.diagnostic.serializeMs,wallMs:x.diagnostic.ms,gzipTaskSumMs:x.diagnostic.gzipWaitSumMs,rawKB:Math.round(x.diagnostic.rawBytes/1024)}));
+ for(const {key,size,length,count,entries,kind} of packed){
+  manifest.fields[key]={count,length,size,...(kind?{kind}:{})};
   for(const [name,encoded] of entries)copy[name]=encoded;
   delete copy[key];
  }
@@ -213,6 +253,18 @@ async function unpackCloudShards(state){
    state[key]=archive;continue;
   }
   if(!Object.prototype.hasOwnProperty.call(shardArrayFields,key)||!Number.isSafeInteger(meta.count)||meta.count<0||meta.count>100000||!Number.isSafeInteger(meta.length)||meta.length<0)throw Error('클라우드 분할 저장 메타데이터가 올바르지 않습니다');
+  if(key==='players'&&meta.kind==='splitRows'){
+   const groups={};
+   for(const group of ['base','live'])groups[group]=(await Promise.all(Array.from({length:meta.count},async(_,i)=>{
+    const name='beShard_players_'+group+'_'+i,encoded=state[name];if(typeof encoded!=='string')throw Error('선수 분할 기록 일부 누락: '+name);
+    const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+    const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    const value=JSON.parse(raw);if(!Array.isArray(value))throw Error('선수 분할 기록 배열 오류');
+    shardGzipCache.set(name,{raw,encoded});delete state[name];return value;
+   }))).flat();
+   if(groups.base.length!==meta.length||groups.live.length!==meta.length)throw Error('선수 분할 기록 길이 오류');
+   state[key]=groups.base.map((base,i)=>joinCloudPlayer(base,groups.live[i]));continue;
+  }
   const pieces=await Promise.all(Array.from({length:meta.count},async(_,i)=>{
    const name=`beShard_${key}_${i}`,encoded=state[name];
    if(typeof encoded!=='string')throw Error('클라우드 저장 데이터 일부가 누락되었습니다: '+name);
@@ -236,6 +288,7 @@ const leagueShardFields=['highSchoolBaseball','collegeBaseball','minorLeague','i
 // Existing manifests retain their recorded chunk counts and remain readable.
 const leagueShardSize=24;
 function leagueShardName(field,season,name,i){return 'beLeaguePart_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+i}
+function leagueRowName(field,season,name,group,i){return 'beLeagueRows_'+field+'_'+encodeURIComponent(season)+'_'+encodeURIComponent(name)+'_'+group+'_'+i}
 async function packLeagueShards(state){
  if(typeof CompressionStream!=='function')return state;
  const targets=leagueShardFields.filter(field=>state?.[field]&&typeof state[field]==='object'&&!Array.isArray(state[field]));
@@ -248,8 +301,10 @@ async function packLeagueShards(state){
    const descriptors=[];
    for(const [name,value] of Object.entries(node)){
     const isArray=Array.isArray(value),count=isArray?Math.ceil(value.length/leagueShardSize):1;
-    descriptors.push({name,kind:isArray?'array':'value',length:isArray?value.length:null,count});
-    for(let i=0;i<count;i++)parts.push({name:leagueShardName(field,season,name,i),raw:JSON.stringify(isArray?value.slice(i*leagueShardSize,(i+1)*leagueShardSize):value)});
+    const splitRows=isArray&&['players','prospects'].includes(name);
+    descriptors.push({name,kind:splitRows?'splitRows':isArray?'array':'value',length:isArray?value.length:null,count});
+    if(splitRows){const rows=value.map(splitCloudPlayer);for(const group of ['base','live'])for(let i=0;i<count;i++)parts.push({name:leagueRowName(field,season,name,group,i),raw:JSON.stringify(rows.slice(i*leagueShardSize,(i+1)*leagueShardSize).map(row=>row[group]))});}
+    else for(let i=0;i<count;i++)parts.push({name:leagueShardName(field,season,name,i),raw:JSON.stringify(isArray?value.slice(i*leagueShardSize,(i+1)*leagueShardSize):value)});
    }
    seasons[season]=descriptors;
   }
@@ -288,7 +343,18 @@ async function unpackLeagueShards(state){
   for(const [season,descriptors] of Object.entries(meta.seasons)){
    if(!Array.isArray(descriptors))throw Error('리그 시즌 메타데이터 오류');
    const entries=await Promise.all(descriptors.map(async d=>{
-    if(typeof d.name!=='string'||!Number.isSafeInteger(d.count)||d.count<0||d.count>100000||!['array','value'].includes(d.kind)||d.kind==='array'&&(!Number.isSafeInteger(d.length)||d.length<0)||d.kind==='value'&&d.count!==1)throw Error('리그 묶음 메타데이터 오류');
+    if(typeof d.name!=='string'||!Number.isSafeInteger(d.count)||d.count<0||d.count>100000||!['array','value','splitRows'].includes(d.kind)||d.kind!=='value'&&(!Number.isSafeInteger(d.length)||d.length<0)||d.kind==='value'&&d.count!==1)throw Error('리그 묶음 메타데이터 오류');
+    if(d.kind==='splitRows'){
+     const groups={},keys=[];
+     for(const group of ['base','live'])groups[group]=(await Promise.all(Array.from({length:d.count},async(_,i)=>{
+      const key=leagueRowName(field,season,d.name,group,i),encoded=state[key];if(typeof encoded!=='string')throw Error('리그 선수 기록 누락: '+key);
+      const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+      const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+      const value=JSON.parse(raw);if(!Array.isArray(value))throw Error('리그 선수 기록 배열 오류');shardGzipCache.set(key,{raw,encoded});keys.push(key);return value;
+     }))).flat();
+     if(groups.base.length!==d.length||groups.live.length!==d.length)throw Error('리그 선수 기록 길이 불일치');
+     return {name:d.name,value:groups.base.map((base,i)=>joinCloudPlayer(base,groups.live[i])),keys};
+    }
     const pieces=await Promise.all(Array.from({length:d.count},async(_,i)=>{
      const key=leagueShardName(field,season,d.name,i),encoded=state[key];
      if(typeof encoded!=='string')throw Error('리그 기록 누락: '+key);
@@ -315,9 +381,60 @@ async function unpackLeagueShards(state){
 // Stable, independently compressed amateur-career buckets. Old saves remain readable.
 const amateurBucketCount=32;
 function amateurBucket(key){let h=2166136261;for(let i=0;i<key.length;i++){h^=key.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0)%amateurBucketCount}
+// Career rows from completed seasons stay separate from this season's counters.
+async function packYearAmateurBuckets(state,data){
+ const bins=new Map(),empty=[];
+ for(const key of Object.keys(data).sort()){
+  const rows=data[key];if(!rows.length){empty.push(key);continue;}
+  for(let index=0;index<rows.length;index++){
+   const row=rows[index],year=String(row.year);
+   if(!bins.has(year))bins.set(year,new Map());
+   const buckets=bins.get(year),bucket=amateurBucket(key);
+   if(!buckets.has(bucket))buckets.set(bucket,Object.create(null));
+   const entries=buckets.get(bucket);(entries[key]||(entries[key]=[])).push([index,row]);
+  }
+ }
+ const copy={...state},parts={};
+ for(const year of [...bins.keys()].sort()){
+  const buckets=bins.get(year),indices=[...buckets.keys()].sort((a,b)=>a-b);parts[year]=indices;
+  const encoded=await Promise.all(indices.map(async index=>{
+   const name='beAmateurYear_'+year+'_'+index;return [name,await encodeCloudShard(JSON.stringify(buckets.get(index)),name)];
+  }));for(const [name,value] of encoded)copy[name]=value;
+ }
+ copy.beAmateurBucketManifest={version:2,count:amateurBucketCount,entries:Object.keys(data).length,parts,empty};
+ delete copy.amateurCareerArchive;return copy;
+}
+async function unpackYearAmateurBuckets(state,meta){
+ if(meta.count!==amateurBucketCount||!Number.isSafeInteger(meta.entries)||meta.entries<0||!meta.parts||typeof meta.parts!=='object'||Array.isArray(meta.parts)||!Array.isArray(meta.empty))throw Error('연도별 아마추어 경력 메타데이터 오류');
+ if(typeof DecompressionStream!=='function')throw Error('아마추어 경력 압축 해제 불가');
+ const records=new Map();
+ for(const key of meta.empty){if(typeof key!=='string'||records.has(key))throw Error('아마추어 빈 경력 중복 오류');records.set(key,new Map());}
+ for(const [year,indices] of Object.entries(meta.parts)){
+  if(!/^\d{4}$/.test(year)||!Array.isArray(indices)||new Set(indices).size!==indices.length||indices.some(i=>!Number.isInteger(i)||i<0||i>=amateurBucketCount))throw Error('아마추어 연도별 조각 오류');
+  const chunks=await Promise.all(indices.map(async index=>{
+   const name='beAmateurYear_'+year+'_'+index,encoded=state[name];if(typeof encoded!=='string')throw Error('아마추어 연도별 경력 누락: '+name);
+   const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+   const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+   const value=JSON.parse(raw);if(!value||typeof value!=='object'||Array.isArray(value))throw Error('아마추어 경력 객체 오류');
+   shardGzipCache.set(name,{raw,encoded});delete state[name];return value;
+  }));
+  for(const chunk of chunks)for(const [key,rows] of Object.entries(chunk)){
+   if(!Array.isArray(rows)||meta.empty.includes(key))throw Error('아마추어 경력 배열 오류');
+   if(!records.has(key))records.set(key,new Map());const record=records.get(key);
+   for(const pair of rows){
+    if(!Array.isArray(pair)||pair.length!==2||!Number.isSafeInteger(pair[0])||pair[0]<0||record.has(pair[0])||Number(pair[1]?.year)!==Number(year))throw Error('아마추어 경력 순서 오류');
+    record.set(pair[0],pair[1]);
+   }
+  }
+ }
+ if(records.size!==meta.entries)throw Error('아마추어 경력 개수 불일치');
+ const restored=[];for(const [key,record] of records){const rows=[...record].sort((a,b)=>a[0]-b[0]);if(rows.some(([index],i)=>index!==i))throw Error('아마추어 경력 순서 누락');restored.push([key,rows.map(([,row])=>row)]);}
+ state.amateurCareerArchive=Object.fromEntries(restored);delete state.beAmateurBucketManifest;return state;
+}
 async function packAmateurBuckets(state){
  const data=state?.amateurCareerArchive;
  if(!data||typeof data!=='object'||Array.isArray(data)||typeof CompressionStream!=='function')return state;
+ if(Object.values(data).every(rows=>Array.isArray(rows)&&rows.every(row=>row&&typeof row==='object'&&!Array.isArray(row)&&Number.isInteger(row.year)&&row.year>=1900&&row.year<=9999)))return packYearAmateurBuckets(state,data);
  const buckets=Array.from({length:amateurBucketCount},()=>({}));
  for(const [key,value] of Object.entries(data))buckets[amateurBucket(key)][key]=value;
  const encoded=await Promise.all(buckets.map((bucket,i)=>encodeCloudShard(JSON.stringify(bucket),'amateur:'+i)));
@@ -330,6 +447,7 @@ async function packAmateurBuckets(state){
 async function unpackAmateurBuckets(state){
  const meta=state?.beAmateurBucketManifest;
  if(!meta)return state;
+ if(meta.version===2)return unpackYearAmateurBuckets(state,meta);
  if(meta.version!==1||meta.count!==amateurBucketCount||!Number.isSafeInteger(meta.entries)||meta.entries<0)throw Error('아마추어 경력 메타데이터 오류');
  if(typeof DecompressionStream!=='function')throw Error('아마추어 경력 압축 해제 불가');
  const chunks=await Promise.all(Array.from({length:meta.count},async(_,i)=>{
@@ -353,7 +471,7 @@ async function unpackAmateurBuckets(state){
  return state;
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports','clubTransactionArchive'];
+const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports','clubTransactionArchive','draftResults'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
@@ -523,6 +641,13 @@ async function call(path,method='GET',data,rev,preSerializedJson){
    const broadcastBytes=sample.reduce((n,g)=>n+JSON.stringify(g.broadcastEvents||[]).length,0);
    window.beCloudGameResultsAudit={games:results.length,sampleGames:sample.length,sampleBytes,broadcastBytes,broadcastShare:sampleBytes?Math.round(broadcastBytes/sampleBytes*100):0};
   }catch(_){}finally{window.beCloudPayloadAuditMs=Math.round((performance.now()-auditStart)*10)/10}
+ }
+ // The old audit was sampled once per page; never show that stale PATCH size
+ // beside today's upload. Derive set size from the existing wire JSON without
+ // serializing the multi-megabyte set object again.
+ if(measure&&method==='PATCH'&&data?.set&&json){
+  const overhead=JSON.stringify({...data,set:null}).length-4;
+  window.beCloudPayloadAudit=[{key:'set',bytes:json.length-overhead},{key:'unset',bytes:JSON.stringify(data.unset||[]).length},{key:'protocol',bytes:JSON.stringify(data.protocol)?.length||0}];
  }
  const encodedAt=measure?performance.now():0;
  let response=await fetch(API+path,{method,headers,body,cache:'no-store'});
@@ -699,7 +824,7 @@ export async function cloudSave(state){
   })).sort((a,b)=>b.bytes-a.bytes):[];
   const changedGroups=Object.create(null);
   for(const {key,bytes} of changedFields){
-   const group=key.startsWith('beLeaguePart_')?'league archive':
+   const group=(key.startsWith('beLeaguePart_')||key.startsWith('beLeagueRows_'))?'league archive':
     key.startsWith('beShard_clubTransactionArchive_')?'transaction archive':
     key.startsWith('beShard_')?'player/game shards':
     key.startsWith('beAmateur')?'amateur archive':

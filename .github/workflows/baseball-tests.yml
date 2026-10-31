@@ -93,3 +93,5 @@ jobs:
         run: node tests/prospect-panel.test.cjs
       - name: Transaction archive shards and load cache reuse
         run: node tests/cloud-archive-shards.test.cjs
+      - name: Player/live shards, career years and real-day round-trip
+        run: node tests/cloud-player-split.test.cjs
