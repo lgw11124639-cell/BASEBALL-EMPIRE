@@ -18,7 +18,7 @@ async function run(mode){
  awardsFinished:()=>mode==='rollover'||mode==='offseason',
  offseasonDay:()=>{ctx.state.day++},
  simulateLeagueDay:()=>{simulations++;ctx.state.day++;if(mode==='engine failure')throw Error('injected simulation failure')},
- validateSeasonIntegrity:()=>[],render:()=>{},save:async()=>{saves++;if(mode==='save failure')throw Error('injected storage failure')},
+ validateSeasonIntegrity:()=>[],scheduledPairs:()=>[],render:()=>{},save:async()=>{saves++;if(mode==='save failure')throw Error('injected storage failure')},
  stopAutoSeason:()=>{stops++},alert:()=>{},
  runOffseasonContracts:()=>{contracts++;ctx.state.offseasonContractsDone[2027]=true},
  annualSalaryNegotiations:()=>{negotiations++},
