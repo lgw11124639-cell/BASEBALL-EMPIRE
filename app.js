@@ -1369,7 +1369,10 @@ function retireUnsignedReleasedPlayers(){
   const recentWork=recent.reduce((n,x)=>n+(Number(p.position==='P'?x.inningsPitched:x.plateAppearances)||0),0);
   const competitive=recentGames>=90&&(recentWork>=(p.position==='P'?85:250));
   const inactive=recentGames<25||recentWork<(p.position==='P'?20:70);
-  const risk=age<30&&yearsUnsigned<5?0:Math.min(.90,Math.max(0,(age>=42?.52:age>=40?.35:age>=38?.22:age>=35?.16:age>=30?.045:0)+(yearsUnsigned-2)*.09+(appearances<50?.08:0)-(productive?.08:0)+(competitive?-.24:inactive?.16:0)));
+  const faMarketRecord=p.level==='FA대기'?(state.faMarket||[]).find(x=>String(x.playerId)===String(p.id)&&!x.signedYear):null;
+  const finalWithdrawal=Number(faMarketRecord?.marketClosedYear)>=state.year-1;
+  const finalWithdrawalRisk=finalWithdrawal&&age>=38?.18:finalWithdrawal&&age>=35?.08:0;
+  const risk=age<30&&yearsUnsigned<5?0:Math.min(.90,Math.max(0,(age>=42?.52:age>=40?.35:age>=38?.22:age>=35?.16:age>=30?.045:0)+(yearsUnsigned-2)*.09+finalWithdrawalRisk+(appearances<50?.08:0)-(productive?.08:0)+(competitive?-.24:inactive?.16:0)));
   // Stable per-player annual draw, independent of external simulation helpers.
   const seed=((Number(p.id)||1)*7919+state.year*104729)>>>0;
   const draw=((Math.imul(seed^seed>>>16,2246822507)>>>0)%1000000)/1000000;
