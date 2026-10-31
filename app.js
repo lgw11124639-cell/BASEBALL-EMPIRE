@@ -1933,7 +1933,7 @@ function queueFaNegotiation(p,record){
  record.openedDate=seasonDate(state.day).toISOString().slice(0,10);
  record.lastOutcome='협상 준비';record.lastReason='원소속 구단을 포함한 전 구단이 협상 조건을 검토합니다';
  // Clubs open negotiations on different days; once opened, unsigned players are reviewed daily.
- scheduleFaReview(p,record,1+((Math.imul(Number(p.id)||1,7919)>>>0)%4));
+ scheduleFaReview(p,record,2+((Math.imul(Number(p.id)||1,7919)>>>0)%3));
 }
 function scheduleFaReview(p,record,delay){
  const date=seasonDate(state.day);date.setDate(date.getDate()+delay);
