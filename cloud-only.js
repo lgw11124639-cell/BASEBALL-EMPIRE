@@ -205,10 +205,12 @@ async function packCloudShards(state){
      jobs.push([name,raw]);
     }
    }
+   const gzipBefore=window.beCloudGzipSnapshot();
    const encodingStarted=performance.now();
    const entries=await Promise.all(jobs.map(async([name,raw])=>[name,await encodeCloudShard(raw,name)]));
    const encodingMs=performance.now()-encodingStarted;
-   window.bePlayerShardDetail={chunks:count*2,changed,cacheHits,splitMs:+splitMs.toFixed(1),serializeMs:+serializeMs.toFixed(1),encodingMs:+encodingMs.toFixed(1),totalMs:+(performance.now()-started).toFixed(1)};
+   const gzipDelta=window.beCloudGzipSince(gzipBefore);
+   window.bePlayerShardDetail={chunks:count*2,changed,cacheHits,splitMs:+splitMs.toFixed(1),serializeMs:+serializeMs.toFixed(1),encodingMs:+encodingMs.toFixed(1),gzipTasks:gzipDelta.tasks,gzipQueued:gzipDelta.queued,gzipWaitSumMs:gzipDelta.waitMs,gzipWorkSumMs:gzipDelta.workMs,totalMs:+(performance.now()-started).toFixed(1)};
    return {key,size,length:array.length,count,kind:'splitRows',entries,diagnostic:{key,chunks:count*2,cacheHits,changed,rawBytes,serializeMs:+serializeMs.toFixed(1),splitMs:+splitMs.toFixed(1),encodingMs:+encodingMs.toFixed(1),ms:+(performance.now()-started).toFixed(1)}};
   }
   let cacheHits=0,changed=0,rawBytes=0,serializeMs=0,gzipMs=0,fastReused=0;
