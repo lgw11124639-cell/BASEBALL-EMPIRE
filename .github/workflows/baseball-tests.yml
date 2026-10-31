@@ -107,6 +107,8 @@ jobs:
         run: node tests/complete-game-path.test.cjs
       - name: Historical article club identity
         run: node tests/news-historical-club.test.cjs
+      - name: Club release news grouping
+        run: node tests/release-news.test.cjs
       - name: News publication chronology
         run: node tests/news-order.test.cjs
       - name: Roster combined filters
