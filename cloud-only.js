@@ -135,6 +135,7 @@ async function encodeCloudShard(raw,cacheKey){
 }
 // Separate frequently changing counters from biographies/contracts/training history.
 // Both halves are serialized and compared exactly on every save; no dirty flags.
+const beDynamicPitchProfileFields=new Set(['fatigue','lastAppearance','pitchMixSeasonYear','pitchMixSeason']);
 const livePlayerFields=new Set(['games','plateAppearances','atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','runsBattedIn','runs','strikeouts','stolenBases','caughtStealing','sacrificeBunts','sacrificeFlies','groundedIntoDoublePlays','fieldingErrors','inningsPitched','innings','wins','losses','rbi','pitchCount','earnedRuns','pitchingWins','pitchingLosses','saves','holds','pitchingStrikeouts','gamesStarted','hitsAllowed','walksAllowed','homeRunsAllowed','battersFaced','qualityStarts','blownSaves','completeGames','shutouts','totalPitches','lastAppearance','lastPitchDay','minorLastPitchDay','minorStats','registeredDays','faRegisteredDaysByYear','lastTraining']);
 function splitCloudPlayer(p){
  if(!p||typeof p!=='object'||Array.isArray(p))return {base:p,live:null};
@@ -148,9 +149,10 @@ function splitCloudPlayer(p){
    if(key==='injury')continue;
    const value=source[key];
    if(key==='baseball'&&value&&typeof value==='object'&&!Array.isArray(value)){
-    const baseball={};moving={};const fields=['fatigue','lastAppearance','pitchMixSeasonYear','pitchMixSeason'];
-    for(const name of Object.keys(value))if(!fields.includes(name))put(baseball,name,value[name]);
-    for(const name of fields)if(Object.prototype.hasOwnProperty.call(value,name))moving[name]=value[name];
+    const baseball={};moving={};for(const name of Object.keys(value)){
+     if(beDynamicPitchProfileFields.has(name))moving[name]=value[name];
+     else put(baseball,name,value[name]);
+    }
     profile.baseball=baseball;
    }else put(profile,key,value);
   }
