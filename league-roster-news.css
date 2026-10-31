@@ -1,1 +1,8 @@
 .league-row[data-league-team]{width:100%;border:0;border-bottom:1px solid #e1e8f0;background:transparent;text-align:left;font:inherit;color:inherit;cursor:pointer}.league-row[data-league-team].my-team{background:#eaf3fd}.league-roster-list{padding:10px 0 35px}.league-roster-list h3{margin:24px 0 10px;color:#174574;font-size:16px}.league-roster-player{width:100%;display:flex;gap:10px;align-items:center;justify-content:space-between;border:0;border-bottom:1px solid #e1e8f0;background:white;text-align:left;padding:14px 8px;color:#1c3c60}.league-roster-player b{flex:1}.league-roster-player span{color:#71869c;font-size:12px}.article-player-link{background:transparent;border:0;padding:4px 0;color:#145a96;font:inherit;font-weight:700;text-decoration:underline}.article-batter-highlight{font-size:15px;line-height:1.9;border-left:3px solid #2c72ae;padding:10px 14px;background:#f1f6fc}.player-overlay{z-index:10020!important}.article-batting-club h5{margin:14px 0}
+#league-team-overlay .league-club-dialog{width:min(100%,1120px);max-width:1120px;box-sizing:border-box;background:#eef3f8}
+.league-club-content{min-width:0;padding-bottom:28px}
+.league-club-content .dashboard-section{min-width:0}
+.league-club-content .roster-filter-toolbar{max-width:100%;box-sizing:border-box}
+.league-club-content .lineup-grid-columns{min-width:0}
+.league-club-content .league-roster-archive{background:#fff;padding:14px;border:1px solid #dce6f0;border-radius:12px}
+@media(max-width:600px){#league-team-overlay .league-club-dialog{padding-left:12px;padding-right:12px}.league-club-content .dashboard-section{padding:14px 10px}.league-club-content .roster-modes{gap:5px}.league-club-content .roster-modes button{padding:10px 5px;font-size:12px}}
