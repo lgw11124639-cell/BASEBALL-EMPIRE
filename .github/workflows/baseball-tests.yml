@@ -87,3 +87,5 @@ jobs:
         run: node tests/cloud-training-reports.test.cjs
       - name: Daily rollback copy integrity and speed control
         run: node tests/daily-copy.test.cjs
+      - name: Prospect readiness and five-year development
+        run: node tests/prospect-development.test.cjs
