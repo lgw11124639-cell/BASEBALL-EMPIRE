@@ -1351,7 +1351,7 @@ function nationalTeamReturnDay(){
   clubNotice('국가대표 복귀','대표팀 차출 종료 · '+players.length+'명 소속 구단 복귀',body,teams,players.map(p=>p.id));
  }
 }
-function countDailyFaRegistration(){const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,today=now.toISOString().slice(0,10);if(month<3||month>10)return;for(const p of state.players){if(p.retired||p.draftPending||p.level!=='1군'||p.profile?.injury?.days>0||p.nationalDutyUntil&&today<=p.nationalDutyUntil)continue;p.faRegisteredDaysByYear=p.faRegisteredDaysByYear||{};const days=p.faRegisteredDaysByYear;if(days[year]>=145)continue;days[year]=(Number(days[year])||0)+1}}
+function countDailyFaRegistration(){const now=seasonDate(state.day),year=now.getFullYear(),month=now.getMonth()+1,today=now.toISOString().slice(0,10);if(month<3||month>10)return;for(const p of state.players){if(p.retired||p.draftPending||p.level!=='1군'||p.foreignPlayer)continue;p.faRegisteredDaysByYear=p.faRegisteredDaysByYear||{};p.faLastRegistrationCountedDateByYear=p.faLastRegistrationCountedDateByYear||{};const days=p.faRegisteredDaysByYear;if(p.faLastRegistrationCountedDateByYear[year]===today)continue;p.faLastRegistrationCountedDateByYear[year]=today;if((Number(days[year])||0)>=145)continue;days[year]=(Number(days[year])||0)+1}}
 function retireUnsignedReleasedPlayers(){
  const date=seasonDate(state.day);
  if(date.getMonth()!==11||date.getDate()!==31)return;
