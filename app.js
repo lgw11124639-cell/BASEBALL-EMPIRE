@@ -2404,15 +2404,17 @@ function gameBroadcastArticle(g){
  return {title,paragraph:picks.sort((x,y)=>scoring.indexOf(x)-scoring.indexOf(y)).map(x=>x.text).join(' '),bullpen:changes.slice(0,5).join(' ')};
 }
 function beArticleTeamPlayerNames(value,notice){
- let result=String(value||'');if(!notice||!Array.isArray(notice.players)||!notice.players.length)return result;
+ let result=String(value||'');
+ if(!notice||!Array.isArray(notice.players)||!notice.players.length)return result;
  const players=notice.players.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(p=>p&&p.name).sort((a,b)=>b.name.length-a.name.length);
- for(const p of players){const team=state.teams.find(t=>String(t.id)===String(p.teamId))||((notice.teams||[]).length===1?state.teams.find(t=>String(t.id)===String(notice.teams[0])):null);
-  if(!team)continue;const prefix=String(team.name||'').trim();if(!prefix)continue;
-  const name=p.name.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\$&');
-  result=result.replace(new RegExp('(^|[^가-힣A-Za-z0-9])('+name+')','g'),(full,before,matched,offset,whole)=>{
-   const preceding=whole.slice(Math.max(0,offset-50),offset+before.length);
-   if(new RegExp('(?:'+prefix.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\$&')+')\\s*$').test(preceding))return full;
-   return before+prefix+' '+matched;
+ const escapePattern=str=>Array.from(String(str)).map(ch=>'\\^$.*+?()[]{}|'.includes(ch)?'\\'+ch:ch).join('');
+ for(const p of players){
+  const team=state.teams.find(t=>String(t.id)===String(p.teamId))||((notice.teams||[]).length===1?state.teams.find(t=>String(t.id)===String(notice.teams[0])):null);
+  const prefix=String(team?.name||'').trim();
+  if(!prefix)continue;
+  result=result.replace(new RegExp('(^|[^가-힣A-Za-z0-9])('+escapePattern(p.name)+')','g'),(full,before,matched,offset,whole)=>{
+   const preceding=whole.slice(Math.max(0,offset-60),offset+before.length).trimEnd();
+   return preceding.endsWith(prefix)?full:before+prefix+' '+matched;
   });
  }
  return result;
