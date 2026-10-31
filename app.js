@@ -1805,7 +1805,8 @@ function faPlayerProjection(p){
   relative=league>0?Math.max(.35,Math.min(2.5,Math.pow(actual/league,1.6))):1;
  }
  const scouting=Math.max(.25,Math.min(2.2,(bePlayerEvaluation(p)-30)/35));
- const bullpenImpact=isPitcher&&!starter?Math.min(1.9,1+Math.max(0,stats.saves/Math.max(1,weight)-8)*.018+Math.max(0,stats.holds/Math.max(1,weight)-12)*.008):1;
+ const seasonSaves=stats.saves/Math.max(1,weight),seasonHolds=stats.holds/Math.max(1,weight);
+ const bullpenImpact=isPitcher&&!starter?Math.min(2.5,1+Math.max(0,seasonSaves-8)*.038+Math.max(0,seasonHolds-12)*.018):1;
  const contribution=(scouting*(1-confidence*.75)+relative*availability*confidence*.75)*(.45+.55*confidence)*bullpenImpact;
  const injury=p.profile?.injury||p.injury||{};
  const recordedInjuries=[...(Array.isArray(p.injuryHistory)?p.injuryHistory:[]),...(Array.isArray(p.profile?.injuryHistory)?p.profile.injuryHistory:[])].filter(x=>Number(x.year)>=state.year-2&&Number(x.year)<=state.year);
@@ -1842,7 +1843,14 @@ function faPlayerProjection(p){
  const serviceEvidence=Math.min(1,careerGames/(isPitcher?220:500));
  const marketConfidence=Math.max(recentEvidence,serviceEvidence*.55);
  const valuationBase=Math.max(reference,marketBase);
- const fairAnnual=Math.max(floor,Math.round(Math.max(valuationBase,salaryAnchor)*projections[0]*(.75+.25*marketConfidence)/1000000)*1000000);
+ // Established closers and setup pitchers compete for scarce high-leverage roles.
+ // Use upper-tier salaries from the actual save, rather than a fabricated FA minimum.
+ const highLeverage=isPitcher&&!starter&&sample/Math.max(1,weight)>=30&&(seasonSaves>=20||seasonHolds>=22);
+ const leagueEstablished=peers.filter(x=>!x.foreignPlayer&&((x.position==='P'&&(Number(x.inningsPitched)||0)>=40)||(x.position!=='P'&&(Number(x.plateAppearances)||Number(x.atBats)||0)>=300)));
+ const leaguePay=leagueEstablished.map(x=>Number(x.salary)||0).filter(x=>x>=floor).sort((a,b)=>a-b);
+ const upperMarket=leaguePay.length>=8?leaguePay[Math.floor((leaguePay.length-1)*.80)]:valuationBase;
+ const roleAnchor=highLeverage?Math.max(valuationBase,upperMarket):valuationBase;
+ const fairAnnual=Math.max(floor,Math.round(Math.max(roleAnchor,salaryAnchor)*projections[0]*(.75+.25*marketConfidence)/1000000)*1000000);
  return {fairAnnual,recommendedYears,projections,confidence,injuryRisk,floor};
 }
 function faBuildOffer(p,teamId,record,projection,requestedYears=null){
