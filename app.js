@@ -2800,13 +2800,25 @@ function beReplayFinalRecordCard(g){
 function beOpenPostseasonArticle(day,away){
  const g=(state.postseasons?.[state.year]?.games||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));
  if(!g)return;
- const a=state.teams[g.away],h=state.teams[g.home],stage=g.stage||'포스트시즌';
- const ai=g.awayInnings||[],hi=g.homeInnings||[],n=Math.max(9,ai.length,hi.length);
- const row=(name,arr,total)=>'<tr><th>'+esc(name)+'</th>'+Array.from({length:n},(_,i)=>'<td>'+(arr[i]??'–')+'</td>').join('')+'<td><b>'+Number(total)+'</b></td></tr>';
- const body='<p>'+esc(stage)+' '+esc(a?.name||'원정')+' 대 '+esc(h?.name||'홈')+' 경기 결과. '+esc((Number(g.awayRuns)>Number(g.homeRuns)?a:h)?.name||'승리 구단')+'이(가) 승리했다.</p>'
- +'<div class="be-article-table-wrap"><table><thead><tr><th>구단</th>'+Array.from({length:n},(_,i)=>'<th>'+(i+1)+'</th>').join('')+'<th>합계</th></tr></thead><tbody>'+row(a?.name||'원정',ai,g.awayRuns)+row(h?.name||'홈',hi,g.homeRuns)+'</tbody></table></div>'
- +(Array.isArray(g.seriesScore)?'<p>시리즈 전적 '+g.seriesScore.map(x=>Number(x)+'승').join(' : ')+'</p>':'');
- beOpenUnifiedGameArticleView({title:'['+stage+'] '+(a?.name||'원정')+' '+Number(g.awayRuns)+' : '+Number(g.homeRuns)+' '+(h?.name||'홈'),date:g.date||seasonDateLabel(g.day),body,replayHtml:'<div class="be-article-replay"><button type="button" onclick="beOpenPostseasonReplay('+Number(g.day)+','+Number(g.away)+')">▶ 경기 다시보기</button></div>'});
+ // Postseason and regular-season articles share the same renderer.
+ // Older postseason saves only have per-player stat deltas; adapt those without inventing statistics.
+ const batterKeys=['atBats','plateAppearances','hits','doubles','triples','homeRuns','runs','runsBattedIn','walks','stolenBases','caughtStealing','hitByPitch','sacrificeBunts','strikeouts','groundedIntoDoublePlays','sacrificeFlies','fieldingErrors'];
+ const fromBox=(team)=>Array.isArray(g.playerStats)?g.playerStats.filter(p=>Number(p.teamId)===Number(team)&&batterKeys.some(k=>Number(p.stats?.[k])>0)).map(p=>{
+  const current=state.players.find(x=>String(x.id)===String(p.playerId));
+  const stats=p.stats||{},result={id:p.playerId,name:p.name||current?.name||'선수',position:current?.position||'—'};
+  for(const key of batterKeys)result[key]=Number(stats[key])||0;
+  return result;
+ }):[];
+ const articleGame={...g,awayBatters:g.awayBatters||fromBox(g.away),homeBatters:g.homeBatters||fromBox(g.home)};
+ const stage=g.stage||'포스트시즌',story=newsStory(articleGame);
+ const series=Array.isArray(g.seriesScore)?'<p class="article-note"><b>'+esc(stage)+' 시리즈 전적</b> · '+g.seriesScore.map(x=>Number(x)+'승').join(' : ')+'</p>':'';
+ beOpenUnifiedGameArticleView({
+  title:'['+stage+'] '+story.title,
+  date:g.date||seasonDateLabel(g.day),
+  body:series+gameArticle(articleGame),
+  replayHtml:'<div class="be-article-replay"><button type="button" onclick="beOpenPostseasonReplay('+Number(g.day)+','+Number(g.away)+')">▶ 경기 다시보기</button></div>',
+  afterOpen:()=>document.querySelectorAll('[data-article-player]').forEach(x=>x.onclick=()=>showPlayer(Number(x.dataset.articlePlayer)))
+ });
 }
 window.beOpenPostseasonArticle=beOpenPostseasonArticle;
 function beOpenPostseasonReplay(day,away){
