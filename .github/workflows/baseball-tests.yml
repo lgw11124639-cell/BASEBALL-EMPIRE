@@ -67,3 +67,9 @@ jobs:
         run: node tests/extra-base-hit.test.cjs
       - name: Hit-by-pitch and dead-ball regression
         run: node tests/hit-by-pitch.test.cjs
+      - name: Contract types, guaranteed salary and expiry
+        run: node tests/player-contracts.test.cjs
+      - name: Late FA settlement and offseason retry
+        run: node tests/fa-late-settlement.test.cjs
+      - name: Separate foreign and Asian-quota renewals
+        run: node tests/foreign-contracts.test.cjs
