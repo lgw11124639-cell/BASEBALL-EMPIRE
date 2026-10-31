@@ -1825,8 +1825,8 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  for(let years=maxYears;years>=1;years--){
   const average=projection.projections.slice(0,years).reduce((n,x)=>n+x,0)/years;
   const valueFactor=projection.projections[0]>0?average/projection.projections[0]:1;
-  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*(.98+opportunity*.20+Math.min(.15,(Number(record.negotiationRounds)||0)*.025))/1000000)*1000000);
-  const signingBonus=Math.round(annualSalary*years*(.20+Math.min(.12,(Number(record.negotiationRounds)||0)*.02))/1000000)*1000000;
+  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*(.98+opportunity*.20+Math.min(.15,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000);
+  const signingBonus=Math.round(annualSalary*years*(.20+Math.min(.12,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000;
   // Reserve a year of salary and part of future guarantees, without paying salary twice.
   const reserve=annualSalary+annualSalary*(years-1)*.25;
   if(available<signingBonus+compensation+reserve)continue;
@@ -1836,9 +1836,9 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  return null;
 }
 function faEvaluateOffer(p,offer,record,projection,preferences){
- const round=Number(record.negotiationRounds)||0,concession=Math.max(.50,Math.pow(.92,round));
- const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.965,round)),(Number(record.previousSalary)||0)*.65*concession);
- const desiredYears=Math.max(1,projection.recommendedYears+(preferences.security>.8&&round<3?1:0)-Math.floor(round/3));
+ const round=Number(record.negotiationRounds)||0,concession=Math.max(.55,Math.pow(.985,round));
+ const askingAnnual=Math.max(projection.floor,projection.fairAnnual*(1.02+preferences.money*.12)*Math.max(.78,Math.pow(.985,round)),(Number(record.previousSalary)||0)*.65*concession);
+ const desiredYears=Math.max(1,projection.recommendedYears+(preferences.security>.8&&round<3?1:0)-Math.floor(round/12));
  const annualRatio=offer.annualSalary/askingAnnual;
  const guaranteeRatio=offer.totalValue/(askingAnnual*desiredYears*1.20);
  const weights={money:.45+preferences.money*.35,security:.20+preferences.security*.40};
@@ -1892,7 +1892,7 @@ function queueFaNegotiation(p,record){
  if(record.nextReviewDate||record.signedYear)return;
  record.openedDate=seasonDate(state.day).toISOString().slice(0,10);
  record.lastOutcome='협상 준비';record.lastReason='원소속 구단을 포함한 전 구단이 협상 조건을 검토합니다';
- scheduleFaReview(p,record,1+((Math.imul(Number(p.id)||1,7919)>>>0)%21));
+ scheduleFaReview(p,record,1);
 }
 function scheduleFaReview(p,record,delay){
  const date=seasonDate(state.day);date.setDate(date.getDate()+delay);
@@ -1901,7 +1901,7 @@ function scheduleFaReview(p,record,delay){
 function negotiateFaContract(p,record){
  if(p.level!=='FA대기'||record.signedYear||p.retired||p.foreignPlayer)return false;
  if(record.lastReviewYear===state.year&&record.lastReviewDay===state.day)return false;
- scheduleFaReview(p,record,5+((Math.imul((Number(p.id)||1)+(Number(record.negotiationRounds)||0)*31,2039)>>>0)%10));
+ scheduleFaReview(p,record,1);
  const projection=faPlayerProjection(p),preferences=faPlayerPreferences(p);
  const proposed=new Map();
  for(const team of state.teams)for(let years=1;years<=projection.recommendedYears;years++){
