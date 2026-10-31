@@ -1364,7 +1364,7 @@ function retireUnsignedReleasedPlayers(){
   const age=Number(p.age)||0,yearsUnsigned=state.year-since;
   const appearances=Number(p.careerStats?.games)||Number(p.games)||0;
   const productive=Number(p.careerStats?.hits||0)>=500||Number(p.careerStats?.inningsPitched||0)>=500;
-  const risk=Math.min(.90,Math.max(0,(age>=40?.35:age>=35?.16:age>=30?.045:.005)+(yearsUnsigned-2)*.09+(appearances<50?.08:0)-(productive?.12:0)));
+  const risk=age<30&&yearsUnsigned<5?0:Math.min(.90,Math.max(0,(age>=40?.35:age>=35?.16:age>=30?.045:0)+(yearsUnsigned-2)*.09+(appearances<50?.08:0)-(productive?.12:0)));
   // Stable per-player annual draw, independent of external simulation helpers.
   const seed=((Number(p.id)||1)*7919+state.year*104729)>>>0;
   const draw=((Math.imul(seed^seed>>>16,2246822507)>>>0)%1000000)/1000000;
@@ -1833,12 +1833,17 @@ function faBuildOffer(p,teamId,record,projection,requestedYears=null){
  const compensation=String(teamId)===String(record.previousTeamId)?0:Math.round(previousSalary*(record.grade==='A'?3:record.grade==='B'?2:1.5));
  const payroll=roster.reduce((n,x)=>n+(Number(x.salary)||0),0);
  const available=(Number(team.budget)||0)-(Number(team.finance?.unpaidOperatingCosts)||0)-payroll*.25;
- const maxYears=opportunity<.45?1:Math.min(projection.recommendedYears,requestedYears||projection.recommendedYears);
+ // Each club has its own valuation and contract-length strategy.
+ const clubSeed=Array.from(String(teamId)).reduce((n,ch)=>Math.imul(n,31)+ch.charCodeAt(0)|0,17);
+ const bidSeed=(Math.imul(clubSeed,2654435761)^Math.imul(Number(p.id)||1,1597334677))>>>0;
+ const salaryFactor=.87+(bidSeed%29)/100;
+ const termAdjustment=(Math.floor(bidSeed/29)%3)-1;
+ const maxYears=opportunity<.45?1:Math.max(1,Math.min(6,(requestedYears||projection.recommendedYears),projection.recommendedYears+termAdjustment));
  for(let years=maxYears;years>=1;years--){
   const average=projection.projections.slice(0,years).reduce((n,x)=>n+x,0)/years;
   const valueFactor=projection.projections[0]>0?average/projection.projections[0]:1;
-  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*(.98+opportunity*.20+Math.min(.15,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000);
-  const signingBonus=Math.round(annualSalary*years*(.20+Math.min(.12,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000;
+  const annualSalary=Math.max(projection.floor,Math.round(projection.fairAnnual*valueFactor*salaryFactor*(.98+opportunity*.20+Math.min(.15,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000);
+  const signingBonus=Math.round(annualSalary*years*(.14+(Math.floor(bidSeed/87)%15)/100+Math.min(.12,(Number(record.negotiationRounds)||0)*.004))/1000000)*1000000;
   // Reserve a year of salary and part of future guarantees, without paying salary twice.
   const reserve=annualSalary+annualSalary*(years-1)*.25;
   if(available<signingBonus+compensation+reserve)continue;
