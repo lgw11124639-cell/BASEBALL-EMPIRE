@@ -1838,7 +1838,7 @@ function faPlayerProjection(p){
    if(String(x.playerId)===String(p.id)&&!injuryKeys.has(key)){recentInjuries.push({...x,year,day:g.day});injuryKeys.add(key);}
   }
  }
- const injuryRisk=Math.min(1,Math.max((Number(injury.days)||0)/120,recentInjuries.reduce((n,x)=>n+(Number(x.days)||0),0)/240,(p.injured||injury.active||injury.status==='부상')?.35:0));
+ const severityRisk=recentInjuries.reduce((n,x)=>Math.max(n,x.severity==='선수 생명 위기'?.92:x.severity==='시즌 아웃'?.72:x.severity==='중상'?.42:0),0);const injuryRisk=Math.min(1,Math.max((Number(injury.days)||0)/120,recentInjuries.reduce((n,x)=>n+(Number(x.days)||0),0)/240,severityRisk,(p.injured||injury.active||injury.status==='부상')?.35:0));
  let retained=1;const projections=[];
  for(let i=0;i<5;i++){
   const age=(Number(p.age)||28)+i+(state.postseasons?.[state.year]?.finished?1:0);
