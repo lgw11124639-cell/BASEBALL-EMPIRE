@@ -1,3 +1,4 @@
+import {upcomingFixtures} from './fixture-projection.mjs';
 import {gunzipSync} from 'node:zlib';
 const MAX_OUTER=10_000_000,MAX_INNER=8_000_000;
 const int=v=>Number.isSafeInteger(v)&&v>=0?v:null;
@@ -25,18 +26,24 @@ export function createHomeViewReader(db){
    return {id,name:scalar(t.name),city:scalar(t.city),stadium:scalar(t.stadium),
     wins:int(t.wins),losses:int(t.losses),draws:int(t.draws),fans:int(t.fans)};
   }
+  const seasonStartDate=scalar(read(uid,slot,'seasonStartDate'));
+  const mode=read(uid,slot,'kboSchedule2027Mode');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(seasonStartDate||''))throw Error('invalid season start');
   const team=readTeam(teamId);
   // Only ten small team shards. Never inflate player or historical archives.
   const standings=[];
+  const fixtureTeams=[];
   for(let id=0;id<10;id++){
    const t=id===teamId?team:readTeam(id);
    if(t.name===null||t.wins===null||t.losses===null||t.draws===null)throw Error('invalid standings row: '+id);
+   fixtureTeams.push({id:t.id,wins:t.wins,losses:t.losses,draws:t.draws});
    const decisions=t.wins+t.losses;
    standings.push({id:t.id,name:t.name,wins:t.wins,losses:t.losses,draws:t.draws,
     pct:decisions?Math.round(t.wins/decisions*10000)/10000:0});
   }
   standings.sort((a,b)=>b.pct-a.pct||b.wins-a.wins||a.id-b.id);
-  return {revision:int(m.rev),updatedAt:m.updated_at,year,day,teamId,team,
+  const fixtures=upcomingFixtures({year,day,seasonStartDate,mode,teams:fixtureTeams},42);
+  return {revision:int(m.rev),updatedAt:m.updated_at,year,day,seasonStartDate,teamId,team,fixtures,
    standings:standings.map((t,index)=>({...t,rank:standings.findIndex(x=>x.pct===t.pct&&x.wins===t.wins)+1})),readOnly:true};
  };
 }
