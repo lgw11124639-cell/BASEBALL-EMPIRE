@@ -1,0 +1,45 @@
+{
+  "version": "2.0.35",
+  "build": "20261101-office-ui57",
+  "regression": {
+    "files": 83,
+    "passed": 83,
+    "failed": []
+  },
+  "browser": [
+    {
+      "width": 1080,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    }
+  ],
+  "scope": "KPBL office UI, league navigation, display formatting and factual public-notice articles. In-memory browser world; no authenticated cloud writes."
+}

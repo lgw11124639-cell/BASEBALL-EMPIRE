@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);state.year=2043;state.seasonStartDate='2043-01-01';state.day=70;ensureProfile(state.players[20]).injury={days:6};kpblGovernanceDay();const electionNotice=state.clubNotices.find(n=>n.kind==='KPBL 인사');const policyNotice=state.clubNotices.find(n=>n.kind==='KPBL 정책');const inspectionNotice=state.clubNotices.find(n=>n.kind==='KPBL 공인구');const consultationNotice=state.clubNotices.find(n=>n.title==='선수협회 독립 의견');const beforeArticle=JSON.stringify(state);const electionArticle=kpblArticleModel(electionNotice);const policyArticle=kpblArticleModel(policyNotice);const ballArticle=kpblArticleModel(inspectionNotice);`);
+assert.ok(run('electionArticle.title.includes("총재 선출")'));
+assert.ok(run('electionArticle.lead.includes("2043년 3월 11일")'));
+assert.ok(run('electionArticle.facts.some(x=>x[1]==="2043–2045년")'));
+assert.ok(!run('JSON.stringify(policyArticle).includes("minimumSalary")'));
+assert.ok(run('policyArticle.lead.includes("시행이 확정된 것은 아니다")'));
+assert.ok(run('ballArticle.sections.some(s=>s.paragraphs.some(p=>p.includes("145g")&&p.includes("230mm")))'));
+assert.equal(run('JSON.stringify(state)'),run('beforeArticle'),'article rendering preserves original records');
+run(`const preserved=JSON.stringify(kpblArticleModel(policyNotice));const p=kpblOffice().policies[0];p.stage=6;p.status='공고';p.steps.push({year:2043,day:99,stage:'시행 공고',text:'2044시즌 시행 공고'});p.vote={present:10,yes:10,passed:true};state.day=100;`);
+assert.equal(run('JSON.stringify(kpblArticleModel(policyNotice))'),run('preserved'),'later announcement cannot leak into earlier article');
+run(`const legacy={...policyNotice};delete legacy.kpblRecord;const legacyModel=kpblArticleModel(legacy);`);
+assert.ok(run('legacyModel.lead.includes("시행이 확정된 것은 아니다")'));
+run(`const consultationArticle=kpblArticleModel(consultationNotice);`);
+assert.ok(!run('JSON.stringify(consultationArticle).includes("공식 출전 기록")'));
+console.log('PASS publication-time facts, legacy articles, Korean titles/dates, inspection units, no unrelated stat filler, immutable saves');
