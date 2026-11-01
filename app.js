@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-empire-ui75';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261101-empire-ui76';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
 function ballpark(team){return BALLPARKS[team?.id]||((team?.city||'구단')+' 야구장')}
@@ -4110,6 +4110,19 @@ function beReplayPitchCounts(pitches){
  });
 }
 let beReplayDialogContext=null;
+function beReplayOutcomePresentation(outcome,outMade=false){
+ const text=String(outcome||'');
+ if(/삼진/.test(text))return {tone:'strikeout',label:'삼진'};
+ if(/볼넷|고의4구/.test(text))return {tone:'walk',label:'볼넷'};
+ if(/사구|몸에\s*맞/.test(text))return {tone:'hbp',label:'사구'};
+ if(/홈런/.test(text))return {tone:'homer',label:'홈런'};
+ if(/안타|2루타|3루타/.test(text))return {tone:'hit',label:'안타'};
+ if(/도루\s*성공/.test(text))return {tone:'steal',label:'도루'};
+ if(outMade||/아웃|병살|삼중살|도루\s*실패|주루사|견제사|희생플라이|희생번트/.test(text))return {tone:'out',label:'아웃'};
+ if(/실책/.test(text))return {tone:'error',label:'실책'};
+ return null;
+}
+function beReplayOutcomeBadge(presentation){return presentation?'<b class="be-replay-event-badge">'+esc(presentation.label)+'</b>':'';}
 function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  // Resolve the saved game before dismissing the article.
  const g=overrideGame||(state.gameResults||[]).find(x=>Number(x.day)===Number(day)&&Number(x.away)===Number(away));if(!g)return;
@@ -4178,7 +4191,8 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
     batter.textContent=name+' 타자 '+e.batter+' · '+(e.side==='away'?h.name:a.name)+' 투수 '+e.pitcher;
     pitchLabel.textContent=frame.pitch.number+'구 · '+frame.pitch.type+(frame.pitch.velocity!=null&&Number.isFinite(Number(frame.pitch.velocity))?' · '+Math.round(Number(frame.pitch.velocity))+'km/h':' · 구속 미기록')+(' · '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call||'판정 미기록'));markPitch(frame.pitch);
     pitchCount.textContent='투수 '+e.pitcher+' · 오늘 '+cumulativePitches+'구 | '+(frame.pitch.call?'● '+(frame.pitch.call==='인플레이'?(e.outcome||'타격'):frame.pitch.call)+' · '+(frame.pitch.call==='볼'||frame.pitch.call==='볼넷'?'볼 판정':frame.pitch.call.includes('스트라이크')||frame.pitch.call.includes('삼진')?'스트라이크 판정':'타격 판정'):'투구 결과 확인');
-    beAppendReplayLine(out,'<div class="be-replay-event be-replay-pitch-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+' 공격 · '+esc(e.batter)+' · '+esc(e.pitcher)+' 오늘 '+cumulativePitches+'구</small><strong>'+esc(describeCall(frame.pitch,e))+'</strong></div>');
+    const presentation=beReplayOutcomePresentation(frame.pitch.call==='인플레이'?e.outcome:frame.pitch.call,frame.pitch.call==='인플레이'&&e.outsAfter>e.outsBefore);
+    beAppendReplayLine(out,'<div class="be-replay-event be-replay-pitch-event"'+(presentation?' data-tone="'+presentation.tone+'"':'')+'><small class="be-replay-event-meta"><span>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+' 공격 · '+esc(e.batter)+' · '+esc(e.pitcher)+' 오늘 '+cumulativePitches+'구</span>'+beReplayOutcomeBadge(presentation)+'</small><strong>'+esc(describeCall(frame.pitch,e))+'</strong></div>');
     index++;status.textContent='경기 중계 중';updateNextBatter(index);
     btn.textContent='▶ 다음 투구';
     return;
@@ -4194,7 +4208,8 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
    const pitch=Array.isArray(e.pitchSequence)&&e.pitchSequence.length
     ?'<div class="be-replay-pitch-list">'+e.pitchSequence.map(x=>'<span>'+Number(x.number)+'구 '+esc(x.type)+'</span>').join(' · ')+'</div><small>'+(e.pitchSequence.some(x=>x.call)?'저장된 투구 판정':'타석 결과 기반 재구성')+'</small>'
     :e.pitch?'<small>타석 사용 구종 '+esc(e.pitch)+(e.velocity?' · 투수 최고구속 '+e.velocity+'km/h':'')+' · 타석 총 '+e.pitches+'구 (개별 판정 미기록)</small>':'';
-   beAppendReplayLine(out,'<div class="be-replay-event be-replay-result-event"><small>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+' 공격</small><strong>'+(frame.kind==='baserunning'?esc(e.runner)+' 선수의 '+e.toBase+'루 '+esc(e.outcome):esc(e.batter)+' 선수의 타석 결과, '+esc(e.outcome||'타격 완료'))+'!'+(e.runs?' '+e.runs+'점이 들어옵니다!':'')+'</strong><span>'+((e.outsAfter||0)>=(e.outsBefore||0)+1?'아웃카운트가 올라갑니다. ':'')+'현재 '+ar+' : '+hr+'</span></div>');
+   const presentation=beReplayOutcomePresentation(e.outcome,e.outsAfter>e.outsBefore);
+   beAppendReplayLine(out,'<div class="be-replay-event be-replay-result-event"'+(presentation?' data-tone="'+presentation.tone+'"':'')+'><small class="be-replay-event-meta"><span>'+e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+esc(name)+' 공격</span>'+beReplayOutcomeBadge(presentation)+'</small><strong>'+(frame.kind==='baserunning'?esc(e.runner)+' 선수의 '+e.toBase+'루 '+esc(e.outcome):esc(e.batter)+' 선수의 타석 결과, '+esc(e.outcome||'타격 완료'))+'!'+(e.runs?' '+e.runs+'점이 들어옵니다!':'')+'</strong><span>'+((e.outsAfter||0)>=(e.outsBefore||0)+1?'아웃카운트가 올라갑니다. ':'')+'현재 '+ar+' : '+hr+'</span></div>');
   }else{
    const x=Number(ai[index])||0,y=Number(hi[index])||0;ar+=x;hr+=y;
    inningProgress.away[index]=x;inningProgress.home[index]=y;drawInningBoard();
