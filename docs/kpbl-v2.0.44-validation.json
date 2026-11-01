@@ -1,0 +1,35 @@
+[
+  {
+    "width": 1080,
+    "officePanes": 6,
+    "environmentCards": true,
+    "profileAndRecordTab": true,
+    "commonNewsArticle": true,
+    "articleCategories": 3,
+    "historyPagination": true,
+    "keyboardTabsAndModal": true,
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "officePanes": 6,
+    "environmentCards": true,
+    "profileAndRecordTab": true,
+    "commonNewsArticle": true,
+    "articleCategories": 3,
+    "historyPagination": true,
+    "keyboardTabsAndModal": true,
+    "pageErrors": []
+  },
+  {
+    "width": 320,
+    "officePanes": 6,
+    "environmentCards": true,
+    "profileAndRecordTab": true,
+    "commonNewsArticle": true,
+    "articleCategories": 3,
+    "historyPagination": true,
+    "keyboardTabsAndModal": true,
+    "pageErrors": []
+  }
+]

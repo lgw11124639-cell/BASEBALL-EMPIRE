@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);leagueOfficeSeason();const baseYear=state.year;`);
+assert.equal(run('kpblMinimumSalaryReview()'),null,'a new salary level has a three-season observation period');
+run('state.year=baseYear+3;leagueOfficeSeason();const review=kpblMinimumSalaryReview();');
+assert.ok(run('review.value>kpblMinimumSalary()'),'review can propose an increase after the interval');
+assert.ok(run('review.reason.includes("3시즌")'));
+run(`const proposal=kpblProposePolicy('minimumSalary',review.value,review.reason);proposal.status='공고';proposal.effectiveYear=state.year+1;`);
+assert.equal(run('kpblMinimumSalaryReview()'),null,'an announced next-season rise prevents another automatic rise');
+run('state.year=proposal.effectiveYear+2;leagueOfficeSeason()');assert.equal(run('kpblMinimumSalaryReview()'),null);
+run('state.year=proposal.effectiveYear+3;leagueOfficeSeason()');assert.ok(run('kpblMinimumSalaryReview()'));
+run('leagueOfficeSeason().minimumSalary=200000000');assert.equal(run('kpblMinimumSalaryReview()'),null,'upper boundary holds instead of generating an invalid policy');
+console.log('PASS salary policy review interval, future announcement cooldown and upper boundary');

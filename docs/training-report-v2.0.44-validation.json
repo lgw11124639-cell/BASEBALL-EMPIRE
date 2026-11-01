@@ -1,0 +1,38 @@
+[
+  {
+    "width": 1080,
+    "fullScreen": true,
+    "correctEventUnits": true,
+    "legacyRows": 56,
+    "legacyNamesNotGuessed": true,
+    "newSnapshotLinks": true,
+    "profileReturnsToReport": true,
+    "scrollRestored": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "fullScreen": true,
+    "correctEventUnits": true,
+    "legacyRows": 56,
+    "legacyNamesNotGuessed": true,
+    "newSnapshotLinks": true,
+    "profileReturnsToReport": true,
+    "scrollRestored": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 320,
+    "fullScreen": true,
+    "correctEventUnits": true,
+    "legacyRows": 56,
+    "legacyNamesNotGuessed": true,
+    "newSnapshotLinks": true,
+    "profileReturnsToReport": true,
+    "scrollRestored": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  }
+]

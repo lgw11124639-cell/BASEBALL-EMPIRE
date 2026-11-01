@@ -1,0 +1,270 @@
+{
+  "suite": "integrity browser integration",
+  "module": "production app.js; cloud startup replaced",
+  "viewports": [
+    {
+      "width": 1080,
+      "isolatedFixture": true,
+      "incidentTypes": [
+        "bench",
+        "doping",
+        "fixing"
+      ],
+      "stages": [
+        "조사",
+        "소명",
+        "심의",
+        "결정",
+        "재심",
+        "확정"
+      ],
+      "unconfirmedCasesExcludedFromSuspension": true,
+      "suspensionStartsNextDay": true,
+      "associationBenchPenalty": {
+        "before": 3,
+        "after": 1
+      },
+      "associationMedicalExemption": {
+        "before": 30,
+        "after": 0
+      },
+      "unmatchedSamplesClosed": true,
+      "fixingPenalty": 120,
+      "internationalScopeIsolated": true,
+      "returnProtection": {
+        "name": "박서준",
+        "limit": 65,
+        "status": "복귀 확인"
+      },
+      "disciplineAndAssociationNoOverflow": true,
+      "newsLinkOpened": true,
+      "articles": [
+        {
+          "key": "bench",
+          "stage": "조사",
+          "title": "KPBL, Christopher Hall 벤치클리어링 조사",
+          "relatedPlayerProfile": true
+        },
+        {
+          "key": "doping",
+          "stage": "조사",
+          "title": "KPBL, Sergio Pena 금지약물 검사 조사",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "fixing",
+          "stage": "조사",
+          "title": "KPBL, 송서준 승부조작·부정 청탁 조사",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "bench",
+          "stage": "재심",
+          "title": "KPBL, Christopher Hall 벤치클리어링 재심",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "fixing",
+          "stage": "확정",
+          "title": "KPBL, 송서준 승부조작·부정 청탁 확정… 120경기 출장정지",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "doping",
+          "stage": "종결",
+          "title": "KPBL, Sergio Pena 금지약물 검사 종결",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "negative",
+          "stage": "종결",
+          "title": "KPBL, 오지훈 금지약물 검사 종결",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "doping",
+          "stage": "조사",
+          "title": "KPBL, Sergio Pena 금지약물 검사 조사",
+          "relatedPlayerProfile": false
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "isolatedFixture": true,
+      "incidentTypes": [
+        "bench",
+        "doping",
+        "fixing"
+      ],
+      "stages": [
+        "조사",
+        "소명",
+        "심의",
+        "결정",
+        "재심",
+        "확정"
+      ],
+      "unconfirmedCasesExcludedFromSuspension": true,
+      "suspensionStartsNextDay": true,
+      "associationBenchPenalty": {
+        "before": 3,
+        "after": 1
+      },
+      "associationMedicalExemption": {
+        "before": 30,
+        "after": 0
+      },
+      "unmatchedSamplesClosed": true,
+      "fixingPenalty": 120,
+      "internationalScopeIsolated": true,
+      "returnProtection": {
+        "name": "박서준",
+        "limit": 65,
+        "status": "복귀 확인"
+      },
+      "disciplineAndAssociationNoOverflow": true,
+      "newsLinkOpened": true,
+      "articles": [
+        {
+          "key": "bench",
+          "stage": "조사",
+          "title": "KPBL, Christopher Hall 벤치클리어링 조사",
+          "relatedPlayerProfile": true
+        },
+        {
+          "key": "doping",
+          "stage": "조사",
+          "title": "KPBL, Sergio Pena 금지약물 검사 조사",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "fixing",
+          "stage": "조사",
+          "title": "KPBL, 송서준 승부조작·부정 청탁 조사",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "bench",
+          "stage": "재심",
+          "title": "KPBL, Christopher Hall 벤치클리어링 재심",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "fixing",
+          "stage": "확정",
+          "title": "KPBL, 송서준 승부조작·부정 청탁 확정… 120경기 출장정지",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "doping",
+          "stage": "종결",
+          "title": "KPBL, Sergio Pena 금지약물 검사 종결",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "negative",
+          "stage": "종결",
+          "title": "KPBL, 오지훈 금지약물 검사 종결",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "doping",
+          "stage": "조사",
+          "title": "KPBL, Sergio Pena 금지약물 검사 조사",
+          "relatedPlayerProfile": false
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "isolatedFixture": true,
+      "incidentTypes": [
+        "bench",
+        "doping",
+        "fixing"
+      ],
+      "stages": [
+        "조사",
+        "소명",
+        "심의",
+        "결정",
+        "재심",
+        "확정"
+      ],
+      "unconfirmedCasesExcludedFromSuspension": true,
+      "suspensionStartsNextDay": true,
+      "associationBenchPenalty": {
+        "before": 3,
+        "after": 1
+      },
+      "associationMedicalExemption": {
+        "before": 30,
+        "after": 0
+      },
+      "unmatchedSamplesClosed": true,
+      "fixingPenalty": 120,
+      "internationalScopeIsolated": true,
+      "returnProtection": {
+        "name": "박서준",
+        "limit": 65,
+        "status": "복귀 확인"
+      },
+      "disciplineAndAssociationNoOverflow": true,
+      "newsLinkOpened": true,
+      "articles": [
+        {
+          "key": "bench",
+          "stage": "조사",
+          "title": "KPBL, Christopher Hall 벤치클리어링 조사",
+          "relatedPlayerProfile": true
+        },
+        {
+          "key": "doping",
+          "stage": "조사",
+          "title": "KPBL, Sergio Pena 금지약물 검사 조사",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "fixing",
+          "stage": "조사",
+          "title": "KPBL, 송서준 승부조작·부정 청탁 조사",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "bench",
+          "stage": "재심",
+          "title": "KPBL, Christopher Hall 벤치클리어링 재심",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "fixing",
+          "stage": "확정",
+          "title": "KPBL, 송서준 승부조작·부정 청탁 확정… 120경기 출장정지",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "doping",
+          "stage": "종결",
+          "title": "KPBL, Sergio Pena 금지약물 검사 종결",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "negative",
+          "stage": "종결",
+          "title": "KPBL, 오지훈 금지약물 검사 종결",
+          "relatedPlayerProfile": false
+        },
+        {
+          "key": "doping",
+          "stage": "조사",
+          "title": "KPBL, Sergio Pena 금지약물 검사 조사",
+          "relatedPlayerProfile": false
+        }
+      ],
+      "pageErrors": []
+    }
+  ]
+}

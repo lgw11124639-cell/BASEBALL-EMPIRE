@@ -3,11 +3,12 @@ run(`state=world(0);state.day=100;const player=managerPlan(0).starters[0];const 
 assert.equal(run('kpblOffice().cases.length'),1);assert.equal(run('kpblSuspended(player)'),false);
 for(let day=101;day<=105;day++)run(`state.day=${day};kpblDisciplineDay()`);
 assert.equal(run('incident.status'),'확정');assert.equal(run('incident.steps.length'),6);assert.equal(run('incident.remaining'),1);
-assert.equal(run('managerPlan(0).first.some(p=>p.id===player.id)'),false);
+assert.equal(run('managerPlan(0).first.some(p=>p.id===player.id)'),true,'selection remains available on finalization day');
 assert.equal(run(`managerPlan(0,'우투','postseason').first.some(p=>p.id===player.id)`),true,'regular ban never leaks into postseason');
 assert.equal(run('kpblSuspended(player,"minor")'),false);assert.equal(run('kpblSuspended(player,"international")'),false);
 assert.equal(run('kpblSuspensionRoster("regular").length'),0,'no retrospective service on finalization day');
 run(`state.day=106;const suspRoster=kpblSuspensionRoster('regular');const next={...game,day:106,broadcastEvents:[]};kpblCompleteMatch({...next,cancelled:true},'regular',suspRoster);`);
+assert.equal(run('managerPlan(0).first.some(p=>p.id===player.id)'),false,'selection excludes player from the first service day');
 assert.equal(run('incident.remaining'),1);run(`kpblCompleteMatch(next,'minor',suspRoster);`);assert.equal(run('incident.remaining'),1);
 run(`player.level='2군';`);assert.equal(run('kpblSuspensionRoster("regular").length'),0,'demotion cannot serve a first-team ban');
 run(`player.level='1군';kpblCompleteMatch(next,'regular',suspRoster);kpblCompleteMatch(next,'regular',suspRoster);`);

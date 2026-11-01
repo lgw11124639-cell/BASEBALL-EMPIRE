@@ -1,0 +1,50 @@
+[
+  {
+    "width": 1280,
+    "views": 7,
+    "primaryControlBeforeCalendar": true,
+    "rosterFiltersAndLineups": true,
+    "profile": true,
+    "newsFiltersAndArticle": true,
+    "faAndEmptyState": true,
+    "nationalSelectionAndEmptyState": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 1080,
+    "views": 7,
+    "primaryControlBeforeCalendar": true,
+    "rosterFiltersAndLineups": true,
+    "profile": true,
+    "newsFiltersAndArticle": true,
+    "faAndEmptyState": true,
+    "nationalSelectionAndEmptyState": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "views": 7,
+    "primaryControlBeforeCalendar": true,
+    "rosterFiltersAndLineups": true,
+    "profile": true,
+    "newsFiltersAndArticle": true,
+    "faAndEmptyState": true,
+    "nationalSelectionAndEmptyState": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 320,
+    "views": 7,
+    "primaryControlBeforeCalendar": true,
+    "rosterFiltersAndLineups": true,
+    "profile": true,
+    "newsFiltersAndArticle": true,
+    "faAndEmptyState": true,
+    "nationalSelectionAndEmptyState": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  }
+]
