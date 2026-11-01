@@ -782,6 +782,26 @@ function kpblSubmitIntegrityTip({playerId,type,reporter,details,evidence={}}){
  kpblLog('KPBL 조사', '청렴 제보 접수', '구체적 제보가 접수되어 사실관계를 검토합니다. 제보만으로 위반이 확정되지 않습니다.',[p.id],[p.teamId],{tipId:id,publish:false});
  return tip;
 }
+function kpblGenerateIntegrityTips(){
+ const office=kpblOffice();
+ office.integrityTips=office.integrityTips||[];
+ const today=playerConductDate();
+ for(const p of state.players){
+  if(p.retired||p.draftPending||!p.conduct?.actions?.length)continue;
+  for(const action of p.conduct.actions){
+   if(action.caseId||action.selfReport||!['doping','gamble','fixing'].includes(action.type))continue;
+   if(office.integrityTips.some(t=>t.evidence?.actionId===action.id))continue;
+   const recorded=playerConductRecordedDate(action);
+   if(recorded==null||today-recorded<2)continue;
+   const type=action.type==='gamble'?'gambling':action.type;
+   const observable=type==='gambling'&&action.betAccepted===true&&!!action.transactionId||
+    type==='fixing'&&action.completed===true&&action.communicationVerified===true||
+    type==='doping'&&p.conduct.healthBurden>=15&&p.conduct.course?.actionId===action.id;
+   if(!observable||playerConductHash(action.id+':report')%100>=20)continue;
+   kpblSubmitIntegrityTip({playerId:p.id,type,reporter:'KPBL 청렴 신고센터',details:'관찰된 이상 징후에 대한 비공개 조사 요청',evidence:{actionId:action.id}});
+  }
+ }
+}
 function kpblReviewIntegrityTips(){
  const office=kpblOffice();
  for(const tip of office.integrityTips||[]){
@@ -799,6 +819,7 @@ function kpblReviewIntegrityTips(){
 }
 function kpblIntegrityAuditDay(){
  const date=seasonDate(state.day),g=kpblOffice(),key=state.year+'-'+(date.getMonth()+1);
+ kpblGenerateIntegrityTips();
  kpblReviewIntegrityTips();
  // Review reported evidence before scheduled integrity screens.
  g.integrityAudits=g.integrityAudits||[];
