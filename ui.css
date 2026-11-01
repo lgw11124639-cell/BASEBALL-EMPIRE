@@ -8905,7 +8905,7 @@ body.be-start-screen #be-version-widget {
 }
 
 .roster-modes {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 5px !important;
 }
 
@@ -19800,4 +19800,14 @@ body .be-editorial-modal > .editorial-story {
 .be-report-modal .training-report :is(.training-report-metrics, .report-player-section, .training-table-scroll, .training-report-sections) {
   min-width: 0;
   max-width: 100%;
+}
+
+.injury-roster-list { display: flex; flex-direction: column; }
+.injury-roster-row { width: 100%; text-align: left; }
+.injury-roster-detail { display: grid; gap: 5px; margin-left: auto; min-width: 0; color: #345574; }
+.injury-roster-detail small { color: #526b80; font-size: 12px; }
+@media (width <= 480px) {
+ .injury-roster-row { gap: 9px; padding: 14px 10px; }
+ .injury-roster-detail { max-width: 46%; font-size: 12px; overflow-wrap: anywhere; }
+ .injury-roster-detail small { font-size: 11px; }
 }

@@ -3,5 +3,5 @@ run(`state=world(0);state.history.seasons={2028:{year:2028,teams:[{id:0,city:'�
 assert.equal(run('enrichMilestoneRecord(record).teamIdentity.name'),'옛 로열스');assert.equal(run('enrichMilestoneRecord(record).teamIdentity.color'),'#123456');assert.equal(run('enrichMilestoneRecord(record).opponentId'),1);assert.equal(run('JSON.stringify(state)'),run('before'));
 run('state.clubNotices=[]');assert.equal(run('enrichMilestoneRecord(record).opponentIdentity'),null);assert.equal(run('record.opponentId'),undefined);
 run(`state.history.retiredNumbers=[{playerId:13,name:'기록 선수',teamId:0,number:7,year:2028}];state.history.hallOfFame=[{playerId:13,name:'기록 선수',teamId:1,year:2028}];const saved=JSON.stringify(state);const honors=historyHonorsPanel();`);
-assert.ok(run('honors.includes("honor-jersey")&&honors.includes("옛 로열스")&&honors.includes("옛 마리너스")'));assert.equal(run('JSON.stringify(state)'),run('saved'));
+assert.ok(run('honors.includes("honor-jersey")&&honors.includes("옛 로열스")&&!honors.includes("옛 마리너스")'));run("window.beHonorClub=1");assert.ok(run('historyHonorsPanel().includes("옛 마리너스")'));assert.equal(run('JSON.stringify(state)'),run('saved'));
 console.log('PASS historical clubs and crests survive transfers/renames; evidence-only opponent recovery and read-only honors');
