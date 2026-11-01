@@ -9,7 +9,7 @@ try{
   const a=read(u.user_id);
   if(!Array.isArray(a.standings)||a.standings.length!==10)throw Error('standings must contain 10 teams');
   if(new Set(a.standings.map(t=>t.id)).size!==10)throw Error('duplicate team ids');
-  if(a.standings.some((t,i)=>t.rank!==i+1||!Number.isFinite(t.pct)))throw Error('invalid standings rank');
+  if(a.standings.some((t,i)=>t.rank!==a.standings.findIndex(x=>x.pct===t.pct&&x.wins===t.wins)+1||!Number.isFinite(t.pct)))throw Error('invalid standings rank');
   if(a.standings.find(t=>t.id===a.teamId)?.name!==a.team.name)throw Error('selected team mismatch');
   const after=db.prepare("SELECT rev FROM be_save_shard_meta WHERE user_id=? AND slot='main'").get(u.user_id);
   if(after.rev!==u.rev||a.revision!==u.rev||!a.team.name||a.year===null||a.day===null)throw Error('home projection validation failed');
