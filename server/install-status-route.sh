@@ -48,9 +48,11 @@ if ! grep -q "path==='/v2/view/status'" auth.mjs; then cp -p "$BACKUP" auth.mjs;
 echo "Syntax OK. Backup: $BACKUP"
 pm2 restart baseball-empire-api --update-env
 sleep 2
-HEALTH=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:3200/health || true)
-UNAUTH=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:3200/v2/view/status || true)
-echo "health=$HEALTH unauthenticated_status=$UNAUTH"
+PORT=$(node --env-file="$API/.env" -p "process.env.PORT || 3200")
+if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then echo "Invalid API port"; exit 1; fi
+HEALTH=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:$PORT/health || true)
+UNAUTH=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:$PORT/v2/view/status || true)
+echo "api_port=$PORT health=$HEALTH unauthenticated_status=$UNAUTH"
 if [[ "$HEALTH" != 200 || "$UNAUTH" != 401 ]]; then
   echo "Health/security check failed; rolling back"
   cp -p "$BACKUP" auth.mjs
