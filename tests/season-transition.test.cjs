@@ -26,7 +26,7 @@ const context=vm.createContext({
  ensureProfile:p=>p.profile||(p.profile={}),
  clubNotice:(...args)=>notices.push(args),
 });
-vm.runInContext(source.slice(begin,end),context);
+vm.runInContext(source.slice(source.indexOf('const LEAGUE_BALLS='),source.indexOf('function leagueBallFactors('))+source.slice(begin,end),context);
 for(let n=1;n<=50;n++){
  const previousYear=state.year;
  player.games=100;player.hits=120;player.homeRuns=15;

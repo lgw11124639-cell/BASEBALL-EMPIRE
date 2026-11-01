@@ -151,3 +151,5 @@ jobs:
         run: node tests/cloud-player-split.test.cjs
       - name: Rolling log dates, pitch counters and save preparation
         run: node tests/cloud-rolling-log.test.cjs
+      - name: League office decisions and official ball physics
+        run: node tests/league-office.test.cjs

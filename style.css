@@ -794,3 +794,6 @@ nav.nav>button[data-tab] .nav-icon{height:22px!important;line-height:22px!import
 .medical-history-card dd{margin:0;font-size:14px;line-height:1.6;overflow-wrap:anywhere;color:#173e65}
 .medical-history-note{font-size:12px!important;line-height:1.7;color:#65809b;margin:12px 0 0}
 @media(max-width:500px){.medical-history-card{padding:14px}.medical-history-card dl{grid-template-columns:minmax(0,1fr)}}
+
+/* League office: narrow screens keep controls within the viewport. */
+.league-office{min-width:0;overflow-wrap:anywhere}.league-office label{display:block;margin:18px 0}.league-office select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin-top:8px;min-height:46px;padding:10px 12px;border:1px solid #dce5ef;border-radius:12px;background:#fff;color:inherit;font:inherit}.league-office select:disabled{background:#eef3f8;color:#71839a}.league-office article{padding:16px 0;border-bottom:1px solid #dce5ef}.league-office h3{margin-top:22px}
