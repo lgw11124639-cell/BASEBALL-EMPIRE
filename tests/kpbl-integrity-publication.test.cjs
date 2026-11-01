@@ -1,0 +1,35 @@
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+const c=require('./helpers/game-context.cjs')();
+const run=s=>vm.runInContext(s,c);
+run(`state=world(0);state.year=2030;state.seasonStartDate='2030-01-01';state.day=100;state.clubNotices=[];kpblOffice();var subject=state.players[0];var incident=kpblOpenIntegrityCase('gambling',subject.id,{id:'verified-bet',playerId:subject.id,betId:'bet-1',transactionId:'payment-1',amount:100000,bettingLedgerVerified:true,accountVerified:true,betAccepted:true,ownClubBet:false},'domestic');var opening=state.clubNotices.find(n=>n.caseId===incident.id),openingSnapshot=JSON.stringify(opening);`);
+assert.equal(run('state.clubNotices.filter(n=>n.caseId===incident.id).length'),1,'opening is published');
+assert.equal(run('opening.kpblRecord.step.stage'),'조사');
+for(let day=101;day<=104;day++){
+ run(`state.day=${day};kpblDisciplineDay()`);
+ assert.equal(run('state.clubNotices.filter(n=>n.caseId===incident.id).length'),1,'intermediate case stage stays in timeline instead of repeating the news');
+ assert.equal(run('incident.steps.length'),day-99,'full case timeline retained');
+ assert.equal(run('kpblOffice().history.filter(n=>n.caseId===incident.id).length'),day-99,'full official operation history retained');
+}
+run(`var legacyAppeal={...opening,id:99999,title:'재심 · 불법 도박',day:104,body:incident.steps[4].text};delete legacyAppeal.kpblRecord;var legacyModel=JSON.stringify(kpblArticleModel(legacyAppeal));state.day=105;kpblDisciplineDay();`);
+assert.equal(run('incident.status'),'확정');
+assert.equal(run('incident.steps.length'),6);
+assert.equal(run('kpblOffice().history.filter(n=>n.caseId===incident.id).length'),6);
+assert.equal(run('state.clubNotices.filter(n=>n.caseId===incident.id).length'),2,'one case publishes opening and final ruling only');
+assert.equal(run('JSON.stringify(opening)'),run('openingSnapshot'),'existing opening and publication snapshot remain immutable');
+assert.equal(run('JSON.stringify(kpblArticleModel(legacyAppeal))'),run('legacyModel'),'old intermediate-stage notices still render their publication-time facts');
+assert.ok(run('state.clubNotices.some(n=>n.caseId===incident.id&&n.kpblRecord?.step.stage==="확정")'));
+assert.equal(run('kpblOffice().history.some(n=>Object.hasOwn(n,"publish"))'),false,'publication control never becomes a saved historical fact');
+assert.equal(run('state.clubNotices.some(n=>Object.hasOwn(n,"publish"))'),false,'publication control never leaks into public notices');
+run('kpblDisciplineDay()');
+assert.equal(run('state.clubNotices.filter(n=>n.caseId===incident.id).length'),2,'repeated same-day processing adds no duplicate article');
+run(`for(var day=106;incident.remaining>0;day++){state.day=day;var game={year:2030,day,away:subject.teamId,home:(subject.teamId+1)%10,awayRuns:0,homeRuns:0,awayInnings:Array(9).fill(0),homeInnings:Array(9).fill(0),broadcastEvents:[]};kpblCompleteMatch(game,'regular',kpblSuspensionRoster('regular'));}`);
+assert.equal(run('incident.status'),'복귀');
+assert.equal(run('state.clubNotices.filter(n=>n.caseId===incident.id).length'),3,'verified suspension completion remains newsworthy');
+assert.equal(run('state.clubNotices.filter(n=>n.caseId===incident.id).at(-1).kpblRecord.step.stage'),'복귀');
+run(`state.day++;var dismissed=kpblOpenIntegrityCase('doping',subject.id,{id:'unmatched-lab',playerId:subject.id,sampleId:'specimen',sampleA:'양성',sampleB:'음성',chainVerified:true,independentLab:true});for(var i=0;i<5;i++){state.day++;kpblDisciplineDay();}`);
+assert.equal(run('dismissed.status'),'종결');
+assert.equal(run('dismissed.steps.length'),6);
+assert.equal(run('state.clubNotices.filter(n=>n.caseId===dismissed.id).length'),2,'exoneration or insufficient evidence still gets a final public outcome');
+assert.equal(run('state.clubNotices.filter(n=>n.caseId===dismissed.id).at(-1).kpblRecord.step.stage'),'종결');
+console.log('PASS opening/final/return publication, complete timelines/history, immutable legacy articles, no leaked flags');

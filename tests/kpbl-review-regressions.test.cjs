@@ -89,7 +89,7 @@ run(`{
  if(!kpblSuspended(p)||kpblSuspensionRoster('regular').length!==1)throw Error('selection and service start dates disagree');
  if(managerPlan(0).first.some(x=>x.id===p.id))throw Error('effective penalty did not exclude player from roster');
  if(kpblSuspended(p,'international'))throw Error('domestic penalty leaked into international games');
- const game={year:2027,day:101,away:0,home:1,awayInnings:Array(9).fill(0),homeInnings:Array(9).fill(0)};
+ const game={year:2027,day:101,away:0,home:1,awayRuns:0,homeRuns:0,awayInnings:Array(9).fill(0),homeInnings:Array(9).fill(0)};
  const roster=kpblSuspensionRoster('regular');kpblCompleteMatch(game,'regular',roster);kpblCompleteMatch(game,'regular',roster);
  if(c.remaining!==1||c.served.length!==1)throw Error('one completed game credited more than once');
  state.day=102;kpblCompleteMatch({...game,day:102},'regular',kpblSuspensionRoster('regular'));

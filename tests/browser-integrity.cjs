@@ -25,7 +25,7 @@ window.beIntegrityTest={
   this.rehab.profile.injury={days:20,type:'어깨 염좌',occurredYear:2043,occurredDay:70};
   kpblAssociationConsultation();window.beOfficePane='discipline';render();
  },
- snapshot(){return Object.fromEntries(Object.entries(this.cases).map(([key,c])=>[key,{playerId:c.playerId,name:state.players.find(p=>p.id===c.playerId).name,stage:c.stage,status:c.status,remaining:c.remaining,decision:c.decision??null,appeal:c.appeal||null,suspended:kpblSuspended(state.players.find(p=>p.id===c.playerId),'regular'),internationalSuspended:kpblSuspended(state.players.find(p=>p.id===c.playerId),'international')}]));},
+ snapshot(){return Object.fromEntries(Object.entries(this.cases).map(([key,c])=>[key,{playerId:c.playerId,name:state.players.find(p=>p.id===c.playerId).name,stage:c.stage,steps:c.steps.map(s=>s.stage),permanent:c.permanent===true,status:c.status,remaining:c.remaining,decision:c.decision??null,appeal:c.appeal||null,suspended:kpblSuspended(state.players.find(p=>p.id===c.playerId),'regular'),internationalSuspended:kpblSuspended(state.players.find(p=>p.id===c.playerId),'international')}]));},
  advance(){state.day++;kpblDisciplineDay();render();return this.snapshot();},
  office(pane){tab='league';leaguePane='office';window.beOfficePane=pane;render();},
  news(){tab='news';render();},
@@ -54,7 +54,7 @@ async function article(page,key,stage,typeName,{profile=false}={}){
   assert.ok(/조사 개시는 위반 확정을 뜻하지 않음|위반.*확정.*아니|확정 전/.test(text),'investigation is explicitly unconfirmed');
   assert.ok(!/위반 (확정|확인)|출장정지 \d+경기 확정/.test(title),'investigation headline does not convict');
  }
- if(key==='fixing'&&stage==='확정')assert.ok(/경기 결과.*별개/.test(text),'fixing article distinguishes proven solicitation from game-result manipulation');
+ if(key==='fixing'&&['확정','제명'].includes(stage))assert.ok(/경기 결과.*별개/.test(text),'fixing article distinguishes proven solicitation from game-result manipulation');
  const geometry=await noOverflow(page,key+' '+stage+' article');
  const sheet=await page.locator('.kpbl-article-sheet').boundingBox();
  assert.equal(Math.round(sheet.x),0);assert.equal(Math.round(sheet.width),geometry.viewport);
@@ -65,6 +65,11 @@ async function article(page,key,stage,typeName,{profile=false}={}){
   await page.waitForSelector('#player-overlay');
   assert.equal(await page.locator('.kpbl-article-modal').count(),0,'related profile replaces article');
   assert.ok((await page.locator('#player-title').innerText()).includes(name),'related profile belongs to the correct player');
+  if(key==='fixing'&&stage==='제명'){
+   const discipline=await page.locator('.player-discipline').innerText();
+   assert.ok(discipline.includes('영구제명 확정'),'expelled profile states the final sanction');
+   assert.ok(!/잔여 0경기|복귀 가능/.test(discipline),'expelled profile never promises return or displays a zero-game ban');
+  }
   await noOverflow(page,'related player profile');
   await page.locator('#close-player').click();
   assert.equal(await page.locator('#player-overlay').count(),0);
@@ -95,13 +100,16 @@ async function article(page,key,stage,typeName,{profile=false}={}){
    const stages=[];
    for(const expectedStage of ['소명','심의','결정','재심','확정']){
     const snapshot=await page.evaluate(()=>window.beIntegrityTest.advance());
-    if(expectedStage!=='확정')for(const entry of Object.values(snapshot)){assert.equal(entry.status,expectedStage);assert.equal(entry.suspended,false,'provisional case is not a suspension');}
+    if(expectedStage!=='확정'){
+     for(const entry of Object.values(snapshot)){assert.equal(entry.status,expectedStage);assert.equal(entry.steps.at(-1),expectedStage,'full procedural timeline is retained');assert.equal(entry.suspended,false,'provisional case is not a suspension');}
+     for(const key of Object.keys(snapshot))assert.equal(await page.evaluate(([key,stage])=>window.beIntegrityTest.notice(key,stage),[key,expectedStage]),null,'intermediate procedural stages do not create repeated news articles');
+    }
     stages.push({stage:expectedStage,cases:snapshot});
    }
    const final=stages.at(-1).cases;
    assert.equal(final.bench.remaining,1);assert.equal(final.bench.appeal.originalPenalty,3);assert.equal(final.bench.appeal.finalPenalty,1);assert.equal(final.bench.suspended,false,'new final ruling starts with the next day');
    assert.equal(final.doping.status,'종결');assert.equal(final.doping.remaining,0);assert.equal(final.doping.appeal.originalPenalty,80);assert.equal(final.doping.appeal.finalPenalty,0);assert.equal(final.doping.suspended,false);
-   assert.equal(final.fixing.status,'확정');assert.equal(final.fixing.remaining,240);assert.equal(final.fixing.internationalSuspended,false);
+   assert.equal(final.fixing.status,'제명');assert.equal(final.fixing.permanent,true);assert.equal(final.fixing.remaining,0);assert.equal(final.fixing.internationalSuspended,false);
    assert.equal(final.negative.status,'종결');assert.equal(final.negative.remaining,0);
    const nextDay=await page.evaluate(()=>window.beIntegrityTest.advance());
    assert.equal(nextDay.bench.suspended,true);assert.equal(nextDay.fixing.suspended,true);
@@ -113,8 +121,8 @@ async function article(page,key,stage,typeName,{profile=false}={}){
    await noOverflow(page,'final discipline '+width);
    await page.evaluate(()=>scrollTo(0,0));
    await page.screenshot({path:'/tmp/integrity-discipline-'+width+'.png'});
-   articles.push(await article(page,'bench','재심','벤치클리어링'));
-   articles.push(await article(page,'fixing','확정','부정 청탁'));
+   articles.push(await article(page,'bench','확정','벤치클리어링'));
+   articles.push(await article(page,'fixing','제명','부정 청탁',{profile:true}));
    articles.push(await article(page,'doping','종결','금지약물'));
    articles.push(await article(page,'negative','종결','금지약물'));
    articles.push(await article(page,'doping',0,'금지약물'));
@@ -138,7 +146,7 @@ async function article(page,key,stage,typeName,{profile=false}={}){
    await page.locator('.kpbl-article-close').click();
    assert.equal(await page.evaluate(()=>document.body.style.overflow),'');
    assert.equal(pageErrors.length,0,JSON.stringify(pageErrors));
-   reports.push({width,isolatedFixture:true,incidentTypes:['bench','doping','fixing'],stages:['조사',...stages.map(s=>s.stage)],unconfirmedCasesExcludedFromSuspension:true,suspensionStartsNextDay:true,associationBenchPenalty:{before:3,after:1},associationMedicalExemption:{before:80,after:0},unmatchedSamplesClosed:true,fixingPenalty:240,internationalScopeIsolated:true,returnProtection:recovery,disciplineAndAssociationNoOverflow:true,newsLinkOpened:true,articles,pageErrors});
+   reports.push({width,isolatedFixture:true,incidentTypes:['bench','doping','fixing'],stages:['조사',...stages.map(s=>s.stage)],unconfirmedCasesExcludedFromSuspension:true,suspensionStartsNextDay:true,associationBenchPenalty:{before:3,after:1},associationMedicalExemption:{before:80,after:0},unmatchedSamplesClosed:true,fixingSanction:'영구제명',internationalScopeIsolated:true,returnProtection:recovery,disciplineAndAssociationNoOverflow:true,newsLinkOpened:true,articles,pageErrors});
    await page.close();
   }
   const report={suite:'integrity browser integration',module:'production app.js; cloud startup replaced',viewports:reports};

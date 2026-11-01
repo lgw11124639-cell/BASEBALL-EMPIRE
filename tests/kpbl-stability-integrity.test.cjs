@@ -98,6 +98,7 @@ fresh();
 run(`var subject=state.players[0],other=state.players[1],fixture={year:2030,day:99,gameId:'fixture-99',gameNumber:1,away:subject.teamId,home:(subject.teamId+1)%10,awayRuns:1,homeRuns:0,awayInnings:Array(9).fill(0),homeInnings:Array(9).fill(0)};state.gameResults=[fixture];var transaction={id:'ledger',transactionId:'transfer-1',playerId:subject.id,year:2030,gameDay:99,gameId:'fixture-99',gameNumber:1,away:fixture.away,home:fixture.home,paymentVerified:true,amount:5000000,communicationVerified:true,agreement:'부정 청탁 수락',outcomeAltered:false};var fixing=kpblOpenIntegrityCase('fixing',subject.id,transaction);var wrongTransaction=kpblOpenIntegrityCase('fixing',subject.id,{...transaction,id:'wrong-transaction',playerId:other.id});var missingGame=kpblOpenIntegrityCase('fixing',subject.id,{...transaction,id:'missing-game',gameId:'absent'});var noCommunication=kpblOpenIntegrityCase('fixing',subject.id,{...transaction,id:'unverified-contact',communicationVerified:false});var beforeFixture=JSON.stringify(fixture);state.gameResults=[];`);
 assert.equal(run('fixing.fixture.gameId'), 'fixture-99');
 assert.equal(run('kpblIntegrityFinding(fixing).confirmed'), true, 'frozen source linkage survives an archive reset');
+run('fixing.ruleVersion=2;fixing.basePenalty=240;fixing.basePermanent=false');
 advanceCase('fixing');
 assert.equal(run('fixing.remaining'), 240);
 for (const name of ['wrongTransaction', 'missingGame', 'noCommunication']) assert.equal(run(`${name}.status`), '종결', name + ' is not proof');
