@@ -15,7 +15,7 @@ if(!Array.isArray(source.teams)||source.teams.length!==10||!Array.isArray(source
 const sandbox=loadOriginalEngineSandbox(new URL('../app.js',import.meta.url),source);
 if(options.date){
  const target=new Date(options.date+'T12:00:00'),start=new Date((source.seasonStartDate||'')+'T12:00:00');
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(options.date)||!Number.isFinite(target.getTime())||!Number.isFinite(start.getTime())||target.getFullYear()!==Number(source.year))throw Error('Target date or seasonStartDate is invalid');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(options.date)||!Number.isFinite(target.getTime())||!Number.isFinite(start.getTime())||target.getFullYear()!==Number(source.year))throw Error('Target date or seasonStartDate is invalid');
  const targetDay=Math.round((target-start)/86400000)+1;
  if(targetDay<1)throw Error('Target date precedes seasonStartDate');
  sandbox.invoke('state.day='+targetDay);
