@@ -18253,8 +18253,17 @@ body .start-screen {
 #be-replay-overlay #be-broadcast-pitch {
   overflow-wrap: anywhere;
   color: #2e596d !important;
-  font-size: 17px !important;
+  font-size: 15px !important;
   line-height: 1.7 !important;
+}
+
+#be-replay-overlay #be-broadcast-call {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #35596d;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.7;
 }
 
 #be-replay-overlay #be-broadcast-pitchcount {
@@ -18449,6 +18458,57 @@ body .start-screen {
   color: #526b7d !important;
   font-size: 11px !important;
   line-height: 1.8 !important;
+}
+
+#be-replay-overlay .be-replay-plate-summary:empty,
+#be-replay-overlay .be-replay-pitch-history[hidden] {
+  display: none !important;
+}
+
+#be-replay-overlay .be-replay-pitch-history {
+  margin-top: 10px;
+  border-top: 1px solid var(--be-event-border, #e1e9ee);
+}
+
+#be-replay-overlay .be-replay-pitch-history > summary {
+  cursor: pointer;
+  padding: 9px 0 0;
+  color: #526b7d;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+#be-replay-overlay .be-replay-pitch-rows {
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+#be-replay-overlay .be-replay-pitch-rows > li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 9px;
+  border-top: 1px solid var(--be-event-border, #e1e9ee);
+  padding: 8px 0;
+  color: #35596d;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+#be-replay-overlay .be-replay-pitch-rows b {
+  font-size: 11px;
+  font-weight: 650;
+}
+
+#be-replay-overlay .be-replay-pitch-rows span {
+  display: block;
+  margin: 0;
+  color: #526b7d;
+  font-size: 11px;
+  overflow-wrap: anywhere;
 }
 
 #be-replay-overlay .be-replay-event .be-pitch-type {
