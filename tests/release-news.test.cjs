@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const context=require('./helpers/game-context.cjs')();
-vm.runInContext(`state=world(0);state.year=2039;state.day=314;state.clubNotices=[];state.clubTransactionArchive={};state.clubNoticeSeq=0;
+vm.runInContext(`state=world(0);state.year=2039;state.day=314;state.clubNotices=[];state.clubTransactionArchive={};state.clubNoticeSeq=0;window.beNewsCategory='transfer';
 for(let club=0;club<10;club++)for(let i=0;i<5;i++){
  const player=state.players.filter(p=>p.teamId===club)[i];
  clubNotice('방출',player.name+' 보류선수 제외','방출 사유 '+club+'-'+i,[club],[player.id]);
@@ -21,7 +21,7 @@ assert.equal((article.match(/data-notice-player=/g)||[]).length,5);
 for(let i=0;i<5;i++)assert.ok(article.includes('방출 사유 0-'+i));
 run("window.beNewsCategory='transfer'");
 assert.equal((run('newsHub()').match(/data-club-notice="release:/g)||[]).length,10,'release groups appear in transfer category');
-run("window.beNewsCategory='all'");
+run("window.beNewsCategory='office'");
 assert.equal(run('JSON.stringify(state)'),before,'rendering leaves saves and archive intact');
 run("state.day++;clubNotice('방출','다음 날 방출','다른 날짜',[0],[state.players[0].id]);clubNotice('영입','영입 발표','영입',[0],[state.players[1].id])");
 assert.equal(run('groupReleaseNews(state.clubNotices).length'),12,'different dates and other transactions remain separate');
