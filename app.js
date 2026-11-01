@@ -577,7 +577,7 @@ function kpblGovernanceDay(){
  for(const p of g.policies){if(p.status==='검사 보류'&&p.steps.at(-1).day!==state.day){const retest=kpblInspectBall(p.revisedValue,null,p.failedInspectionId);if(retest.passed){p.retestInspectionId=retest.id;p.stage=5;p.status='검토 중';}}kpblAdvancePolicy(p);}
  kpblIntegrityAuditDay();kpblDisciplineDay();
 }
-const KPBL_INCIDENT_TYPES=Object.freeze({bench:{name:'벤치클리어링',penalty:3},doping:{name:'금지약물 검사',penalty:30},fixing:{name:'승부조작·부정 청탁',penalty:120}});
+const KPBL_INCIDENT_TYPES=Object.freeze({bench:{name:'벤치클리어링',penalty:3},doping:{name:'금지약물 검사',penalty:30},fixing:{name:'부정 청탁',penalty:120}});
 function kpblOpenIntegrityCase(type,playerId,evidence,scope='domestic',sourceId=''){
  if(!KPBL_INCIDENT_TYPES[type])throw Error('지원하지 않는 사건');const p=state.players.find(p=>String(p.id)===String(playerId));if(!p)return null;
  const g=kpblOffice(),id=['integrity',state.year,type,playerId,sourceId||evidence?.id].join(':');const prior=g.cases.find(c=>c.id===id);if(prior)return prior;
