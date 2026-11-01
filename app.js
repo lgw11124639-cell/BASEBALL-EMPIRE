@@ -814,7 +814,7 @@ function kpblReviewIntegrityTips(){
   if(!valid){tip.status='추가 증거 필요';continue}
   const incident=playerConductDiscover(p,action);
   tip.status=incident?'조사 개시':'추가 증거 필요';
-  if(incident){tip.caseId=incident.id;tip.reviewedYear=state.year;tip.reviewedDay=state.day;}
+  if(incident){tip.caseId=incident.id;tip.reviewedYear=state.year;tip.reviewedDay=state.day;kpblLog('KPBL 조사','청렴 제보에 따른 조사 착수','제보 자료와 원본 기록을 대조해 조사에 착수했습니다. 위반 여부는 심의 후 결정됩니다.',[p.id],[p.teamId],{tipId:tip.id,caseId:incident.id});}
  }
 }
 function kpblIntegrityAuditDay(){
