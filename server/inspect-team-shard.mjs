@@ -7,7 +7,7 @@ try{
  const u=db.prepare("SELECT user_id FROM be_save_shard_meta WHERE slot='main' ORDER BY updated_at DESC LIMIT 1").get();
  if(!u)throw Error('main save not found');
  const get=db.prepare("SELECT content FROM be_save_shards WHERE user_id=? AND slot='main' AND field=?");
- const read=f=>{const r=get.get(u.user_id,'main',f);if(!r)throw Error('missing field '+f);return JSON.parse(gunzipSync(r.content,{maxOutputLength:10000000}).toString('utf8'));};
+ const read=f=>{const r=get.get(u.user_id,f);if(!r)throw Error('missing field '+f);return JSON.parse(gunzipSync(r.content,{maxOutputLength:10000000}).toString('utf8'));};
  const teamId=read('teamId');
  if(!Number.isSafeInteger(teamId)||teamId<0||teamId>9)throw Error('unexpected teamId '+teamId);
  const encoded=read('beShard_teams_'+teamId);
