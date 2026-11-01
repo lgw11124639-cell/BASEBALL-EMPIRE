@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f7fb"><title>BASEBALL EMPIRE · 서버 홈 미리보기</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;color:#172c40;background:#f4f7fb;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;padding:24px 16px 48px}main{max-width:560px;margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:23px;margin:12px 0 5px}h2{font-size:18px;margin:0 0 16px}
+small,.muted{color:#61758a}section{background:#fff;border:1px solid #e0e8f0;border-radius:18px;padding:20px;margin-top:16px;box-shadow:0 4px 16px #18354b09}
+button,a.link{appearance:none;border:0;border-radius:11px;background:#1e516b;color:#fff;padding:12px 15px;font-size:15px;font-weight:650;text-decoration:none;cursor:pointer}
+button:disabled{opacity:.5}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stats div{background:#f3f7fa;padding:14px 8px;border-radius:12px}.stats strong{display:block;font-size:22px}
+dl{display:grid;grid-template-columns:100px 1fr;gap:10px 12px;margin:0}dt{color:#61758a}dd{margin:0;overflow-wrap:anywhere}
+#error{color:#a12626;white-space:pre-wrap}#notice{font-size:14px;line-height:1.6}
+</style></head><body><main>
+<header><div><small>BASEBALL EMPIRE · 서버 조회 전용</small><h1>경량 홈 미리보기</h1></div><a class="link" href="./">게임으로</a></header>
+<p class="muted">이 화면은 app.js와 전체 세이브를 불러오지 않습니다. 하루 진행 및 저장 기능은 없습니다.</p>
+<section><button id="refresh" type="button">서버 정보 새로고침</button><p id="notice" role="status">로그인 상태 확인 중…</p><p id="error" role="alert" hidden></p></section>
+<section id="team" hidden><h2 id="teamName"></h2><p id="city" class="muted"></p><div class="stats"><div><strong id="wins">–</strong>승</div><div><strong id="losses">–</strong>패</div><div><strong id="draws">–</strong>무</div></div></section>
+<section id="meta" hidden><h2>현재 저장 상태</h2><dl><dt>시즌</dt><dd id="year"></dd><dt>날짜 인덱스</dt><dd id="day"></dd><dt>팬 수</dt><dd id="fans"></dd><dt>구단 ID</dt><dd id="teamId"></dd><dt>저장 버전</dt><dd id="revision"></dd><dt>갱신 시각</dt><dd id="updated"></dd></dl></section>
+</main><script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const API='https://baseball-empire-save.duckdns.org/v2/view/home';
+function display(id,value){$(id).textContent=value===null||value===undefined?'정보 없음':String(value)}
+async function refresh(){
+ $('refresh').disabled=true;$('error').hidden=true;$('team').hidden=true;$('meta').hidden=true;
+ $('notice').textContent='서버에서 구단 정보 조회 중…';
+ try{
+  let session=null;
+  try{session=JSON.parse(localStorage.getItem('be-cloud-session-v1')||'null')}catch(_){}
+  if(!session||typeof session.token!=='string'||!session.token){
+   throw Error('클라우드 로그인 정보가 없습니다. 기존 게임에서 로그인한 뒤 다시 열어 주세요.');
+  }
+  if(Number(session.expiresAt)<=Date.now())throw Error('클라우드 로그인 유효기간이 지났습니다. 게임에서 다시 로그인해 주세요.');
+  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),10000);
+  let response;
+  try{response=await fetch(API,{headers:{Authorization:'Bearer '+session.token,Accept:'application/json'},cache:'no-store',signal:controller.signal})}finally{clearTimeout(timeout)}
+  if(!response.ok){if(response.status===401)throw Error('로그인 인증이 만료되었습니다. 게임에서 다시 로그인해 주세요.');throw Error('서버 홈 조회 실패 (HTTP '+response.status+')')}
+  const data=await response.json();
+  if(!Number.isSafeInteger(data.revision)||!Number.isSafeInteger(data.year)||!Number.isSafeInteger(data.day)||!Number.isSafeInteger(data.teamId)||data.team?.id!==data.teamId||typeof data.team.name!=='string')throw Error('서버 홈 데이터 형식이 올바르지 않습니다.');
+  display('teamName',data.team.name);display('city',data.team.city);display('wins',data.team.wins);display('losses',data.team.losses);display('draws',data.team.draws);
+  display('year',data.year+'년');display('day',data.day);display('fans',Number.isSafeInteger(data.team.fans)?data.team.fans.toLocaleString('ko-KR')+'명':null);
+  display('teamId',data.teamId);display('revision',data.revision);display('updated',data.updatedAt);
+  $('team').hidden=false;$('meta').hidden=false;$('notice').textContent='조회 성공 · 전체 세이브 다운로드 없음 · 읽기 전용';
+ }catch(e){$('notice').textContent='조회할 수 없습니다.';$('error').textContent=e.name==='AbortError'?'서버 응답 시간이 초과됐습니다. 다시 시도해 주세요.':String(e.message||e);$('error').hidden=false}
+ finally{$('refresh').disabled=false}
+}
+$('refresh').addEventListener('click',refresh);refresh();
+})();
+</script></body></html>
