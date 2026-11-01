@@ -1,0 +1,50 @@
+[
+  {
+    "width": 1080,
+    "profileTabs": [
+      "overview",
+      "scout",
+      "record",
+      "career",
+      "medical"
+    ],
+    "keyboard": true,
+    "honors": true,
+    "environmentCards": 14,
+    "articleTablesAligned": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "profileTabs": [
+      "overview",
+      "scout",
+      "record",
+      "career",
+      "medical"
+    ],
+    "keyboard": true,
+    "honors": true,
+    "environmentCards": 14,
+    "articleTablesAligned": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 320,
+    "profileTabs": [
+      "overview",
+      "scout",
+      "record",
+      "career",
+      "medical"
+    ],
+    "keyboard": true,
+    "honors": true,
+    "environmentCards": 14,
+    "articleTablesAligned": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  }
+]

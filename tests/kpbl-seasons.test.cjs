@@ -7,5 +7,5 @@ assert.equal(run('kpblEnvironmentHistory().find(x=>x.year===2026).avg'),null,'no
 run(`delete line.homeRuns;`);assert.equal(run('kpblEnvironmentTotals(state.gameResults).hr'),null,'unrecorded home runs are missing, not zero');
 assert.equal(run('kpblEnvironmentTotals([{...game,awayPitchers:[]}]).era'),null);
 assert.equal(run('kpblEnvironmentTotals([{...game,postseason:true}]).avg'),null);
-run(`state=JSON.parse(JSON.stringify(state));`);assert.ok(run('leagueBattingEnvironment().includes("<svg")'));
-console.log('PASS season box scores, retained yearly graph, retired-record isolation and missing metrics');
+run(`state=JSON.parse(JSON.stringify(state));`);assert.ok(run('leagueBattingEnvironment().includes("environment-card")'));
+console.log('PASS season box scores, compact league cards and retained history, retired-record isolation and missing metrics');

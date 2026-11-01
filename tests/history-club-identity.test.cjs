@@ -1,0 +1,7 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);state.history.seasons={2028:{year:2028,teams:[{id:0,city:'당시 서울',name:'옛 로열스',color:'#123456'},{id:1,city:'당시 부산',name:'옛 마리너스',color:'#654321'}]}};const record={kind:'사이클링 히트',id:13,name:'기록 선수',year:2028,day:150,teamId:0};state.players[12].teamId=5;state.teams[0].name='지금 이름';state.clubNotices=[{kind:'대기록',year:2028,day:150,players:[13],title:'사이클링 히트',body:'당시 서울 옛 로열스와 당시 부산 옛 마리너스의 경기에서 달성했다.'}];const before=JSON.stringify(state);`);
+assert.equal(run('enrichMilestoneRecord(record).teamIdentity.name'),'옛 로열스');assert.equal(run('enrichMilestoneRecord(record).teamIdentity.color'),'#123456');assert.equal(run('enrichMilestoneRecord(record).opponentId'),1);assert.equal(run('JSON.stringify(state)'),run('before'));
+run('state.clubNotices=[]');assert.equal(run('enrichMilestoneRecord(record).opponentIdentity'),null);assert.equal(run('record.opponentId'),undefined);
+run(`state.history.retiredNumbers=[{playerId:13,name:'기록 선수',teamId:0,number:7,year:2028}];state.history.hallOfFame=[{playerId:13,name:'기록 선수',teamId:1,year:2028}];const saved=JSON.stringify(state);const honors=historyHonorsPanel();`);
+assert.ok(run('honors.includes("honor-jersey")&&honors.includes("옛 로열스")&&honors.includes("옛 마리너스")'));assert.equal(run('JSON.stringify(state)'),run('saved'));
+console.log('PASS historical clubs and crests survive transfers/renames; evidence-only opponent recovery and read-only honors');
