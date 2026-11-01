@@ -773,9 +773,14 @@ function playerConductDisclosure(p){
 }
 function kpblIntegrityAuditDay(){
  const date=seasonDate(state.day),monthly=date.getDate()===15,g=kpblOffice(),key=state.year+'-'+(date.getMonth()+1);g.integrityAudits=g.integrityAudits||[];let audit=null;
+ const roster=state.players.filter(p=>!p.retired&&!p.draftPending&&['1군','2군','육성'].includes(p.level));
+ const scheduled=investigationCalendar(state.year).some(x=>x.month===date.getMonth()+1)&&date.getDate()===15;
+ const surprise=date.getDate()===23&&[4,7,10].includes(date.getMonth()+1);
+ const selected=surprise?new Set(selectUnannouncedTests(roster.map(p=>p.id),Math.max(1,Math.ceil(roster.length*.03)))):null;
+ if(surprise&&!g.integrityAudits.some(a=>a.key===key+':surprise'))g.integrityAudits.push({key:key+':surprise',...kpblStamp(),tested:[...selected],transactionsChecked:0,source:'불시 검사 대상 선정'});
  if(monthly&&!g.integrityAudits.some(a=>a.key===key)){audit={key,...kpblStamp(),tested:[],transactionsChecked:0,source:'실제 사용·거래 기록의 정기 검증'};g.integrityAudits.push(audit)}
- for(const p of state.players){if(p.retired||p.draftPending||!['1군','2군','육성'].includes(p.level))continue;const c=playerConductAccrue(p);playerConductAutonomy(p,date);playerConductDisclosure(p);if(!audit)continue;
-  audit.tested.push(p.id);for(const action of c.actions){if(action.caseId)continue;if(action.type==='doping')playerConductDiscover(p,action);else if(action.type==='gamble'||action.type==='fixing'){audit.transactionsChecked++;playerConductDiscover(p,action)}}
+ for(const p of state.players){if(p.retired||p.draftPending||!['1군','2군','육성'].includes(p.level))continue;const c=playerConductAccrue(p);playerConductAutonomy(p,date);playerConductDisclosure(p);if(!audit&&!selected?.has(p.id))continue;
+  if(audit)audit.tested.push(p.id);for(const action of c.actions){if(action.caseId)continue;if(action.type==='doping')playerConductDiscover(p,action);else if(action.type==='gamble'||action.type==='fixing'){if(audit)audit.transactionsChecked++;playerConductDiscover(p,action)}}
  }
 }
 function kpblRecordBenchIncident(game,scope,key){
