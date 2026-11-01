@@ -11361,7 +11361,7 @@ body.be-start-screen #be-version-widget {
   display: none;
 }
 
-.office-disclosure > summary > span {
+.office-disclosure > summary > span[aria-hidden="true"] {
   color: #8191a0;
   font-size: 17px;
   font-weight: 400;
@@ -11372,7 +11372,7 @@ body.be-start-screen #be-version-widget {
   color: #172b42;
 }
 
-.office-disclosure[open] > summary > span {
+.office-disclosure[open] > summary > span[aria-hidden="true"] {
   transform: rotate(45deg);
 }
 
