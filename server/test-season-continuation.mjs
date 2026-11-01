@@ -7,7 +7,7 @@ const file=process.argv[2];
 if(!file){console.error('Usage: node server/test-season-continuation.mjs DETACHED-REGULAR-COMPLETE.json');process.exit(2)}
 const initialStat=statSync(file), started=performance.now();
 const log=value=>console.log(JSON.stringify(value));
-let sandbox, steps=0;
+let sandbox, steps=0, calendarAdjusted=false;
 try{
  let source=JSON.parse(readFileSync(file,'utf8'));
  assert.ok(Array.isArray(source.teams)&&source.teams.length===10&&Array.isArray(source.players),'Expected full detached state, not a report or compressed save');
@@ -20,11 +20,25 @@ try{
  assert.ok(run('awardsFinished()'),'All clubs must have finished the regular season');
  assert.ok(!run('Number(state.beWatchedCompletedDay)===Number(state.day)'),'Prepared-day save needs explicit migration before continuation');
  log({stage:'loaded',...summary()});
+ // The simulateLeagueDay-only fixture advanced through winter without running
+ // offseasonDay. Rewind only this in-memory test fixture, never a persisted save.
+ if(run('seasonDate(state.day).getFullYear()>state.year&&!state.postseasons?.[state.year]?.finished')){
+  const from=summary();
+  run(`{const days=state.gameResults.map(g=>Number(g.day));
+   if(days.some(day=>!Number.isInteger(day)||day<1))throw Error('Invalid regular-game dates');
+   const next=Math.max(...days)+1;
+   if(next>=state.day||seasonDate(next).getFullYear()!==state.year)throw Error('Cannot derive postseason test start');
+   if(state.offseasonContractsDone?.[state.year]||(state.postseasons?.[state.year]?.games?.length||0)>0)throw Error('Refusing to rewind an already-started offseason');
+   state.day=next;
+  }`);
+  calendarAdjusted=true;
+  log({stage:'test-fixture-calendar-adjusted',fromDate:from.date,fromDay:from.day,...summary(),limitation:'In-memory fixture continuation; not proof of uninterrupted season lifecycle or a production save repair'});
+ }
  // Explicitly exercise canonical awards; report this rather than implying automatic issuance.
  run('finalizeAwards()');
  assert.ok(run('state.awards?.[2046]?.length>0'),'Canonical awards were not generated');
  log({stage:'canonical-awards-invoked',...summary()});
- for(;steps<220;steps++){
+ for(;steps<400;steps++){
   const before=summary();
   run(`ensureSeasonCalendar();monthlyOwnerReport();
    if(seasonDate(state.day).getFullYear()>state.year){
@@ -50,11 +64,11 @@ try{
     if(!state.history?.seasons?.[2046])throw Error('Previous season archive missing');}`);
    const endStat=statSync(file);
    assert.equal(endStat.size,initialStat.size);assert.equal(endStat.mtimeMs,initialStat.mtimeMs);
-   log({success:true,stage:'2047-first-games',steps:steps+1,...after,elapsedSeconds:Math.round((performance.now()-started)/1000),sourceFileUnchanged:true,sqliteWrites:0,cloudWrites:0});
+   log({success:true,stage:'2047-first-games',steps:steps+1,...after,calendarAdjusted,uninterruptedLifecycleVerified:!calendarAdjusted,elapsedSeconds:Math.round((performance.now()-started)/1000),sourceFileUnchanged:true,sqliteWrites:0,cloudWrites:0});
    process.exit(0);
   }
  }
- throw Error('Continuation exceeded 220 days');
+ throw Error('Continuation exceeded 400 days');
 }catch(error){
  log({success:false,steps,error:String(error.stack||error),elapsedSeconds:Math.round((performance.now()-started)/1000),sqliteWrites:0,cloudWrites:0});
  process.exitCode=1;
