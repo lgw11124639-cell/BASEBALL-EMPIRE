@@ -9,14 +9,14 @@ small,.muted{color:#61758a}section{background:#fff;border:1px solid #e0e8f0;bord
 button,a.link{appearance:none;border:0;border-radius:11px;background:#1e516b;color:#fff;padding:12px 15px;font-size:15px;font-weight:650;text-decoration:none;cursor:pointer}
 button:disabled{opacity:.5}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
 .stats div{background:#f3f7fa;padding:14px 8px;border-radius:12px}.stats strong{display:block;font-size:22px}
-dl{display:grid;grid-template-columns:100px 1fr;gap:10px 12px;margin:0}dt{color:#61758a}dd{margin:0;overflow-wrap:anywhere}
+.standings{width:100%;border-collapse:collapse;font-size:14px}.standings th,.standings td{padding:11px 5px;border-bottom:1px solid #e6edf3;text-align:right;font-variant-numeric:tabular-nums}.standings th:nth-child(2),.standings td:nth-child(2){text-align:left}.standings tr.mine{background:#edf5f9;font-weight:700}.standings th{color:#61758a;font-weight:600}dl{display:grid;grid-template-columns:100px 1fr;gap:10px 12px;margin:0}dt{color:#61758a}dd{margin:0;overflow-wrap:anywhere}
 #error{color:#a12626;white-space:pre-wrap}#notice{font-size:14px;line-height:1.6}
 </style></head><body><main>
 <header><div><small>BASEBALL EMPIRE · 서버 조회 전용</small><h1>경량 홈 미리보기</h1></div><a class="link" href="./">게임으로</a></header>
 <p class="muted">이 화면은 app.js와 전체 세이브를 불러오지 않습니다. 하루 진행 및 저장 기능은 없습니다.</p>
 <section><button id="refresh" type="button">서버 정보 새로고침</button><p id="notice" role="status">로그인 상태 확인 중…</p><p id="error" role="alert" hidden></p></section>
 <section id="team" hidden><h2 id="teamName"></h2><p id="city" class="muted"></p><div class="stats"><div><strong id="wins">–</strong>승</div><div><strong id="losses">–</strong>패</div><div><strong id="draws">–</strong>무</div></div></section>
-<section id="meta" hidden><h2>현재 저장 상태</h2><dl><dt>시즌</dt><dd id="year"></dd><dt>날짜 인덱스</dt><dd id="day"></dd><dt>팬 수</dt><dd id="fans"></dd><dt>구단 ID</dt><dd id="teamId"></dd><dt>저장 버전</dt><dd id="revision"></dd><dt>갱신 시각</dt><dd id="updated"></dd></dl></section>
+<section id="standingsSection" hidden><h2>KPBL 구단 순위</h2><div style="overflow-x:auto"><table class="standings"><thead><tr><th>순위</th><th>구단</th><th>승</th><th>패</th><th>무</th><th>승률</th></tr></thead><tbody id="standingsRows"></tbody></table></div><p class="muted" style="font-size:12px">승률·승수 기준 정렬, 동률은 공동 순위</p></section><section id="meta" hidden><h2>현재 저장 상태</h2><dl><dt>시즌</dt><dd id="year"></dd><dt>날짜 인덱스</dt><dd id="day"></dd><dt>팬 수</dt><dd id="fans"></dd><dt>구단 ID</dt><dd id="teamId"></dd><dt>저장 버전</dt><dd id="revision"></dd><dt>갱신 시각</dt><dd id="updated"></dd></dl></section>
 </main><script>
 (function(){
 'use strict';
@@ -24,7 +24,7 @@ const $=id=>document.getElementById(id);
 const API='https://baseball-empire-save.duckdns.org/v2/view/home';
 function display(id,value){$(id).textContent=value===null||value===undefined?'정보 없음':String(value)}
 async function refresh(){
- $('refresh').disabled=true;$('error').hidden=true;$('team').hidden=true;$('meta').hidden=true;
+ $('refresh').disabled=true;$('error').hidden=true;$('team').hidden=true;$('meta').hidden=true;$('standingsSection').hidden=true;
  $('notice').textContent='서버에서 구단 정보 조회 중…';
  try{
   let session=null;
@@ -42,6 +42,18 @@ async function refresh(){
   display('teamName',data.team.name);display('city',data.team.city);display('wins',data.team.wins);display('losses',data.team.losses);display('draws',data.team.draws);
   display('year',data.year+'년');display('day',data.day);display('fans',Number.isSafeInteger(data.team.fans)?data.team.fans.toLocaleString('ko-KR')+'명':null);
   display('teamId',data.teamId);display('revision',data.revision);display('updated',data.updatedAt);
+  const rows=$('standingsRows');rows.replaceChildren();
+  if(Array.isArray(data.standings)&&data.standings.length===10){
+   for(const t of data.standings){
+    if(!Number.isSafeInteger(t.id)||!Number.isSafeInteger(t.rank)||typeof t.name!=='string')continue;
+    const tr=document.createElement('tr');if(t.id===data.teamId)tr.className='mine';
+    for(const value of [t.rank,t.name,t.wins,t.losses,t.draws,Number.isFinite(t.pct)?t.pct.toFixed(3):'–']){
+     const td=document.createElement('td');td.textContent=String(value??'–');tr.append(td);
+    }
+    rows.append(tr);
+   }
+   $('standingsSection').hidden=false;
+  }
   $('team').hidden=false;$('meta').hidden=false;$('notice').textContent='조회 성공 · 전체 세이브 다운로드 없음 · 읽기 전용';
  }catch(e){$('notice').textContent='조회할 수 없습니다.';$('error').textContent=e.name==='AbortError'?'서버 응답 시간이 초과됐습니다. 다시 시도해 주세요.':String(e.message||e);$('error').hidden=false}
  finally{$('refresh').disabled=false}
