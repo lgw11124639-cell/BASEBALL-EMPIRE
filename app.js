@@ -610,8 +610,9 @@ function kpblIntegrityFinding(c){
  if(c.type==='doping')return {confirmed:subject&&!!e.sampleId&&e.sampleA==='양성'&&e.sampleB==='양성'&&e.chainVerified===true&&e.independentLab===true,rule:'본인 검체 식별·A·B 검체 일치 및 독립 분석·검체 인계 검증'};
  if(c.type==='gambling')return {confirmed:subject&&e.bettingLedgerVerified===true&&e.accountVerified===true&&!!e.betId&&!!e.transactionId&&Number(e.amount)>0&&e.betAccepted===true,rule:'본인 계정·실제 베팅 접수·지급 거래 원장 대조'+(e.ownClubBet===true?' · 소속 구단 경기 베팅 가중':'')};
  const action=kpblConductWitness(c),actingTeam=action?.teamId??c.teamId;
+ const pregameWithdrawal=a=>a?.withdrawn===true&&a?.selfReport?.beforeInquiry===true&&a?.completed!==true&&e.communicationVerified===true&&e.agreement==='부정 청탁 수락'&&Number(e.amount)>0&&e.paymentVerified===true;
  const f=c.fixture,game=f?.verified===true&&Number(f.year)===Number(e.year)&&Number(f.day)===Number(e.gameDay)&&String(f.away)===String(e.away)&&String(f.home)===String(e.home)&&(e.gameId==null||String(f.gameId)===String(e.gameId))&&[String(f.away),String(f.home)].includes(String(actingTeam));
- return {confirmed:!!(subject&&game&&(e.transactionId||e.id)&&e.paymentVerified===true&&Number(e.amount)>0&&e.communicationVerified===true&&e.agreement==='부정 청탁 수락'),rule:'원 경기·금전 거래·본인 식별·청탁 수락 자료 교차 검증. 경기 결과 자체의 조작 여부는 별개'};
+ return {confirmed:!!(subject&&(game||pregameWithdrawal(action))&&(e.transactionId||e.id)&&e.paymentVerified===true&&Number(e.amount)>0&&e.communicationVerified===true&&e.agreement==='부정 청탁 수락'),rule:'원 경기·금전 거래·본인 식별·청탁 수락 자료 교차 검증. 경기 결과 자체의 조작 여부는 별개'};
 }
 function kpblVerifiedSelfReport(c){
  const e=c.evidence||{},r=e.selfReport,a=kpblConductWitness(c),saved=a?.selfReport;
@@ -752,7 +753,7 @@ function playerConductDiscover(p,action,selfReported=false){
   evidence={...evidence,sampleId:'specimen:'+action.id+':'+state.year+':'+state.day,sampleA:'양성',sampleB:'양성',chainVerified:true,independentLab:true,usageActionId:action.id,usageDate:action.date,therapeuticExemption:{verified:false,playerId:p.id}};
  }else if(action.type==='gamble')evidence={...evidence,betId:action.betId,transactionId:action.transactionId,amount:action.amount,bettingLedgerVerified:true,accountVerified:action.accountVerified===true,betAccepted:action.betAccepted===true,ownClubBet:action.ownClubBet,fixture:{...action.fixture}};
  else if(action.type==='fixing'){
-  if(!action.completed||!action.completedFixture)return null;const f=action.completedFixture;evidence={...evidence,transactionId:action.transactionId,amount:action.amount,paymentVerified:action.paymentVerified===true,communicationVerified:action.communicationVerified===true,agreement:action.agreement,year:f.year,gameDay:f.day,gameId:f.gameId,gameNumber:f.gameNumber,away:f.away,home:f.home,outcomeAltered:action.outcomeAltered===true,performanceActionVerified:!!action.applied,fixture:{...f}};
+  if(!action.completed&&!selfReported)return null;const f=action.completedFixture||action.fixture;if(!f)return null;evidence={...evidence,transactionId:action.transactionId,amount:action.amount,paymentVerified:action.paymentVerified===true,communicationVerified:action.communicationVerified===true,agreement:action.agreement,year:f.year,gameDay:f.day,gameId:f.gameId,gameNumber:f.gameNumber,away:f.away,home:f.home,outcomeAltered:action.outcomeAltered===true,performanceActionVerified:!!action.applied,fixture:{...f}};
  }else return null;
  const incident=kpblOpenIntegrityCase(action.type==='gamble'?'gambling':action.type,p.id,evidence,'domestic',action.id);if(incident){action.caseId=incident.id;action.detectedYear=state.year;action.detectedDay=state.day;if(action.type==='doping'&&p.conduct.course&&!p.conduct.course.stoppedDate){p.conduct.course.stoppedDate=playerConductDate();p.conduct.course.untilDate=Math.min(playerConductDate()-1,p.conduct.course.untilDate)}}return incident;
 }
