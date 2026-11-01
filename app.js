@@ -772,12 +772,12 @@ function playerConductDisclosure(p){
  // Recognizing a concrete health cost can outweigh the original sporting ambition.
  if(action.type==='doping'&&health>=12&&persona.integrity*.8+health*1.5>persona.ambition*.35+persona.riskTolerance*.15)choosePlayerConduct(p,'self_report',{actionId:action.id,reason:'실제 건강 부담을 인정하고 사용 중단·자료 제출·조사 협조를 선택'});
 }
-function kpblSubmitIntegrityTip({playerId,type,reporter,details,evidence={}}){
+function kpblSubmitIntegrityTip({playerId,type,reporter,details,evidence={},reporterPlayerId=null}){
  const p=state.players.find(x=>String(x.id)===String(playerId));
  if(!p||!['doping','gambling','fixing'].includes(type)||!String(reporter||'').trim()||!String(details||'').trim())return null;
  const office=kpblOffice();office.integrityTips=office.integrityTips||[];
  const id=['tip',state.year,state.day,playerId,type,office.integrityTips.length+1].join(':');
- const tip={id,...kpblStamp(),playerId:p.id,type,reporter:String(reporter),details:String(details),status:'접수',evidence:structuredClone(evidence)};
+ const tip={id,...kpblStamp(),playerId:p.id,type,reporter:String(reporter),details:String(details),status:'접수',evidence:structuredClone(evidence),...(reporterPlayerId!=null&&state.players.some(x=>String(x.id)===String(reporterPlayerId))?{reporterPlayerId}:{})};
  office.integrityTips.push(tip);
  kpblLog('KPBL 조사', '청렴 제보 접수', '구체적 제보가 접수되어 사실관계를 검토합니다. 제보만으로 위반이 확정되지 않습니다.',[p.id],[p.teamId],{tipId:id,publish:false});
  return tip;
