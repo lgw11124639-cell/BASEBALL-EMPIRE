@@ -2093,8 +2093,8 @@ function nationalTeamStaff(year,event){
  state.nationalTeamStaff[key]=appointed;
  return appointed;
 }
-function nationalTeamFormScore(p){
- const x=currentSeasonBoxStats(p),g=Number(x.games)||0;
+function nationalTeamFormScore(p,candidateGames){
+ const x=currentSeasonBoxStats(p,candidateGames),g=Number(x.games)||0;
  if(p.position==='P'){
   const ip=Number(x.inningsPitched)||0,er=Number(x.earnedRuns)||0,k=Number(x.pitchingStrikeouts)||0,bb=Number(x.walksAllowed)||0;
   if(ip<12||g<5)return Math.max(0,bePlayerEvaluation(p)*.55);
@@ -2104,6 +2104,17 @@ function nationalTeamFormScore(p){
  const ab=Number(x.atBats)||0,h=Number(x.hits)||0,hr=Number(x.homeRuns)||0,bb=Number(x.walks)||0;
  if(ab<45||g<12)return Math.max(0,bePlayerEvaluation(p)*.55);
  return h/ab*120+hr*1.6+bb/Math.max(1,ab)*25+Math.min(30,ab*.07);
+}
+// A scorer belongs to one fixed roster selection, never to a saved state or later day.
+function createNationalTeamFormScorer(){
+ const gamesById=new Map(),forms=new Map();
+ for(const g of state.gameResults||[]){
+  if(g.year!=null&&Number(g.year)!==Number(state.year))continue;
+  const ids=new Set();
+  for(const key of ['awayBatters','homeBatters','awayPitchers','homePitchers'])for(const line of g[key]||[])if(line.id!=null)ids.add(String(line.id));
+  for(const id of ids){if(!gamesById.has(id))gamesById.set(id,[]);gamesById.get(id).push(g)}
+ }
+ return p=>{if(!forms.has(p))forms.set(p,nationalTeamFormScore(p,gamesById.get(String(p.id))||[]));return forms.get(p)};
 }
 function nationalTeamLineup(selected){
  const hitters=selected.filter(p=>p.position!=='P');
@@ -2275,6 +2286,7 @@ function internationalEventsForYear(year){
  return events;
 }
 function nationalTeamPreparationDay(){
+ const formScore=createNationalTeamFormScorer();
  const now=seasonDate(state.day),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
  state.nationalTeamPreparations=state.nationalTeamPreparations||{};
  for(let year=now.getFullYear();year<=now.getFullYear()+1;year++){
@@ -2287,10 +2299,10 @@ function nationalTeamPreparationDay(){
    const prep=state.nationalTeamPreparations[key]||(state.nationalTeamPreparations[key]={year,event:e.event,stages:[]});
    const daysToProcess=[60,30,14].filter(stage=>days<=stage&&!prep.stages.includes(stage));
    for(const days of daysToProcess){
-   const candidates=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form||String(a.p.id).localeCompare(String(b.p.id)));
+   const candidates=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).map(p=>({p,form:formScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form||String(a.p.id).localeCompare(String(b.p.id)));
    const eligible=days===60?candidates:candidates.filter(x=>Array.isArray(prep.preliminary)&&prep.preliminary.some(id=>String(id)===String(x.p.id)));
    const desired=days===60?18:12;
-   const chosen=eligible.filter(x=>x.p.position==='P').slice(0,desired).concat(selectNationalHitters(eligible.map(x=>x.p),desired).map(p=>({p,form:nationalTeamFormScore(p)})));
+   const chosen=eligible.filter(x=>x.p.position==='P').slice(0,desired).concat(selectNationalHitters(eligible.map(x=>x.p),desired,formScore).map(p=>({p,form:formScore(p)})));
    if(days!==14&&(chosen.filter(x=>x.p.position==='P').length<9||chosen.filter(x=>x.p.position!=='P').length<9)){prep.lastError='선발 가능한 투수 '+chosen.filter(x=>x.p.position==='P').length+'명 / 야수 '+chosen.filter(x=>x.p.position!=='P').length+'명 (각 9명 이상 필요)';continue;}
    const ids=chosen.map(x=>x.p.id);
    if(days===60)prep.preliminary=ids;
@@ -2304,7 +2316,7 @@ function nationalTeamPreparationDay(){
      const isPosition=p=>position==='P'?p.position==='P':p.position!=='P';
      const target=prep.final.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(p=>p&&isPosition(p)).length;
      const have=current.filter(isPosition).length;
-     const reserves=(prep.preliminary||[]).filter(id=>!prep.final.some(fid=>String(fid)===String(id))).map(id=>eligiblePlayer(id)).filter(p=>p&&isPosition(p)).sort((x,y)=>nationalTeamFormScore(y)-nationalTeamFormScore(x));
+     const reserves=(prep.preliminary||[]).filter(id=>!prep.final.some(fid=>String(fid)===String(id))).map(id=>eligiblePlayer(id)).filter(p=>p&&isPosition(p)).sort((x,y)=>formScore(y)-formScore(x));
      for(const p of reserves.slice(0,Math.max(0,target-have))){current.push(p);replacements.push(p);}
     }
     prep.summoned=current.map(p=>p.id);
@@ -2335,10 +2347,11 @@ function nationalTeamTournamentDay(){
  state.nationalTeamResults=state.nationalTeamResults||{};
  let record=state.nationalTeamResults[key];
  if(!record){
+  const formScore=createNationalTeamFormScorer();
   // Permit recovery within the scheduled tournament month if opening day was missed.
   if(day<1)return;
-  const scored=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form);
-  const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const available=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&p.position&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).map(p=>({p,form:nationalTeamFormScore(p)})).sort((a,b)=>b.form-a.form).map(x=>x.p);
+  const scored=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:formScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form);
+  const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const available=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&p.position&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).map(p=>({p,form:formScore(p)})).sort((a,b)=>b.form-a.form).map(x=>x.p);
   const fill=(position)=>{
    const isEligible=p=>p&&p.id!=null&&(position==='P'?p.position==='P':p.position!=='P');
    const result=[],usedIds=new Set(),usedNames=new Set();
@@ -2352,7 +2365,7 @@ function nationalTeamTournamentDay(){
    for(const p of available){if(result.length>=12)break;add(p);}
    return result;
   };
-  const pitchers=fill('P'),batters=selectNationalHitters([...(chosen||[]),...available],12);
+  const pitchers=fill('P'),batters=selectNationalHitters([...(chosen||[]),...available],12,formScore);
   const selected=[...pitchers,...batters.filter(p=>!pitchers.some(q=>String(q.id)===String(p.id)))];
   const duplicateNames=new Set();
   const seenNames=new Set();
