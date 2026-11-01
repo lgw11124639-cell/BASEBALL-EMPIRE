@@ -13,7 +13,7 @@ assert.equal(run('incident.remaining'),1);run(`kpblCompleteMatch(next,'minor',su
 run(`player.level='2군';`);assert.equal(run('kpblSuspensionRoster("regular").length'),0,'demotion cannot serve a first-team ban');
 run(`player.level='1군';kpblCompleteMatch(next,'regular',suspRoster);kpblCompleteMatch(next,'regular',suspRoster);`);
 assert.equal(run('incident.remaining'),0);assert.equal(run('incident.served.length'),1);assert.equal(run('incident.status'),'복귀');assert.equal(run('kpblSuspended(player)'),false);
-assert.ok(run('kpblDisciplineLabel(player).includes("복귀")'));assert.ok(run('state.clubNotices.some(n=>n.title.includes("복귀 가능"))'));
+assert.ok(run('playerDisciplinePanel(player).includes("복귀")'));assert.ok(run('state.clubNotices.some(n=>n.title.includes("복귀 가능"))'));
 run(`state=JSON.parse(JSON.stringify(state));`);assert.equal(run('kpblOffice().cases[0].served.length'),1);
 // No random misconduct: missing pitcher identity or ordinary one-off HBP cannot create a case.
 run(`kpblCompleteMatch({...game,day:107,broadcastEvents:[{outcome:'사구'}]});`);assert.equal(run('kpblOffice().cases.length'),1);
