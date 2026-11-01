@@ -16,8 +16,13 @@ for(let season=0;season<2;season++){
  let ab=0,h=0,hr=0,outs=0,er=0;
  for(const game of data.games){assert.ok(!game.recordAudit?.length);for(const side of ['away','home']){const bats=game[side+'Batters'],arms=game[side+'Pitchers'];assert.equal(game[side+'Innings'].reduce((n,x)=>n+(x||0),0),game[side+'Runs']);assert.equal(bats.reduce((n,p)=>n+p.runs,0),game[side+'Runs']);for(const p of bats){ab+=p.atBats;h+=p.hits;hr+=p.homeRuns}for(const p of arms){outs+=p.outs;er+=p.earnedRuns}}}
  assert.equal(data.totals.ab,ab);assert.equal(data.totals.hits,h);assert.equal(data.totals.hr,hr);assert.equal(data.totals.avg,h/ab);assert.equal(data.totals.era,er*27/outs);
- for(const incident of data.cases){assert.ok(incident.evidence.events.length>=3);assert.equal(new Set(incident.served||[]).size,(incident.served||[]).length);}
- reports.push({year:data.year,games:720,ab,h,hr,outs,er,avg:h/ab,era:er*27/outs,cases:data.cases.length});
+ for(const incident of data.cases){
+  if(!incident.type)assert.ok(incident.evidence.events.length>=3);
+  else {c.auditIncident=incident;assert.equal(run('kpblIntegrityFinding(auditIncident).confirmed'),true,'typed cases require complete original evidence');if(incident.evidence.actionId)assert.equal(incident.conductWitness.id,incident.evidence.actionId,'autonomous cases preserve a verified source action');}
+  assert.equal(new Set(incident.served||[]).size,(incident.served||[]).length);
+  if(incident.status==='확정'||incident.status==='복귀')assert.equal((incident.served||[]).length+Number(incident.remaining||0),Number(incident.decision),'completed club games account for the exact confirmed penalty');
+ }
+ reports.push({year:data.year,games:720,ab,h,hr,outs,er,avg:h/ab,era:er*27/outs,cases:data.cases.length,casesByType:data.cases.reduce((out,c)=>(out[c.type||'safety']=(out[c.type||'safety']||0)+1,out),{})});
  run('saveSeasonSnapshot()');assert.equal(run('state.history.seasons[state.year].leagueEnvironment.games'),720);
  if(season===0){assert.equal(run('beginNextSeason()'),true);assert.equal(run('state.year'),2028);run('state=JSON.parse(JSON.stringify(state))');assert.equal(run('state.history.seasons[2027].leagueEnvironment.games'),720);}
 }

@@ -1,0 +1,37 @@
+{
+  "seasons": [
+    {
+      "year": 2027,
+      "games": 720,
+      "ab": 50046,
+      "h": 11257,
+      "hr": 649,
+      "outs": 39103,
+      "er": 4616,
+      "avg": 0.22493306158334334,
+      "era": 3.1872746336598214,
+      "cases": 4,
+      "casesByType": {
+        "gambling": 4
+      }
+    },
+    {
+      "year": 2028,
+      "games": 720,
+      "ab": 49857,
+      "h": 11134,
+      "hr": 665,
+      "outs": 38993,
+      "er": 4539,
+      "avg": 0.22331869145756864,
+      "era": 3.1429487343882236,
+      "cases": 32,
+      "casesByType": {
+        "gambling": 32
+      }
+    }
+  ],
+  "totalGames": 1440,
+  "elapsedSeconds": 73.780492993,
+  "scope": "Production regular major-game loop + daily recovery/governance + actual beginNextSeason. Daily transactions, minor/international games, cloud I/O excluded."
+}

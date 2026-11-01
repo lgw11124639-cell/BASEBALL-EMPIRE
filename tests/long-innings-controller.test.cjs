@@ -9,7 +9,7 @@ assert.ok(start>=0&&end>start,'actual innings controller exists');
 let seed=20261026;
 const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
 let injuries=0,substitutions=0,halves=0;
-const context=vm.createContext({
+const context=vm.createContext({state:{year:2027,day:1},
  gameInjuryCheck:()=>{injuries++},
  managerSubstitutions:()=>{substitutions++},
  playHalf:(batting,fielding,inning,r,walkoff)=>{

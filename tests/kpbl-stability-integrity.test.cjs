@@ -41,7 +41,7 @@ assert.equal(run('medicalNotice.kpblRecord.step.stage'), '조사');
 assert.equal(run('medicalNotice.kpblRecord.finding'), null, 'a publication cannot reveal a later finding');
 advanceCase('medical');
 assert.equal(run('medical.status'), '종결');
-assert.equal(run('medical.appeal.originalPenalty'), 30);
+assert.equal(run('medical.appeal.originalPenalty'), 80);
 assert.equal(run('medical.decision'), 0);
 assert.equal(run('JSON.stringify(medicalNotice.kpblRecord)'), run('originalInvestigation'), 'later rulings do not rewrite the investigation publication');
 assert.match(run('kpblArticleModel(medicalNotice).title'), /금지약물.*조사/);
@@ -56,7 +56,7 @@ for (const name of ['wrongSample', 'missingLab', 'negative']) {
   assert.equal(run(`${name}.status`), '종결', name + ' is closed without a penalty');
   assert.equal(run(`${name}.remaining`), 0);
 }
-assert.equal(run('wrongExemption.remaining'), 30, 'another player’s treatment approval does not cancel a verified violation');
+assert.equal(run('wrongExemption.remaining'), 80, 'another player’s treatment approval does not cancel a verified violation');
 assert.equal(run('kpblSuspended(subject)'), false, 'the final day is still excluded');
 run('state.day++');
 assert.equal(run('kpblSuspended(subject)'), true);
@@ -99,7 +99,7 @@ run(`var subject=state.players[0],other=state.players[1],fixture={year:2030,day:
 assert.equal(run('fixing.fixture.gameId'), 'fixture-99');
 assert.equal(run('kpblIntegrityFinding(fixing).confirmed'), true, 'frozen source linkage survives an archive reset');
 advanceCase('fixing');
-assert.equal(run('fixing.remaining'), 120);
+assert.equal(run('fixing.remaining'), 240);
 for (const name of ['wrongTransaction', 'missingGame', 'noCommunication']) assert.equal(run(`${name}.status`), '종결', name + ' is not proof');
 assert.equal(run('JSON.stringify(fixture)'), run('beforeFixture'), 'the integrity case never rewrites match results');
 assert.match(run('JSON.stringify(kpblArticleModel(state.clubNotices.find(n=>n.caseId===fixing.id&&n.kpblRecord?.step.stage==="확정")))'), /경기 결과.*별개/);

@@ -7,7 +7,7 @@ function extract(name){const start=src.indexOf('function '+name+'(');assert.ok(s
 let seed=0x20261026;
 const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
 const state={players:[],day:1};
-const context=vm.createContext({state,Math,Number,bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
+const context=vm.createContext({state,Math,Number,playerConductEffects:()=>({contact:0,power:0,speed:0,eye:0,control:0,arm:0,healthFatigue:0,fixing:false}),bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
  batterSkill:(p,k)=>({contact:70,eye:60,power:65,speed:60,fielding:60,arm:60}[k]||60),
  stadiumFactors:()=>({hit:1,homer:1}),
  deliveryFactors:()=>({hit:1,walk:1,strikeout:1}),

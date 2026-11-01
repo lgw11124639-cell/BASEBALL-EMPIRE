@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
-run(`state=world(0);const before=JSON.stringify(state.players);kpblGovernanceDay();const first=kpblOffice().elections[0];`);
-assert.equal(run('JSON.stringify(state.players)'),run('before'),'governance never changes old contracts or stats');
+run(`state=world(0);for(const p of state.players)ensureProfile(p);const durablePlayers=()=>JSON.stringify(state.players.map(({conduct,community,...p})=>p));const before=durablePlayers();kpblGovernanceDay();const first=kpblOffice().elections[0];`);
+assert.equal(run('durablePlayers()'),run('before'),'governance never changes old contracts or stats');
 assert.equal(run('first.ballots.length'),10);assert.equal(run('first.termEnd'),2029);assert.ok(run('first.candidates.every(c=>c.career&&c.platform&&!Object.hasOwn(c,"overall"))'));
 assert.equal(run('kpblOffice().appointments[0].appointees.length'),2);
 assert.equal(run('kpblAssociation().elections[0].termEnd'),2028);

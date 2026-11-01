@@ -100,8 +100,8 @@ async function article(page,key,stage,typeName,{profile=false}={}){
    }
    const final=stages.at(-1).cases;
    assert.equal(final.bench.remaining,1);assert.equal(final.bench.appeal.originalPenalty,3);assert.equal(final.bench.appeal.finalPenalty,1);assert.equal(final.bench.suspended,false,'new final ruling starts with the next day');
-   assert.equal(final.doping.status,'종결');assert.equal(final.doping.remaining,0);assert.equal(final.doping.appeal.originalPenalty,30);assert.equal(final.doping.appeal.finalPenalty,0);assert.equal(final.doping.suspended,false);
-   assert.equal(final.fixing.status,'확정');assert.equal(final.fixing.remaining,120);assert.equal(final.fixing.internationalSuspended,false);
+   assert.equal(final.doping.status,'종결');assert.equal(final.doping.remaining,0);assert.equal(final.doping.appeal.originalPenalty,80);assert.equal(final.doping.appeal.finalPenalty,0);assert.equal(final.doping.suspended,false);
+   assert.equal(final.fixing.status,'확정');assert.equal(final.fixing.remaining,240);assert.equal(final.fixing.internationalSuspended,false);
    assert.equal(final.negative.status,'종결');assert.equal(final.negative.remaining,0);
    const nextDay=await page.evaluate(()=>window.beIntegrityTest.advance());
    assert.equal(nextDay.bench.suspended,true);assert.equal(nextDay.fixing.suspended,true);
@@ -138,7 +138,7 @@ async function article(page,key,stage,typeName,{profile=false}={}){
    await page.locator('.kpbl-article-close').click();
    assert.equal(await page.evaluate(()=>document.body.style.overflow),'');
    assert.equal(pageErrors.length,0,JSON.stringify(pageErrors));
-   reports.push({width,isolatedFixture:true,incidentTypes:['bench','doping','fixing'],stages:['조사',...stages.map(s=>s.stage)],unconfirmedCasesExcludedFromSuspension:true,suspensionStartsNextDay:true,associationBenchPenalty:{before:3,after:1},associationMedicalExemption:{before:30,after:0},unmatchedSamplesClosed:true,fixingPenalty:120,internationalScopeIsolated:true,returnProtection:recovery,disciplineAndAssociationNoOverflow:true,newsLinkOpened:true,articles,pageErrors});
+   reports.push({width,isolatedFixture:true,incidentTypes:['bench','doping','fixing'],stages:['조사',...stages.map(s=>s.stage)],unconfirmedCasesExcludedFromSuspension:true,suspensionStartsNextDay:true,associationBenchPenalty:{before:3,after:1},associationMedicalExemption:{before:80,after:0},unmatchedSamplesClosed:true,fixingPenalty:240,internationalScopeIsolated:true,returnProtection:recovery,disciplineAndAssociationNoOverflow:true,newsLinkOpened:true,articles,pageErrors});
    await page.close();
   }
   const report={suite:'integrity browser integration',module:'production app.js; cloud startup replaced',viewports:reports};
