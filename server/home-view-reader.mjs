@@ -37,6 +37,6 @@ export function createHomeViewReader(db){
   }
   standings.sort((a,b)=>b.pct-a.pct||b.wins-a.wins||a.id-b.id);
   return {revision:int(m.rev),updatedAt:m.updated_at,year,day,teamId,team,
-   standings:standings.map((t,index)=>({...t,rank:index+1})),readOnly:true};
+   standings:standings.map((t,index)=>({...t,rank:standings.findIndex(x=>x.pct===t.pct&&x.wins===t.wins)+1})),readOnly:true};
  };
 }
