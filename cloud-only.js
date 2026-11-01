@@ -912,6 +912,19 @@ window.beFetchServerViewStatus=async function(){
  if(!Number.isSafeInteger(payload.revision)||!Number.isSafeInteger(payload.year)||!Number.isSafeInteger(payload.day))throw Error('서버 상태 응답 형식이 올바르지 않습니다');
  return Object.freeze({revision:payload.revision,year:payload.year,day:payload.day,teamId:payload.teamId??null,watchedCompletedDay:payload.watchedCompletedDay??null,updatedAt:payload.updatedAt??null,readOnly:true});
 };
+// Optional read-only home projection. Does not load or mutate full game state.
+window.beFetchServerHomeView=async function(){
+ if(!token)throw Error('클라우드 로그인 후 실행하세요');
+ const response=await fetch(API+'/v2/view/home',{
+  method:'GET',headers:{Authorization:'Bearer '+token,Accept:'application/json'},cache:'no-store'
+ });
+ let payload={};try{payload=await response.json()}catch(_){}
+ if(!response.ok){const error=Error(payload.error||'서버 홈 조회 실패: HTTP '+response.status);error.status=response.status;throw error;}
+ if(!Number.isSafeInteger(payload.revision)||!Number.isSafeInteger(payload.year)||!Number.isSafeInteger(payload.day)||!Number.isSafeInteger(payload.teamId)||payload.team?.id!==payload.teamId||typeof payload.team.name!=='string')throw Error('서버 홈 응답 형식이 올바르지 않습니다');
+ const t=payload.team;
+ return Object.freeze({revision:payload.revision,year:payload.year,day:payload.day,teamId:payload.teamId,
+  updatedAt:payload.updatedAt??null,team:Object.freeze({id:t.id,name:t.name,city:t.city??null,stadium:t.stadium??null,wins:t.wins??null,losses:t.losses??null,draws:t.draws??null,fans:t.fans??null}),readOnly:true});
+};
 async function snapshot(){try{return await call('/v2/saves/main')}catch(e){if(e.status===404)return null;throw e}}
 // Read-only verification against the actual server snapshot; never overwrites the running game.
 function canonicalCloudValue(value){
