@@ -781,6 +781,13 @@ function playerConductDisclosure(p){
  const persona=c.persona,health=Number(c.healthBurden)||0;
  // Recognizing a concrete health cost can outweigh the original sporting ambition.
  if(action.type==='doping'&&health>=12&&persona.integrity*.8+health*1.5>persona.ambition*.35+persona.riskTolerance*.15)choosePlayerConduct(p,'self_report',{actionId:action.id,reason:'실제 건강 부담을 인정하고 사용 중단·자료 제출·조사 협조를 선택'});
+ if(action.type==='gamble'){
+  const debt=Number(c.finances?.debt)||0,loss=Number(action.settled?.net)||0;
+  if(action.settled&&debt>0&&loss<0&&persona.integrity+Math.min(35,debt/1000000)>persona.riskTolerance+persona.financialFocus*.4)
+   choosePlayerConduct(p,'self_report',{actionId:action.id,reason:'실제 도박 손실과 채무를 인정하고 거래 원본을 제출'});
+ }
+ if(action.type==='fixing'&&!action.completed&&action.agreement==='부정 청탁 수락'&&persona.integrity>persona.riskTolerance+persona.ambition*.25)
+  choosePlayerConduct(p,'self_report',{actionId:action.id,reason:'경기 전 부정 청탁을 철회하고 대화·거래 기록을 제출'});
 }
 function kpblSubmitIntegrityTip({playerId,type,reporter,details,evidence={},reporterPlayerId=null}){
  const p=state.players.find(x=>String(x.id)===String(playerId));
