@@ -36,3 +36,14 @@ export function reviewDopingEvidence({sampleA,sampleB,chainVerified,independentL
  const verified=sampleA==='양성'&&sampleB==='양성'&&chainVerified===true&&independentLab===true;
  return {violation:verified,proofVerified:verified,therapeuticExemption:false};
 }
+
+// Schedule an unannounced audit without implying that a selected player is guilty.
+export function planUnannouncedAudit({year,day,players,count,random=Math.random}){
+ return {year,day,source:'unannounced',selectedPlayerIds:selectUnannouncedTests(players,count,random),status:'검사 예정'};
+}
+// One investigation per subject/source/date, even when a report is received twice.
+export function registerInvestigation(cases,caseRecord){
+ const list=Array.isArray(cases)?cases:[];
+ const key=c=>[c.playerId,c.source,c.year,c.day].join(':');
+ return list.some(c=>key(c)===key(caseRecord))?list:[...list,caseRecord];
+}
