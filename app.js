@@ -785,14 +785,17 @@ function kpblIntegrityAuditDay(){
   audit={key:auditKey,...kpblStamp(),tested:selectedIds,transactionsChecked:0,source:scheduled?'정기 약물 검사':'불시 약물 검사'};
   g.integrityAudits.push(audit);
  }
- const selected=new Set(audit?.tested||[]);
+ const selected=new Set((scheduled||surprise)?(audit?.tested||[]):[]);
+ if(audit&&(scheduled||surprise)&&!audit.completed){audit.completed=true;audit.completedYear=state.year;audit.completedDay=state.day;audit.negative=[];}
  for(const p of roster){
   const c=playerConductAccrue(p);playerConductAutonomy(p,date);playerConductDisclosure(p);
-  if(!selected.has(p.id))continue;
+  if(!selected.has(p.id)||!audit||audit.completedDay!==state.day)continue;
+  let detected=false;
   for(const action of c.actions){
    if(action.caseId||action.type!=='doping')continue;
-   playerConductDiscover(p,action);
+   if(playerConductDiscover(p,action))detected=true;
   }
+  if(!detected&&!audit.negative.includes(p.id))audit.negative.push(p.id);
  }
 }
 function kpblRecordBenchIncident(game,scope,key){
