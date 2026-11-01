@@ -1,0 +1,77 @@
+{
+  "version": "2.0.36",
+  "build": "20261101-records58",
+  "regression": {
+    "files": 84,
+    "passed": 84,
+    "failed": []
+  },
+  "milestoneBrowser": [
+    {
+      "width": 1080,
+      "threeTypeFilters": true,
+      "seasonFilter": true,
+      "profile": true,
+      "gameArticle": true,
+      "emptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "threeTypeFilters": true,
+      "seasonFilter": true,
+      "profile": true,
+      "gameArticle": true,
+      "emptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "threeTypeFilters": true,
+      "seasonFilter": true,
+      "profile": true,
+      "gameArticle": true,
+      "emptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    }
+  ],
+  "articleBrowser": [
+    {
+      "width": 1080,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    }
+  ],
+  "scope": "Stored game-box milestone classification and read-only archives, responsive in-memory UI fixtures, and full-screen KPBL article sizing. No user/cloud save writes."
+}
