@@ -799,6 +799,7 @@ function kpblReviewIntegrityTips(){
 function kpblIntegrityAuditDay(){
  const date=seasonDate(state.day),g=kpblOffice(),key=state.year+'-'+(date.getMonth()+1);
  kpblReviewIntegrityTips();
+ // Review reported evidence before scheduled integrity screens.
  g.integrityAudits=g.integrityAudits||[];
  const roster=state.players.filter(p=>!p.retired&&!p.draftPending&&['1군','2군','육성'].includes(p.level));
  const scheduled=investigationCalendar(state.year).some(x=>x.month===date.getMonth()+1)&&date.getDate()===15;
