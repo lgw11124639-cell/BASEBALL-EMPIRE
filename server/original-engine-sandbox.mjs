@@ -13,7 +13,7 @@ export function createOriginalEngineSandbox(appSource,saveState,{timeoutMs=15000
  const detached=structuredClone(saveState);
  const context=vm.createContext({
   console:{log(){},warn(){},error(){}},
-  window:{},document:{querySelector(){return null},getElementById(){return null}},
+  window:{addEventListener(){}},document:{addEventListener(){},removeEventListener(){},querySelector(){return null},getElementById(){return null}},
   performance,Date,Math,JSON,Map,Set,WeakMap,WeakSet,Promise,
   setTimeout(){throw Error('Browser timer not supported in engine sandbox')},
   clearTimeout(){},alert(){throw Error('Browser alert in engine')},
