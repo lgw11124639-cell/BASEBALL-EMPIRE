@@ -771,8 +771,34 @@ function playerConductDisclosure(p){
  // Recognizing a concrete health cost can outweigh the original sporting ambition.
  if(action.type==='doping'&&health>=12&&persona.integrity*.8+health*1.5>persona.ambition*.35+persona.riskTolerance*.15)choosePlayerConduct(p,'self_report',{actionId:action.id,reason:'실제 건강 부담을 인정하고 사용 중단·자료 제출·조사 협조를 선택'});
 }
+function kpblSubmitIntegrityTip({playerId,type,reporter,details,evidence={}}){
+ const p=state.players.find(x=>String(x.id)===String(playerId));
+ if(!p||!['doping','gambling','fixing'].includes(type)||!String(reporter||'').trim()||!String(details||'').trim())return null;
+ const office=kpblOffice();office.integrityTips=office.integrityTips||[];
+ const id=['tip',state.year,state.day,playerId,type,office.integrityTips.length+1].join(':');
+ const tip={id,...kpblStamp(),playerId:p.id,type,reporter:String(reporter),details:String(details),status:'접수',evidence:structuredClone(evidence)};
+ office.integrityTips.push(tip);
+ kpblLog('KPBL 조사', '청렴 제보 접수', '구체적 제보가 접수되어 사실관계를 검토합니다. 제보만으로 위반이 확정되지 않습니다.',[p.id],[p.teamId],{tipId:id,publish:false});
+ return tip;
+}
+function kpblReviewIntegrityTips(){
+ const office=kpblOffice();
+ for(const tip of office.integrityTips||[]){
+  if(tip.status!=='접수')continue;
+  const p=state.players.find(x=>String(x.id)===String(tip.playerId));
+  if(!p){tip.status='대상 확인 불가';continue}
+  const e=tip.evidence||{},action=p.conduct?.actions?.find(a=>a.id===e.actionId);
+  if(!action||String(action.playerId)!==String(p.id)){tip.status='추가 증거 필요';continue}
+  const valid=tip.type==='doping'&&action.type==='doping'||tip.type==='gambling'&&action.type==='gamble'||tip.type==='fixing'&&action.type==='fixing';
+  if(!valid){tip.status='추가 증거 필요';continue}
+  const incident=playerConductDiscover(p,action);
+  tip.status=incident?'조사 개시':'추가 증거 필요';
+  if(incident)tip.caseId=incident.id;
+ }
+}
 function kpblIntegrityAuditDay(){
  const date=seasonDate(state.day),g=kpblOffice(),key=state.year+'-'+(date.getMonth()+1);
+ kpblReviewIntegrityTips();
  g.integrityAudits=g.integrityAudits||[];
  const roster=state.players.filter(p=>!p.retired&&!p.draftPending&&['1군','2군','육성'].includes(p.level));
  const scheduled=investigationCalendar(state.year).some(x=>x.month===date.getMonth()+1)&&date.getDate()===15;
