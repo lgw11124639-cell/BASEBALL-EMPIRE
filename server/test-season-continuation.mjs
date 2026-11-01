@@ -8,6 +8,7 @@ if(!file){console.error('Usage: node server/test-season-continuation.mjs DETACHE
 const initialStat=statSync(file), started=performance.now();
 const log=value=>console.log(JSON.stringify(value));
 let sandbox, steps=0, calendarAdjusted=false;
+const activePhases=[];
 try{
  let source=JSON.parse(readFileSync(file,'utf8'));
  assert.ok(Array.isArray(source.teams)&&source.teams.length===10&&Array.isArray(source.players),'Expected full detached state, not a report or compressed save');
@@ -38,6 +39,21 @@ try{
  run('finalizeAwards()');
  assert.ok(run('state.awards?.[2046]?.length>0'),'Canonical awards were not generated');
  log({stage:'canonical-awards-invoked',...summary()});
+ // Trace the real functions without splitting/reordering the original daily engine.
+ // Host-side phase tracking survives a VM timeout and identifies the active call.
+ sandbox.context.__continuationPhase=(name,event,elapsedMs)=>{
+  if(event==='start')activePhases.push(name);else activePhases.pop();
+  if(steps===0||elapsedMs>=10000)log({stage:'engine-phase',step:steps+1,name,event,...(elapsedMs==null?{}:{elapsedMs})});
+ };
+ run(`for(const name of ${JSON.stringify(['ensureSeasonCalendar','monthlyOwnerReport','offseasonDay','simulateLeagueDay','kpblGovernanceDay','repairClubRosterState','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','financeMonth','calendarNotice','foreignRecruitmentDay','asianQuotaRecruitmentDay','activateDraftRookies','draftScoutReport','officeDraft','postseasonDay','runOffseasonContracts','reviewInactiveRoster','annualSalaryNegotiations','reviewUnsignedFaMarket','releasedPlayerSigningDay','retireUnsignedReleasedPlayers','officeAI','coachDevelopmentDay','nationalTeamTournamentDay','nationalTeamReturnDay','saveSeasonSnapshot','validateSeasonIntegrity','beginNextSeason'])}){
+  const original=eval(name);
+  if(typeof original!=='function')throw Error('Missing phase '+name);
+  const wrapped=function(...args){const started=performance.now();__continuationPhase(name,'start');
+   const result=original.apply(this,args);
+   __continuationPhase(name,'end',Math.round(performance.now()-started));return result;
+  };
+  eval(name+' = wrapped');
+ }`);
  for(;steps<400;steps++){
   const before=summary();
   run(`ensureSeasonCalendar();monthlyOwnerReport();
@@ -70,6 +86,6 @@ try{
  }
  throw Error('Continuation exceeded 400 days');
 }catch(error){
- log({success:false,steps,error:String(error.stack||error),elapsedSeconds:Math.round((performance.now()-started)/1000),sqliteWrites:0,cloudWrites:0});
+ log({success:false,steps,activePhases,error:String(error.stack||error),elapsedSeconds:Math.round((performance.now()-started)/1000),sqliteWrites:0,cloudWrites:0});
  process.exitCode=1;
 }
