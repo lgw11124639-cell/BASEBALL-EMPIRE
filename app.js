@@ -635,9 +635,9 @@ function kpblAdvanceIntegrityCase(c){
   if(reporter&&String(reporter.id)!==String(c.playerId)){
    office.integrityAwards=office.integrityAwards||[];
    const awardId='integrity-merit:'+tip.id;
-   if(!office.integrityAwards.some(a=>a.id===awardId))office.integrityAwards.push({id:awardId,...kpblStamp(),playerId:reporter.id,caseId:c.id,tipId:tip.id,title:'KPBL 청렴 신고 공로',reason:'증거로 확인된 위반에 대한 신고 및 조사 협조'});
+   if(!office.integrityAwards.some(a=>a.id===awardId))office.integrityAwards.push({id:awardId,...kpblStamp(),playerId:reporter.id,caseId:c.id,tipId:tip.id,title:'KPBL 청렴 신고 공로',reason:'증거로 확인된 위반에 대한 신고 및 조사 협조',confidential:true});
    tip.awardId=awardId;
-   kpblLog('KPBL 포상','청렴 신고 공로 인정','위반 사실 확인에 기여한 신고자의 공로를 인정했습니다.',[reporter.id],[reporter.teamId],{awardId});
+   // Whistleblower awards remain confidential; never publish reporter identity or team.
   }
  }}}c.steps.push({...kpblStamp(),stage:c.status,text});const finalTitle=c.stage===5?(c.outcome==='위반 확정'?'징계 확정':c.outcome==='입증 부족'?'증거 불충분으로 조사 종결':c.outcome==='치료목적사용면책 인정'?'치료목적사용면책 인정':'무혐의 종결')+' · '+KPBL_INCIDENT_TYPES[c.type].name:c.status+' · '+KPBL_INCIDENT_TYPES[c.type].name;kpblLog('KPBL 징계',finalTitle,text,[c.playerId],[c.teamId],{caseId:c.id,publish:c.stage===5});
 }
