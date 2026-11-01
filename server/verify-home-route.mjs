@@ -32,10 +32,14 @@ else {
   assert.equal(data.teamId,data.team.id,'team id must match');
   assert.equal(typeof data.team.name,'string','team name required');
   assert.equal(typeof data.team.city,'string','team city required');
+  assert.ok(Array.isArray(data.fixtures),'fixtures must be returned');
+  assert.ok(data.fixtures.length>0,'upcoming fixtures must be present for this save');
+  assert.ok(data.fixtures.every(f=>typeof f.date==='string'&&Array.isArray(f.pairs)&&f.pairs.length===5),'fixture format must be valid');
+  assert.equal(data.fixtures[0].date,'2046-03-20','first fixture must match tested save');
   assert.equal(data.readOnly,true,'home must be read only');
   assert.deepEqual(meta.get(user.user_id,'main'),before,'save metadata must be unchanged');
   assert.equal(Object.hasOwn(data,'save'),false,'no full save should be returned');
-  console.log(JSON.stringify({ok:true,port,unauthenticated:401,authenticated:200,year:data.year,day:data.day,revision:data.revision,teamId:data.teamId,teamName:data.team.name,saveUnchanged:true,fullSaveDownloaded:false}));
+  console.log(JSON.stringify({ok:true,port,unauthenticated:401,authenticated:200,year:data.year,day:data.day,revision:data.revision,teamId:data.teamId,teamName:data.team.name,fixtureDays:data.fixtures.length,firstFixture:data.fixtures[0],saveUnchanged:true,fullSaveDownloaded:false}));
  } catch (error) {
   console.error('FAIL:',error.message);process.exitCode=1;
  } finally {remove.run(tokenHash);db.close();}
