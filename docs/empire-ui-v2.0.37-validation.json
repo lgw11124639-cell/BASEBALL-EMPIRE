@@ -1,0 +1,127 @@
+{
+  "version": "2.0.37",
+  "build": "20261101-empire-ui59",
+  "regression": {
+    "files": 84,
+    "passed": 84,
+    "failed": []
+  },
+  "sharedViewsBrowser": [
+    {
+      "width": 1280,
+      "views": 7,
+      "primaryControlBeforeCalendar": true,
+      "rosterFiltersAndLineups": true,
+      "profile": true,
+      "newsFiltersAndArticle": true,
+      "faAndEmptyState": true,
+      "nationalSelectionAndEmptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 1080,
+      "views": 7,
+      "primaryControlBeforeCalendar": true,
+      "rosterFiltersAndLineups": true,
+      "profile": true,
+      "newsFiltersAndArticle": true,
+      "faAndEmptyState": true,
+      "nationalSelectionAndEmptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "views": 7,
+      "primaryControlBeforeCalendar": true,
+      "rosterFiltersAndLineups": true,
+      "profile": true,
+      "newsFiltersAndArticle": true,
+      "faAndEmptyState": true,
+      "nationalSelectionAndEmptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "views": 7,
+      "primaryControlBeforeCalendar": true,
+      "rosterFiltersAndLineups": true,
+      "profile": true,
+      "newsFiltersAndArticle": true,
+      "faAndEmptyState": true,
+      "nationalSelectionAndEmptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    }
+  ],
+  "officeArticlesBrowser": [
+    {
+      "width": 1080,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "articleCategories": 4,
+      "historyPagination": true,
+      "keyboardTabsAndModal": true,
+      "pageErrors": []
+    }
+  ],
+  "milestonesBrowser": [
+    {
+      "width": 1080,
+      "threeTypeFilters": true,
+      "seasonFilter": true,
+      "profile": true,
+      "gameArticle": true,
+      "emptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "threeTypeFilters": true,
+      "seasonFilter": true,
+      "profile": true,
+      "gameArticle": true,
+      "emptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "threeTypeFilters": true,
+      "seasonFilter": true,
+      "profile": true,
+      "gameArticle": true,
+      "emptyState": true,
+      "bodyOverflow": false,
+      "pageErrors": []
+    }
+  ],
+  "scope": "Shared game-shell UI with original game/control handlers; in-memory browser fixtures only, no authenticated cloud writes."
+}
