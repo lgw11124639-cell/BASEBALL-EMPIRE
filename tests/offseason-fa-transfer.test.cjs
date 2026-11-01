@@ -21,6 +21,7 @@ const context=vm.createContext({state,Math,Number,Map,Set,
  faCompensationTransfer:(p,from,to,grade,salary)=>{const amount=salary*2;state.teams[to].budget-=amount;state.teams[from].budget+=amount;state.faCompensations=[{from,to,grade,amount}];return true},
  publishMajorFaArticle:()=>{},honorRetiredPlayers:()=>{},publishReserveRoster:()=>{},clubNotice:()=>{},money:x=>String(x),
 });
+vm.runInContext(source.slice(source.indexOf('function kpblMinimumSalary('),source.indexOf('function kpblProposePolicy(')),context);
 vm.runInContext(source.slice(source.indexOf('function playerRetirementProbability('),source.indexOf('function runOffseasonContracts(')),context);
 const reportStart=source.indexOf('function publishFaCompensationNotice('),reportEnd=source.indexOf('function recordPlayerRelease(',reportStart);
 assert.ok(reportStart>=0&&reportEnd>reportStart);

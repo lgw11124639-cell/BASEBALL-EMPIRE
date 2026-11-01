@@ -18,6 +18,7 @@ const context=vm.createContext({
  currentSeasonBoxStats:p=>{snapshotCalls++;return {games:100,atBats:p.atBats,hits:p.hits,homeRuns:p.homeRuns}},
 });
 vm.runInContext(source.slice(source.indexOf('const LEAGUE_BALLS='),source.indexOf('function leagueBallFactors('))+source.slice(start,end),context);
+vm.runInContext(source.slice(source.indexOf('function kpblEnvironmentTotals('),source.indexOf('function kpblEnvironmentHistory(')),context);
 const snapshot=()=>vm.runInContext('saveSeasonSnapshot()',context);
 snapshot();
 assert.equal(state.history.seasons[2026].complete,true,'2026 completed');

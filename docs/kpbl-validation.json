@@ -1,0 +1,77 @@
+{
+  "version": "2.0.34",
+  "build": "20261101-kpbl56",
+  "baseCommit": "22309fce0ae0e7e8a5d98f5fba558abdb20172c2",
+  "regression": {
+    "files": 82,
+    "passed": 82,
+    "failed": []
+  },
+  "regularSeasonAudit": {
+    "seasons": [
+      {
+        "year": 2027,
+        "games": 720,
+        "ab": 49919,
+        "h": 11075,
+        "hr": 635,
+        "outs": 39186,
+        "er": 4474,
+        "avg": 0.2218594122478415,
+        "era": 3.082682590721176,
+        "cases": 0
+      },
+      {
+        "year": 2028,
+        "games": 720,
+        "ab": 49931,
+        "h": 11388,
+        "hr": 888,
+        "outs": 38886,
+        "er": 5128,
+        "avg": 0.22807474314554085,
+        "era": 3.5605616417219563,
+        "cases": 0
+      }
+    ],
+    "totalGames": 1440,
+    "elapsedSeconds": 54.040571447000005,
+    "scope": "Production regular major-game loop + daily recovery/governance + actual beginNextSeason. Daily transactions, minor/international games, cloud I/O excluded."
+  },
+  "browser": [
+    {
+      "width": 1080,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "pageErrors": []
+    },
+    {
+      "width": 320,
+      "officePanes": 6,
+      "graph": true,
+      "profileAndRecordTab": true,
+      "commonNewsArticle": true,
+      "pageErrors": []
+    }
+  ],
+  "additionalChecks": [
+    "Actual rookie, development and released-player signing floors",
+    "Rejected-policy isolation",
+    "Current-game-only discipline accounting"
+  ],
+  "limits": [
+    "Regular-season audit excludes daily transactions, minor/international game loops and cloud I/O",
+    "Browser replaces cloud boot with a local in-memory world; no authenticated cloud writes",
+    "Rare discipline event lifecycle verified with explicit recorded-event fixtures; no cases occurred in the 1440-game audit"
+  ]
+}

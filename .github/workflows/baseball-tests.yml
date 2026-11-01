@@ -10,6 +10,7 @@ on:
 jobs:
   node-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,139 +18,11 @@ jobs:
           node-version: '22'
       - name: JavaScript syntax
         run: node --check app.js
-      - name: International record isolation
-        run: node tests/international-record-isolation.test.cjs
-      - name: International schedule
-        run: node tests/international-schedule.test.cjs
-      - name: National team return
-        run: node tests/national-return.test.cjs
-      - name: International tournament progression
-        run: node tests/international-tournament-flow.test.cjs
-      - name: Thirty-year calendar progression
-        run: node tests/long-calendar.test.cjs
-      - name: Thirty-year season transitions
-        run: node tests/season-transition.test.cjs
-      - name: Season snapshot history isolation
-        run: node tests/season-snapshot.test.cjs
-      - name: Player history and career total rendering
-        run: node tests/player-history-render.test.cjs
-      - name: Career records across transfers
-        run: node tests/career-transfer-history.test.cjs
-      - name: Offseason retirement archive
-        run: node tests/offseason-retirement.test.cjs
-      - name: Offseason FA transfer and settlement
-        run: node tests/offseason-fa-transfer.test.cjs
-      - name: FA compensation failure recovery
-        run: node tests/fa-compensation-failure.test.cjs
-      - name: FA rollback integration
-        run: node tests/fa-rollback-integration.test.cjs
-      - name: Thirty-year real league scheduling
-        run: node tests/long-league-schedule.test.cjs
-      - name: Thirty-year innings controller stress
-        run: node tests/long-innings-controller.test.cjs
-      - name: Season batting and pitching box-score totals
-        run: node tests/season-boxscore-aggregation.test.cjs
-      - name: Real plate appearance and inning accounting
-        run: node tests/plate-appearance-engine.test.cjs
-      - name: Comprehensive plate appearance scoring scenarios
-        run: node tests/plate-appearance-scenarios.test.cjs
-      - name: Comprehensive game engine regression
-        run: node tests/comprehensive-game-engine.test.cjs
-      - name: Performance-based retirement regression
-        run: node tests/retirement-probability.test.cjs
-      - name: Unsigned released player retirement regression
-        run: node tests/unsigned-retirement.test.cjs
-      - name: Broadcast-independent production engine
-        run: node tests/engine-event-independence.test.cjs
-      - name: Actual 720-game league balance audit
-        run: node tests/league-balance.test.cjs
-      - name: Continuous extra-base hit regression
-        run: node tests/extra-base-hit.test.cjs
-      - name: Hit-by-pitch and dead-ball regression
-        run: node tests/hit-by-pitch.test.cjs
-      - name: Contract types, guaranteed salary and expiry
-        run: node tests/player-contracts.test.cjs
-      - name: Late FA settlement and offseason retry
-        run: node tests/fa-late-settlement.test.cjs
-      - name: FA contract season and stale-market guarantees
-        run: node tests/fa-contract-season.test.cjs
-      - name: Unique foreign names and career continuity
-        run: node tests/foreign-names-career.test.cjs
-      - name: Separate foreign and Asian-quota renewals
-        run: node tests/foreign-contracts.test.cjs
-      - name: FA valuations and player refusal decisions
-        run: node tests/fa-negotiation.test.cjs
-      - name: Ten-club FA negotiation and cash conservation
-        run: node tests/fa-market-simulation.test.cjs
-      - name: FA review dates and year rollover
-        run: node tests/fa-schedule.test.cjs
-      - name: Injured specialist substitution and emergency fielding
-        run: node tests/injury-fielding-substitution.test.cjs
-      - name: Defensive replacements and actual playing experience
-        run: node tests/bench-experience.test.cjs
-      - name: Fielding specialization and gradual coaching
-        run: node tests/position-training.test.cjs
-      - name: Korean currency and staff layout
-        run: node tests/money-staff-ui.test.cjs
-      - name: Registered fielding positions and specialist roster coverage
-        run: node tests/position-eligibility.test.cjs
-      - name: International calendar and pitcher roster presentation
-        run: node tests/international-calendar-ui.test.cjs
-      - name: Club rebuild, trades and overseas posting approval
-        run: node tests/club-strategy-trade-posting.test.cjs
-      - name: Readable FA negotiation articles
-        run: node tests/fa-article-readability.test.cjs
-      - name: Staff contracts, age and manager employment
-        run: node tests/staff-lifecycle.test.cjs
-      - name: Long inactive roster and retirement flow
-        run: node tests/roster-inactivity.test.cjs
-      - name: FA agreement and compensation publication
-        run: node tests/fa-news-flow.test.cjs
-      - name: Real complete-game and shutout path
-        run: node tests/complete-game-path.test.cjs
-      - name: Historical article club identity
-        run: node tests/news-historical-club.test.cjs
-      - name: Live arsenal normalization
-        run: node tests/pitching-arsenal-normalization.test.cjs
-      - name: Medical calendar history
-        run: node tests/medical-history.test.cjs
-      - name: Club release news grouping
-        run: node tests/release-news.test.cjs
-      - name: Explicit trade arrival and departure headlines
-        run: node tests/trade-article-direction.test.cjs
-      - name: History entry, panes, categories and partial archives
-        run: node tests/history-navigation.test.cjs
-      - name: News publication chronology
-        run: node tests/news-order.test.cjs
-      - name: Ten-club registration and foreign ownership status
-        run: node tests/club-roster-status.test.cjs
-      - name: Shared owner and visiting club roster views
-        run: node tests/shared-club-roster.test.cjs
-      - name: Roster combined filters
-        run: node tests/roster-filters.test.cjs
-      - name: Manager plan cache and live evaluations
-        run: node tests/manager-plan-cache.test.cjs
-      - name: Small gzip and bounded preparation scheduler
-        run: node tests/cloud-compression-scheduler.test.cjs
-      - name: Batter fatigue and specialist rotation
-        run: node tests/batter-fatigue-rotation.test.cjs
-      - name: Historical club identity after trades
-        run: node tests/historical-season-clubs.test.cjs
-      - name: Large-save preparation and monthly report PATCH
-        run: node tests/cloud-save-preparation.test.cjs
-      - name: Lossless training archive packing and upload recovery
-        run: node tests/cloud-training-reports.test.cjs
-      - name: Daily rollback copy integrity and speed control
-        run: node tests/daily-copy.test.cjs
-      - name: Prospect readiness and five-year development
-        run: node tests/prospect-development.test.cjs
-      - name: Prospect panels and eligibility
-        run: node tests/prospect-panel.test.cjs
-      - name: Transaction archive shards and load cache reuse
-        run: node tests/cloud-archive-shards.test.cjs
-      - name: Player/live shards, career years and real-day round-trip
-        run: node tests/cloud-player-split.test.cjs
-      - name: Rolling log dates, pitch counters and save preparation
-        run: node tests/cloud-rolling-log.test.cjs
-      - name: League office decisions and official ball physics
-        run: node tests/league-office.test.cjs
+      - name: All regression files including KPBL governance and scope
+        run: node tests/run-all.cjs
+      - name: Actual two-season 1440-game KPBL audit
+        run: KPBL_AUDIT_REPORT=kpbl-1440-report.json node tests/audit-kpbl-seasons.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kpbl-season-audit
+          path: kpbl-1440-report.json

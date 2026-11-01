@@ -11,7 +11,7 @@ assert.equal(run('leagueOfficeSeason().ballId'),'control');assert.equal(run('lea
 assert.equal(run('state.leagueOffice.seasons[2027].ballId'),'standard');
 assert.equal(run(`leagueBallFactors({league:'minor'}).id`),'control');assert.equal(run(`leagueBallFactors({league:'amateur'}).id`),'standard');assert.equal(run(`leagueBallFactors({league:'international'}).id`),'standard');
 run(`state.year=2029;`);assert.equal(run('leagueOfficeSeason().ballId'),'control','no announcement retains previous decision');
-run(`leaguePane='office';`);assert.ok(run('league()').includes('리그 사무국'));assert.ok(run('league()').includes('office-announce'));
+run(`leaguePane='office';`);assert.ok(run('league()').includes('리그 사무국'));assert.ok(run('league()').includes('data-office-pane'));assert.ok(!run('league()').includes('office-announce'),'AI office has no owner announcement control');
 // Compare identical contacts under each physical ball; no roster or statistical changes.
 run(`const officeBatter=state.players.find(p=>p.position!=='P'),officePitcher=state.players.find(p=>p.position==='P');ensureProfile(officeBatter);ensureProfile(officePitcher);const officeField={teamId:0,league:'major',batters:[]};const officePhysics={};for(const id of ['control','standard','carry']){state.leagueOffice.seasons[2029].ballId=id;state.leagueOffice.seasons[2029].ball={...LEAGUE_BALLS[id]};const rr=rng(123456);officePhysics[id]=Array.from({length:200},()=>resolveBattedBall(officeBatter,officePitcher,officeField,null,rr));}`);
 const mean=id=>run(`officePhysics.${id}.reduce((n,x)=>n+x.exitVelocity,0)/officePhysics.${id}.length`);

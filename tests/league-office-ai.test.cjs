@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);const before=JSON.stringify(state.players);kpblGovernanceDay();const first=kpblOffice().elections[0];`);
+assert.equal(run('JSON.stringify(state.players)'),run('before'),'governance never changes old contracts or stats');
+assert.equal(run('first.ballots.length'),10);assert.equal(run('first.termEnd'),2029);assert.ok(run('first.candidates.every(c=>c.career&&c.platform&&!Object.hasOwn(c,"overall"))'));
+assert.equal(run('kpblOffice().appointments[0].appointees.length'),2);
+assert.equal(run('kpblAssociation().elections[0].termEnd'),2028);
+assert.equal(run('kpblAssociation().elections[0].ballots.length'),run('kpblAssociation().elections[0].members.length'));
+assert.ok(run('kpblAssociation().elections[0].representatives.every(r=>r.ballots.length>0&&r.candidates.some(c=>c.id===r.playerId))'));
+run(`const once=JSON.stringify(kpblOffice());kpblGovernanceDay();`);assert.equal(run('JSON.stringify(kpblOffice())'),run('once'),'same-day AI is idempotent');
+run(`state=JSON.parse(JSON.stringify(state));state.year=2029;kpblElectOffice();kpblAssociation();`);
+assert.equal(run('kpblOffice().elections.length'),1);assert.equal(run('kpblAssociation().elections.length'),2);
+run(`state.year=2030;kpblElectOffice();`);assert.equal(run('kpblOffice().elections.length'),2);
+run(`for(const pane of ['organization','policies','balls','association','discipline','history']){window.beOfficePane=pane;const html=leagueOfficePanel();if(!html.includes('data-office-pane')||html.includes('office-announce'))throw Error('AI panel');}`);
+assert.ok(run('state.clubNotices.some(n=>n.kpbl&&n.kind==="KPBL 인사")'));
+console.log('PASS AI office terms, independent member ballots, biographies, read-only panels, reload and common news');

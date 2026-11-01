@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);const line={atBats:4,hits:1,homeRuns:0},pitch={outs:27,earnedRuns:2};const game={day:100,away:0,home:1,awayRuns:2,homeRuns:2,awayBatters:[line],homeBatters:[line],awayPitchers:[pitch],homePitchers:[pitch]};state.gameResults=[game];const totals=kpblEnvironmentTotals(state.gameResults);`);
+assert.equal(run('totals.avg'),.25);assert.equal(run('totals.era'),2);assert.equal(run('totals.hr'),0);
+run(`state.players[0].retired=true;state.players[0].hits=99999;state.players[0].atBats=99999;`);assert.equal(run('kpblEnvironmentTotals(state.gameResults).avg'),.25);
+run(`state.history={seasons:{2026:{year:2026,players:[{hits:9999,atBats:9999}]},2025:{year:2025,leagueEnvironment:{year:2025,avg:.27,era:4.2,hr:300,games:720,source:'시즌 박스스코어'}}}};`);
+assert.equal(run('kpblEnvironmentHistory().find(x=>x.year===2026).avg'),null,'no invented legacy totals');
+run(`delete line.homeRuns;`);assert.equal(run('kpblEnvironmentTotals(state.gameResults).hr'),null,'unrecorded home runs are missing, not zero');
+assert.equal(run('kpblEnvironmentTotals([{...game,awayPitchers:[]}]).era'),null);
+assert.equal(run('kpblEnvironmentTotals([{...game,postseason:true}]).avg'),null);
+run(`state=JSON.parse(JSON.stringify(state));`);assert.ok(run('leagueBattingEnvironment().includes("<svg")'));
+console.log('PASS season box scores, retained yearly graph, retired-record isolation and missing metrics');
