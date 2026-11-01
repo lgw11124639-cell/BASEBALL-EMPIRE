@@ -1,0 +1,53 @@
+name: Deploy BASEBALL EMPIRE to Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - '*.json'
+      - '*.webmanifest'
+      - 'vendor/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use the explicit Pages workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const site = await github.request('GET /repos/{owner}/{repo}/pages', context.repo);
+            if (site.data.build_type !== 'workflow') {
+              await github.request('PUT /repos/{owner}/{repo}/pages', {
+                ...context.repo,
+                build_type: 'workflow'
+              });
+            }
+      - uses: actions/configure-pages@v5
+      - name: Assemble public application files
+        run: |
+          mkdir -p _site
+          cp app.js cloud-only.js cloud-save.js index.html manifest.webmanifest sw.js ui.css update.js version.json _site/
+          cp -R vendor _site/vendor
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5
