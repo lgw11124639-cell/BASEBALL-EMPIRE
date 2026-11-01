@@ -19811,3 +19811,8 @@ body .be-editorial-modal > .editorial-story {
  .injury-roster-detail { max-width: 46%; font-size: 12px; overflow-wrap: anywhere; }
  .injury-roster-detail small { font-size: 11px; }
 }
+
+.office-policy-record summary > span:first-child { display: grid; gap: 6px; min-width: 0; flex: 1; }
+.office-policy-record summary small { color: #526b80; font-size: 12px; }
+.office-policy-record summary strong { font-size: 15px; }
+.office-policy-record summary .office-badge { flex: 0 0 auto; }
