@@ -1,0 +1,54 @@
+[
+  {
+    "width": 1280,
+    "canonicalStylesheet": true,
+    "frontFinanceFacilitiesStaff": true,
+    "financialDisclosures": true,
+    "leaguePanes": 7,
+    "historyPanes": 4,
+    "clubDialog": true,
+    "titleAndNewLeague": true,
+    "emptyFinance": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 1080,
+    "canonicalStylesheet": true,
+    "frontFinanceFacilitiesStaff": true,
+    "financialDisclosures": true,
+    "leaguePanes": 7,
+    "historyPanes": 4,
+    "clubDialog": true,
+    "titleAndNewLeague": true,
+    "emptyFinance": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "canonicalStylesheet": true,
+    "frontFinanceFacilitiesStaff": true,
+    "financialDisclosures": true,
+    "leaguePanes": 7,
+    "historyPanes": 4,
+    "clubDialog": true,
+    "titleAndNewLeague": true,
+    "emptyFinance": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 320,
+    "canonicalStylesheet": true,
+    "frontFinanceFacilitiesStaff": true,
+    "financialDisclosures": true,
+    "leaguePanes": 7,
+    "historyPanes": 4,
+    "clubDialog": true,
+    "titleAndNewLeague": true,
+    "emptyFinance": true,
+    "bodyOverflow": false,
+    "pageErrors": []
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "width": 1080,
+    "loginAndSignup": true,
+    "labels": true,
+    "noInlineTheme": true,
+    "bodyOverflow": false,
+    "remoteRequests": 0
+  },
+  {
+    "width": 390,
+    "loginAndSignup": true,
+    "labels": true,
+    "noInlineTheme": true,
+    "bodyOverflow": false,
+    "remoteRequests": 0
+  },
+  {
+    "width": 320,
+    "loginAndSignup": true,
+    "labels": true,
+    "noInlineTheme": true,
+    "bodyOverflow": false,
+    "remoteRequests": 0
+  }
+]

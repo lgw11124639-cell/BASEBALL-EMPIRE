@@ -1,0 +1,30 @@
+{
+  "old": [
+    {
+      "packAndDeltaMs": 187.38552399999935,
+      "bytes": 860574
+    },
+    {
+      "packAndDeltaMs": 90.17582700000003,
+      "bytes": 223053
+    },
+    {
+      "packAndDeltaMs": 175.86928699999953,
+      "bytes": 851878
+    }
+  ],
+  "new": [
+    {
+      "packAndDeltaMs": 163.66313499999978,
+      "bytes": 803353
+    },
+    {
+      "packAndDeltaMs": 77.30906099999993,
+      "bytes": 106049
+    },
+    {
+      "packAndDeltaMs": 164.72187500000018,
+      "bytes": 787262
+    }
+  ]
+}

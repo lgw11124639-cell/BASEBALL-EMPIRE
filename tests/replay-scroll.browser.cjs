@@ -3,11 +3,11 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 // Optional browser check: uses Playwright and a local Chromium, no cloud account or saved data.
-const root=path.resolve(__dirname,'..');
+const root=path.resolve(__dirname,'..');const reports=[];
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  try{
- for(const viewport of [{width:1920,height:1000},{width:390,height:844}]){
+ for(const viewport of [{width:1920,height:1000},{width:1080,height:950},{width:390,height:844},{width:320,height:844}]){
   const page=await browser.newPage({viewport});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
@@ -30,7 +30,7 @@ const root=path.resolve(__dirname,'..');
    await route.fulfill({status:200,body,contentType:type});
   });
   await page.goto('https://baseball.test/');await page.waitForFunction(()=>!!window.testOpen);
-  await page.evaluate(()=>window.testOpen());
+  await page.evaluate(()=>window.testOpen());assert.equal(await page.evaluate(()=>document.body.style.overflow),'hidden');assert.equal(await page.locator('.be-replay-team .club-logo').count(),2);assert.ok(await page.locator('.be-replay-scoreboard').evaluate(el=>{const board=el.getBoundingClientRect();return [...el.querySelectorAll('.be-replay-team,.be-replay-score,#be-replay-current-score')].every(child=>{const r=child.getBoundingClientRect();return r.top>=board.top&&r.bottom<=board.bottom&&r.left>=board.left&&r.right<=board.right})}),'score, club crests and labels stay within the scoreboard');await page.screenshot({path:'/tmp/baseball-replay-top-'+viewport.width+'.png'});
   for(let i=0;i<16;i++)await page.evaluate(()=>document.querySelector('#be-replay-next').click());
   const dimensions=await page.evaluate(()=>{
    const log=document.querySelector('#be-replay-lines'),overlay=document.querySelector('#be-replay-overlay');
@@ -62,7 +62,8 @@ const root=path.resolve(__dirname,'..');
   assert.ok(controls.y+controls.height<=viewport.height+1,'playback controls stay visible');
   await page.locator('#be-replay-overlay').evaluate(el=>el.scrollTop=el.scrollHeight);
   await page.screenshot({path:'/tmp/baseball-replay-'+viewport.width+'.png'});
-  await page.close();console.log('PASS replay scroll',viewport.width);
+  await page.evaluate(()=>window.beCloseGameReplay());assert.equal(await page.locator('#be-replay-overlay').count(),0);assert.equal(await page.evaluate(()=>document.body.style.overflow),'');reports.push({width:viewport.width,height:viewport.height,scoreboardContainsScoreAndCrests:true,commentaryHeight:dimensions.logHeight,newestFirst:true,readingPositionPreserved:true,autoPlayback:true,controlsVisible:true,pageScrollRestored:true});await page.close();console.log('PASS replay scroll and redesigned match centre',viewport.width);
  }
+ if(process.env.REPLAY_BROWSER_REPORT)fs.writeFileSync(process.env.REPLAY_BROWSER_REPORT,JSON.stringify(reports,null,2)+'\n');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,46 @@
+[
+  {
+    "width": 1920,
+    "height": 1000,
+    "scoreboardContainsScoreAndCrests": true,
+    "commentaryHeight": 358,
+    "newestFirst": true,
+    "readingPositionPreserved": true,
+    "autoPlayback": true,
+    "controlsVisible": true,
+    "pageScrollRestored": true
+  },
+  {
+    "width": 1080,
+    "height": 950,
+    "scoreboardContainsScoreAndCrests": true,
+    "commentaryHeight": 340,
+    "newestFirst": true,
+    "readingPositionPreserved": true,
+    "autoPlayback": true,
+    "controlsVisible": true,
+    "pageScrollRestored": true
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "scoreboardContainsScoreAndCrests": true,
+    "commentaryHeight": 302,
+    "newestFirst": true,
+    "readingPositionPreserved": true,
+    "autoPlayback": true,
+    "controlsVisible": true,
+    "pageScrollRestored": true
+  },
+  {
+    "width": 320,
+    "height": 844,
+    "scoreboardContainsScoreAndCrests": true,
+    "commentaryHeight": 302,
+    "newestFirst": true,
+    "readingPositionPreserved": true,
+    "autoPlayback": true,
+    "controlsVisible": true,
+    "pageScrollRestored": true
+  }
+]

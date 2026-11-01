@@ -156,7 +156,7 @@ async function encodeCloudShard(raw,cacheKey){
 // Separate frequently changing counters from biographies/contracts/training history.
 // Both halves are serialized and compared exactly on every save; no dirty flags.
 const beDynamicPitchProfileFields=new Set(['fatigue','lastAppearance','pitchMixSeasonYear','pitchMixSeason','batterWorkload','batterRecoveryKey']);
-const livePlayerFields=new Set(['games','plateAppearances','atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','runsBattedIn','runs','strikeouts','stolenBases','caughtStealing','sacrificeBunts','sacrificeFlies','groundedIntoDoublePlays','fieldingErrors','inningsPitched','innings','wins','losses','rbi','pitchCount','earnedRuns','pitchingWins','pitchingLosses','saves','holds','pitchingStrikeouts','gamesStarted','hitsAllowed','walksAllowed','homeRunsAllowed','battersFaced','qualityStarts','blownSaves','completeGames','shutouts','totalPitches','lastAppearance','lastPitchDay','minorLastPitchDay','minorStats','registeredDays','faRegisteredDaysByYear','lastTraining']);
+const livePlayerFields=new Set(['games','plateAppearances','atBats','hits','doubles','triples','homeRuns','walks','hitByPitch','runsBattedIn','runs','strikeouts','stolenBases','caughtStealing','sacrificeBunts','sacrificeFlies','groundedIntoDoublePlays','fieldingErrors','inningsPitched','innings','wins','losses','rbi','pitchCount','earnedRuns','pitchingWins','pitchingLosses','saves','holds','pitchingStrikeouts','gamesStarted','hitsAllowed','walksAllowed','homeRunsAllowed','battersFaced','qualityStarts','blownSaves','completeGames','shutouts','totalPitches','lastAppearance','lastPitchDay','minorLastPitchDay','minorStats','registeredDays','faRegisteredDaysByYear','faLastRegistrationCountedDateByYear','lastTraining']);
 function splitCloudPlayer(p){
  if(!p||typeof p!=='object'||Array.isArray(p))return {base:p,live:null};
  const base={},live={};
@@ -619,7 +619,7 @@ async function unpackAmateurBuckets(state){
  return state;
 }
 // Lossless packing for large auxiliary league datasets. Only the wire snapshot changes.
-const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports','clubTransactionArchive','draftResults','faMarket'];
+const auxiliarySaveFields=['gameResults','highSchoolBaseball','collegeBaseball','nationalTeamResults','minorLeague','amateurCareerArchive','players','trainingReports','clubTransactionArchive','draftResults','faMarket','leagueOffice'];
 // Reuse compressed bytes when an auxiliary dataset has not changed identity.
 const auxiliaryCompressionCache=new WeakMap();
 // Cross-object cache: safe even when a render/simulation rebuilds an archive object.
@@ -1154,17 +1154,17 @@ export async function cloudSave(state){
 }
 export async function cloudGate(onReady){
  const overlay=document.createElement('div');overlay.id='be-cloud-gate';
- overlay.style.cssText='position:fixed;inset:0;z-index:2147483646;background:#eaf1f9;display:flex;align-items:center;justify-content:center;padding:18px;font:15px system-ui;color:#183b60';
- const card=document.createElement('section');card.style.cssText='background:#fff;border-radius:18px;padding:26px;max-width:390px;width:100%;box-shadow:0 10px 45px #1233';
- const title=document.createElement('h2');title.textContent='⚾ BASEBALL EMPIRE';
+ overlay.className='cloud-gate';
+ const card=document.createElement('section');card.className='cloud-gate-card';
+ const title=document.createElement('h2');title.textContent='BASEBALL EMPIRE';
  const intro=document.createElement('p');intro.textContent='클라우드 계정에 로그인해야 게임을 시작할 수 있습니다.';
  const name=document.createElement('input'),pass=document.createElement('input'),confirmPass=document.createElement('input');
  let signup=false;
- for(const e of [name,pass,confirmPass])e.style.cssText='box-sizing:border-box;width:100%;padding:12px;margin:7px 0;border:1px solid #bccddd;border-radius:9px;font-size:16px';
+ for(const [element,label] of [[name,'아이디'],[pass,'비밀번호'],[confirmPass,'비밀번호 확인']])element.setAttribute('aria-label',label);
  name.placeholder='아이디';name.autocomplete='username';pass.placeholder='비밀번호';pass.type='password';pass.autocomplete='current-password';confirmPass.type='password';confirmPass.placeholder='비밀번호 확인';confirmPass.autocomplete='new-password';confirmPass.hidden=true;
- const button=document.createElement('button');button.textContent='로그인';button.style.cssText='width:100%;padding:13px;margin:10px 0;border:0;border-radius:9px;background:#2365a2;color:#fff;font-weight:700';
- const toggle=document.createElement('button');toggle.type='button';toggle.textContent='계정이 없나요? 회원가입';toggle.style.cssText='width:100%;padding:10px;border:0;background:transparent;color:#2365a2;text-decoration:underline;font-weight:700';
- const msg=document.createElement('p');msg.style.cssText='white-space:pre-wrap;line-height:1.5';
+ const button=document.createElement('button');button.textContent='로그인';button.className='cloud-gate-submit';
+ const toggle=document.createElement('button');toggle.type='button';toggle.textContent='계정이 없나요? 회원가입';toggle.className='cloud-gate-toggle';
+ const msg=document.createElement('p');msg.className='cloud-gate-message';
  card.append(title,intro,name,pass,confirmPass,button,toggle,msg);overlay.append(card);document.body.append(overlay);
  const setMode=mode=>{signup=mode;confirmPass.hidden=!mode;button.textContent=mode?'회원가입':'로그인';toggle.textContent=mode?'이미 계정이 있나요? 로그인':'계정이 없나요? 회원가입';pass.autocomplete=mode?'new-password':'current-password';msg.textContent='';};
  toggle.onclick=()=>setMode(!signup);
@@ -1180,7 +1180,7 @@ export async function cloudGate(onReady){
   let logout=document.getElementById('be-cloud-logout');
   if(!logout){
    logout=document.createElement('button');logout.id='be-cloud-logout';logout.type='button';logout.textContent='로그아웃';
-   logout.style.cssText='position:fixed;right:14px;top:12px;z-index:2147483000;padding:9px 13px;border:1px solid #c5d5e4;border-radius:20px;background:#fff;color:#214c72;font:700 13px system-ui';
+   logout.className='cloud-account-action';
    logout.style.display=(document.body.classList.contains('be-start-screen')?'':'none');
    new MutationObserver(()=>{logout.style.display=document.body.classList.contains('be-start-screen')?'':'none'}).observe(document.body,{attributes:true,attributeFilter:['class']});
    logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;acknowledgedWireSave=null;remember();location.reload()};
@@ -1189,7 +1189,7 @@ export async function cloudGate(onReady){
   let reset=document.getElementById('be-cloud-reset');
   if(!reset){
    reset=document.createElement('button');reset.id='be-cloud-reset';reset.type='button';reset.textContent='클라우드 초기화';
-   reset.style.cssText='position:fixed;right:14px;top:58px;z-index:2147483000;padding:9px 13px;border:1px solid #e3b5b5;border-radius:20px;background:#fff;color:#a32626;font:700 13px system-ui';
+   reset.className='cloud-account-action cloud-account-action--reset';
    const syncVisibility=()=>{const show=document.body.classList.contains('be-start-screen');logout.style.display=show?'':'none';reset.style.display=show?'':'none'};
    reset.onclick=async()=>{if(!confirm('정말 클라우드 저장 데이터를 삭제할까요? 이 작업은 되돌릴 수 없습니다.'))return;if(!confirm('마지막 확인: 이 계정의 클라우드 게임 저장을 영구 삭제합니다. 계속할까요?'))return;reset.disabled=true;try{const current=await snapshot();if(!current){alert('초기화할 클라우드 저장 데이터가 없습니다.');return}const currentRev=revisionOf(current);if(currentRev===null)throw Error('저장 버전을 확인하지 못했습니다');if(!verified||revision!==currentRev)throw Error('다른 기기에서 저장 데이터가 변경됐습니다. 새로고침 후 다시 시도하세요');await call('/v2/saves/main','DELETE',undefined,currentRev);revision=0;verified=true;baseline=null;alert('클라우드 저장 데이터가 삭제되었습니다. 새 게임을 시작할 수 있습니다.');location.reload()}catch(e){alert('클라우드 초기화 실패: '+(e.message||e)+'\n서버가 저장 삭제 API를 지원하는지 확인해야 합니다.')}finally{reset.disabled=false}};
    document.body.append(reset);

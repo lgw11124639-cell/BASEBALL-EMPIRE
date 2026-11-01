@@ -1,0 +1,267 @@
+{
+  "scope": "Synthetic long-history fixture; local preparation and wire PATCH only; no real account/network/server timing. All 2600 players update their FA stamp daily in this stress case.",
+  "comparison": [
+    {
+      "label": "old",
+      "runs": [
+        {
+          "wall": 493.7308429999998,
+          "stages": {
+            "shardsMs": 354.6,
+            "amateurMs": 0,
+            "leaguesMs": 100,
+            "historyMs": 0,
+            "auxiliaryMs": 0.1,
+            "totalMs": 488.3,
+            "overlapped": false,
+            "deepPlayerDiagnostics": false,
+            "deltaMs": 30.8,
+            "uploadMs": 0,
+            "method": null,
+            "uploadBytes": 0,
+            "postSaveCloneMs": 5.4,
+            "fullSaveMs": 493.6
+          },
+          "bytes": 6727570,
+          "groups": [
+            {
+              "group": "player/game shards",
+              "fields": 326,
+              "bytes": 6701904
+            },
+            {
+              "group": "monthly training reports",
+              "fields": 1,
+              "bytes": 10154
+            },
+            {
+              "group": "league archive",
+              "fields": 24,
+              "bytes": 5196
+            },
+            {
+              "group": "other state",
+              "fields": 1,
+              "bytes": 2
+            }
+          ]
+        },
+        {
+          "wall": 527.982454,
+          "stages": {
+            "shardsMs": 398.3,
+            "amateurMs": 0,
+            "leaguesMs": 95,
+            "historyMs": 0,
+            "auxiliaryMs": 0.1,
+            "totalMs": 524.2,
+            "overlapped": false,
+            "deepPlayerDiagnostics": false,
+            "deltaMs": 28.2,
+            "uploadMs": 0,
+            "method": null,
+            "uploadBytes": 0,
+            "postSaveCloneMs": 3.7,
+            "fullSaveMs": 527.9
+          },
+          "bytes": 6727562,
+          "groups": [
+            {
+              "group": "player/game shards",
+              "fields": 326,
+              "bytes": 6701888
+            },
+            {
+              "group": "monthly training reports",
+              "fields": 1,
+              "bytes": 10246
+            },
+            {
+              "group": "league archive",
+              "fields": 24,
+              "bytes": 5112
+            },
+            {
+              "group": "other state",
+              "fields": 1,
+              "bytes": 2
+            }
+          ]
+        },
+        {
+          "wall": 518.6042419999994,
+          "stages": {
+            "shardsMs": 396.1,
+            "amateurMs": 0,
+            "leaguesMs": 90.8,
+            "historyMs": 0,
+            "auxiliaryMs": 0.1,
+            "totalMs": 514.2,
+            "overlapped": false,
+            "deepPlayerDiagnostics": false,
+            "deltaMs": 24.9,
+            "uploadMs": 0,
+            "method": null,
+            "uploadBytes": 0,
+            "postSaveCloneMs": 4.3,
+            "fullSaveMs": 518.5
+          },
+          "bytes": 6727734,
+          "groups": [
+            {
+              "group": "player/game shards",
+              "fields": 326,
+              "bytes": 6701904
+            },
+            {
+              "group": "monthly training reports",
+              "fields": 1,
+              "bytes": 10318
+            },
+            {
+              "group": "league archive",
+              "fields": 24,
+              "bytes": 5196
+            },
+            {
+              "group": "other state",
+              "fields": 1,
+              "bytes": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "new",
+      "runs": [
+        {
+          "wall": 244.64814000000024,
+          "stages": {
+            "shardsMs": 121.8,
+            "amateurMs": 0,
+            "leaguesMs": 106.7,
+            "historyMs": 0,
+            "auxiliaryMs": 2.8,
+            "totalMs": 242.2,
+            "overlapped": false,
+            "deepPlayerDiagnostics": false,
+            "deltaMs": 8.5,
+            "uploadMs": 0,
+            "method": null,
+            "uploadBytes": 0,
+            "postSaveCloneMs": 2.4,
+            "fullSaveMs": 244.6
+          },
+          "bytes": 66802,
+          "groups": [
+            {
+              "group": "player/game shards",
+              "fields": 163,
+              "bytes": 43994
+            },
+            {
+              "group": "monthly training reports",
+              "fields": 1,
+              "bytes": 10154
+            },
+            {
+              "group": "league archive",
+              "fields": 24,
+              "bytes": 6792
+            },
+            {
+              "group": "other state",
+              "fields": 1,
+              "bytes": 2
+            }
+          ]
+        },
+        {
+          "wall": 244.66415300000062,
+          "stages": {
+            "shardsMs": 129.6,
+            "amateurMs": 0,
+            "leaguesMs": 97.7,
+            "historyMs": 0,
+            "auxiliaryMs": 3.8,
+            "totalMs": 242.3,
+            "overlapped": false,
+            "deepPlayerDiagnostics": false,
+            "deltaMs": 8.6,
+            "uploadMs": 0,
+            "method": null,
+            "uploadBytes": 0,
+            "postSaveCloneMs": 2.3,
+            "fullSaveMs": 244.6
+          },
+          "bytes": 66810,
+          "groups": [
+            {
+              "group": "player/game shards",
+              "fields": 163,
+              "bytes": 43994
+            },
+            {
+              "group": "monthly training reports",
+              "fields": 1,
+              "bytes": 10246
+            },
+            {
+              "group": "league archive",
+              "fields": 24,
+              "bytes": 6708
+            },
+            {
+              "group": "other state",
+              "fields": 1,
+              "bytes": 2
+            }
+          ]
+        },
+        {
+          "wall": 239.84605199999987,
+          "stages": {
+            "shardsMs": 126.6,
+            "amateurMs": 0,
+            "leaguesMs": 97.6,
+            "historyMs": 0,
+            "auxiliaryMs": 2.8,
+            "totalMs": 237.2,
+            "overlapped": false,
+            "deepPlayerDiagnostics": false,
+            "deltaMs": 7.7,
+            "uploadMs": 0.1,
+            "method": null,
+            "uploadBytes": 0,
+            "postSaveCloneMs": 2.6,
+            "fullSaveMs": 239.8
+          },
+          "bytes": 66982,
+          "groups": [
+            {
+              "group": "player/game shards",
+              "fields": 163,
+              "bytes": 43998
+            },
+            {
+              "group": "monthly training reports",
+              "fields": 1,
+              "bytes": 10318
+            },
+            {
+              "group": "league archive",
+              "fields": 24,
+              "bytes": 6804
+            },
+            {
+              "group": "other state",
+              "fields": 1,
+              "bytes": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
