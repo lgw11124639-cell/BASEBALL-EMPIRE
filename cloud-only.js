@@ -901,6 +901,17 @@ window.beInspectIncrementalSaveSupport=async()=>{
  window.beIncrementalSaveSupport=result;return result;
 };
 const revisionOf=x=>{const n=Number(x?.revision??x?.rev??x?.saveRevision);return Number.isSafeInteger(n)&&n>=0?n:null};
+// Authenticated read-only server status: no archive download or game-state mutation.
+window.beFetchServerViewStatus=async function(){
+ if(!token)throw Error('클라우드 로그인 후 실행하세요');
+ const response=await fetch(API+'/v2/view/status',{
+  method:'GET',headers:{Authorization:'Bearer '+token,Accept:'application/json'},cache:'no-store'
+ });
+ let payload={};try{payload=await response.json()}catch(_){ }
+ if(!response.ok){const error=Error(payload.error||'서버 상태 조회 실패: HTTP '+response.status);error.status=response.status;throw error;}
+ if(!Number.isSafeInteger(payload.revision)||!Number.isSafeInteger(payload.year)||!Number.isSafeInteger(payload.day))throw Error('서버 상태 응답 형식이 올바르지 않습니다');
+ return Object.freeze({revision:payload.revision,year:payload.year,day:payload.day,teamId:payload.teamId??null,watchedCompletedDay:payload.watchedCompletedDay??null,updatedAt:payload.updatedAt??null,readOnly:true});
+};
 async function snapshot(){try{return await call('/v2/saves/main')}catch(e){if(e.status===404)return null;throw e}}
 // Read-only verification against the actual server snapshot; never overwrites the running game.
 function canonicalCloudValue(value){
