@@ -2338,7 +2338,7 @@ function nationalTeamTournamentDay(){
   // Permit recovery within the scheduled tournament month if opening day was missed.
   if(day<1)return;
   const scored=state.players.filter(p=>!p.retired&&p.level==='1군'&&!p.draftPending&&!p.foreignPlayer&&!(p.profile?.injury?.days>0)&&p.age>=18&&p.age<=35).map(p=>({p,form:nationalTeamFormScore(p)})).filter(x=>x.form>-100).sort((a,b)=>b.form-a.form);
-  const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const available=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&p.position&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).sort((a,b)=>nationalTeamFormScore(b)-nationalTeamFormScore(a));
+  const prep=state.nationalTeamPreparations?.[key];const chosenIds=prep?.summoned||prep?.final;const chosen=Array.isArray(chosenIds)?chosenIds.map(id=>state.players.find(p=>String(p.id)===String(id))).filter(Boolean):null;const available=state.players.filter(p=>!p.retired&&!p.draftPending&&!p.foreignPlayer&&p.position&&!(p.profile?.injury?.days>0)&&Number(p.age||25)>=18&&Number(p.age||25)<=40).map(p=>({p,form:nationalTeamFormScore(p)})).sort((a,b)=>b.form-a.form).map(x=>x.p);
   const fill=(position)=>{
    const isEligible=p=>p&&p.id!=null&&(position==='P'?p.position==='P':p.position!=='P');
    const result=[],usedIds=new Set(),usedNames=new Set();
@@ -4474,6 +4474,9 @@ function chooseBattingNine(players,opponentHand,formScore,style='분석형',phil
  const ordered=battingOrder(result.chosen,style,philosophy);ordered.assignedPositions=result.assigned;ordered.emergencyPositions=result.emergencies;return ordered;
 }
 function selectNationalHitters(players,count,score=nationalTeamFormScore){
+ // One selection has fixed form inputs; avoid rescanning season boxes per comparison.
+ const originalScore=score,forms=new Map();
+ score=p=>{if(!forms.has(p))forms.set(p,originalScore(p));return forms.get(p)};
  const all=players.filter(p=>p.position!=='P').slice().sort((a,b)=>score(b)-score(a)||String(a.id).localeCompare(String(b.id)));
  const selected=chooseBattingNine(all,null,score).slice(),used=new Set(selected.map(p=>String(p.id)));
  // A second qualified catcher is a roster requirement, not a batting-score luxury.

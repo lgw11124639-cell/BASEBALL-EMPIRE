@@ -43,9 +43,9 @@ try{
  // Host-side phase tracking survives a VM timeout and identifies the active call.
  sandbox.context.__continuationPhase=(name,event,elapsedMs)=>{
   if(event==='start')activePhases.push(name);else activePhases.pop();
-  if(steps===0||elapsedMs>=10000)log({stage:'engine-phase',step:steps+1,name,event,...(elapsedMs==null?{}:{elapsedMs})});
+  if((steps===0&&name!=='officeAI')||elapsedMs>=10000)log({stage:'engine-phase',step:steps+1,name,event,...(elapsedMs==null?{}:{elapsedMs})});
  };
- run(`for(const name of ${JSON.stringify(['ensureSeasonCalendar','monthlyOwnerReport','offseasonDay','simulateLeagueDay','kpblGovernanceDay','repairClubRosterState','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','financeMonth','calendarNotice','foreignRecruitmentDay','asianQuotaRecruitmentDay','activateDraftRookies','draftScoutReport','officeDraft','postseasonDay','runOffseasonContracts','reviewInactiveRoster','annualSalaryNegotiations','reviewUnsignedFaMarket','releasedPlayerSigningDay','retireUnsignedReleasedPlayers','officeAI','coachDevelopmentDay','nationalTeamTournamentDay','nationalTeamReturnDay','saveSeasonSnapshot','validateSeasonIntegrity','beginNextSeason'])}){
+ run(`for(const name of ${JSON.stringify(['ensureSeasonCalendar','monthlyOwnerReport','offseasonDay','simulateLeagueDay','kpblGovernanceDay','repairClubRosterState','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','financeMonth','calendarNotice','foreignRecruitmentDay','asianQuotaRecruitmentDay','activateDraftRookies','draftScoutReport','officeDraft','postseasonDay','runOffseasonContracts','reviewInactiveRoster','annualSalaryNegotiations','reviewUnsignedFaMarket','releasedPlayerSigningDay','retireUnsignedReleasedPlayers','officeAI','coachDevelopmentDay','nationalTeamTournamentDay','nationalTeamPreparationDay','internationalOpeningGame','internationalOpponentRoster','internationalSharedGame','internationalRivalResult','selectNationalHitters','nationalTeamLineup','nationalTeamReturnDay','saveSeasonSnapshot','validateSeasonIntegrity','beginNextSeason'])}){
   const original=eval(name);
   if(typeof original!=='function')throw Error('Missing phase '+name);
   const wrapped=function(...args){const started=performance.now();__continuationPhase(name,'start');
