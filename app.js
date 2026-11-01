@@ -793,7 +793,7 @@ function kpblReviewIntegrityTips(){
   if(!valid){tip.status='추가 증거 필요';continue}
   const incident=playerConductDiscover(p,action);
   tip.status=incident?'조사 개시':'추가 증거 필요';
-  if(incident)tip.caseId=incident.id;
+  if(incident){tip.caseId=incident.id;tip.reviewedYear=state.year;tip.reviewedDay=state.day;}
  }
 }
 function kpblIntegrityAuditDay(){
