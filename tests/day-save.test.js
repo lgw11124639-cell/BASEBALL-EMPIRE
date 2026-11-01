@@ -14,7 +14,7 @@ async function run(mode){
  if(mode==='watched postseason'||mode==='pending postseason')state.postseasons[2027].finished=false;
  const initial=clone(state);
  const ctx={state,seasonStepBusy:mode==='busy',autoSeasonRunning:mode==='auto'||mode==='auto-fast',autoSeasonSpeed:mode==='auto-fast'?0:300,entryMode:'game',tab:'home',
- document:{querySelector:()=>({disabled:false})},window:{},performance:{now:()=>0},structuredClone:clone,
+ document:{querySelector:()=>({disabled:false})},window:{beBatchDayPreparation:false},performance:{now:()=>0},structuredClone:clone,
  ensureSeasonCalendar:()=>{},monthlyOwnerReport:()=>{},saveSeasonSnapshot:()=>{},nationalTeamTournamentDay:()=>{},nationalTeamReturnDay:()=>{},
  seasonDate:(day)=>{const base=new Date(mode==='rollover'?'2027-11-21T12:00:00':['offseason','watched postseason','pending postseason'].includes(mode)?'2027-01-01T12:00:00':'2027-03-20T12:00:00');base.setDate(base.getDate()+Number(day)-1);return base;},
  awardsFinished:()=>['rollover','offseason','watched postseason','pending postseason'].includes(mode),

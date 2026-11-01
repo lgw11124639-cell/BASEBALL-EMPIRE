@@ -1,0 +1,171 @@
+{
+  "fixture": {
+    "homeDayAlreadyPrepared": true,
+    "retainedGames": 300,
+    "players": 720,
+    "rawStateBytes": 31042240,
+    "note": "Synthetic retained history from real production games. Native VM + bundled production gzip. No network latency or real server timing."
+  },
+  "runs": [
+    {
+      "label": "old",
+      "localMs": 2510.1,
+      "requests": [
+        {
+          "method": "PATCH",
+          "rawBytes": 88
+        },
+        {
+          "method": "PATCH",
+          "rawBytes": 988404
+        }
+      ],
+      "totalRawUploadBytes": 988492,
+      "cloudStages": {
+        "shardsMs": 182.1,
+        "amateurMs": 30.5,
+        "leaguesMs": 116.8,
+        "historyMs": 0.2,
+        "auxiliaryMs": 3.6,
+        "totalMs": 338.6,
+        "overlapped": false,
+        "deepPlayerDiagnostics": false,
+        "deltaMs": 3.5,
+        "uploadMs": 1.6,
+        "method": null,
+        "uploadBytes": 0,
+        "postSaveCloneMs": 0.9,
+        "fullSaveMs": 339.5
+      },
+      "stepPhases": {
+        "rollbackBackup": 49.33,
+        "calendarAndReports": 0.05,
+        "leagueSimulation": 1889.24,
+        "nationalTournament": 1.28,
+        "nationalReturn": 0.26,
+        "postSimulationValidation": 0.2,
+        "simulationFinalization": 0.01,
+        "cloudSave": 339.57
+      },
+      "finalDay": 104,
+      "stateHash": "2a1a0fab980a0eeb3241dc426da9b4b0d70be694740825d6c29eb38904a43ed7"
+    },
+    {
+      "label": "new",
+      "localMs": 1703,
+      "requests": [
+        {
+          "method": "PATCH",
+          "rawBytes": 988375
+        }
+      ],
+      "totalRawUploadBytes": 988375,
+      "cloudStages": {
+        "historyMs": 13.8,
+        "amateurMs": 79.8,
+        "shardsMs": 282.4,
+        "leaguesMs": 273.1,
+        "auxiliaryMs": 2.9,
+        "totalMs": 309.9,
+        "overlapped": true,
+        "deepPlayerDiagnostics": false,
+        "deltaMs": 5.3,
+        "uploadMs": 1.4,
+        "method": null,
+        "uploadBytes": 0,
+        "postSaveCloneMs": 1.1,
+        "fullSaveMs": 310.9
+      },
+      "stepPhases": {
+        "rollbackBackup": 43.57,
+        "calendarAndReports": 0.24,
+        "postSimulationValidation": 0.06,
+        "nextDayPreparation": 1345.83,
+        "simulationFinalization": 0.03,
+        "cloudSave": 311.14
+      },
+      "finalDay": 104,
+      "stateHash": "2a1a0fab980a0eeb3241dc426da9b4b0d70be694740825d6c29eb38904a43ed7"
+    },
+    {
+      "label": "new",
+      "localMs": 1752.6,
+      "requests": [
+        {
+          "method": "PATCH",
+          "rawBytes": 988375
+        }
+      ],
+      "totalRawUploadBytes": 988375,
+      "cloudStages": {
+        "historyMs": 16,
+        "amateurMs": 88.7,
+        "shardsMs": 288.3,
+        "leaguesMs": 280.2,
+        "auxiliaryMs": 2.9,
+        "totalMs": 315.4,
+        "overlapped": true,
+        "deepPlayerDiagnostics": false,
+        "deltaMs": 3.9,
+        "uploadMs": 1.6,
+        "method": null,
+        "uploadBytes": 0,
+        "postSaveCloneMs": 1.1,
+        "fullSaveMs": 316.6
+      },
+      "stepPhases": {
+        "rollbackBackup": 43.35,
+        "calendarAndReports": 0.05,
+        "postSimulationValidation": 0.07,
+        "nextDayPreparation": 1392.18,
+        "simulationFinalization": 0.03,
+        "cloudSave": 316.65
+      },
+      "finalDay": 104,
+      "stateHash": "2a1a0fab980a0eeb3241dc426da9b4b0d70be694740825d6c29eb38904a43ed7"
+    },
+    {
+      "label": "old",
+      "localMs": 2347.1,
+      "requests": [
+        {
+          "method": "PATCH",
+          "rawBytes": 88
+        },
+        {
+          "method": "PATCH",
+          "rawBytes": 988404
+        }
+      ],
+      "totalRawUploadBytes": 988492,
+      "cloudStages": {
+        "shardsMs": 172.3,
+        "amateurMs": 25.4,
+        "leaguesMs": 111.3,
+        "historyMs": 0.1,
+        "auxiliaryMs": 2.8,
+        "totalMs": 317.9,
+        "overlapped": false,
+        "deepPlayerDiagnostics": false,
+        "deltaMs": 3.7,
+        "uploadMs": 1.8,
+        "method": null,
+        "uploadBytes": 0,
+        "postSaveCloneMs": 1.3,
+        "fullSaveMs": 319.2
+      },
+      "stepPhases": {
+        "rollbackBackup": 42.78,
+        "calendarAndReports": 0.04,
+        "leagueSimulation": 1763.71,
+        "nationalTournament": 0.08,
+        "nationalReturn": 0.18,
+        "postSimulationValidation": 0.13,
+        "simulationFinalization": 0.01,
+        "cloudSave": 319.27
+      },
+      "finalDay": 104,
+      "stateHash": "2a1a0fab980a0eeb3241dc426da9b4b0d70be694740825d6c29eb38904a43ed7"
+    }
+  ]
+}

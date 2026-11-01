@@ -6,9 +6,14 @@ let gzipSaveSupported=true; // Server supports gzip request bodies and CORS Cont
 let gzipRejectedStatus=null;
 // Snapshot of the last server-acknowledged wire representation. Never stored locally.
 let acknowledgedWireSave=null;
+// JSON strings belong only to the detached acknowledged snapshot. A replaced
+// baseline invalidates them; live mutable objects are serialized on every save.
+let acknowledgedObjectJson=null,acknowledgedObjectJsonSource=null;
+function cloudObjectJson(save){const values=new Map();for(const key of Object.keys(save||{})){const value=save[key];if(value!==null&&typeof value==='object')values.set(key,JSON.stringify(value));}return values;}
+function cloudFieldJson(value,key,values){return values?.has(key)?values.get(key):JSON.stringify(value);}
 let incrementalSaveSupported=true;
 const deltaProtocol='be-top-level-delta-v1';
-function makeCloudDelta(previous,current){
+function makeCloudDelta(previous,current,serialized=null){
  if(!previous||typeof previous!=='object'||!current||typeof current!=='object')return null;
  const set=Object.create(null),unset=[];
  for(const key of Object.keys(previous))if(!Object.prototype.hasOwnProperty.call(current,key))unset.push(key);
@@ -20,7 +25,7 @@ function makeCloudDelta(previous,current){
   // than JSON-encoding both multi-kilobyte strings on every save.
   if(typeof value==='string'&&typeof before==='string'){if(value!==before)set[key]=value;continue;}
   if(value===before)continue;
-  if(JSON.stringify(value)!==JSON.stringify(before))set[key]=value;
+  if(cloudFieldJson(value,key,serialized?.current)!==cloudFieldJson(before,key,serialized?.previous))set[key]=value;
  }
  return {protocol:deltaProtocol,set,unset};
 }
@@ -414,7 +419,9 @@ async function packLeagueShards(state){
   const seasons={},parts=[];
   for(const [season,node] of Object.entries(state[field])){
    if(!node||typeof node!=='object'||Array.isArray(node))return null;
-   const cacheKey=field+':'+season,cached=leagueSeasonPreparationCache.get(cacheKey),cacheEligible=!!cached||(!leagueSeasonPreparationSkipped.has(cacheKey)&&leagueSeasonPreparationBytes<24000000),rawNode=cacheEligible?JSON.stringify(node):null;
+   // Active seasons change daily: comparing a whole-season JSON string first
+   // would serialize their players and games twice. Inspect each shard exactly.
+   const cacheKey=field+':'+season,isCurrent=String(season)===String(state.year),cached=isCurrent?null:leagueSeasonPreparationCache.get(cacheKey),cacheEligible=!isCurrent&&(!!cached||(!leagueSeasonPreparationSkipped.has(cacheKey)&&leagueSeasonPreparationBytes<24000000)),rawNode=cacheEligible?JSON.stringify(node):null;
    if(cached&&cached.raw===rawNode){seasons[season]=cached.descriptors;parts.push(...cached.parts);continue}
    const partStart=parts.length,descriptors=[];
    for(const [name,value] of Object.entries(node)){
@@ -919,7 +926,7 @@ window.beVerifyCloudServer=async()=>{
  window.beCloudServerAudit=result;
  return result;
 };
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(s.save))))))):null;baseline={save:restored,revision:rev};return restored}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;const restored=s?.save?await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(s.save))))))):null;baseline={save:restored,revision:rev};return restored}
 // Read-only cloud consistency audit. Never overwrites game state or save revision.
 window.beAuditCloudConsistency=async function(){
  if(!token||!verified)throw Error('클라우드 로그인이 필요합니다');
@@ -993,9 +1000,9 @@ export async function cloudSave(state){
   const replayPackedAt=performance.now();
   const stages={};
   const prepare=async(name,work)=>{const start=performance.now();const value=await work(replayPacked);stages[name]=+(performance.now()-start).toFixed(1);return value};
-  // Complete each archive before starting the next. This keeps league JSON
-  // inspection from blocking player gzip callbacks or flooding the same queue.
-  const prepared=[];for(const [name,work] of [['shardsMs',packCloudShards],['amateurMs',packAmateurBuckets],['leaguesMs',packLeagueShards],['historyMs',packHistoryShards]])prepared.push(await prepare(name,work));
+  // These packers produce disjoint wire fields. Overlap their native gzip work;
+  // every codec shares the bounded semaphore, so archive work cannot flood it.
+  const prepared=await Promise.all([['shardsMs',packCloudShards],['amateurMs',packAmateurBuckets],['leaguesMs',packLeagueShards],['historyMs',packHistoryShards]].map(([name,work])=>prepare(name,work)));
   const combined={...replayPacked};
   for(const part of prepared){
    for(const key of Object.keys(replayPacked))if(!Object.prototype.hasOwnProperty.call(part,key))delete combined[key];
@@ -1003,20 +1010,21 @@ export async function cloudSave(state){
   }
   const auxiliaryAt=performance.now();payload=await packAuxiliaryFields(combined);
   const auxiliaryPackedAt=performance.now();
-  window.beCloudPackingStages={...stages,auxiliaryMs:+(auxiliaryPackedAt-auxiliaryAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),overlapped:false,deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
+  window.beCloudPackingStages={...stages,auxiliaryMs:+(auxiliaryPackedAt-auxiliaryAt).toFixed(1),totalMs:+(auxiliaryPackedAt-packStarted).toFixed(1),overlapped:true,deepPlayerDiagnostics:window.beCloudDeepPlayerDiagnostics===true};
   lastPackingAuditPayload=payload;
   lastPackingAuditState=state;
   // Use PATCH only when a full, server-acknowledged baseline exists.
   // Compare the exact packed wire fields, not the mutable in-game state.
   const deltaStarted=performance.now();
-  const delta=incrementalSaveSupported?makeCloudDelta(acknowledgedWireSave,payload):null;
+  const payloadJson=incrementalSaveSupported&&acknowledgedWireSave?cloudObjectJson(payload):new Map(),beforeJson=acknowledgedObjectJsonSource===acknowledgedWireSave?acknowledgedObjectJson:null;
+  const delta=incrementalSaveSupported?makeCloudDelta(acknowledgedWireSave,payload,{current:payloadJson,previous:beforeJson}):null;
   if(delta)for(const key of Object.keys(payload))if(/^be.*Manifest$/.test(key)&&payload[key]&&typeof payload[key]==='object'&&!Object.prototype.hasOwnProperty.call(delta.set,key)&&Object.prototype.hasOwnProperty.call(acknowledgedWireSave,key))reusableManifests[key]=acknowledgedWireSave[key];
   const deltaJson=delta?JSON.stringify(delta):null;
   const deltaEncodedAt=performance.now();
   // Estimate full size without another multi-megabyte JSON.stringify.
   // The estimate is conservative for normal ASCII keys and compressed shards.
   const fullJsonLength=delta?Object.entries(payload).reduce((n,[key,value])=>
-   n+JSON.stringify(key).length+1+(typeof value==='string'?value.length+2:JSON.stringify(value)?.length||4)+1,1):0;
+   n+JSON.stringify(key).length+1+(typeof value==='string'?value.length+2:cloudFieldJson(value,key,payloadJson)?.length||4)+1,1):0;
   const useDelta=!!deltaJson&&deltaJson.length<fullJsonLength*.85;
   window.beCloudDeltaPrepTiming={compareAndEncodeMs:+(deltaEncodedAt-deltaStarted).toFixed(1),fullSizeEstimateMs:+(performance.now()-deltaEncodedAt).toFixed(1),changedFields:delta?Object.keys(delta.set).length:0,deltaBytes:deltaJson?.length||0,fullBytesEstimated:fullJsonLength};
   // Record what actually changes; the full snapshot size is not the upload size.
@@ -1024,7 +1032,7 @@ export async function cloudSave(state){
   // A field-by-field breakdown of the actual PATCH payload. Avoid re-stringifying
   // already-encoded shards; the size of their JSON value is length + two quotes.
   const changedFields=delta?Object.entries(delta.set).map(([key,value])=>({
-   key,bytes:typeof value==='string'?value.length+2:JSON.stringify(value)?.length||0
+   key,bytes:typeof value==='string'?value.length+2:cloudFieldJson(value,key,payloadJson)?.length||0
   })).sort((a,b)=>b.bytes-a.bytes):[];
   const changedGroups=Object.create(null);
   for(const {key,bytes} of changedFields){
@@ -1149,7 +1157,7 @@ export async function cloudSave(state){
  const mutable={};
  for(const [key,value] of Object.entries(payload))if(value!==null&&typeof value==='object'&&!Object.prototype.hasOwnProperty.call(reusableManifests,key))mutable[key]=value;
  const detached=structuredClone(mutable);
- revision=next;acknowledgedWireSave={...payload,...detached,...reusableManifests};baseline={save:state,revision:next};
+ revision=next;acknowledgedWireSave={...payload,...detached,...reusableManifests};acknowledgedObjectJson=incrementalSaveSupported?cloudObjectJson(acknowledgedWireSave):null;acknowledgedObjectJsonSource=acknowledgedWireSave;baseline={save:state,revision:next};
  window.beCloudSaveStages={...window.beCloudSaveStages,postSaveCloneMs:+(performance.now()-snapshotStarted).toFixed(1),fullSaveMs:+(performance.now()-window.beCloudSaveStartAt).toFixed(1)};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
 export async function cloudGate(onReady){
@@ -1183,7 +1191,7 @@ export async function cloudGate(onReady){
    logout.className='cloud-account-action';
    logout.style.display=(document.body.classList.contains('be-start-screen')?'':'none');
    new MutationObserver(()=>{logout.style.display=document.body.classList.contains('be-start-screen')?'':'none'}).observe(document.body,{attributes:true,attributeFilter:['class']});
-   logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;acknowledgedWireSave=null;remember();location.reload()};
+   logout.onclick=async()=>{if(!confirm('로그아웃할까요?'))return;logout.disabled=true;try{await call('/v2/auth/logout','POST')}catch(_){}token=null;username='';revision=null;verified=false;baseline=null;acknowledgedWireSave=null;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;remember();location.reload()};
    document.body.append(logout);
   }
   let reset=document.getElementById('be-cloud-reset');
