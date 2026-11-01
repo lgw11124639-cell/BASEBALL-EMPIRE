@@ -2857,15 +2857,7 @@ input[type="file"] {
 }
 
 .be-editorial-modal {
-  box-shadow: none !important;
   overscroll-behavior: contain !important;
-  background: #fff !important;
-  border: 0 !important;
-  padding: 0 !important;
-  position: fixed !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  overflow-y: auto !important;
 }
 
 .game-news-overlay, #game-news-overlay {
@@ -2900,11 +2892,6 @@ input[type="file"] {
 
 .be-editorial-modal {
   z-index: 2147483000 !important;
-  border-radius: 0 !important;
-  height: 100dvh !important;
-  max-height: none !important;
-  margin: 0 !important;
-  inset: 0 !important;
 }
 
 .be-owner-report {
@@ -3048,7 +3035,11 @@ input[type="file"] {
 }
 
 @media (width <= 600px) {
-  .be-editorial-modal, .game-news-overlay, #game-news-overlay {
+  .be-editorial-modal {
+    box-sizing: border-box !important;
+  }
+
+  .game-news-overlay, #game-news-overlay {
     box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -3057,9 +3048,6 @@ input[type="file"] {
 
   .be-editorial-modal > header {
     box-sizing: border-box !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
   }
 
   .be-editorial-modal > .news-article-header {
@@ -3085,7 +3073,12 @@ input[type="file"] {
     font-size: 13px !important;
   }
 
-  .be-editorial-modal .editorial-story, .be-editorial-modal .news-article-body, #game-news-overlay .editorial-story {
+  .be-editorial-modal .editorial-story {
+    overflow-wrap: break-word;
+    box-sizing: border-box !important;
+  }
+
+  .be-editorial-modal .news-article-body, #game-news-overlay .editorial-story {
     overflow-wrap: break-word;
     box-sizing: border-box !important;
     width: 100% !important;
@@ -3132,7 +3125,12 @@ input[type="file"] {
   }
 }
 
-.be-editorial-modal, .game-news-overlay {
+.be-editorial-modal {
+  box-sizing: border-box !important;
+  touch-action: pan-y !important;
+}
+
+.game-news-overlay {
   box-sizing: border-box !important;
   touch-action: pan-y !important;
   width: 100% !important;
@@ -3151,7 +3149,12 @@ input[type="file"] {
   overflow-x: clip !important;
 }
 
-.be-editorial-modal .editorial-story, .be-editorial-modal .news-article-body {
+.be-editorial-modal .editorial-story {
+  box-sizing: border-box !important;
+  touch-action: pan-y !important;
+}
+
+.be-editorial-modal .news-article-body {
   box-sizing: border-box !important;
   touch-action: pan-y !important;
   min-width: 0 !important;
@@ -3426,7 +3429,15 @@ input[type="file"] {
   }
 }
 
-#game-news-overlay .game-news-dialog > header, .be-editorial-modal > header {
+.be-editorial-modal > header {
+  box-sizing: border-box !important;
+  z-index: 40 !important;
+  border-bottom: 2px solid #3476b8 !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+#game-news-overlay .game-news-dialog > header {
   box-sizing: border-box !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -3438,12 +3449,6 @@ input[type="file"] {
   align-items: center !important;
   gap: 10px !important;
   display: grid !important;
-}
-
-.be-editorial-modal > header {
-  position: sticky !important;
-  top: 0 !important;
-  left: 0 !important;
 }
 
 .be-editorial-modal > header > div, #game-news-overlay .game-news-dialog > header > div {
@@ -3487,7 +3492,12 @@ input[type="file"] {
   position: static !important;
 }
 
-.be-editorial-modal > .editorial-story, #game-news-overlay .news-article-body {
+.be-editorial-modal > .editorial-story {
+  box-sizing: border-box !important;
+  overflow-wrap: break-word !important;
+}
+
+#game-news-overlay .news-article-body {
   box-sizing: border-box !important;
   overflow-wrap: break-word !important;
   width: 100% !important;
@@ -3505,11 +3515,15 @@ input[type="file"] {
 }
 
 @media (width <= 600px) {
-  .be-editorial-modal > .editorial-story, #game-news-overlay .news-article-body {
+  #game-news-overlay .news-article-body {
     padding: 18px 15px 70px !important;
   }
 
-  .be-editorial-modal > header, #game-news-overlay .game-news-dialog > header {
+  .be-editorial-modal > header {
+    gap: 8px !important;
+  }
+
+  #game-news-overlay .game-news-dialog > header {
     gap: 8px !important;
     padding-left: 14px !important;
     padding-right: 14px !important;
@@ -10773,28 +10787,14 @@ body.be-start-screen #be-version-widget {
   body .be-editorial-modal {
     overscroll-behavior: contain !important;
     z-index: 999999 !important;
-    background: #fff !important;
-    border: 1px solid #d6e2f0 !important;
-    border-radius: 18px !important;
-    width: auto !important;
-    height: 92vh !important;
-    inset: 4vh max(24px, 50vw - 580px) !important;
-    box-shadow: 0 24px 85px #142d4d40 !important;
   }
 
   body .be-editorial-modal > header {
-    background: #f9fbfe !important;
     border-bottom: 1px solid #d8e4f0 !important;
-    border-radius: 18px 18px 0 0 !important;
-    padding: 15px 26px !important;
   }
 
   body .be-editorial-modal .editorial-story {
     box-sizing: border-box !important;
-    width: min(100% - 56px, 880px) !important;
-    max-width: 880px !important;
-    margin: 0 auto !important;
-    padding: 32px 16px 70px !important;
     font-size: 15px !important;
     line-height: 1.85 !important;
   }
@@ -10881,26 +10881,6 @@ body.be-start-screen #be-version-widget {
     max-width: none !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
-  }
-
-  body .be-editorial-modal {
-    width: 100vw !important;
-    max-width: none !important;
-    height: 100dvh !important;
-    box-shadow: none !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    inset: 0 !important;
-  }
-
-  body .be-editorial-modal > header {
-    border-radius: 0 !important;
-  }
-
-  body .be-editorial-modal .editorial-story {
-    width: min(100% - 64px, 1360px) !important;
-    max-width: 1360px !important;
-    padding: 30px 24px 90px !important;
   }
 }
 
@@ -19281,4 +19261,543 @@ body .start-screen {
 main.game-shell :is(.section-title p, .section-kicker, .profile-note, .support-text, .roster-empty, .roster-count, .roster-filter-toolbar label, .observer-position, .observer-metric small, .baseball-news-list small, .be-report-item small, .fa-card-meta, .fa-card-status, .office-fact dt, .office-fact small, .record-archive-note, .record-description, .record-date, .shell-hero-facts dt, .shell-hero-facts small, .fo-facility small, .fo-transaction-info small, .fo-role, .fo-staff-row small, .fa-archive summary small, .fa-pending-club summary span) {
   color: #536b7d !important;
   opacity: 1 !important;
+}
+
+body .be-editorial-modal {
+  z-index: 2147483001 !important;
+  overscroll-behavior: contain !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  box-shadow: none !important;
+  color: #294d63 !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  overflow: hidden auto !important;
+}
+
+body .be-editorial-modal > header {
+  z-index: 10 !important;
+  min-height: 76px !important;
+  box-shadow: none !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-bottom: 1px solid #dce6ec !important;
+  border-radius: 0 !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 20px !important;
+  margin: 0 !important;
+  padding: 16px max(24px, 50vw - 520px) !important;
+  display: flex !important;
+  position: sticky !important;
+  top: 0 !important;
+}
+
+body .be-editorial-modal > header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+body .be-editorial-modal > header small {
+  letter-spacing: 1px;
+  display: block;
+  color: #526b7d !important;
+  margin-bottom: 5px !important;
+  font-size: 9px !important;
+  line-height: 1.6 !important;
+}
+
+body .be-editorial-modal > header strong {
+  display: block;
+  color: #355b71 !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.7 !important;
+  overflow: hidden !important;
+}
+
+body .be-editorial-modal > header button {
+  flex: none;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  display: flex;
+  color: #456b7f !important;
+  background: #f5f8fa !important;
+  border: 1px solid #d6e3e9 !important;
+  border-radius: 8px !important;
+  padding: 9px 13px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.be-notice-modal > header button > span {
+  font-size: 19px;
+}
+
+body .be-editorial-modal > .editorial-story {
+  box-sizing: border-box !important;
+  color: #355b71 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 1040px !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: 32px 24px 70px !important;
+  display: block !important;
+  overflow: visible !important;
+}
+
+.be-notice-modal .editorial-headline {
+  letter-spacing: -.7px;
+  color: #294d63 !important;
+  margin: 16px 0 20px !important;
+  font-size: 29px !important;
+  line-height: 1.5 !important;
+}
+
+.be-notice-modal .editorial-meta {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  display: flex;
+  color: #526b7d !important;
+  font-size: 11px !important;
+  line-height: 1.9 !important;
+}
+
+.be-notice-modal .editorial-copy {
+  border-top: 1px solid #dce6ec;
+  margin-top: 24px;
+  padding-top: 24px;
+}
+
+.notice-clubs {
+  background: #f5f9fa;
+  border: 1px solid #dce6ec;
+  border-radius: 10px;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 22px;
+  padding: 15px 18px;
+  display: flex;
+}
+
+.notice-clubs > div {
+  color: #496b7e;
+  align-items: center;
+  gap: 11px;
+  font-size: 12px;
+  display: flex;
+}
+
+.notice-clubs .club-logo {
+  width: 32px !important;
+  height: 37px !important;
+  margin: 0 !important;
+}
+
+.notice-related {
+  margin-top: 24px;
+}
+
+.notice-related h3, .notice-draft h2 {
+  color: #355b71;
+  font-size: 17px;
+}
+
+.notice-related-player, .notice-draft-player {
+  text-align: left;
+  color: #355b71;
+  background: #f7fafb;
+  border: 1px solid #dce6ec;
+  border-radius: 8px;
+  justify-content: space-between;
+  gap: 15px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 12px;
+  font-size: 12px;
+  line-height: 1.8;
+  display: flex;
+}
+
+.notice-related-player > span {
+  color: #526b7d;
+  font-size: 11px;
+}
+
+.notice-draft {
+  margin-top: 25px;
+}
+
+.notice-draft h3 {
+  color: #456b7e;
+  margin: 20px 0 12px;
+  font-size: 14px;
+}
+
+.be-report-modal .training-report .training-report-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 17px;
+  display: grid;
+}
+
+.be-report-modal .training-report .training-report-metrics > div {
+  background: #f3f8f5;
+  border: 1px solid #d9e6e4;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.be-report-modal .training-report .training-report-metrics > div:nth-child(2) {
+  background: #f7f9fb;
+  border-color: #dce6ec;
+}
+
+.be-report-modal .training-report .training-report-metrics > div:nth-child(3) {
+  background: #fff;
+  border-color: #dce6ec;
+}
+
+.be-report-modal .training-report .training-report-metrics dt {
+  color: #526b7d;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.be-report-modal .training-report .training-report-metrics dd {
+  color: #2d715a;
+  font-variant-numeric: tabular-nums;
+  margin: 12px 0 0;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.be-report-modal .training-report .training-report-metrics > div:nth-child(2) dd, .be-report-modal .training-report .training-report-metrics > div:nth-child(3) dd {
+  color: #365c72;
+}
+
+.be-report-modal .training-report .training-report-metrics dd small {
+  margin-left: 7px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.be-report-modal .training-report .training-report-note {
+  color: #526b7d !important;
+  margin: 15px 0 22px !important;
+  font-size: 12px !important;
+  line-height: 1.9 !important;
+}
+
+.be-report-modal .training-report .report-player-section {
+  margin: 27px 0;
+}
+
+.be-report-modal .training-report .report-section-heading {
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 13px;
+  display: flex;
+}
+
+.be-report-modal .training-report .report-section-heading h2 {
+  color: #355b71;
+  line-height: 1.7;
+  margin: 0 !important;
+  font-size: 18px !important;
+}
+
+.be-report-modal .training-report .report-section-heading > span {
+  color: #526b7d;
+  font-size: 11px;
+}
+
+.be-report-modal .training-report .training-table-scroll {
+  scrollbar-width: thin;
+  isolation: isolate;
+  touch-action: auto;
+  border: 1px solid #dce6ec;
+  border-radius: 10px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.be-report-modal .training-report .training-player-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  min-width: 620px;
+  table-layout: fixed !important;
+  width: 100% !important;
+  max-width: none !important;
+  display: table !important;
+  overflow: visible !important;
+}
+
+.be-report-modal .training-report .training-player-table :is(th, td) {
+  color: #456b7e;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  background: #fff;
+  border-bottom: 1px solid #e2eaf0;
+  padding: 13px 16px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.be-report-modal .training-report .training-player-table thead th {
+  color: #526b7d;
+  background: #eef5f7;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.be-report-modal .training-report .training-player-table tr > :first-child {
+  z-index: 1;
+  text-align: left;
+  border-right: 1px solid #e0e9ed;
+  width: 200px;
+  min-width: 200px;
+  position: sticky;
+  left: 0;
+}
+
+.be-report-modal .training-report .training-player-table tbody tr:nth-child(2n) > * {
+  background: #f8fbfc;
+}
+
+.be-report-modal .training-report .training-player-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.be-report-modal .training-report .training-player-table th .article-player-link {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: #315e73 !important;
+  text-align: left !important;
+  font-size: 13px !important;
+  line-height: 1.8 !important;
+}
+
+.be-report-modal .training-report .training-player-table small {
+  color: #526b7d;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.8;
+  display: block;
+}
+
+.be-report-modal .training-report .training-player-table .training-growth {
+  color: #2e725b;
+  font-weight: 600;
+}
+
+.be-report-modal .training-report .training-identity-note {
+  margin-top: 5px;
+}
+
+.be-report-modal .training-report .training-report-sections {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  display: grid;
+}
+
+.be-report-modal .training-report .training-report-sections .be-owner-report-section {
+  background: #f7fafb;
+  border: 1px solid #dce6ec;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 0 !important;
+}
+
+.be-report-modal .training-report .training-report-sections .be-owner-report-section h2 {
+  color: #355b71;
+  margin: 0 0 12px !important;
+  font-size: 15px !important;
+  line-height: 1.8 !important;
+}
+
+.be-report-modal .training-report .training-report-sections .be-owner-report-section p {
+  color: #526b7d !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  line-height: 2 !important;
+}
+
+.be-report-modal .training-report .report-original {
+  border-top: 1px solid #dce6ec;
+  margin-top: 24px;
+}
+
+.be-report-modal .training-report .report-original > summary {
+  color: #526b7d;
+  cursor: pointer;
+  padding: 17px 0;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.be-report-modal .training-report .report-original > div {
+  color: #526b7d;
+  overflow-wrap: anywhere;
+  padding-bottom: 20px;
+  font-size: 12px;
+  line-height: 2;
+}
+
+.be-report-modal .training-report .report-empty {
+  color: #526b7d;
+  background: #f5f8fa;
+  border: 1px dashed #d5e3e9;
+  border-radius: 9px;
+  padding: 20px;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+@media (width <= 600px) {
+  body .be-editorial-modal > header {
+    gap: 12px !important;
+    min-height: 69px !important;
+    padding: 12px 17px !important;
+  }
+
+  body .be-editorial-modal > header small {
+    letter-spacing: .6px;
+    font-size: 8px !important;
+  }
+
+  body .be-editorial-modal > header strong {
+    font-size: 12px !important;
+  }
+
+  body .be-editorial-modal > header button {
+    gap: 8px;
+    min-height: 35px;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+
+  body .be-editorial-modal > .editorial-story {
+    padding: 25px 17px 50px !important;
+  }
+
+  .be-notice-modal .editorial-headline {
+    margin: 13px 0 18px !important;
+    font-size: 25px !important;
+    line-height: 1.55 !important;
+  }
+
+  .notice-clubs {
+    margin-top: 19px;
+    padding: 13px 14px;
+  }
+
+  .notice-clubs .club-logo {
+    width: 27px !important;
+    height: 31px !important;
+  }
+
+  .notice-clubs > div {
+    font-size: 11px;
+  }
+
+  .be-report-modal .training-report .training-report-metrics {
+    gap: 8px;
+  }
+
+  .be-report-modal .training-report .training-report-metrics > div {
+    padding: 15px 11px;
+  }
+
+  .be-report-modal .training-report .training-report-metrics dt {
+    font-size: 10px;
+    line-height: 1.8;
+  }
+
+  .be-report-modal .training-report .training-report-metrics dd {
+    margin-top: 9px;
+    font-size: 26px;
+  }
+
+  .be-report-modal .training-report .training-report-metrics dd small {
+    margin-left: 4px;
+    font-size: 10px;
+  }
+
+  .be-report-modal .training-report .training-report-note {
+    font-size: 11px !important;
+    line-height: 1.9 !important;
+  }
+
+  .be-report-modal .training-report .report-section-heading h2 {
+    font-size: 16px !important;
+  }
+
+  .be-report-modal .training-report .report-section-heading > span {
+    font-size: 10px;
+  }
+
+  .be-report-modal .training-report .training-player-table tr > :first-child {
+    width: 170px;
+    min-width: 170px;
+  }
+
+  .be-report-modal .training-report .training-player-table :is(th, td) {
+    padding: 12px 13px;
+  }
+
+  .be-report-modal .training-report .training-report-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .be-report-modal .training-report .training-report-sections .be-owner-report-section {
+    padding: 17px;
+  }
+
+  .be-report-modal .training-report .training-report-sections .be-owner-report-section h2 {
+    font-size: 14px !important;
+  }
+
+  .be-report-modal .training-report .training-report-sections .be-owner-report-section p {
+    font-size: 12px !important;
+  }
+
+  .notice-related-player {
+    display: block;
+  }
+
+  .notice-related-player > span {
+    margin-top: 5px;
+    display: block;
+  }
+}
+
+.be-report-modal .training-report {
+  min-width: 0;
+  max-width: 100%;
+  display: block !important;
+}
+
+.be-report-modal .training-report :is(.training-report-metrics, .report-player-section, .training-table-scroll, .training-report-sections) {
+  min-width: 0;
+  max-width: 100%;
 }
