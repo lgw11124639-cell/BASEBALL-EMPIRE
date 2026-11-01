@@ -3,6 +3,7 @@
 // startup login/render bootstrap. No cloud or database writes are provided.
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {selectUnannouncedTests,investigationCalendar} from '../kpbl-investigation-policy.js';
 const browserImports=/^import\s+[^;]+;\s*$/gm;
 export function createOriginalEngineSandbox(appSource,saveState,{timeoutMs=15000}={}){
  if(typeof appSource!=='string'||!saveState||typeof saveState!=='object')throw Error('Source and detached state required');
@@ -21,8 +22,9 @@ export function createOriginalEngineSandbox(appSource,saveState,{timeoutMs=15000
   localStorage:undefined,indexedDB:undefined,
   cloudGate(){throw Error('Cloud login prohibited in engine sandbox')},
   cloudSave(){throw Error('Cloud save prohibited in engine sandbox')},
-  selectUnannouncedTests(){throw Error('Investigation policy adapter not yet installed')},
-  investigationCalendar(){throw Error('Investigation policy adapter not yet installed')}
+  // Use the production, pure KPBL policy functions. Selection is for testing only;
+  // the original engine still determines evidence, findings and discipline.
+  selectUnannouncedTests,investigationCalendar
  });
  vm.runInContext(source,context,{timeout:timeoutMs,filename:'original-app.js'});
  vm.runInContext('state = __detachedSave',Object.assign(context,{__detachedSave:detached}),{timeout:timeoutMs});
