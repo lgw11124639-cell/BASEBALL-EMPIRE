@@ -49,3 +49,11 @@ It blocks PUT/PATCH/DELETE through v2 saves for server-owned slots. The script
 verifies unauthorized requests, disabled engine requests and legacy write guards
 against in-memory SQLite. Other legacy endpoints and the production reverse proxy
 must be reviewed before activation. No live server files are changed.
+
+`verify-real-day-api.mjs server.local-backup/detached-real-save.json` checks the
+staged auth/store on an in-memory database seeded from the original detached
+pre-season save. It verifies every input field survives canonical packing and
+restoration, calls the authenticated original engine once, recreates auth objects
+and retries the same request, checks stale and legacy writes, and reads the
+existing home endpoint after the save. It never rewinds dates or opens the
+production database. Do not supply detached-2046-regular-complete.json to it.
