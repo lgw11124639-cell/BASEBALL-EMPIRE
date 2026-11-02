@@ -20380,6 +20380,8 @@ main.game-shell .record-room { padding: 26px !important; }
 #game-news-overlay.front-report-overlay table.front-report-table :is(th,td) { display:table-cell !important; white-space:normal !important; overflow-wrap:anywhere; }
 /* Headers and values use the same alignment for each semantic column. */
 #game-news-overlay.front-report-overlay table.front-report-table :is(th,td) { padding:12px 10px !important; vertical-align:middle !important; font-variant-numeric:tabular-nums; }
-#game-news-overlay.front-report-overlay table.front-report-table .front-col-label { text-align:left !important; }
-#game-news-overlay.front-report-overlay table.front-report-table .front-col-number { text-align:right !important; }
+#game-news-overlay.front-report-overlay table.front-report-table .front-col-label { text-align:center !important; }
+#game-news-overlay.front-report-overlay table.front-report-table .front-col-number { text-align:center !important; }
 #game-news-overlay.front-report-overlay table.front-report-table .front-col-center { text-align:center !important; }
+
+#game-news-overlay.front-report-overlay table.front-report-table :is(th,td) { border-left:1px solid #cddbd6 !important; border-right:1px solid #cddbd6 !important; text-align:center !important; }
