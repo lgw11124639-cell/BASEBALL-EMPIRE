@@ -20314,3 +20314,6 @@ main.game-shell .record-room { padding: 26px !important; }
 .be-preparation-status { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 14px; padding: 10px 14px; margin: 0 0 14px; border: 1px solid #d8e5eb; border-radius: 10px; background: #fff; color: #255066; font-size: 12px; }
 .be-preparation-status strong { font-size: 12px; }
 .be-preparation-status span { color: #708697; }
+
+.be-auto-progress { font-size: 11px; padding: 8px 10px; white-space: nowrap; }
+.be-auto-progress[hidden] { display: none !important; }
