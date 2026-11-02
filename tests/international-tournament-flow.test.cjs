@@ -15,7 +15,7 @@ const record={year:2028,event:'올림픽',finished:false,players:['1'],start:'20
 const state={day:0,players,teams:[{id:0}],nationalTeamResults:{'2028-올림픽':record}};
 let current=new Date(2028,7,1,12);
 const context=vm.createContext({
- state,seasonDate:()=>current,Date,Math,Map,Set,String,Number,
+ state,beInternationalNameScope:null,seasonDate:()=>current,Date,Math,Map,Set,String,Number,
  internationalGroupStandings:(r,i)=>r.groups[i].map(code=>({code})),
  internationalRivalResult:(year,event,round,home,away)=>({round,home,away,winner:home,homeRuns:4,awayRuns:1}),
  internationalOpeningGame:(year,event,roster,opponent)=>({homeRuns:3,awayRuns:1,opponent,homeBatters:[],homePitchers:[]}),
@@ -31,9 +31,9 @@ vm.runInContext(source.slice(calendarStart,calendarEnd)+source.slice(start,end),
 for(let day=1;day<=20;day++){
  current=new Date(2028,7,day,12);
  state.day=day;
- vm.runInContext('nationalTeamTournamentDay()',context);
+ vm.runInContext('nationalTeamTournamentDay()',context);assert.equal(context.beInternationalNameScope,null,'name scope released after each controller call');
  const count=record.matchResults.length+record.otherMatches.length;
- vm.runInContext('nationalTeamTournamentDay()',context);
+ vm.runInContext('nationalTeamTournamentDay()',context);assert.equal(context.beInternationalNameScope,null,'name scope released after each controller call');
  assert.equal(record.matchResults.length+record.otherMatches.length,count,'idempotent on day '+day);
  if(record.finished)break;
 }
