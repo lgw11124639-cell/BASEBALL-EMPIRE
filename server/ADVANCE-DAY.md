@@ -519,3 +519,25 @@ and the precompressed values against the original engine delta. The benchmark
 reports responseJsonBytes, compactFields, compactJsonBytes and preparedShardBytes
 in addition to wall time and RSS. Actual t3.medium 1-second performance remains
 unconfirmed until this version is measured.
+
+
+## v2.2.2 mobile bootstrap memory
+
+An iPhone reported a repeated page termination while opening/loading the game.
+The screenshot alone cannot prove an OS memory kill, but the existing bootstrap
+requested hundreds of MB of expanded world JSON and hydrated every archive.
+The new authenticated GET /v2/engine/snapshot reads canonical gzip shard bytes
+without hydrating the engine. Status advertises compressedSnapshot support.
+The client negotiates this only when supported; older APIs and legacy saves keep
+the existing path. The server update is required to activate the improvement.
+
+Native parts stay compressed in the browser. Descriptor-backed arrays and
+objects decode parts on access, with an LRU cache capped at four million decoded
+JSON characters (one oversized part may exceed that budget). This is a cache
+budget, not a total browser RAM guarantee. All historical records remain
+available. Wire copies preserve getters; advancing a day reads changed parts
+only, and reused roots retain their values without chaining prior whole worlds.
+Native boot skips legacy eager replay expansion. No save is trimmed or deleted.
+Tests cover full JSON parity, array indexing/iteration, exact incremental updates,
+a boot with zero decoded archive parts, session isolation and unchanged revision.
+Real iOS Safari memory and load time still require confirmation on the device.

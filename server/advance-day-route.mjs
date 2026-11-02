@@ -26,8 +26,12 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
   const path=(req.url||'').split('?')[0];
   const lifecycleType={'/v2/engine/new-game':'new-game','/v2/engine/reset':'reset','/v2/engine/restore':'restore'}[path];
   const receiptId=/^\/v2\/engine\/save-request\/([-a-zA-Z0-9_]{16,128})$/.exec(path)?.[1];
-  if(!receiptId&&!lifecycleType&&!['/v2/engine/advance','/v2/engine/status','/v2/engine/command'].includes(path))return false;
+  if(!receiptId&&!lifecycleType&&!['/v2/engine/snapshot','/v2/engine/advance','/v2/engine/status','/v2/engine/command'].includes(path))return false;
   if(!session||!Number.isSafeInteger(session.user_id)){response(res,401,{error:'unauthorized'},origin);return true}
+  if(path==='/v2/engine/snapshot'){
+   if(req.method!=='GET'){response(res,405,{error:'method not allowed'},origin);return true}
+   try{const snapshot=store.compressedSnapshot(session.user_id,'main');response(res,snapshot?200:404,snapshot||{error:'native snapshot unavailable'},origin)}catch{response(res,500,{error:'snapshot unavailable'},origin)}return true;
+  }
   if(receiptId){
    if(req.method!=='GET'){response(res,405,{error:'method not allowed'},origin);return true}
    const receipt=lifecycleReceipt.get(session.user_id,'main',receiptId);
@@ -40,7 +44,7 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
     const isEmpty=marker?JSON.parse(gunzipSync(marker.content,{maxOutputLength:1024}).toString('utf8'))===true:false;
     const currentMeta=store.metadata(session.user_id,'main');
     if(prepared&&currentMeta&&!isEmpty)prepared.ensure(session.user_id,'main',currentMeta.rev,currentMeta.digest);
-    response(res,200,{enabled,serverOwned:!!owner.get(session.user_id,'main'),revision:current?.rev??0,hasSave:!!current&&!isEmpty,canAdvance:enabled&&!!current&&!isEmpty,...(prepared?{preparation:prepared.status(session.user_id,'main',current?.rev??0)}:{})},origin);
+    response(res,200,{enabled,compressedSnapshot:true,serverOwned:!!owner.get(session.user_id,'main'),revision:current?.rev??0,hasSave:!!current&&!isEmpty,canAdvance:enabled&&!!current&&!isEmpty,...(prepared?{preparation:prepared.status(session.user_id,'main',current?.rev??0)}:{})},origin);
    }catch{response(res,500,{error:'server status unavailable'},origin)}
    return true;
   }

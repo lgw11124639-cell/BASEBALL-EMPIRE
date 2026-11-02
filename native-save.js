@@ -42,6 +42,7 @@ function partKeys(node){
 export function restoreNativeSave(input,{clone=false,previousWire=null,previousState=null,changedKeys=null}={}){
  const wire=clone?structuredClone(input):input,manifest=wire?.[NATIVE_SAVE_MANIFEST];
  if(manifest?.version!==1||!manifest.fields||typeof manifest.fields!=='object'||Array.isArray(manifest.fields))throw Error('Invalid server JSON manifest');
+ if(isLazyNativeWire(wire))return restoreLazyNative(wire,manifest,{previousWire,previousState,changedKeys});
  const state={...wire};delete state[NATIVE_SAVE_MANIFEST];
  for(const key of Object.keys(state))if(key.startsWith(PREFIX))delete state[key];
  for(const key of manifest.compatFields||[]){if(typeof key!=='string'||!/^beShard_teams_\d+$/.test(key))throw Error('Invalid compatibility field');delete state[key]}
@@ -98,4 +99,64 @@ export function applyNativeValuePatch(before,ops){
   else Object.defineProperty(parent,path.at(-1),{value,enumerable:true,writable:true,configurable:true});
  }
  return root;
+}
+
+const lazyWires=new WeakSet();
+export const isLazyNativeWire=wire=>!!wire&&lazyWires.has(wire);
+export function copyNativeWire(wire,set={},unset=[]){
+ const out=Object.defineProperties({},Object.getOwnPropertyDescriptors(wire));
+ for(const [key,value] of Object.entries(set))Object.defineProperty(out,key,{value,enumerable:true,writable:true,configurable:true});
+ for(const key of unset)delete out[key];if(isLazyNativeWire(wire))lazyWires.add(out);return out;
+}
+export function compressedNativeWire(encoded,{decode,maxChars=4000000,onDecode=()=>{}}){
+ if(typeof decode!=='function'||!isNativeSave(encoded))throw Error('Invalid compressed native snapshot');
+ const wire={},cache=new Map();let chars=0;
+ for(const key of Object.keys(encoded)){
+  if(unsafe(key))throw Error('Invalid compressed native field');
+  if(!key.startsWith(PREFIX)){wire[key]=encoded[key];continue}
+  const gzip=encoded[key],token={};if(typeof gzip!=='string')throw Error('Invalid compressed native part');
+  Object.defineProperty(wire,key,{enumerable:true,configurable:true,get(){
+   let entry=cache.get(token);if(entry){cache.delete(token);cache.set(token,entry);return entry.value}
+   const text=decode(gzip);entry={value:JSON.parse(text),chars:text.length};onDecode(key,text.length);
+   cache.set(token,entry);chars+=entry.chars;
+   while(chars>maxChars&&cache.size>1){const [id,old]=cache.entries().next().value;cache.delete(id);chars-=old.chars}
+   return entry.value;
+  }});
+ }
+ lazyWires.add(wire);return wire;
+}
+function restoreLazyNative(wire,manifest,{previousWire,previousState,changedKeys}){
+ const property=(object,key,get)=>Object.defineProperty(object,key,{enumerable:true,configurable:true,get,set(value){Object.defineProperty(this,key,{value,writable:true,enumerable:true,configurable:true})}});
+ const changed=changedKeys?new Set(changedKeys):null,state={};
+ for(const key of Object.keys(wire))if(key!==NATIVE_SAVE_MANIFEST&&!key.startsWith(PREFIX)&&!(manifest.compatFields||[]).includes(key))Object.defineProperty(state,key,Object.getOwnPropertyDescriptor(wire,key));
+ const reader=name=>{const d=Object.getOwnPropertyDescriptor(wire,name);if(!d||!name.startsWith(PREFIX))throw Error('Missing native part');return d.get?d.get:()=>d.value};
+ function build(node,root){
+  if(node.kind==='value')return ()=>node.value;
+  if(node.kind==='part')return reader(node.part);
+  if(node.kind==='object'){
+   const object={};for(const [key,child] of Object.entries(node.fields))property(object,key,build(child,root));return ()=>object;
+  }
+  if(!['array','map'].includes(node.kind)||!Number.isSafeInteger(node.length)||node.length<0||!Array.isArray(node.parts))throw Error('Invalid native descriptor');
+  const reads=node.parts.map(reader);
+  if(node.kind==='map'){
+   const object={};for(const read of reads){const rows=read();for(let i=0;i<rows.length;i++){const key=rows[i][0];property(object,key,()=>read()[i][1])}}return ()=>object;
+  }
+  const size=root==='gameResults'?1:64,target=new Array(node.length),deleted=new Set();
+  const index=key=>typeof key==='string'&&/^(0|[1-9][0-9]*)$/.test(key)?Number(key):null;
+  const value=i=>reads[Math.floor(i/size)]()[i%size];
+  const array=new Proxy(target,{
+   get(a,key,receiver){const i=index(key);return i!==null&&i<a.length&&i<node.length&&!Object.hasOwn(a,key)&&!deleted.has(i)?value(i):Reflect.get(a,key,receiver)},
+   has(a,key){const i=index(key);return i!==null&&i<a.length&&i<node.length&&!deleted.has(i)||Reflect.has(a,key)},
+   set(a,key,value){const i=index(key);if(i!==null)deleted.delete(i);return Reflect.set(a,key,value)},
+   deleteProperty(a,key){const i=index(key);if(i!==null)deleted.add(i);return Reflect.deleteProperty(a,key)},
+   ownKeys(a){return [...Array.from({length:Math.min(a.length,node.length)},(_,i)=>String(i)).filter(i=>!deleted.has(Number(i))),...Reflect.ownKeys(a).filter(key=>index(key)===null||Number(key)>=node.length)]},
+   getOwnPropertyDescriptor(a,key){const i=index(key);if(i!==null&&i<a.length&&i<node.length&&!deleted.has(i))return Object.getOwnPropertyDescriptor(a,key)||{value:value(i),writable:true,enumerable:true,configurable:true};return Reflect.getOwnPropertyDescriptor(a,key)}
+  });return ()=>array;
+ }
+ for(const [key,node] of Object.entries(manifest.fields)){
+  if(unsafe(key))throw Error('Invalid native root');const old=previousWire?.[NATIVE_SAVE_MANIFEST]?.fields?.[key];
+  const reused=changed&&previousState&&old&&JSON.stringify(old)===JSON.stringify(node)&&partKeys(node).every(name=>!changed.has(name));
+  if(reused){const prior=previousState[key];property(state,key,()=>prior)}else property(state,key,build(node,key));
+ }
+ return state;
 }

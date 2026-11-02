@@ -37,7 +37,7 @@ const assert=require('node:assert/strict');
  const {restoreServerSave}=await import('./save-wire-codec.mjs');
  const {packNativeSave}=await import('../native-save.js');
  const native=process.argv.includes('--native');
- const {gunzipSync}=require('node:zlib');
+ const {gzipSync,gunzipSync}=require('node:zlib');
  const server=createServer((req,res)=>{
   const name=decodeURIComponent(req.url.split('?')[0]).slice(1);
   if(!['index.html','server-game-preview.html','app.js','native-save.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js','ui.css','manifest.webmanifest','update.js','vendor/fflate/fflate-0.8.2.min.js'].includes(name)){res.writeHead(404);return res.end()}
@@ -61,7 +61,8 @@ const assert=require('node:assert/strict');
    if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,PUT,PATCH,DELETE','access-control-allow-headers':'authorization,content-type,if-match'}});
    let data;
    if(req.method()==='GET'&&path==='/v2/saves/main'){snapshotReads++;data={rev:revision,save:native?packNativeSave(fixture):fixture};}
-   else if(path==='/v2/engine/status')data={enabled:true,canAdvance:!fixture.beServerSlotEmpty,revision,serverOwned:false,preparation:{enabled:true,ready:Math.max(0,5-advances),horizon:366,working:true}};
+   else if(req.method()==='GET'&&path==='/v2/engine/snapshot'){snapshotReads++;const wire=packNativeSave(fixture);data={rev:revision,compressedNative:true,save:Object.fromEntries(Object.entries(wire).map(([key,value])=>[key,key.startsWith('beServerPart_')?gzipSync(JSON.stringify(value)).toString('base64'):value]))};}
+   else if(path==='/v2/engine/status')data={enabled:true,compressedSnapshot:native,canAdvance:!fixture.beServerSlotEmpty,revision,serverOwned:false,preparation:{enabled:true,ready:Math.max(0,5-advances),horizon:366,working:true}};
    else if(req.method()==='POST'&&['/v2/engine/new-game','/v2/engine/reset','/v2/engine/restore'].includes(path)){
     lifecycle++;const bytes=req.postDataBuffer(),body=JSON.parse((req.headers()['content-encoding']==='gzip'?gunzipSync(bytes):bytes).toString());
     const operation=path.split('/').at(-1);

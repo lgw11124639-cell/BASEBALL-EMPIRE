@@ -1,1 +1,1 @@
-{"version":"2.2.1","build":"20261102-prepared-compact14","notes":"사전 압축한 DB 저장 데이터와 세부 변경값 전송으로 하루 진행 요청 경량화"}
+{"version":"2.2.2","build":"20261102-mobile-lazy15","notes":"모바일 초기 로딩 시 압축 기록 지연 해제로 메모리 사용량 제한"}

@@ -1,4 +1,4 @@
-import {isNativeSave,restoreNativeSave,applyNativeValuePatch} from './native-save.js';
+import {isNativeSave,restoreNativeSave,applyNativeValuePatch,compressedNativeWire,copyNativeWire} from './native-save.js';
 import {createServerSaveClient} from './server-save-client.js';
 import {createServerDayClient} from './server-day-client.js';
 // Cloud-only save transport. Never persists game state to local storage.
@@ -919,7 +919,12 @@ window.beFetchServerHomeView=async function(){
  return Object.freeze({revision:payload.revision,year:payload.year,day:payload.day,teamId:payload.teamId,
   updatedAt:payload.updatedAt??null,team:Object.freeze({id:t.id,name:t.name,city:t.city??null,stadium:t.stadium??null,wins:t.wins??null,losses:t.losses??null,draws:t.draws??null,fans:t.fans??null}),readOnly:true});
 };
-async function snapshot(){try{return await call('/v2/saves/main?wireFormat=server-json-v1')}catch(e){if(e.status===404)return null;throw e}}
+async function snapshot(){
+ if(window.beServerGameCapability?.compressedSnapshot){
+  try{const result=await call('/v2/engine/snapshot');if(result.compressedNative){result.save=compressedNativeWire(result.save,{decode:encoded=>window.fflate.strFromU8(window.fflate.gunzipSync(Uint8Array.from(atob(encoded),c=>c.charCodeAt(0))))});return result}}catch(e){if(e.status!==404)throw e}
+ }
+ try{return await call('/v2/saves/main?wireFormat=server-json-v1')}catch(e){if(e.status===404)return null;throw e}
+}
 // Read-only verification against the actual server snapshot; never overwrites the running game.
 function canonicalCloudValue(value){
  return JSON.stringify(value,function(_key,v){
@@ -984,7 +989,7 @@ async function restoreServerWireChanges(wire,previous,decoded,delta){
  const restored=await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(partial)))))));
  return {...restored,...reused};
 }
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;const restored=s?.save&&!s.save.beServerSlotEmpty?await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(isNativeSave(s.save)?restoreNativeSave(s.save):structuredClone(s.save))))))):null;baseline={save:restored,revision:rev};return restored}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;const restored=s?.save&&!s.save.beServerSlotEmpty?(isNativeSave(s.save)?restoreNativeSave(s.save):await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(s.save)))))))):null;baseline={save:restored,revision:rev};return restored}
 // Read-only cloud consistency audit. Never overwrites game state or save revision.
 window.beAuditCloudConsistency=async function(){
  if(!token||!verified)throw Error('클라우드 로그인이 필요합니다');
@@ -1271,8 +1276,8 @@ async function configureOriginalServerScreen(){
   if(delta&&acknowledgedWireSave&&revision===beforeRevision&&delta.fromRevision===revision&&delta.toRevision===result.rev&&delta.set&&typeof delta.set==='object'&&!Array.isArray(delta.set)&&Array.isArray(delta.unset)){
    const forbidden=key=>['__proto__','constructor','prototype'].includes(key);
    if(Object.keys(delta.set).some(forbidden)||delta.unset.some(key=>typeof key!=='string'||forbidden(key)))throw Error('서버 변경 데이터 형식 오류');
-   const wire={...acknowledgedWireSave,...delta.set};
-   if(delta.patches){for(const [key,ops] of Object.entries(delta.patches)){if(forbidden(key)||!Object.hasOwn(acknowledgedWireSave,key)||!Array.isArray(ops))throw Error('서버 변경 데이터 형식 오류');wire[key]=applyNativeValuePatch(acknowledgedWireSave[key],ops);delta.set[key]=wire[key]}}
+   const wire=copyNativeWire(acknowledgedWireSave,delta.set);
+   if(delta.patches){for(const [key,ops] of Object.entries(delta.patches)){if(forbidden(key)||!Object.hasOwn(acknowledgedWireSave,key)||!Array.isArray(ops))throw Error('서버 변경 데이터 형식 오류');Object.defineProperty(wire,key,{value:applyNativeValuePatch(acknowledgedWireSave[key],ops),enumerable:true,writable:true,configurable:true});delta.set[key]=wire[key]}}
    for(const key of delta.unset)delete wire[key];
    next=await restoreServerWireChanges(wire,acknowledgedWireSave,baseline?.save,delta);
    revision=result.rev;verified=true;acknowledgedWireSave=wire;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;baseline={save:next,revision};
@@ -1304,8 +1309,8 @@ export async function cloudGate(onReady){
    if(signup){if(!/^[a-zA-Z0-9_]{4,24}$/.test(name.value.trim()))throw Error('아이디는 영문·숫자·밑줄 4~24자로 입력하세요');if(pass.value.length<12||pass.value.length>128)throw Error('비밀번호는 12~128자로 입력하세요');if(pass.value!==confirmPass.value)throw Error('비밀번호 확인이 일치하지 않습니다');r=await call('/v2/auth/register','POST',{username:name.value.trim(),password:pass.value});if(!r.token){r=await call('/v2/auth/login','POST',{username:name.value.trim(),password:pass.value})}}
    else r=await call('/v2/auth/login','POST',{username:name.value.trim(),password:pass.value});if(!r.token)throw Error('로그인 응답 오류');token=r.token;username=name.value.trim();remember()}
   pass.value='';confirmPass.value='';
-  let data=await check();
   await configureOriginalServerScreen();
+  let data=await check();
   if(Object.hasOwn(window,'beRecoveredServerSave')){data=window.beRecoveredServerSave;delete window.beRecoveredServerSave;}
   if(data&&(!Array.isArray(data.teams)||data.teams.length!==10||!Array.isArray(data.players)||data.schema!==1))throw Error('서버 저장 데이터 형식이 잘못됐습니다');
   await onReady(data);

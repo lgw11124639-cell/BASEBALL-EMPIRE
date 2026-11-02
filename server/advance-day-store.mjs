@@ -34,6 +34,14 @@ export function createAdvanceDayStore(db,shards){
  return {
   receipt,
   metadata(user,slot){return metadata.get(user,slot)||null},
+  compressedSnapshot(user,slot){
+   db.exec('SAVEPOINT be_mobile_read');try{
+    const m=metadata.get(user,slot);if(!m){db.exec('RELEASE be_mobile_read');return null}
+    const rows=fieldRows.all(user,slot);if(!rows.some(row=>row.field==='beServerNativeManifest')){db.exec('RELEASE be_mobile_read');return null}
+    const save={};for(const row of rows){if(['__proto__','constructor','prototype'].includes(row.field))throw Error('Invalid native field');save[row.field]=row.field.startsWith('beServerPart_')?Buffer.from(row.content).toString('base64'):JSON.parse(gunzipSync(row.content).toString())}
+    db.exec('RELEASE be_mobile_read');return {...m,save,compressedNative:true};
+   }catch(error){db.exec('ROLLBACK TO be_mobile_read');db.exec('RELEASE be_mobile_read');throw error}
+  },
   load(user,slot){
    db.exec('SAVEPOINT be_day_read');
    try{
