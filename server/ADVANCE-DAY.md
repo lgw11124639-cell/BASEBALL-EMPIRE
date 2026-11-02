@@ -73,3 +73,12 @@ Verification evidence from EC2: detached 2046 day 79 -> 80, five persisted regul
 season games with batter/pitcher boxes, duplicate retry at revision 2, stale
 revision rejection, existing home compatibility, and unchanged source file.
 This is a single-day fixture check; full production migration remains disabled.
+
+`verify-staged-http.mjs` copies the production HTTP entrypoint source to the
+private stage, then starts it as a separate child process on a disposable
+loopback port. DATA_DIR and SAVE_API_TOKEN are explicitly replaced with a private
+temporary test DB directory and a random dummy credential. It registers a test
+account in that DB, checks real HTTP preflight headers, session authentication,
+disabled engine routing and Origin rejection, then stops only its own child.
+It does not use PM2 or open the production DB. Test directories stay inside the
+ignored server.local-backup tree and contain no production save data.
