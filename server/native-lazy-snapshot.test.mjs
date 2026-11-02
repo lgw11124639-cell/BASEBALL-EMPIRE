@@ -33,9 +33,12 @@ test('roster and standings scans do not repeatedly inflate replay events after L
 });
 test('live player identity and local profile edits survive repeated directory scans and archive eviction',()=>{
  const original={players:Array.from({length:130},(_,id)=>({id,name:'p'+id,profile:{note:'details '.repeat(50)}})),gameResults:[{day:1,broadcastEvents:[{text:'replay '.repeat(100)}]}]};let reads=0;
- const state=restoreNativeSave(compressedNativeWire(encode(packNativeSave(original)),{decode:b=>gunzipSync(Buffer.from(b,'base64')).toString(),maxChars:1,onDecode:()=>reads++}));
+ const wire=compressedNativeWire(encode(packNativeSave(original)),{decode:b=>gunzipSync(Buffer.from(b,'base64')).toString(),maxChars:1,onDecode:()=>reads++}),state=restoreNativeSave(wire);
  const player=state.players[0];player.jerseyNumber=42;assert.equal(reads,3);
  assert.equal(state.gameResults[0].broadcastEvents.length,1);const before=reads;
  for(let screen=0;screen<50;screen++){assert.equal(state.players.find(p=>p.id===0),player);assert.equal(state.players.filter(p=>p.id<65).length,65)}
  assert.equal(reads,before,'opening player screens must not repeatedly inflate the player directory');assert.equal(state.players[0].jerseyNumber,42);
+ const part='beServerPart_players_0',updated=wire[part].map(p=>({...p,name:p.id===0?'Updated':p.name})),nextWire=copyNativeWire(wire,{[part]:updated});
+ const next=restoreNativeSave(nextWire,{previousWire:wire,previousState:state,changedKeys:[part]});
+ assert.equal(next.players[0].name,'Updated');assert.equal(next.players[129],state.players[129]);assert.equal(reads,before,'daily updates reuse unchanged player chunks without inflating them again');
 });

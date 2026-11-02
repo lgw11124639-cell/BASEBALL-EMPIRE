@@ -589,7 +589,8 @@ evicted earlier chunks. Player objects could also change identity and lose
 local display normalization. The player directory now materializes once on its
 first access per restored root, while large historical leagues and replays
 remain lazy. Its JSON contents are unchanged. This retains one directory rather
-than repeatedly allocating it; it does not expand historical world archives.
+than repeatedly allocating it; unchanged player chunks are reused across day
+updates rather than inflated again. It does not expand historical world archives.
 
 jerseyNumber also filtered and sorted the whole player array on every comparator
 call. Read-only browser mode now retains one assignment result per team and

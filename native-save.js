@@ -123,7 +123,7 @@ export function compressedNativeWire(encoded,{decode,maxChars=4000000,onDecode=(
    return entry.value;
   };
   let summary=null;
-  const read=key.startsWith(PREFIX+'gameResults_')?()=>{
+  const read=key.startsWith(PREFIX+'players_')?()=>{if(!summary)summary=load();return summary}:key.startsWith(PREFIX+'gameResults_')?()=>{
    if(summary)return summary;
    summary=load().map((game,i)=>{
     const view={};for(const field of Object.keys(game)){
