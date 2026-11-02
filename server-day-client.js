@@ -7,10 +7,12 @@ export function createServerDayClient({api,getSession,storage,fetchImpl=fetch,ti
  async function call(path,options,s){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
-   const response=await fetchImpl(api+path,{...options,headers:{Accept:'application/json',Authorization:'Bearer '+s.token,...options.headers},cache:'no-store',signal:controller.signal});
-   let data;try{data=await response.json()}catch{data=null}
+   const started=performance.now();const response=await fetchImpl(api+path,{...options,headers:{Accept:'application/json',Authorization:'Bearer '+s.token,...options.headers},cache:'no-store',signal:controller.signal});
+   const headersAt=performance.now();let data;try{data=await response.json()}catch{data=null}
    if(!response.ok){const error=Error(response.status===401?'게임에서 다시 로그인해 주세요.':response.status===409?'서버 상태가 변경됐습니다. 새로고침 후 진행 요청을 다시 확인해 주세요.':'서버 요청에 실패했습니다 (HTTP '+response.status+'). 같은 요청으로 다시 시도해 주세요.');error.status=response.status;error.code=data?.error;throw error}
    if(!data||typeof data!=='object')throw Error('서버 응답을 읽지 못했습니다. 같은 요청으로 다시 시도해 주세요.');
+   const httpTiming=response.headers?.get?.('server-timing');
+   if(httpTiming){const read=name=>{const match=new RegExp('(?:^|,)[ \t]*'+name+';dur=([0-9.]+)').exec(httpTiming);return Math.max(0,Number(match?.[1])||0)};data.httpTiming={serializeMs:read('be-json'),compressMs:read('be-gzip'),headersMs:headersAt-started,bodyMs:performance.now()-headersAt,jsonBytes:Math.max(0,Number(response.headers.get('x-be-json-bytes'))||0),transferBytes:Math.max(0,Number(response.headers.get('x-be-transfer-bytes'))||0)}}
    return data;
   }finally{clearTimeout(timer)}
  }

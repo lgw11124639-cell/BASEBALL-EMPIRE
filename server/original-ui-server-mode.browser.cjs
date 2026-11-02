@@ -43,6 +43,7 @@ const assert=require('node:assert/strict');
  const {restoreServerSave}=await import('./save-wire-codec.mjs');
  const {packNativeSave}=await import('../native-save.js');
  const native=process.argv.includes('--native');
+ const {compactNativeDelta}=await import('./compact-native-delta.mjs'),{nativeWireDelta}=await import('./native-save-codec.mjs');
  const {gzipSync,gunzipSync}=require('node:zlib');
  const server=createServer((req,res)=>{
   const name=decodeURIComponent(req.url.split('?')[0]).slice(1);
@@ -83,9 +84,9 @@ const assert=require('node:assert/strict');
     const changedPlayer=fixture.players.find(p=>String(p.id)===body.command.playerId);changedPlayer.profile=changedPlayer.profile||{};changedPlayer.profile.photoData=body.command.photo;
     revision++;data={request_id:body.requestId,rev:revision};
    }
-   else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;if(!fixturePath)fixture.gameResults.push({...fixture.gameResults[0],day:fixture.day,awayRuns:8,homeRuns:3});fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:native?packNativeSave(fixture):{day:fixture.day,gameResults:fixture.gameResults},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}};if(native&&data.wireDelta){delete data.wireDelta.set.day;data.wireDelta.patches={day:[['set',[],fixture.day]]}}}
+   else if(req.method()==='POST'&&path==='/v2/engine/advance'){const prior=native?packNativeSave(structuredClone(fixture)):null;advances++;if(native)fixture.players[0].hits=(fixture.players[0].hits||0)+1;if(!fixturePath)fixture.gameResults.push({...fixture.gameResults[0],day:fixture.day,awayRuns:8,homeRuns:3});fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:native?packNativeSave(fixture):{day:fixture.day,gameResults:fixture.gameResults},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}};if(native&&data.wireDelta){const compact=compactNativeDelta(nativeWireDelta(prior,packNativeSave(fixture)),key=>Object.hasOwn(prior,key)?gzipSync(JSON.stringify(prior[key])):null);data.wireDelta={fromRevision:revision-1,toRevision:revision,set:compact.set,patches:compact.patches,unset:compact.unset};data.day.timing.responseDelta=compact.metrics}}
    else{writes++;return route.fulfill({status:500,headers:{'access-control-allow-origin':'*'},body:'{}'})}
-   return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(data)});
+   const json=JSON.stringify(data);return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-expose-headers':'Server-Timing, X-BE-JSON-Bytes, X-BE-Transfer-Bytes','server-timing':'be-json;dur=2.00, be-gzip;dur=1.00','x-be-json-bytes':String(Buffer.byteLength(json)),'x-be-transfer-bytes':String(Buffer.byteLength(json))},body:json});
   });
   async function assertAutoReading(){
   const autoStart=advances;
@@ -198,7 +199,7 @@ const assert=require('node:assert/strict');
   assert.notEqual(await page.locator('.header-season').textContent(),priorDate);
   assert.equal(snapshotReads,readsBeforeDay,'day response avoids a full save download');
   assert.equal(await page.locator('.be-server-day-timing').count(),1);
-  assert.equal(await page.evaluate(()=>window.beLastServerDayTiming.incremental),true);
+  assert.equal(await page.evaluate(()=>window.beLastServerDayTiming.incremental),true);assert.equal(await page.evaluate(()=>window.beLastServerDayTiming.http.serializeMs),2);if(native)assert.ok(await page.evaluate(()=>window.beLastServerDayTiming.server.responseDelta.patchFields>0),'real compact player-part patches applied');
   assert.equal(advances,1);assert.equal(revision,3);assert.equal(writes,0);
   if(!fixturePath){const today=page.locator('.be-calendar-match-list .be-today-match').filter({hasText:'원정 선발'}).first();await today.waitFor();assert.ok((await today.textContent()).includes('8 : 3'));assert.equal(await today.getByRole('button',{name:'경기 다시보기',exact:true}).count(),1);assert.equal(await today.getByRole('button',{name:'경기 기사',exact:true}).count(),1);assert.equal(await page.locator('.be-cal-day.is-today.is-selected').count(),1);}
   const readsBeforeFallback=snapshotReads;

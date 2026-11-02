@@ -87,6 +87,10 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
      codec.release();outcome.runtime?.park(normalizedState);preparedCache={state:normalizedState,wire:normalized,codec,fieldHashes:delta.fieldHashes,runtime:outcome.runtime};
     }
     mark('cacheMs');
+    failurePhase='response-delta';
+    const compact=nativeWire&&compactWire&&includeDelta&&store.compactDelta?store.compactDelta(userId,slot,expectedRev,delta,preparedCache?.wire):null;
+    if(compact)timing.responseDelta=compact.metrics;
+    mark('wireMs');
     const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};
     failurePhase='commit';const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,serializedDelta:delta.serializedSet,result:{...outcome.result,requestFingerprint,timing}}));
     if(response.status===200&&!response.replayed){
@@ -95,7 +99,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
      else stateCache?.put({user:userId,slot,rev:response.rev,digest:response.digest,state:native?undefined:outcome.state,wire:native?Object.fromEntries(Object.keys(wire).map(key=>[key,null])):wire,codec,fieldHashes:delta.fieldHashes,serializedFields:delta.serializedFields});
     }
     if(response.status===200&&performance.now()-started>2000)console.info(JSON.stringify({stage:'server-day-performance',...response.day?.timing,enginePhases:response.day?.enginePhases||null}));
-    if(response.status===200&&!response.replayed&&includeDelta)return {...response,wireDelta:{fromRevision:expectedRev,toRevision:response.rev,set:delta.set,unset:delta.unset}};
+    if(response.status===200&&!response.replayed&&includeDelta)return {...response,wireDelta:{fromRevision:expectedRev,toRevision:response.rev,set:compact?.set||delta.set,unset:delta.unset,...(compact?{patches:compact.patches}:{})}};
     return response;
    }catch(error){
     // No save or receipt is committed for decoding, engine or persistence errors.

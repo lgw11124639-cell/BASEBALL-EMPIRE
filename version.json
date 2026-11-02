@@ -1,1 +1,1 @@
-{"version":"2.2.11","build":"20261102-lineup-selection24","notes":"타순·수비 배치 메모와 경로 복원 비용 절감"}
+{"version":"2.2.12","build":"20261102-demand-wire25","notes":"요청 시 계산 응답을 속성 변경으로 축소하고 응답 생성·압축 시간 표시"}

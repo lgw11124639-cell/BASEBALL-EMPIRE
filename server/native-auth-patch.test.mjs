@@ -11,13 +11,13 @@ const original=`  const response=(res,status,obj,origin)=>{res.end(JSON.stringif
 async function get(req,shards,session,slot){const item=shards.get(session.user_id,slot);return item;}`;
 const patched=vm.runInNewContext('let source='+JSON.stringify(original)+';'+patch+';source');
 test('actual staged response patch negotiates HTTP gzip and respects q=0',()=>{
- const response=vm.runInNewContext(patched.replace(/^import .*\n/, '')+';response',{beHttpGzipSync:gzipSync,Buffer});
+ const response=vm.runInNewContext(patched.replace(/^import .*\n/, '')+';response',{beHttpGzipSync:gzipSync,Buffer,performance});
  for(const encoding of ['br, gzip','gzip;q=0','br','gzip;q=0.5']){
   let headers,body;const res={req:{headers:{'accept-encoding':encoding}},writeHead(s,h){assert.equal(s,200);headers=h},end(b){body=b}};
   const data={text:'x'.repeat(20000)};response(res,200,data,'https://example.test');
   const compressed=['br, gzip','gzip;q=0.5'].includes(encoding);
   assert.equal(headers['content-encoding'],compressed?'gzip':undefined);
-  assert.deepEqual(JSON.parse(compressed?gunzipSync(body):body),data);
+  assert.deepEqual(JSON.parse(compressed?gunzipSync(body):body),data);assert.match(headers['server-timing'],/be-json;dur=[0-9.]+, be-gzip;dur=[0-9.]+/);assert.equal(headers['x-be-transfer-bytes'],Buffer.byteLength(body));assert.equal(headers['x-be-json-bytes'],Buffer.byteLength(JSON.stringify(data)));
  }
 });
 test('actual staged GET patch serves native JSON to new clients and a lossless legacy view to old clients',async()=>{
@@ -35,4 +35,8 @@ test('preparation gate patch is explicit, idempotent and rejects unknown auth fa
  const patch=input=>vm.runInNewContext('let source='+JSON.stringify(input)+';'+part+';source');
  const before="const handleAdvance=createAdvanceDayRoute({enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'});";
  const once=patch(before);assert.ok(once.includes("precompute:process.env.BE_SERVER_PRECOMPUTE==='1'"));assert.equal(patch(once),once);assert.throws(()=>patch('unknown factory'),/Unexpected engine factory/);
+});
+
+test('HTTP timing upgrade is idempotent on the previously installed gzip helper',()=>{
+ const again=vm.runInNewContext('let source='+JSON.stringify(patched)+';'+patch+';source');assert.equal(again,patched);
 });

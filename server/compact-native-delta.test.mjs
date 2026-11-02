@@ -1,0 +1,25 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {gzipSync} from 'node:zlib';import {DatabaseSync} from 'node:sqlite';
+import {compactNativeDelta} from './compact-native-delta.mjs';import {createNativeSaveCodec,nativeWireDelta} from './native-save-codec.mjs';import {applyNativeValuePatch} from '../native-save.js';import {createAdvanceDayStore} from './advance-day-store.mjs';import {createAdvanceDayService} from './advance-day-service.mjs';import {createDecodedDayCache} from './decoded-day-cache.mjs';
+const apply=(before,delta)=>{const next={...before,...delta.set};for(const [key,ops] of Object.entries(delta.patches||{}))next[key]=applyNativeValuePatch(before[key],ops);for(const key of delta.unset)delete next[key];return next};
+test('compact delta reconstructs exact JSON including deletes, lengths, null normalization and dense fallbacks',()=>{
+ const before={beServerPart_sparse:Array.from({length:40},(_,id)=>({id,padding:'보존'.repeat(100),hits:0,remove:true})),beServerPart_dense:Array(1000).fill(1),beServerPart_missing:[],day:1};
+ const next=structuredClone(before);next.beServerPart_sparse[0].hits=1;delete next.beServerPart_sparse[1].remove;next.beServerPart_sparse[2].omitted=undefined;next.beServerPart_sparse[3].hits=NaN;next.beServerPart_sparse.pop();next.beServerPart_dense.fill(2);next.day=2;
+ const delta=nativeWireDelta(before,next),result=compactNativeDelta(delta,key=>before[key]?gzipSync(JSON.stringify(before[key])):null);
+ assert.ok(result.patches.beServerPart_sparse);assert.ok(result.set.beServerPart_dense);assert.deepEqual(JSON.parse(JSON.stringify(apply(before,result))),JSON.parse(JSON.stringify(next)));assert.ok(result.metrics.compactBytes<result.metrics.fullBytes);
+ const unsafeBefore=JSON.parse('{"beServerPart_unsafe":{"__proto__":{"x":1},"padding":"'+ 'x'.repeat(3000)+'"}}'),unsafeAfter=structuredClone(unsafeBefore);unsafeAfter.beServerPart_unsafe.__proto__.x=2;
+ assert.equal(Object.keys(compactNativeDelta(nativeWireDelta(unsafeBefore,unsafeAfter),key=>gzipSync(JSON.stringify(unsafeBefore[key]))).patches).length,0);
+});
+test('on-demand patches use committed DB bytes despite in-place baseline mutations, and retain atomic retries and owner isolation',async()=>{
+ const db=new DatabaseSync(':memory:');db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,updated_at TEXT,digest TEXT,compressed_bytes INTEGER,PRIMARY KEY(user_id,slot));CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field))');
+ const seed={year:2046,day:270,players:Array.from({length:100},(_,id)=>({id,hits:0,padding:'preserved'.repeat(500)})),teams:[],gameResults:[],history:{seasons:{2045:{complete:true,custom:'retained'}}}},wire=await createNativeSaveCodec().pack(seed);
+ for(const user of [1,2]){let bytes=0;for(const [key,value] of Object.entries(wire)){const content=gzipSync(JSON.stringify(value));bytes+=content.length;db.prepare("INSERT INTO be_save_shards VALUES(?,'main',?,?)").run(user,key,content)}db.prepare("INSERT INTO be_save_shard_meta VALUES(?,'main',1,'now',?,?)").run(user,'owner-'+user,bytes)}
+ const store=createAdvanceDayStore(db,{}),cache=createDecodedDayCache();let calls=0;
+ const advance=createAdvanceDayService({store,stateCache:cache,restoreSave(){throw Error('native only')},ownsRestoredState:true,includeDelta:true,runDay(state){calls++;state.day++;state.players[0].hits++;return {state,result:{from:{year:2046,day:state.day-1},to:{year:2046,day:state.day}}}}});
+ const options=rev=>({userId:1,expectedRev:rev,requestId:'compact-advance-'+String(rev).padStart(3,'0'),nativeWire:true,compactWire:true});let previous=JSON.parse(JSON.stringify(wire));
+ try{
+  for(const rev of [1,2]){const response=await advance(options(rev));assert.equal(response.status,200);assert.ok(response.day.timing.responseDelta.patchFields>0);assert.ok(response.day.timing.responseDelta.compactBytes<response.day.timing.responseDelta.fullBytes*.2);previous=apply(previous,JSON.parse(JSON.stringify(response.wireDelta)));assert.deepEqual(previous,JSON.parse(JSON.stringify(store.load(1,'main').save)));assert.equal((await advance(options(rev))).replayed,true)}
+  assert.equal(calls,2);assert.equal(store.load(2,'main').save.day,270);assert.equal(store.compactDelta(1,'main',1,nativeWireDelta({},wire)),null);
+  db.exec("CREATE TRIGGER fail_compact_receipt BEFORE INSERT ON be_day_requests BEGIN SELECT RAISE(ABORT,'controlled receipt failure'); END");assert.equal((await advance(options(3))).status,500);assert.equal(store.metadata(1,'main').rev,3);db.exec('DROP TRIGGER fail_compact_receipt');
+  const retry=await advance(options(3));assert.equal(retry.status,200);previous=apply(previous,JSON.parse(JSON.stringify(retry.wireDelta)));assert.deepEqual(previous,JSON.parse(JSON.stringify(store.load(1,'main').save)));assert.equal(calls,4);
+ }finally{cache.clear();db.close()}
+});

@@ -43,3 +43,8 @@ test('HTTP failure status is visible even for a non-JSON proxy error and retry k
  const client=createServerDayClient({api:'https://example.test',getSession:()=>session,storage:saved,newId:()=> 'client-http-error-001',fetchImpl:async(url,init)=>{calls.push(init);if(fail)return {ok:false,status:502,json:async()=>{throw Error('HTML proxy error')}};return ok(JSON.parse(init.body).requestId,2)}});
  await assert.rejects(client.advance(1),/HTTP 502/);assert.equal(client.hasPending(),true);fail=false;await client.advance(1);assert.equal(calls[0].body,calls[1].body);assert.equal(client.hasPending(),false);
 });
+
+test('client records exposed response timing and byte counts without changing retry metadata',async()=>{
+ const client=createServerDayClient({api:'https://example.test',getSession:()=>session,storage:storage(),newId:()=> 'timed-request-0001',fetchImpl:async()=>({...ok('timed-request-0001',2),headers:new Headers({'server-timing':'be-json;dur=12.50, be-gzip;dur=4.25','x-be-json-bytes':'50000','x-be-transfer-bytes':'3000'})})});
+ const result=await client.advance(1);assert.equal(result.httpTiming.serializeMs,12.5);assert.equal(result.httpTiming.compressMs,4.25);assert.equal(result.httpTiming.jsonBytes,50000);assert.equal(result.httpTiming.transferBytes,3000);assert.ok(result.httpTiming.bodyMs>=0);assert.equal(client.hasPending(),false);
+});

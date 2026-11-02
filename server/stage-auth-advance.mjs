@@ -56,6 +56,19 @@ if(!source.includes('beHttpGzipResponse')){
     res.end(beHttpGzipResponse?beHttpGzipSync(Buffer.from(json),{level:1}):json);
   };`+source.slice(end);
 }
+// Upgrade our existing gzip helper idempotently; expose the response work that
+// happens after the durable day receipt, without changing the receipt itself.
+if(!source.includes('beHttpResponseTiming')){
+ const begin=source.indexOf('  const response=(res,status,obj,origin)=>{'),end=source.indexOf('\n  };',begin);
+ if(begin<0||end<0)throw Error('Unexpected gzip response helper; cannot add timing');
+ let helper=source.slice(begin,end);
+ const raw='const json=JSON.stringify(obj);',finish='res.end(beHttpGzipResponse?beHttpGzipSync(Buffer.from(json),{level:1}):json);';
+ if(helper.split(raw).length!==2||helper.split(finish).length!==2)throw Error('Unknown JSON response implementation');
+ helper=helper.replace(raw,'const beHttpResponseTiming=performance.now();const json=JSON.stringify(obj);const jsonMs=performance.now()-beHttpResponseTiming;');
+ helper=helper.replace('res.writeHead(status,{',`const zipStart=performance.now(),encoded=beHttpGzipResponse?beHttpGzipSync(Buffer.from(json),{level:1}):json,zipMs=performance.now()-zipStart;
+    res.writeHead(status,{'server-timing':'be-json;dur='+jsonMs.toFixed(2)+', be-gzip;dur='+zipMs.toFixed(2),'x-be-json-bytes':Buffer.byteLength(json),'x-be-transfer-bytes':Buffer.byteLength(encoded),'access-control-expose-headers':'Server-Timing, X-BE-JSON-Bytes, X-BE-Transfer-Bytes',`);
+ helper=helper.replace(finish,'res.end(encoded);');source=source.slice(0,begin)+helper+source.slice(end);
+}
 // Copy only referenced source modules, recursively, leaving the verified store intact.
 const copied=new Set(['shard-store.mjs']);
 function dependencies(text,base=api){

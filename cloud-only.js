@@ -1279,7 +1279,7 @@ async function configureOriginalServerScreen(){
    window.beServerGameCapability={...window.beServerGameCapability,revision,hasSave:true,canAdvance:true};incremental=true;
   }else next=await window.beReloadServerGame();
 
-  window.beLastServerDayTiming={totalMs:performance.now()-started,responseMs:responseAt-started,refreshMs:performance.now()-responseAt,incremental,server:result.day?.timing||null,enginePhases:result.day?.enginePhases||null};
+  window.beLastServerDayTiming={totalMs:performance.now()-started,responseMs:responseAt-started,refreshMs:performance.now()-responseAt,incremental,server:result.day?.timing||null,http:result.httpTiming||null,enginePhases:result.day?.enginePhases||null};
   return next;
  };
 }

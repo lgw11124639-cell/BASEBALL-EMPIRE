@@ -71,11 +71,14 @@ export function restoreNativeSave(input,{clone=false,previousWire=null,previousS
 
 // Sparse field changes retain historical rows on the client. Applied only to an
 // exact acknowledged revision; copy each affected container once.
-export function diffNativeValue(before,after){
+export function diffNativeValue(before,after,{json=false}={}){
  const ops=[];
  function walk(a,b,path){
   if(Object.is(a,b))return;
   if(!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b)){ops.push(['set',path,b]);return}
+  // Only normalized JSON callers may compare serialized subtrees. This skips
+  // unchanged long histories without allocating a path for every old record.
+  if(json&&path.length&&(Array.isArray(b)?b.length>=8:Object.keys(b).length>=8)&&JSON.stringify(a)===JSON.stringify(b))return;
   if(Array.isArray(b)){
    for(let i=0;i<b.length;i++){if(i>=a.length)ops.push(['set',[...path,i],b[i]]);else walk(a[i],b[i],[...path,i])}
    if(b.length<a.length)ops.push(['length',path,b.length]);return;

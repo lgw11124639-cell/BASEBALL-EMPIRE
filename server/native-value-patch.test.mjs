@@ -11,3 +11,8 @@ test('patch application rejects prototype paths, missing parents and invalid len
  for(const ops of [[['set',['__proto__','bad'],1]],[['set',['constructor'],1]],[['set',['missing','child'],1]],[['length',[],100]]])assert.throws(()=>applyNativeValuePatch({},ops));
  assert.equal({}.bad,undefined);
 });
+test('normalized JSON subtree shortcut preserves the exact sparse operations',()=>{
+ const before={players:Array.from({length:100},(_,id)=>({id,hits:0,history:Array.from({length:32},(_,year)=>({year:2027+year,hits:(id+year)%150,innings:(id*3+year)%170}))}))},after=structuredClone(before);
+ for(let i=0;i<100;i+=5)after.players[i].hits++;after.players[9].history[2].hits++;delete after.players[10].history[0].innings;after.players.push({id:101,hits:1,history:[]});
+ const original=diffNativeValue(before,after),fast=diffNativeValue(before,after,{json:true});assert.deepEqual(fast,original);assert.deepEqual(applyNativeValuePatch(before,fast),after);
+});

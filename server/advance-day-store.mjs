@@ -1,4 +1,5 @@
 import {gzipSync,gunzipSync} from 'node:zlib';
+import {compactNativeDelta} from './compact-native-delta.mjs';
 import {createHash} from 'node:crypto';
 import {nativeDeltaDigest} from './native-save-codec.mjs';
 // Requires a SAVEPOINT-compatible shard store on the same SQLite connection.
@@ -16,6 +17,7 @@ export function createAdvanceDayStore(db,shards){
  const fieldRows=db.prepare('SELECT field,content FROM be_save_shards WHERE user_id=? AND slot=? ORDER BY rowid');
  const nativeUpsert=db.prepare('INSERT INTO be_save_shards(user_id,slot,field,content) VALUES(?,?,?,?) ON CONFLICT(user_id,slot,field) DO UPDATE SET content=excluded.content');
  const nativeRemove=db.prepare('DELETE FROM be_save_shards WHERE user_id=? AND slot=? AND field=?');
+ const fieldContent=db.prepare('SELECT content FROM be_save_shards WHERE user_id=? AND slot=? AND field=?');
  const fieldSize=db.prepare('SELECT length(content) AS bytes FROM be_save_shards WHERE user_id=? AND slot=? AND field=?');
  const nativeMeta=db.prepare('UPDATE be_save_shard_meta SET rev=?,updated_at=?,digest=?,compressed_bytes=? WHERE user_id=? AND slot=?');
  function patchSerialized(user,slot,expected,set,unset,preparedDelta=null){
@@ -33,6 +35,10 @@ export function createAdvanceDayStore(db,shards){
  }
  return {
   receipt,
+  compactDelta(user,slot,expectedRev,delta,normalizedNext=null){
+   if(rev.get(user,slot)?.rev!==expectedRev)return null;
+   return compactNativeDelta(delta,key=>fieldContent.get(user,slot,key)?.content,normalizedNext);
+  },
   metadata(user,slot){return metadata.get(user,slot)||null},
   compressedSnapshot(user,slot){
    db.exec('SAVEPOINT be_mobile_read');try{
