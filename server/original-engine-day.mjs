@@ -18,7 +18,7 @@ export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={},{takeO
  if(readArchive)sandbox.context.window.beEngineReadArchive=readArchive;
  sandbox.context.__enginePhaseTimes={'엔진 준비':performance.now()-setupStarted};
  sandbox.invoke(`(()=>{
-  for(const name of ['simulateLeagueDay','offseasonDay','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','minorLeagueDay','nationalTeamPreparationDay','nationalTeamTournamentDay','runOffseasonContracts','beginNextSeason','validateSeasonIntegrity','saveSeasonSnapshot','finalizeAwards','seasonPositionAppearanceIndex','rookieSeasonHistoryIndex','awardCandidates']){
+  for(const name of ['simulateLeagueDay','offseasonDay','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','minorLeagueDay','nationalTeamPreparationDay','nationalTeamTournamentDay','runOffseasonContracts','beginNextSeason','validateSeasonIntegrity','saveSeasonSnapshot','finalizeAwards','seasonPositionAppearanceIndex','rookieSeasonHistoryIndex','awardCandidates','internationalOpponentRoster','internationalSharedGame','postseasonDay']){
    const found=eval('typeof '+name+'==="function"?'+name+':null');if(!found)continue;const original=found.__beEngineOriginal||found;
    const wrapped=function(...args){const started=performance.now();try{return original.apply(this,args)}finally{__enginePhaseTimes[name]=(__enginePhaseTimes[name]||0)+performance.now()-started}};
    wrapped.__beEngineOriginal=original;eval(name+' = wrapped');

@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {packNativeSave,restoreNativeSave,isNativeSave,NATIVE_SAVE_MANIFEST} from '../native-save.js';
 import {createSaveWireCodec} from './save-wire-codec.mjs';
 export function createNativeSaveCodec(){
- let legacy=null,tracking=null,baseline=null,refs=null,reusedFields=new Set();
+ let legacy=null,tracking=null,baseline=null,refs=null,reusedFields=new Set(),appendStarts=new Map();
  return {
   mode:'server-json-v1',
   track(state,wire){
@@ -19,13 +19,14 @@ export function createNativeSaveCodec(){
    return tracking;
   },
   reusedFields(){return reusedFields},
-  release(){legacy=null;tracking=null;baseline=null;refs=null;reusedFields=new Set()},
+  appendStarts(){return appendStarts},
+  release(){legacy=null;tracking=null;baseline=null;refs=null;reusedFields=new Set();appendStarts=new Map()},
   async restore(wire,{takeOwnership=false}={}){
    if(isNativeSave(wire))return restoreNativeSave(wire,{clone:!takeOwnership});
    legacy=createSaveWireCodec();return legacy.restore(wire);
   },
   async pack(state){
-   reusedFields=new Set();
+   reusedFields=new Set();appendStarts=new Map();
    if(tracking){if(state===tracking.state)state=tracking.finish();else{tracking.finish();state=tracking.clone(state)}}
    const wire=packNativeSave(state,{reuseNode:tracking?(value,path)=>{
     if(tracking.isDirty(value,path)||refs.get(JSON.stringify(path))!==tracking.raw(value))return null;
@@ -44,7 +45,12 @@ export function createNativeSaveCodec(){
      return false;
     };
     const unchanged=Array.isArray(value)&&Array.isArray(previous)?value.length===previous.length&&value.every((row,i)=>equal(row,previous[i])):equal(value,previous);
-    if(!unchanged)return null;reusedFields.add(name);return {value:previous};
+    if(!unchanged){
+     // Only tracked, unchanged prefix rows prove a lossless append. Comparing
+     // the mutable world by value or identity alone would miss earlier edits.
+     if(Array.isArray(value)&&Array.isArray(previous)&&value.length>previous.length&&previous.every((row,i)=>equal(row,value[i])))appendStarts.set(name,previous.length);
+     return null;
+    }reusedFields.add(name);return {value:previous};
    }:null});
    // Ten tiny compatibility views keep the installed mobile-home projection
    // readable. All large state and replay parts use plain JSON directly.
@@ -75,4 +81,13 @@ export function nativeDeltaDigest(previousDigest,nextRevision,set,unset){
  for(const key of [...unset].sort()){if(['__proto__','constructor','prototype'].includes(key))throw Error('Invalid field');digest.update('DELETE');digest.update(key)}
  for(const key of [...set.keys()].sort()){if(['__proto__','constructor','prototype'].includes(key))throw Error('Invalid field');digest.update('SET');digest.update(key);digest.update(set.get(key))}
  return digest.digest('hex');
+}
+
+// Prefix rows are already canonical JSON and proven clean by this codec's
+// write tracker. Only the newly appended rows need normalization again.
+export function normalizeNativeWire(previous,wire,delta,appendStarts=new Map()){
+ const normalized={...wire};for(const [key,raw] of delta.serializedFields){
+  const start=appendStarts.get(key);
+  normalized[key]=start!==undefined?previous[key].concat(JSON.parse(JSON.stringify(wire[key].slice(start)))):JSON.parse(raw);
+ }return normalized;
 }

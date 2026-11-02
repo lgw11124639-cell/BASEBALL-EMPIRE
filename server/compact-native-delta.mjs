@@ -3,11 +3,18 @@ import {diffNativeValue} from '../native-save.js';
 const unsafe=key=>['__proto__','constructor','prototype'].includes(String(key));
 // Read old values from immutable committed shard bytes, never the engine's
 // in-place world. A matching revision is checked by the store before calling.
-export function compactNativeDelta(delta,readField,normalizedNext=null){
- const set=Object.create(null),patches=Object.create(null);let fullBytes=0,compactBytes=0,visitedBytes=0;
+export function compactNativeDelta(delta,readField,normalizedNext=null,appendStarts=null){
+ const set=Object.create(null),patches=Object.create(null),largest=[];let fullBytes=0,compactBytes=0,visitedBytes=0;
  for(const [key,raw] of delta.serializedSet){
-  const bytes=Buffer.byteLength(raw);fullBytes+=bytes;
+  const bytes=Buffer.byteLength(raw);fullBytes+=bytes;largest.push({field:key,bytes});
   const fallback=()=>{set[key]=delta.set[key];compactBytes+=bytes};
+  // The codec proves old replay rows were untouched. Send just newly appended
+  // rows even when a legacy 64-game shard exceeds the generic diff budget.
+  const start=appendStarts?.get(key),after=normalizedNext?.[key];
+  if(Number.isSafeInteger(start)&&start>=0&&Array.isArray(after)&&after.length>start){
+   const ops=after.slice(start).map((row,i)=>['set',[start+i],row]),patchBytes=Buffer.byteLength(JSON.stringify(ops));
+   if(patchBytes<bytes*.70){patches[key]=ops;compactBytes+=patchBytes;continue}
+  }
   // Bound work on dense/very large fields and leave tiny scalar fields alone.
   if(!key.startsWith('beServerPart_')||bytes<2048||bytes>1048576||visitedBytes+bytes>16777216){fallback();continue}
   const old=readField(key);if(!old){fallback();continue}visitedBytes+=bytes;
@@ -19,5 +26,5 @@ export function compactNativeDelta(delta,readField,normalizedNext=null){
   if(patchBytes<bytes*.70){patches[key]=ops;compactBytes+=patchBytes}else fallback();
   }catch{visitedBytes=16777216;fallback()}
  }
- return {set,patches,unset:delta.unset,metrics:{fullBytes,compactBytes,patchFields:Object.keys(patches).length}};
+ return {set,patches,unset:delta.unset,metrics:{fullBytes,compactBytes,patchFields:Object.keys(patches).length,largest:largest.sort((a,b)=>b.bytes-a.bytes).slice(0,4)}};
 }

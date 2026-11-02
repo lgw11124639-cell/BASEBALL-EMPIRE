@@ -27,3 +27,12 @@ test('native incremental updates reuse unchanged histories and remove obsolete p
  const broken=structuredClone(wire);delete broken[wire[NATIVE_SAVE_MANIFEST].fields.players.parts[0]];
  assert.throws(()=>restoreNativeSave(broken),/Missing/);
 });
+test('append proof requires untouched canonical archive rows, and rejects in-place edits to an old row',async()=>{
+ const seed=()=>({year:2046,day:280,players:[],teams:[],gameResults:[],nationalTeamResults:{event:{matchResults:[{id:1,score:0,replay:'past'.repeat(1000)},{id:2,score:1,replay:'past'.repeat(1000)}]}}});
+ for(const editOld of [false,true]){
+  const codec=createNativeSaveCodec(),wire=JSON.parse(JSON.stringify(await codec.pack(seed()))),state=await codec.restore(wire,{takeOwnership:true});codec.track(state,wire);
+  if(editOld)state.nationalTeamResults.event.matchResults[0].score=2;
+  state.nationalTeamResults.event.matchResults.push({id:3,score:NaN,omitted:undefined});const packed=await codec.pack(state);
+  const key='beServerPart_nationalTeamResults_event_matchResults_0';assert.equal(codec.appendStarts().get(key),editOld?undefined:2);const {normalizeNativeWire}=await import('./native-save-codec.mjs'),normalized=normalizeNativeWire(wire,packed,nativeWireDelta(wire,packed),codec.appendStarts());assert.deepEqual(normalized,JSON.parse(JSON.stringify(packed)));assert.equal(normalized[key][0]===wire[key][0],!editOld);codec.release();assert.equal(codec.appendStarts().size,0);
+ }
+});

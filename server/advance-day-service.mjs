@@ -1,5 +1,5 @@
 import {isNativeSave,restoreNativeSave} from '../native-save.js';
-import {createNativeSaveCodec,nativeWireDelta,nativeDeltaDigest} from './native-save-codec.mjs';
+import {createNativeSaveCodec,nativeWireDelta,nativeDeltaDigest,normalizeNativeWire} from './native-save-codec.mjs';
 import {buildWireDelta} from './wire-delta.mjs';
 import {runOriginalEngineDay} from './original-engine-day.mjs';
 // userId must come from the existing authenticated session, never the body.
@@ -78,17 +78,18 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     failurePhase='compare';const delta=native?nativeWireDelta(snapshot.save,wire,snapshot.fieldHashes,codec.reusedFields()):buildWireDelta(snapshot.save,wire);mark('deltaMs');
     timing.storageFormat=native?'server-json-v1':'legacy-gzip';
     timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;timing.reusedArchiveFields=codec?.reusedFields?.().size||0;
+    const appendStarts=codec?.appendStarts?.()||new Map();
     failurePhase='normalize';let preparedCache=null;
     if(native&&ownsRestoredState&&stateCache&&!precompute){
      // Finish normalization before committing, so even preparation failures leave
      // the DB untouched. Only computed parts are parsed; archives stay shared.
-     const normalized={...wire};for(const [key,raw] of delta.serializedFields)normalized[key]=JSON.parse(raw);
+     const normalized=normalizeNativeWire(snapshot.save,wire,delta,appendStarts);
      const normalizedState=restoreNativeSave(normalized,{previousWire:wire,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
      codec.release();outcome.runtime?.park(normalizedState);preparedCache={state:normalizedState,wire:normalized,codec,fieldHashes:delta.fieldHashes,runtime:outcome.runtime};
     }
     mark('cacheMs');
     failurePhase='response-delta';
-    const compact=nativeWire&&compactWire&&includeDelta&&store.compactDelta?store.compactDelta(userId,slot,expectedRev,delta,preparedCache?.wire):null;
+    const compact=nativeWire&&compactWire&&includeDelta&&store.compactDelta?store.compactDelta(userId,slot,expectedRev,delta,preparedCache?.wire,appendStarts):null;
     if(compact)timing.responseDelta=compact.metrics;
     mark('wireMs');
     const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};

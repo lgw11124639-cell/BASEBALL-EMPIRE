@@ -7,7 +7,7 @@ import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {gunzipSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
-import {createNativeSaveCodec,nativeWireDelta} from './native-save-codec.mjs';
+import {createNativeSaveCodec,nativeWireDelta,normalizeNativeWire} from './native-save-codec.mjs';
 import {restoreNativeSave,isNativeSave} from '../native-save.js';
 import {runOriginalEngineDay} from './original-engine-day.mjs';
 const args=process.argv.slice(2),databaseIndex=args.indexOf('--database');
@@ -47,7 +47,7 @@ for(let index=0;index<days;index++){
  if(profiler){const {profile}=await post(profiler,'Profiler.stop');profiler.disconnect();const nodes=new Map(profile.nodes.map(n=>[n.id,n])),counts=new Map();for(const id of profile.samples||[]){const f=nodes.get(id)?.callFrame;if(!f)continue;const key=(f.functionName||'<anonymous>')+':'+(f.lineNumber+1)+' '+String(f.url).split('/').at(-1);counts.set(key,(counts.get(key)||0)+1)}console.log(JSON.stringify({stage:'engine-cpu-profile',engineCpuMs:Math.round(engineCpuMs),cpuToWall:+(engineCpuMs/(engineDone-assembled)).toFixed(2),top:[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([functionName,samples])=>({functionName,samplePercent:+(100*samples/(profile.samples?.length||1)).toFixed(1)}))}))}
  if(failure){console.error(JSON.stringify({stage:'detached-day-error',requested,timeoutMs,productionWrites:false,message:String(failure?.message||failure),stack:String(failure?.stack||'').slice(0,5000)}));throw failure}
  const packed=await codec.pack(outcome.state),packedAt=performance.now(),delta=nativeWireDelta(wire,packed,hashes,codec.reusedFields()),comparedAt=performance.now();
- const normalized={...packed};for(const [key,raw] of delta.serializedFields)normalized[key]=JSON.parse(raw);
+ const normalized=normalizeNativeWire(wire,packed,delta,codec.appendStarts());
  state=restoreNativeSave(normalized,{previousWire:packed,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
  codec.release();runtime=outcome.runtime;runtime?.park(state);wire=normalized;hashes=delta.fieldHashes;
  const memory=process.memoryUsage();
