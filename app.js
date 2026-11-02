@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-report-tables31';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-report-align32';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -5653,7 +5653,9 @@ function frontReportAmount(value){
 }
 function frontReportSection(number,title,body){return '<section class="front-document-section"><h3><span>'+number+'</span>'+title+'</h3>'+body+'</section>'}
 function frontReportTable(caption,headers,rows){
- return '<div class="front-report-table-wrap"><table class="front-report-table"><caption>'+esc(caption)+'</caption><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map((cell,i)=>i===0?'<th scope="row">'+esc(String(cell))+'</th>':'<td>'+esc(String(cell))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+ const align=headers.map((h,i)=>i===0?'label':/인원|차이|비율/.test(h)?'center':/금액|상한|실적/.test(h)?'number':'label');
+ const widths=headers.length===4?[22,26,26,26]:headers.length===3?(headers[2]==='배분 비율'?[40,36,24]:[30,32,38]):[50,50];
+ return '<div class="front-report-table-wrap"><table class="front-report-table"><caption>'+esc(caption)+'</caption><colgroup>'+headers.map((_,i)=>'<col style="width:'+widths[i]+'%">').join('')+'</colgroup><thead><tr>'+headers.map((h,i)=>'<th scope="col" class="front-col-'+align[i]+'">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map((cell,i)=>(i===0?'<th scope="row"':'<td')+' class="front-col-'+align[i]+'">'+esc(String(cell))+(i===0?'</th>':'</td>')).join('')+'</tr>').join('')+'</tbody></table></div>';
 }
 function frontReportBars(caption,items){
  const max=Math.max(1,...items.map(x=>Number(x.amount)||0));
