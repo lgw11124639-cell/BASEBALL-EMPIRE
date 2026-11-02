@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');
+const context=require('./helpers/game-context.cjs')();
+const run=s=>vm.runInContext(s,context,{timeout:10000});
+run(`state={year:2046,gameResults:[]};
+const outcomes=[...Array(2).fill(20),...Array(2).fill(0),...Array(5).fill(8)];
+for(let i=0;i<9;i++)for(let n=0;n<40;n++)state.gameResults.push({year:2046,away:0,home:1,broadcastEvents:[{batterId:123,batter:'테스트',side:'away',outcome:n<outcomes[i]?'안타':'땅볼',pitchSequence:[{zoneX:16+i%3*33,zoneY:16+Math.floor(i/3)*33}]}]});`);
+assert.deepEqual(Array.from(run('batterZoneTemperatures(batterZoneProfile({id:123}))')),['hot','hot','cold','cold','neutral','neutral','neutral','neutral','neutral']);
+assert.equal((run('batterZonePanel({id:123})').match(/class="hot"/g)||[]).length,2);
+assert.equal((run('batterZonePanel({id:123})').match(/class="cold"/g)||[]).length,2);
+assert.deepEqual(Array.from(run('batterZoneTemperatures(batterZoneProfile({id:999}))')),Array(9).fill('neutral'));
+assert.deepEqual(Array.from(run('batterZoneTemperatures({overall:.25,zones:Array.from({length:9},()=>({ab:19})),values:Array(9).fill(.8)})')),Array(9).fill('neutral'));
+assert.deepEqual(Array.from(run('batterZoneTemperatures({overall:.25,zones:Array.from({length:9},()=>({ab:40})),values:Array(9).fill(.25)})')),Array(9).fill('neutral'));
+const before=run('JSON.stringify(state.gameResults)');
+run('batterZoneProfile({id:123})');assert.equal(run('JSON.stringify(state.gameResults)'),before,'display leaves saved outcomes unchanged');
+run('state={year:2046,gameResults:[]};');
+assert.deepEqual(Array.from(run('batterZoneTemperatures(batterZoneProfile({id:123}))')),Array(9).fill('neutral'),'another save does not inherit previous heatmap');
+console.log('Multiple hot/cold zones, neutral ties and insufficient samples PASS');

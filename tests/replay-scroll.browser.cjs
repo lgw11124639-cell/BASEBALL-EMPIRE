@@ -18,8 +18,10 @@ const root=path.resolve(__dirname,'..');const reports=[];
    let body=fs.readFileSync(file);
    if(name==='app.js'){
     let source=body.toString();source=source.slice(0,source.lastIndexOf('(async()=>')).replace(/^import .*;\s*$/m,'');
-    source+=`\nstate=world(0);state.gameResults=[];window.testOpen=()=>{
-     const events=Array.from({length:30},(_,i)=>({inning:1,side:'away',batter:'타자 '+i,pitcher:'투수',outcome:'안타',score:i,
+    source+=`\nstate=world(0);state.gameResults=[];
+     for(let z=0;z<9;z++)for(let n=0;n<40;n++)state.gameResults.push({year:state.year,away:0,home:1,broadcastEvents:[{batterId:999001,batter:'타자 0',side:'away',outcome:n<([20,20,0,0,8,8,8,8,8][z])?'안타':'땅볼',pitchSequence:[{zoneX:16+z%3*33,zoneY:16+Math.floor(z/3)*33}]}]});
+     window.testOpen=()=>{
+     const events=Array.from({length:30},(_,i)=>({inning:1,side:'away',batterId:i===0?999001:999002,batter:'타자 '+i,pitcher:'투수',outcome:'안타',score:i,
       outsBefore:0,outsAfter:0,bases:[null,null,null],afterBases:[null,null,null],pitches:1,
       pitchSequence:[{number:1,type:'직구',velocity:140,zoneX:50,zoneY:50,call:'인플레이',ballsAfter:0,strikesAfter:0}]}));
      beOpenGameReplay(1,0,{day:1,away:0,home:1,awayRuns:30,homeRuns:0,awayInnings:[30],homeInnings:[0],
@@ -31,7 +33,13 @@ const root=path.resolve(__dirname,'..');const reports=[];
   });
   await page.goto('https://baseball.test/');await page.waitForFunction(()=>!!window.testOpen);
   await page.evaluate(()=>window.testOpen());assert.equal(await page.evaluate(()=>document.body.style.overflow),'hidden');assert.equal(await page.locator('.be-replay-team .club-logo').count(),2);assert.ok(await page.locator('.be-replay-scoreboard').evaluate(el=>{const board=el.getBoundingClientRect();return [...el.querySelectorAll('.be-replay-team,.be-replay-score,#be-replay-current-score')].every(child=>{const r=child.getBoundingClientRect();return r.top>=board.top&&r.bottom<=board.bottom&&r.left>=board.left&&r.right<=board.right})}),'score, club crests and labels stay within the scoreboard');await page.screenshot({path:'/tmp/baseball-replay-top-'+viewport.width+'.png'});
-  for(let i=0;i<16;i++)await page.evaluate(()=>document.querySelector('#be-replay-next').click());
+  assert.equal(await page.locator('.be-broadcast-zone-grid .be-zone-hot').count(),2);
+  assert.equal(await page.locator('.be-broadcast-zone-grid .be-zone-cold').count(),2);
+  await page.evaluate(()=>document.querySelector('#be-replay-next').click());
+  assert.equal(await page.locator('.be-zone-marker').count(),1,'pitch marker remains visible over heat colors');
+  assert.notEqual(await page.locator('.be-zone-hot').first().evaluate(el=>getComputedStyle(el).backgroundColor),await page.locator('.be-zone-cold').first().evaluate(el=>getComputedStyle(el).backgroundColor));
+  for(let i=1;i<16;i++)await page.evaluate(()=>document.querySelector('#be-replay-next').click());
+  assert.equal(await page.locator('.be-broadcast-zone-grid .be-zone-neutral').count(),9,'next batter without samples resets all colors');
   assert.equal(await page.locator('#be-replay-lines > .be-replay-plate-event').count(),8,'eight plate appearances have exactly eight cards');assert.equal(await page.locator('#be-replay-lines > .be-replay-plate-event[data-phase="result"]').count(),8,'result updates each existing plate card');assert.equal(await page.locator('.be-replay-pitch-rows > li').count(),8,'all eight one-pitch histories remain available');assert.equal(await page.locator('.be-replay-pitch-history[open]').count(),0,'completed pitch histories are collapsed by default');
   const dimensions=await page.evaluate(()=>{
    const log=document.querySelector('#be-replay-lines'),overlay=document.querySelector('#be-replay-overlay');

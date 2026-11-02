@@ -20320,3 +20320,11 @@ main.game-shell .record-room { padding: 26px !important; }
 
 /* Auto controls must not change document height when starting or stopping. */
 .be-auto-progress { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 90; box-shadow: 0 4px 18px #15354a26; }
+
+/* Heat colors sit behind the independent pitch-location marker. */
+.be-broadcast-zone-grid > span { display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; line-height:1; }
+.be-broadcast-zone-grid > span.be-zone-hot { background:#f6b8b4; color:#852d29; }
+.be-broadcast-zone-grid > span.be-zone-cold { background:#b8d8f4; color:#174d7e; }
+.be-broadcast-zone-grid > span.be-zone-neutral { background:transparent; }
+.be-zone-legend { display:block; max-width:230px; margin:5px auto 0; font-size:10px; line-height:1.5; color:#536779; }
+.be-zone-marker { z-index:2; }
