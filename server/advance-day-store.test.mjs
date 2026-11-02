@@ -47,14 +47,15 @@ test('warm decoded state avoids reads and gzip restore but preserves DB authorit
  const db=new DatabaseSync(':memory:');
  db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,updated_at TEXT,digest TEXT,compressed_bytes INTEGER,PRIMARY KEY(user_id,slot));CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field))');
  const shards=createTestShards(db),store=createAdvanceDayStore(db,shards),cache=createDecodedDayCache();
- const seed={year:2027,day:1,players:[{id:1,name:'Original'}],teams:[],history:{seasons:{2026:{complete:true}}}};
+ const seed={year:2027,day:1,players:[{id:1,name:'Original'}],teams:[],extension:{value:1},history:{seasons:{2026:{complete:true}}}};
  shards.put(1,'main',0,await createSaveWireCodec().pack(seed));
  let reads=0,restores=0,runs=0,fail=false;
  const originalLoad=store.load;store.load=(...args)=>{reads++;return originalLoad(...args)};
  const codecFactory=()=>{const codec=createSaveWireCodec();return {pack:s=>codec.pack(s),restore:s=>{restores++;return codec.restore(s)}}};
- const advance=createAdvanceDayService({store,stateCache:cache,codecFactory,restoreSave:s=>s,runDay:async state=>{runs++;if(fail){fail=false;state.players[0].name='Uncommitted';throw Error('deliberate failure')}state.day++;state.players[0].jsonOnly=undefined;state.nonFinite=NaN;return {state,result:{}}}});
+ const advance=createAdvanceDayService({store,stateCache:cache,codecFactory,restoreSave:s=>s,runDay:async state=>{runs++;if(fail){fail=false;state.players[0].name='Uncommitted';throw Error('deliberate failure')}state.day++;state.extension.value++;state.players[0].jsonOnly=undefined;state.nonFinite=NaN;return {state,result:{}}}});
  const first=await advance({userId:1,expectedRev:1,requestId:'warm-cache-first1'});assert.equal(first.status,200);assert.equal(first.day.timing.cacheHit,false);
  const second=await advance({userId:1,expectedRev:2,requestId:'warm-cache-second'});assert.equal(second.status,200);assert.equal(second.day.timing.cacheHit,true);assert.equal(reads,1);assert.equal(restores,1);
+ assert.equal((await createSaveWireCodec().restore(shards.get(1,'main').save)).extension.value,3,'warm raw fields remain detached from the acknowledged wire baseline');
  assert.equal((await advance({userId:1,expectedRev:1,requestId:'warm-cache-first1'})).replayed,true);assert.equal(runs,2);
  fail=true;const request={userId:1,expectedRev:3,requestId:'warm-cache-failure'};
  assert.equal((await advance(request)).status,500);assert.equal(shards.get(1,'main').rev,3);
