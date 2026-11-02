@@ -45,3 +45,12 @@ test('random archive edits preserve full-encode equivalence across repeated cach
   assert.deepEqual(state,expected,'day '+day);
  }
 });
+
+test('active league governance stays unproxied and is encoded after raw edits',async()=>{
+ const original=seed();original.leagueOffice={seasons:{2046:{ballId:'standard'}},governance:{cases:[{playerId:1,remaining:2}]}};
+ const codec=createNativeSaveCodec(),wire=await codec.pack(original),state=restoreNativeSave(wire,{clone:true}),office=state.leagueOffice;
+ codec.track(state,wire);assert.equal(state.leagueOffice,office);
+ state.leagueOffice.governance.cases[0].remaining=1;
+ const packed=await codec.pack(state);assert.equal(restoreNativeSave(packed).leagueOffice.governance.cases[0].remaining,1);
+ assert.ok(![...codec.reusedFields()].some(key=>key.startsWith('beServerPart_leagueOffice')));
+});

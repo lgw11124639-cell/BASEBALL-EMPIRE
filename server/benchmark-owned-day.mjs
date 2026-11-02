@@ -1,5 +1,7 @@
 // Detached benchmark. The production DB is opened READ ONLY; no revision,
 // request receipt, game date or player record is ever committed.
+import {Session} from 'node:inspector';
+import {cpus} from 'node:os';
 import {DatabaseSync} from 'node:sqlite';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
@@ -26,15 +28,19 @@ try{
 if(!isNativeSave(wire))throw Error('This benchmark requires an already migrated server JSON save');
 const codec=createNativeSaveCodec(),appSource=readFileSync(new URL('../app.js',import.meta.url),'utf8');
 let state=await codec.restore(wire,{takeOwnership:true});
-console.log(JSON.stringify({stage:'read-only-source-loaded',databaseReadOnly:true,productionWrites:false,coldReadMs:Math.round(performance.now()-started),sourceRevision:source.rev}));
+console.log(JSON.stringify({cpuModel:cpus()[0]?.model,cpuCount:cpus().length,leagueCases:state.leagueOffice?.governance?.cases?.length||0,stage:'read-only-source-loaded',databaseReadOnly:true,productionWrites:false,coldReadMs:Math.round(performance.now()-started),sourceRevision:source.rev}));
 for(let index=0;index<days;index++){
+ let profiler=null;const post=(session,method)=>new Promise((ok,fail)=>session.post(method,(error,result)=>error?fail(error):ok(result)));
+ if(args.includes('--profile')){profiler=new Session();profiler.connect();await post(profiler,'Profiler.enable');await post(profiler,'Profiler.start')}
  const t=performance.now(),tracked=codec.track(state,wire),assembled=performance.now();
- const outcome=runOriginalEngineDay(state,{appSource},{takeOwnership:true,cloneState:tracked.clone,readArchive:tracked.raw}),engineDone=performance.now();
+ const cpuBefore=process.cpuUsage();
+ const outcome=runOriginalEngineDay(state,{appSource},{takeOwnership:true,cloneState:tracked.clone,readArchive:tracked.raw}),engineDone=performance.now(),cpuAfter=process.cpuUsage(cpuBefore),engineCpuMs=(cpuAfter.user+cpuAfter.system)/1000;
+ if(profiler){const {profile}=await post(profiler,'Profiler.stop');profiler.disconnect();const nodes=new Map(profile.nodes.map(n=>[n.id,n])),counts=new Map();for(const id of profile.samples||[]){const f=nodes.get(id)?.callFrame;if(!f)continue;const key=(f.functionName||'<anonymous>')+':'+(f.lineNumber+1)+' '+String(f.url).split('/').at(-1);counts.set(key,(counts.get(key)||0)+1)}console.log(JSON.stringify({stage:'engine-cpu-profile',engineCpuMs:Math.round(engineCpuMs),cpuToWall:+(engineCpuMs/(engineDone-assembled)).toFixed(2),top:[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([functionName,samples])=>({functionName,samplePercent:+(100*samples/(profile.samples?.length||1)).toFixed(1)}))}))}
  const packed=await codec.pack(outcome.state),packedAt=performance.now(),delta=nativeWireDelta(wire,packed,hashes,codec.reusedFields()),comparedAt=performance.now();
  const normalized={...packed};for(const [key,raw] of delta.serializedFields)normalized[key]=JSON.parse(raw);
  state=restoreNativeSave(normalized,{previousWire:packed,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
  codec.release();wire=normalized;hashes=delta.fieldHashes;
  const memory=process.memoryUsage();
- console.log(JSON.stringify({stage:'detached-day-benchmark',day:index+1,productionWrites:false,totalMs:Math.round(performance.now()-t),assembleMs:Math.round(assembled-t),engineMs:Math.round(engineDone-assembled),packMs:Math.round(packedAt-engineDone),compareMs:Math.round(comparedAt-packedAt),normalizeMs:Math.round(performance.now()-comparedAt),changedFields:Object.keys(delta.set).length,reusedFields:hashes.size-delta.serializedFields.size,rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576),peakRssMiB:Math.round(process.resourceUsage().maxRSS/1024),enginePhases:outcome.result.enginePhases}));
+ console.log(JSON.stringify({stage:'detached-day-benchmark',day:index+1,productionWrites:false,totalMs:Math.round(performance.now()-t),assembleMs:Math.round(assembled-t),engineMs:Math.round(engineDone-assembled),engineCpuMs:Math.round(engineCpuMs),cpuToWall:+(engineCpuMs/(engineDone-assembled)).toFixed(2),packMs:Math.round(packedAt-engineDone),compareMs:Math.round(comparedAt-packedAt),normalizeMs:Math.round(performance.now()-comparedAt),changedFields:Object.keys(delta.set).length,reusedFields:hashes.size-delta.serializedFields.size,rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576),peakRssMiB:Math.round(process.resourceUsage().maxRSS/1024),enginePhases:outcome.result.enginePhases}));
 }
 console.log(JSON.stringify({success:true,productionWrites:false,productionDayUnchanged:true}));

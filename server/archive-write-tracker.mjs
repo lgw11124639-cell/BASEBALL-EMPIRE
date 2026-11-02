@@ -1,6 +1,6 @@
 // Consumed native cache entries have one owner. Track archive writes in place;
 // failures discard the entry and reload the authoritative DB, never roll it back.
-const trackedRoots=new Set(['history','amateurCareerArchive','gameResults','clubNotices','clubTransactionArchive','trainingReports','highSchoolBaseball','collegeBaseball','independentBaseball','nationalTeamResults','minorLeague','international','careerRecords','draftResults','leagueOffice','postseasons','retiredPlayers']);
+const trackedRoots=new Set(['history','amateurCareerArchive','gameResults','clubNotices','clubTransactionArchive','trainingReports','highSchoolBaseball','collegeBaseball','independentBaseball','nationalTeamResults','minorLeague','international','careerRecords','draftResults','postseasons','retiredPlayers']);
 const activeYearRoots=new Set(['highSchoolBaseball','collegeBaseball','independentBaseball','minorLeague']);
 const plain=v=>v&&typeof v==='object'&&(Array.isArray(v)||Object.prototype.toString.call(v)==='[object Object]');
 export function trackArchiveWrites(state){

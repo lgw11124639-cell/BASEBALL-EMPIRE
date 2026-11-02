@@ -8,7 +8,7 @@ test('detached benchmark leaves the source database byte-for-byte unchanged',asy
   const wire=await createNativeSaveCodec().pack(sandbox.invoke('world(0)'));
   const db=new DatabaseSync(path);db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,compressed_bytes INTEGER);CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB)');
   db.prepare("INSERT INTO be_save_shard_meta VALUES(1,'main',7,1)").run();const insert=db.prepare("INSERT INTO be_save_shards VALUES(1,'main',?,?)");for(const [key,value] of Object.entries(wire))insert.run(key,gzipSync(JSON.stringify(value)));db.close();
-  const before=readFileSync(path),result=spawnSync(process.execPath,['--experimental-sqlite',new URL('./benchmark-owned-day.mjs',import.meta.url).pathname,'--database',path,'--days','1'],{encoding:'utf8',timeout:120000});
-  assert.equal(result.status,0,result.stderr);assert.ok(result.stdout.includes('"productionDayUnchanged":true'));assert.deepEqual(readFileSync(path),before);
+  const before=readFileSync(path),result=spawnSync(process.execPath,['--experimental-sqlite',new URL('./benchmark-owned-day.mjs',import.meta.url).pathname,'--database',path,'--days','1','--profile'],{encoding:'utf8',timeout:120000});
+  assert.equal(result.status,0,result.stderr);assert.ok(result.stdout.includes('"productionDayUnchanged":true'));assert.ok(result.stdout.includes('"stage":"engine-cpu-profile"'));assert.ok(result.stdout.includes('"cpuToWall"'));assert.deepEqual(readFileSync(path),before);
  }finally{rmSync(dir,{recursive:true,force:true})}
 });

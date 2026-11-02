@@ -17,7 +17,7 @@ let benchmarkStatus=1;
 try{
  pm2(['stop','4']);
  console.log(JSON.stringify({stage:'game-api-paused',pm2Id:4,productionSaveWrites:false,benchmarkHeapMiB:policy.heapLimitMiB}));
- const result=spawnSync(process.execPath,['--experimental-sqlite','--max-old-space-size='+policy.heapLimitMiB,resolve('server/benchmark-owned-day.mjs'),'--database',database,'--days','3'],{stdio:'inherit',env:{...process.env,NODE_OPTIONS:''},timeout:240000});
+ const result=spawnSync(process.execPath,['--experimental-sqlite','--max-old-space-size='+policy.heapLimitMiB,resolve('server/benchmark-owned-day.mjs'),'--database',database,'--days','1','--profile'],{stdio:'inherit',env:{...process.env,NODE_OPTIONS:''},timeout:240000});
  benchmarkStatus=result.status??1;
 }finally{
  pm2(['restart','4','--update-env'],env);

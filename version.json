@@ -1,1 +1,1 @@
-{"version": "2.1.9", "build": "20261102-owned-archives10", "notes": "서버 과거 기록 재사용·경기 중복 조회 최적화, 메모리 보호 및 실제 서버 검사"}
+{"version": "2.1.10", "build": "20261102-engine-diagnostic11", "notes": "경기 중 징계 조회 최적화 및 서버 CPU 진단"}

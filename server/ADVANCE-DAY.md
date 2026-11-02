@@ -402,3 +402,26 @@ on the observed 4 GiB host where the running API already occupies about 2.9 GiB.
 The benchmark reports three detached days and memory usage; first-day setup may
 be slower. Actual sub-two-second production latency is not claimed until measured
 on the user's server and save. The ordinary upgrade remains a separate step.
+
+
+## v2.1.10 diagnostic follow-up
+
+The first actual t3.medium detached benchmark did NOT meet the target: 9.943,
+10.423 and 11.298 seconds per day, with 1,792 MiB peak RSS. Production was restored
+healthy and no save/day was committed. Do not infer a production speed improvement
+from lower data assembly/serialization time alone.
+
+Active league governance is now excluded from archive proxies: eligibility and
+ball-rule reads use it repeatedly, so proxy interception can dominate computation.
+Manager plans compute applicable suspended player IDs once per roster selection,
+with identical scope, final-day and remaining-ban semantics. The native packer
+continues encoding governance normally so untracked writes cannot be lost.
+
+The paused-server wrapper now runs one diagnostic day (rather than three), with
+a local inspector CPU profile. Only aggregated function names/line numbers/sample
+percentages are printed; no debugger port is opened and no private player data is
+printed. CPU microseconds and wall milliseconds are measured separately. A low
+CPU-to-wall ratio is evidence of scheduling limitation, not proof that AWS CPU
+credits are exhausted. Actual CPUCreditBalance still requires CloudWatch access.
+The wrapper retains its exact process/port checks, read-only DB access, bounded
+heap and automatic restoration of the original production API.
