@@ -6,6 +6,8 @@ import {spawnSync} from 'node:child_process';
 import {DatabaseSync,backup} from 'node:sqlite';
 import {createHash} from 'node:crypto';
 import {readProcessRuntime} from './process-runtime.mjs';
+import {totalmem} from 'node:os';
+import {engineNodeOptions} from './memory-policy.mjs';
 const upgrade=process.argv.includes('--upgrade');
 const keepEnabled=process.argv.includes('--keep-enabled');
 if(keepEnabled&&!upgrade)throw Error('Keeping the engine enabled requires an upgrade');
@@ -24,7 +26,7 @@ const database=resolve(runtime.configuration.DATA_DIR||resolve(api,'data'),'save
 log({stage:'runtime-verified',pm2Id:4,pid:runtime.pid,listeningPort:3300});
 if(database!==resolve(api,'data/saves.sqlite'))throw Error('Unexpected production DB path; review before deployment');
 const names=['auth.mjs','shard-store.mjs','app.js','native-save.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js',
- 'server/wire-delta.mjs','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/owned-engine-runtime.mjs','server/decoded-day-cache.mjs','server/native-save-codec.mjs','server/original-engine-sandbox.mjs','server/save-wire-codec.mjs'];
+ 'server/wire-delta.mjs','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/owned-engine-runtime.mjs','server/decoded-day-cache.mjs','server/native-save-codec.mjs','server/archive-write-tracker.mjs','server/original-engine-sandbox.mjs','server/save-wire-codec.mjs'];
 for(const name of names){
  const src=resolve(stage,name);
  const check=spawnSync(process.execPath,['--check',src],{encoding:'utf8'});
@@ -51,7 +53,9 @@ const readOnly=new DatabaseSync(database,{readOnly:true});
 try{await backup(readOnly,resolve(saved,'saves.sqlite'))}finally{readOnly.close()}
 writeFileSync(resolve(saved,'manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),engineEnabled:keepEnabled,mode:upgrade?'upgrade':'first-install',files:previous},null,2),{mode:0o600});
 log({stage:'backup-complete',backupDirectory:saved,sqliteBackup:true});
-const restartEnv={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:engineFlag,...(runtime.configuration.NODE_OPTIONS?{NODE_OPTIONS:runtime.configuration.NODE_OPTIONS}:{})};
+const memoryPolicy=engineNodeOptions(runtime.configuration.NODE_OPTIONS||'',totalmem());
+log({stage:'memory-budget',heapLimitMiB:memoryPolicy.heapLimitMiB});
+const restartEnv={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:engineFlag,NODE_OPTIONS:memoryPolicy.options};
 function install(src,dest){mkdirSync(dirname(dest),{recursive:true});const tmp=dest+'.engine-stage-tmp';copyFileSync(src,tmp);renameSync(tmp,dest)}
 async function healthy(){
  for(let n=0;n<30;n++){

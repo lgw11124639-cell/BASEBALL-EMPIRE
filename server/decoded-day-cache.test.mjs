@@ -20,3 +20,8 @@ test('cache retains one world and periodically drops codec histories',()=>{
  cache.put(entry);assert.equal(cache.take(1,'main',1,'a'),null);
  cache.clear();
 });
+test('memory pressure drops the cache without changing authoritative persistence',()=>{
+ const cache=createDecodedDayCache({maxRssBytes:100,rss:()=>101});
+ cache.put({user:1,slot:'main',rev:1,digest:'a',state:{day:1},wire:{},codec:{mode:'server-json-v1'}});
+ assert.equal(cache.take(1,'main',1,'a'),null);cache.clear();
+});

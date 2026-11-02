@@ -1,4 +1,4 @@
-import {isNativeSave} from '../native-save.js';
+import {isNativeSave,restoreNativeSave} from '../native-save.js';
 import {createNativeSaveCodec,nativeWireDelta} from './native-save-codec.mjs';
 import {buildWireDelta} from './wire-delta.mjs';
 import {runOriginalEngineDay} from './original-engine-day.mjs';
@@ -35,7 +35,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     timing.inputFormat=inputNative?'server-json-v1':'legacy-gzip';
     const codec=cached?.codec&&((cached.codec.mode==='server-json-v1')===native)?cached.codec:native?createNativeSaveCodec():codecFactory?.();
     let state;
-    if(cached?.serializedFields){
+    if(cached?.state&&native&&ownsRestoredState){state=cached.state;timing.cacheHit=true;timing.cacheMode='native-owned-archives'}else if(cached?.serializedFields){
      // Cache immutable JSON bytes, never a mutable native world. Each operation
      // parses fresh owned values without SQLite I/O, gunzip or a world clone.
      snapshot.save=Object.fromEntries([...cached.serializedFields].map(([key,raw])=>[key,JSON.parse(raw)]));
@@ -44,17 +44,28 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
      try{state=JSON.parse(JSON.stringify(cached.state));timing.cacheHit=true}
      catch{state=await codec.restore(snapshot.save,{takeOwnership:ownsRestoredState&&!!snapshot.fieldHashes});timing.cacheHit=false}
     }else{state=await(codec?codec.restore(snapshot.save,{takeOwnership:ownsRestoredState&&!!snapshot.fieldHashes}):restoreSave(structuredClone(snapshot.save)));timing.cacheHit=false}
+    const tracked=native&&inputNative&&ownsRestoredState?codec.track(state,snapshot.save):null;
     mark('restoreMs');
-    const outcome=await runDay(state,operation,{takeOwnership:ownsRestoredState});mark('engineMs');
+    const outcome=await runDay(state,operation,{takeOwnership:ownsRestoredState,...(tracked?{cloneState:tracked.clone,readArchive:tracked.raw}:{})});mark('engineMs');
     const wire=await(codec?codec.pack(outcome.state):encodeSave(outcome.state));mark('packMs');
-    const delta=native?nativeWireDelta(snapshot.save,wire,snapshot.fieldHashes):buildWireDelta(snapshot.save,wire);mark('deltaMs');
+    const delta=native?nativeWireDelta(snapshot.save,wire,snapshot.fieldHashes,codec.reusedFields()):buildWireDelta(snapshot.save,wire);mark('deltaMs');
     timing.storageFormat=native?'server-json-v1':'legacy-gzip';
-    timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;
+    timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;timing.reusedArchiveFields=codec?.reusedFields?.().size||0;
+    let preparedCache=null;
+    if(native&&ownsRestoredState&&stateCache){
+     // Finish normalization before committing, so even preparation failures leave
+     // the DB untouched. Only computed parts are parsed; archives stay shared.
+     const normalized={...wire};for(const [key,raw] of delta.serializedFields)normalized[key]=JSON.parse(raw);
+     const normalizedState=restoreNativeSave(normalized,{previousWire:wire,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
+     codec.release();preparedCache={state:normalizedState,wire:normalized,codec,fieldHashes:delta.fieldHashes};
+    }
+    mark('cacheMs');
+    const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};
     const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,serializedDelta:delta.serializedSet,result:{...outcome.result,requestFingerprint,timing}}));
-    if(response.status===200&&!response.replayed)stateCache?.put({user:userId,slot,rev:response.rev,digest:response.digest,
-     state:native?undefined:outcome.state,
-     wire:native?Object.fromEntries(Object.keys(wire).map(key=>[key,null])):wire,
-     codec,fieldHashes:delta.fieldHashes,serializedFields:delta.serializedFields});
+    if(response.status===200&&!response.replayed){
+     if(preparedCache)stateCache.put({user:userId,slot,rev:response.rev,digest:response.digest,...preparedCache});
+     else stateCache?.put({user:userId,slot,rev:response.rev,digest:response.digest,state:native?undefined:outcome.state,wire:native?Object.fromEntries(Object.keys(wire).map(key=>[key,null])):wire,codec,fieldHashes:delta.fieldHashes,serializedFields:delta.serializedFields});
+    }
     if(response.status===200&&performance.now()-started>2000)console.info(JSON.stringify({stage:'server-day-performance',...response.day?.timing,enginePhases:response.day?.enginePhases||null}));
     if(response.status===200&&!response.replayed&&includeDelta)return {...response,wireDelta:{fromRevision:expectedRev,toRevision:response.rev,set:delta.set,unset:delta.unset}};
     return response;

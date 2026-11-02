@@ -2,7 +2,7 @@
 // Native entries retain immutable serialized fields only; each take parses fresh
 // owned objects. Legacy entries retain decoded state and clone it before use.
 // take() consumes the entry, so failed operations cannot poison a later request.
-export function createDecodedDayCache({ttlMs=300000,maxReuse=12,now=Date.now}={}){
+export function createDecodedDayCache({ttlMs=300000,maxReuse=12,now=Date.now,maxRssBytes=Infinity,rss=()=>process.memoryUsage().rss}={}){
  let entry=null,timer=null;
  const uses=new WeakMap();
  function clear(){entry=null;if(timer!==null)clearTimeout(timer);timer=null}
@@ -16,7 +16,8 @@ export function createDecodedDayCache({ttlMs=300000,maxReuse=12,now=Date.now}={}
   },
   put({user,slot,rev,digest,state,wire,codec,fieldHashes,serializedFields}){
    clear();if(typeof digest!=='string'||!codec)return;
-   const count=(uses.get(codec)||0)+1;uses.set(codec,count);if(!serializedFields&&count>maxReuse)return;
+   if(rss()>maxRssBytes){console.info(JSON.stringify({stage:'day-cache-skipped',reason:'memory-budget'}));return}
+   const count=(uses.get(codec)||0)+1;uses.set(codec,count);if(!serializedFields&&codec.mode!=='server-json-v1'&&count>maxReuse)return;
    entry={user,slot,rev,digest,state,wire,codec,fieldHashes,serializedFields,expires:now()+ttlMs};
    timer=setTimeout(clear,ttlMs);timer.unref?.();
   },

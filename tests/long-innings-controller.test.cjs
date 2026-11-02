@@ -9,7 +9,7 @@ assert.ok(start>=0&&end>start,'actual innings controller exists');
 let seed=20261026;
 const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
 let injuries=0,substitutions=0,halves=0;
-const context=vm.createContext({state:{year:2027,day:1},
+const context=vm.createContext({beInningLookupCache:null,state:{year:2027,day:1},
  gameInjuryCheck:()=>{injuries++},
  managerSubstitutions:()=>{substitutions++},
  playHalf:(batting,fielding,inning,r,walkoff)=>{
@@ -26,6 +26,7 @@ for(let year=2026;year<2056;year++){
  for(let game=0;game<720;game++){
   const away={runs:0,innings:[]},home={runs:0,innings:[]};
   const result=run(away,home,random);
+  assert.equal(context.beInningLookupCache,null,'game lookup caches never leak into the next game');
   assert.equal(result.awayRuns,away.runs);
   assert.equal(result.homeRuns,home.runs);
   assert.ok(away.innings.length>=9&&away.innings.length<=12,'away innings bounded');

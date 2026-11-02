@@ -97,7 +97,7 @@ test('native format migrates atomically, detects changes with pre-mutation hashe
  db.close();
 });
 
-test('native days parse immutable cached JSON without SQL reads or world clones and rewrite only changed parts',async()=>{
+test('native owned archive cache avoids SQL, world copies and unchanged archive serialization',async()=>{
  const {DatabaseSync}=await import('node:sqlite'),{createSaveWireCodec}=await import('./save-wire-codec.mjs');
  const {createAdvanceDayStore}=await import('./advance-day-store.mjs'),{createAdvanceDayService}=await import('./advance-day-service.mjs'),{createDecodedDayCache}=await import('./decoded-day-cache.mjs');
  const db=new DatabaseSync(':memory:');
@@ -116,7 +116,7 @@ test('native days parse immutable cached JSON without SQL reads or world clones 
  assert.equal(first.day.timing.nativeMigration,true);
  const second=await advance({userId:1,expectedRev:2,requestId:'native-owned-next1',nativeWire:true});
  assert.equal(second.day.timing.nativeMigration,false);assert.equal(second.day.timing.inputFormat,'server-json-v1');
- assert.equal(second.day.timing.cacheHit,true);assert.equal(second.day.timing.cacheMode,'native-json-bytes');assert.equal(reads,1);
+ assert.equal(second.day.timing.cacheHit,true);assert.equal(second.day.timing.cacheMode,'native-owned-archives');assert.ok(second.day.timing.reusedArchiveFields>50);assert.equal(reads,1);
  assert.ok(second.day.timing.changedFields<5,'stable history parts are never rewritten on ordinary days');
  assert.ok(!Object.keys(second.wireDelta.set).some(k=>k.startsWith('beServerPart_history')));
  failNext=true;assert.equal((await advance({userId:1,expectedRev:3,requestId:'native-owned-fail1',nativeWire:true})).status,500);assert.ok(failed);

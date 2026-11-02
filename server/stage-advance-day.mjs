@@ -25,7 +25,7 @@ console.log(JSON.stringify(await verifyAdvanceStore(createShardStore)));
 console.log(JSON.stringify(await verifySaveLifecycle(createShardStore)));
 mkdirSync(resolve(output,'server'),{recursive:true,mode:0o700});
 for(const name of ['app.js','native-save.js','cloud-only.js','kpbl-investigation-policy.js','server-day-client.js','server-save-client.js','server-engine-preview.html','server-game-preview.html'])copyFileSync(resolve(root,name),resolve(output,name));
-for(const name of ['wire-delta.mjs','save-lifecycle.mjs','original-engine-command.mjs','save-wire-codec.mjs','advance-day-route.mjs','advance-day-store.mjs','advance-day-service.mjs','original-engine-day.mjs','owned-engine-runtime.mjs','decoded-day-cache.mjs','native-save-codec.mjs','original-engine-sandbox.mjs','detached-save-restore.mjs']){
+for(const name of ['wire-delta.mjs','save-lifecycle.mjs','original-engine-command.mjs','save-wire-codec.mjs','advance-day-route.mjs','advance-day-store.mjs','advance-day-service.mjs','original-engine-day.mjs','owned-engine-runtime.mjs','decoded-day-cache.mjs','native-save-codec.mjs','archive-write-tracker.mjs','original-engine-sandbox.mjs','detached-save-restore.mjs']){
  // The restore module and patched sandbox stay on EC2; do not overwrite them.
  const target=resolve(output,'server',name);
  copyFileSync(resolve(root,'server',name),target);

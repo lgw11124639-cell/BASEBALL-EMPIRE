@@ -5,10 +5,11 @@ const roots=new Set(['players','gameResults','clubNotices','clubTransactionArchi
 const unsafe=key=>['__proto__','constructor','prototype'].includes(key);
 const segment=key=>encodeURIComponent(String(key)).replace(/_/g,'%5F');
 export const isNativeSave=wire=>!!wire&&Object.hasOwn(wire,NATIVE_SAVE_MANIFEST);
-export function packNativeSave(state){
+export function packNativeSave(state,{reuseNode=null,reusePart=null}={}){
  const wire={},fields={};
- function part(path,index,value){const name=PREFIX+path.map(segment).join('_')+'_'+index;Object.defineProperty(wire,name,{value,enumerable:true,writable:true,configurable:true});return name}
+ function part(path,index,value){const name=PREFIX+path.map(segment).join('_')+'_'+index;const old=reusePart?.(value,path,index,name);Object.defineProperty(wire,name,{value:old?.value??value,enumerable:true,writable:true,configurable:true});return name}
  function node(value,path,depth=0){
+  const reused=reuseNode?.(value,path);if(reused){for(const key of partKeys(reused.descriptor))wire[key]=reused.wire[key];return reused.descriptor}
   if(value===null||typeof value!=='object')return {kind:'value',value:typeof value==='number'&&!Number.isFinite(value)?null:value};
   if(typeof value.toJSON==='function')return node(value.toJSON(),path,depth);
   if(Array.isArray(value)){

@@ -5,14 +5,15 @@ import {createOriginalEngineSandbox} from './original-engine-sandbox.mjs';
 import {createOwnedEngineRuntime} from './owned-engine-runtime.mjs';
 
 const defaultApp=new URL('../app.js',import.meta.url);
-export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={},{takeOwnership=false}={}){
+export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={},{takeOwnership=false,cloneState=structuredClone,readArchive=null}={}){
  if(!save||!Number.isSafeInteger(save.year)||!Number.isSafeInteger(save.day)||save.day<1||!Array.isArray(save.players)||!Array.isArray(save.teams))throw Error('Invalid full engine save');
  for(const key of Object.keys(save))if(/^be(?:Shard|LeagueShard|HistoryShard|AmateurBucket)Manifest$/.test(key)||key.startsWith('bePackedAux'))throw Error('Restore compressed save before simulation');
  const setupStarted=performance.now();
  const createRuntime=takeOwnership?createOwnedEngineRuntime:createOriginalEngineSandbox;
  const sandbox=createRuntime(appSource??readFileSync(defaultApp,'utf8'),save,{timeoutMs});
  // Compatible with the deployed sandbox patch; do not overwrite its local file.
- sandbox.context.structuredClone=structuredClone;
+ sandbox.context.structuredClone=cloneState;
+ if(readArchive)sandbox.context.window.beEngineReadArchive=readArchive;
  sandbox.context.__enginePhaseTimes={'엔진 준비':performance.now()-setupStarted};
  sandbox.invoke(`(()=>{
   for(const name of ['simulateLeagueDay','offseasonDay','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','minorLeagueDay','nationalTeamPreparationDay','nationalTeamTournamentDay','runOffseasonContracts','beginNextSeason','validateSeasonIntegrity','saveSeasonSnapshot']){

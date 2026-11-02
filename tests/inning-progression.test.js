@@ -14,7 +14,7 @@ function play(awayLine,homeLine){
    batting.runs+=runs;halves++;return runs;
  };
  const run=new Function('gameInjuryCheck','managerSubstitutions','playHalf','state',
-   source.slice(start,end)+';return runBaseballInnings;')(()=>{},()=>{},half,{year:2027,day:1});
+   'let beInningLookupCache=null;'+source.slice(start,end)+';return runBaseballInnings;')(()=>{},()=>{},half,{year:2027,day:1});
  const away={tag:'away',runs:0,innings:[]};
  const home={tag:'home',runs:0,innings:[]};
  run(away,home,()=>0.5,{historical:true,maxInnings:12});

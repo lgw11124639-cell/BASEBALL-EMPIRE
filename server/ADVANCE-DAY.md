@@ -360,3 +360,45 @@ stores no mutable native world, and preserves JSON persistence semantics for
 undefined/non-finite values. Production latency still requires measurement on the
 actual save after upgrade; synthetic tests prove cache hits avoid SQL loading,
 not a promised number of seconds.
+
+## v2.1.9 owned archive cache and bounded memory
+
+Native cache entries retain one canonical decoded world and its wire parts, sharing
+unchanged objects. `take()` gives the operation exclusive ownership and removes the
+entry before any mutation. There is no whole-world JSON stringify/parse on a hit.
+On any engine/commit failure the mutated world is discarded; retry reads the DB.
+Pre-mutation hashes remain immutable, so failed/changed objects cannot overwrite
+prior committed values or hide a real update.
+
+`archive-write-tracker.mjs` watches retained archive branches. The native packer
+reuses descriptor subtrees only if their original identities remain unchanged and
+no descendant was written. Current amateur/minor seasons stay unproxied during
+pitch calculations and are always encoded normally. Newly assigned objects never
+qualify for identity reuse. Only computed fields are normalized through JSON;
+unchanged archive parts remain shared and require no serialization or hashing.
+Known read-only manager recent-form and zone-index scans can unwrap the archive
+proxy; these readers must never write to their inputs. Deep edits, deletion,
+replacement, array shifts and map additions are checked against full encoding,
+including randomized edits and real engine state equivalence.
+
+Per-game normalization lookups for profiles, staff, arsenals and batting skill
+use a scoped cache. `finally` releases it after every game, including failures.
+Counting stats and fatigue remain live. Fixed-RNG complete-state comparisons
+verify all pro, minor, amateur and governance outcomes.
+
+The day timing includes process RSS, used heap and reused archive field counts.
+The retained cache is dropped if RSS exceeds 80% of physical memory. The verified
+upgrade caps Node old-space to at most 65% of physical RAM (rounded down to 64 MiB),
+preserving a smaller existing limit and other Node flags. This leaves room for
+native buffers, SQLite, the OS and other services; it is a budget, not a guarantee
+that an arbitrary world fits. No save/history is deleted to fit the budget.
+
+`benchmark-running-api.mjs` verifies the existing PM2 ID 4, executable, DB path and
+port 3300, pauses that game API, runs `benchmark-owned-day.mjs` in a heap-bounded
+child against a READ-ONLY SQLite connection, then restarts the original API with
+its original environment in `finally`. It does not deploy sources, commit saves,
+advance the production calendar, or touch other PM2 processes. Pausing is necessary
+on the observed 4 GiB host where the running API already occupies about 2.9 GiB.
+The benchmark reports three detached days and memory usage; first-day setup may
+be slower. Actual sub-two-second production latency is not claimed until measured
+on the user's server and save. The ordinary upgrade remains a separate step.
