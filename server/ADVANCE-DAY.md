@@ -425,3 +425,28 @@ CPU-to-wall ratio is evidence of scheduling limitation, not proof that AWS CPU
 credits are exhausted. Actual CPUCreditBalance still requires CloudWatch access.
 The wrapper retains its exact process/port checks, read-only DB access, bounded
 heap and automatic restoration of the original production API.
+
+
+## v2.1.11 measured name-registry bottleneck
+
+The actual diagnostic showed 8,915 ms engine wall time and 12,885 ms process CPU
+time (CPU/wall 1.45); it does not support attributing this run to unavailable CPU
+scheduling. Samples included GC 16%, archive proxy get 10.8%, playerNameRegistry
+8.5%, its add closure 5.5%, wrap 4.6%, raw 3.3% and foreignNameKey 3.3%.
+
+Amateur league/day functions previously built a complete historical name registry
+even for complete rosters and dates outside their season. Registries are now
+initialized only when a new player name is actually needed. The collision-safe ID
+set in normalizeAmateurRoster is likewise built only on first allocation. Existing
+roster IDs/names and RNG draws remain identical; actual new-player creation still
+reserves all pro, retired, amateur and international names. Read-only name scans
+can unwrap archives. Proxy getters return primitives/functions directly rather
+than allocating paths and looking them up in WeakMaps. Stadium presets are static
+constants rather than repeated nested-array literals.
+
+Tests ensure complete rosters never touch historical name archives, recruitment
+still rejects reserved names/IDs, and fixed-RNG full-state comparisons match three
+old-engine days. The full regression suite passed 124 files before the version
+bump. Actual target latency remains unconfirmed; use the existing one-day paused
+read-only benchmark, which now also reports the processed calendar date. No
+production source or save is upgraded by that diagnostic command.

@@ -5,7 +5,7 @@ const activeYearRoots=new Set(['highSchoolBaseball','collegeBaseball','independe
 const plain=v=>v&&typeof v==='object'&&(Array.isArray(v)||Object.prototype.toString.call(v)==='[object Object]');
 export function trackArchiveWrites(state){
  const records=new WeakMap(),proxies=new WeakMap(),dirty=new WeakSet(),baselineObjects=new WeakSet(),untrackedActive=new WeakSet();
- function raw(value){return proxies.get(value)||value}
+ function raw(value){return value&&typeof value==='object'?(proxies.get(value)||value):value}
  function mark(record){if(record.dirty)return;record.dirty=true;dirty.add(record.target);for(const parent of record.parents)mark(parent)}
  function wrap(value,path,parent=null){
   value=raw(value);if(!plain(value))return value;
@@ -14,7 +14,7 @@ export function trackArchiveWrites(state){
   if(!record){
    record={target:value,parents:new Set(),dirty:false};records.set(value,record);
    record.proxy=new Proxy(value,{
-    get(target,key,receiver){return wrap(Reflect.get(target,key,receiver),[...path,key],record)},
+    get(target,key,receiver){const result=Reflect.get(target,key,receiver);return result&&typeof result==='object'?wrap(result,[...path,key],record):result},
     set(target,key,next){const unwrapped=raw(next);if(!Object.is(target[key],unwrapped)||!Object.hasOwn(target,key))mark(record);return Reflect.set(target,key,unwrapped)},
     deleteProperty(target,key){if(Object.hasOwn(target,key))mark(record);return Reflect.deleteProperty(target,key)},
     defineProperty(target,key,descriptor){mark(record);if('value' in descriptor)descriptor={...descriptor,value:raw(descriptor.value)};return Reflect.defineProperty(target,key,descriptor)},

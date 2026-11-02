@@ -1,1 +1,1 @@
-{"version": "2.1.10", "build": "20261102-engine-diagnostic11", "notes": "경기 중 징계 조회 최적화 및 서버 CPU 진단"}
+{"version": "2.1.11", "build": "20261102-lazy-identities12", "notes": "불필요한 과거 선수 이름·ID 전수 검사 제거, 추적 객체 할당 축소"}
