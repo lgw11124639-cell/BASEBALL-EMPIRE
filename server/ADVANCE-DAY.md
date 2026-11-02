@@ -208,3 +208,8 @@ After a successful `server-engine-activated` result, PC and mobile users must
 refresh existing tabs to load the current client; both use the same server engine.
 The first real day remains an explicit user action. Existing older client writes
 are rejected once activated. No uploaded private fixture is published or committed.
+
+After successful activation, `pm2 save` persists the current process configuration
+so a daemon/system restart retains the engine flag and heap setting. It does not
+restart other applications. The failure path also saves the recovered disabled
+configuration. No PM2 environment values or credentials are printed.

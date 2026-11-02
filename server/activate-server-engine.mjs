@@ -47,13 +47,15 @@ try{
  if(running.configuration.BE_SERVER_ENGINE_ENABLED!=='1'||!running.listeningPorts.includes(3300))throw Error('Enabled process state mismatch');
  const unauthorized=await fetch('https://baseball-empire-save.duckdns.org/v2/engine/status',{signal:AbortSignal.timeout(10000)});
  if(unauthorized.status!==401)throw Error('Public authentication check failed');
- log({success:true,stage:'server-engine-activated',engineEnabled:true,frontendVersion:version.version,frontendBuild:version.build,pm2Id:4,publicAuthentication401:true,proxyTimeoutSeconds:240,saveSimulationPerformed:false,backupDirectory:saved});
+ command('pm2',['save']);
+ log({success:true,stage:'server-engine-activated',engineEnabled:true,frontendVersion:version.version,frontendBuild:version.build,pm2Id:4,publicAuthentication401:true,proxyTimeoutSeconds:240,pm2ConfigurationSaved:true,saveSimulationPerformed:false,backupDirectory:saved});
 }catch(error){
  let recovered=false;
  try{
   command('pm2',['restart','4','--update-env'],environment('0'));
   if(proxyChanged){command('sudo',['-n','install','-m','0644',resolve(saved,'nginx.original'),config]);command('sudo',['-n','nginx','-t']);command('sudo',['-n','systemctl','reload','nginx'])}
   recovered=await healthy();
+  command('pm2',['save']);
  }catch{}
  log({success:false,error:String(error.message||error),disabledApiRecovered:recovered,backupDirectory:saved,databaseRestored:false});process.exitCode=1;
 }
