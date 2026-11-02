@@ -185,3 +185,26 @@ all new lifecycle and command dependencies, including both browser helper module
 needed by cloud-only.js. It restarts only PM2 ID 4 and verifies port ownership,
 health, authentication, and BE_SERVER_ENGINE_ENABLED=0 after restart. No user save
 is advanced, replaced or reset. Frontend publication and activation are separate.
+
+## Final release and activation
+
+The public client release is 2.1.1 / 20261102-server-engine02. Cache keys and updater
+version checks match. The full 116-file game regression suite passes after fixing
+VM import loading and final discipline-publication snapshot matching; the latter
+changes article fact lookup only, not penalties or match simulation.
+
+`complete-server-transition.mjs` is the single EC2 execution command. It stages and
+verifies the exact current source, upgrades with the engine disabled, then runs
+`activate-server-engine.mjs`. Activation checks every installed engine/client
+module against the repo, confirms the public Pages build and helper hashes,
+backs up SQLite and Nginx configuration, and adjusts only the API location's proxy
+read/send limits to at least 240 seconds. It uses noninteractive sudo for Nginx
+validation/install/reload, never for PM2. It enables only PM2 ID 4, preserves other
+NODE_OPTIONS while configuring a 4GB heap limit, and verifies runtime port/flag and
+public authentication. It never advances a user's save. Failure disables the
+engine and restores the original proxy configuration without restoring over saves.
+
+After a successful `server-engine-activated` result, PC and mobile users must
+refresh existing tabs to load the current client; both use the same server engine.
+The first real day remains an explicit user action. Existing older client writes
+are rejected once activated. No uploaded private fixture is published or committed.

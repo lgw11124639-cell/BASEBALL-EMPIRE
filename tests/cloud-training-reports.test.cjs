@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 function context(compression=true){
  const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,
   CompressionStream:compression?CompressionStream:undefined,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,clearTimeout,console});
- vm.runInContext(fs.readFileSync(path.join(__dirname,'../cloud-only.js'),'utf8').replace(/^export /gm,''),c);return c;
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../cloud-only.js'),'utf8').replace(/^import .*;\s*$/gm,'').replace(/^export /gm,''),c);return c;
 }
 const plain=x=>JSON.parse(JSON.stringify(x));
 (async()=>{

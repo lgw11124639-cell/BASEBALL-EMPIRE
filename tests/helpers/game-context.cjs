@@ -8,9 +8,10 @@ module.exports = function gameContext() {
   if (boot < 0) throw Error('Application boot boundary missing');
   const context = vm.createContext({
     console, performance, structuredClone, TextEncoder, TextDecoder,
+    ...require('../../kpbl-investigation-policy.js'),
     setTimeout, clearTimeout, window: {},
     document: { querySelector: () => ({}), addEventListener: () => {} },
   });
-  vm.runInContext(source.slice(0, boot).replace(/^import .*;\s*$/m, ''), context);
+  vm.runInContext(source.slice(0, boot).replace(/^import .*;\s*$/gm, ''), context);
   return context;
 };

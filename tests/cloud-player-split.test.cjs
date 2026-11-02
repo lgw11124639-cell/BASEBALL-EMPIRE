@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const current=fs.readFileSync('cloud-only.js','utf8');
-function context(source=current){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});vm.runInContext(source.replace(/^export /gm,''),c);return c}
+function context(source=current){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});vm.runInContext(source.replace(/^import .*;\s*$/gm,'').replace(/^export /gm,''),c);return c}
 const plain=x=>JSON.parse(JSON.stringify(x));
 async function pack(c,data){c.data=data;return vm.runInContext('(async()=>packAuxiliaryFields(await packLeagueShards(await packAmateurBuckets(await packCloudShards(data)))))()',c)}
 async function unpack(c,wire){c.wire=structuredClone(wire);return vm.runInContext('(async()=>unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackAuxiliaryFields(wire)))))()',c)}

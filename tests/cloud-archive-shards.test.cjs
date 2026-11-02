@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-function context(){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^export /gm,''),c);return c}
+function context(){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^import .*;\s*$/gm,'').replace(/^export /gm,''),c);return c}
 const plain=x=>JSON.parse(JSON.stringify(x));
 (async()=>{
  const c=context(),archive={};for(let y=2027;y<=2035;y++)archive[y]=Array.from({length:400},(_,i)=>({id:y*10000+i,year:y,day:i%365+1,kind:'1군 등록',title:'선수단 변동 기록 '+i,body:'기존 계약과 경기 기록을 유지하면서 선수단에 등록했습니다. '.repeat(3),teams:[i%10],players:[i]}));

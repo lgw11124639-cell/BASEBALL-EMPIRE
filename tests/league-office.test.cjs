@@ -34,7 +34,7 @@ assert.ok(liveRun('gripVariance.control<gripVariance.standard&&gripVariance.stan
 console.log('PASS actual major club ball scope, second-base runner and pitch grip dispersion');
 (async()=>{
  const fs=require('node:fs'),cloud=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});
- vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^export /gm,''),cloud);
+ vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^import .*;\s*$/gm,'').replace(/^export /gm,''),cloud);
  cloud.data=JSON.parse(run('JSON.stringify(state)'));const before=JSON.stringify(cloud.data.leagueOffice);
  const packed=await vm.runInContext('packCloudShards(data)',cloud);cloud.wire=structuredClone(packed);const restored=await vm.runInContext('unpackCloudShards(wire)',cloud);
  assert.equal(JSON.stringify(restored.leagueOffice),before,'actual cloud shard packing preserves seasons and scheduled decisions');

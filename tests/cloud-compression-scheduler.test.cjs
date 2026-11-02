@@ -1,5 +1,5 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),vm=require('node:vm');
-function context(fast=false){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});if(fast){vm.runInContext(fs.readFileSync('vendor/fflate/fflate-0.8.2.min.js','utf8'),c);vm.runInContext('window.fflate=fflate',c)}vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^export /gm,''),c);return c}
+function context(fast=false){const c=vm.createContext({window:{},localStorage:{getItem:()=>null,removeItem:()=>{}},performance,structuredClone,CompressionStream,DecompressionStream,TextEncoder,TextDecoder,Blob,Response,Uint8Array,btoa,atob,setTimeout,console});if(fast){vm.runInContext(fs.readFileSync('vendor/fflate/fflate-0.8.2.min.js','utf8'),c);vm.runInContext('window.fflate=fflate',c)}vm.runInContext(fs.readFileSync('cloud-only.js','utf8').replace(/^import .*;\s*$/gm,'').replace(/^export /gm,''),c);return c}
 const plain=x=>JSON.parse(JSON.stringify(x));
 (async()=>{
 const fast=context(true),native=context(),run=(c,s)=>vm.runInContext(s,c);
