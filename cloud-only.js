@@ -675,6 +675,7 @@ async function unpackHistoryShards(state){
   const binary=atob(encoded),bytes=new Uint8Array(binary.length);
   for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
   const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  shardGzipCache.set(name,{raw,encoded});
   delete state[name];
   return JSON.parse(raw);
  };

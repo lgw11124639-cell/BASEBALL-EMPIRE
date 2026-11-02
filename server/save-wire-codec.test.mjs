@@ -41,5 +41,6 @@ test('request-scoped decoded caches avoid recompressing unchanged archive shards
  const cold=createSaveWireCodec(),expected=await cold.pack(state);
  assert.deepEqual(actual,expected);
  assert.deepEqual(await createSaveWireCodec().restore(actual),state);
- assert.ok(warmTasks<cold.metrics().tasks,JSON.stringify({warmTasks,coldTasks:cold.metrics().tasks}));
+ assert.equal(warmTasks,0);
+ assert.ok(cold.metrics().tasks>0);
 });
