@@ -20,7 +20,7 @@ if(check.status!==0)throw Error(check.stderr);
 const {createShardStore}=await import(pathToFileURL(staged).href);
 console.log(JSON.stringify(await verifyAdvanceStore(createShardStore)));
 mkdirSync(resolve(output,'server'),{recursive:true,mode:0o700});
-for(const name of ['app.js','cloud-only.js','kpbl-investigation-policy.js'])copyFileSync(resolve(root,name),resolve(output,name));
+for(const name of ['app.js','cloud-only.js','kpbl-investigation-policy.js','server-day-client.js','server-engine-preview.html'])copyFileSync(resolve(root,name),resolve(output,name));
 for(const name of ['save-wire-codec.mjs','advance-day-route.mjs','advance-day-store.mjs','advance-day-service.mjs','original-engine-day.mjs','original-engine-sandbox.mjs','detached-save-restore.mjs']){
  // The restore module and patched sandbox stay on EC2; do not overwrite them.
  const target=resolve(output,'server',name);

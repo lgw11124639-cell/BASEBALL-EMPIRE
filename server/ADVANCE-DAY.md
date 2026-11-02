@@ -57,3 +57,19 @@ restoration, calls the authenticated original engine once, recreates auth object
 and retries the same request, checks stale and legacy writes, and reads the
 existing home endpoint after the save. It never rewinds dates or opens the
 production database. Do not supply detached-2046-regular-complete.json to it.
+
+`server-engine-preview.html` and `server-day-client.js` provide an isolated mobile
+button for staged integration. They do not replace the existing game UI or get
+published by the Pages workflow. Request metadata (ID and expected revision only)
+is kept in sessionStorage before transmission, scoped to the API and username.
+Lost responses and reloads reuse the same request; concurrent taps share a promise.
+A definitive revision conflict refreshes state and requires another deliberate
+click rather than automatically advancing another day. The authenticated
+`/v2/engine/status` reports whether the button may be enabled. No client simulation
+or save upload runs on this page. Desktop/mobile Chromium checks cover a lost
+response followed by reload, retry and updated server home rendering.
+
+Verification evidence from EC2: detached 2046 day 79 -> 80, five persisted regular
+season games with batter/pitcher boxes, duplicate retry at revision 2, stale
+revision rejection, existing home compatibility, and unchanged source file.
+This is a single-day fixture check; full production migration remains disabled.

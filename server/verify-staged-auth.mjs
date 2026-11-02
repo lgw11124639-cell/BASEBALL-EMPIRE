@@ -20,6 +20,9 @@ async function request(path,method='POST',authenticated=true,input={requestId:'s
  return {status,payload};
 }
 assert.equal((await request('/v2/engine/advance','POST',false)).status,401);
+assert.equal((await request('/v2/engine/status','GET',false)).status,401);
+const capability=await request('/v2/engine/status','GET');
+assert.equal(capability.status,200);assert.equal(capability.payload.enabled,false);assert.equal(capability.payload.canAdvance,false);
 assert.equal((await request('/v2/engine/advance')).status,503);
 // A server-owned save cannot be overwritten by the old browser routes.
 db.prepare('INSERT INTO be_day_requests VALUES(?,?,?,?,?)').run(1,'main','staged-receipt-01',1,'{}');

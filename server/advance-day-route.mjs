@@ -5,9 +5,17 @@ import {createAdvanceDayService} from './advance-day-service.mjs';
 export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,response,enabled=false}){
  const store=createAdvanceDayStore(db,shards);
  const advance=createAdvanceDayService({store,restoreSave,encodeSave});
+ const meta=db.prepare('SELECT rev FROM be_save_shard_meta WHERE user_id=? AND slot=?');
+ const owner=db.prepare('SELECT 1 FROM be_day_requests WHERE user_id=? AND slot=? LIMIT 1');
  return async function handleAdvance(req,res,origin,session){
-  if((req.url||'').split('?')[0]!=='/v2/engine/advance')return false;
+  const path=(req.url||'').split('?')[0];
+  if(!['/v2/engine/advance','/v2/engine/status'].includes(path))return false;
   if(!session||!Number.isSafeInteger(session.user_id)){response(res,401,{error:'unauthorized'},origin);return true}
+  if(path==='/v2/engine/status'){
+   if(req.method!=='GET'){response(res,405,{error:'method not allowed'},origin);return true}
+   const current=meta.get(session.user_id,'main');
+   response(res,200,{enabled,serverOwned:!!owner.get(session.user_id,'main'),revision:current?.rev??null,canAdvance:enabled&&!!current},origin);return true;
+  }
   if(req.method!=='POST'){response(res,405,{error:'method not allowed'},origin);return true}
   if(!enabled){response(res,503,{error:'server engine not enabled'},origin);return true}
   let input;
