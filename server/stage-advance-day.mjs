@@ -5,6 +5,7 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {verifyAdvanceStore} from './verify-advance-day-store.mjs';
+import {verifySaveLifecycle} from './verify-save-lifecycle.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const input=resolve(process.argv[2]||'/opt/baseball-empire-api/shard-store.mjs');
 const output=resolve(root,'server.local-backup/advance-api');
@@ -21,9 +22,10 @@ const check=spawnSync(process.execPath,['--check',staged],{encoding:'utf8'});
 if(check.status!==0)throw Error(check.stderr);
 const {createShardStore}=await import(pathToFileURL(staged).href);
 console.log(JSON.stringify(await verifyAdvanceStore(createShardStore)));
+console.log(JSON.stringify(await verifySaveLifecycle(createShardStore)));
 mkdirSync(resolve(output,'server'),{recursive:true,mode:0o700});
-for(const name of ['app.js','cloud-only.js','kpbl-investigation-policy.js','server-day-client.js','server-engine-preview.html','server-game-preview.html'])copyFileSync(resolve(root,name),resolve(output,name));
-for(const name of ['original-engine-command.mjs','save-wire-codec.mjs','advance-day-route.mjs','advance-day-store.mjs','advance-day-service.mjs','original-engine-day.mjs','original-engine-sandbox.mjs','detached-save-restore.mjs']){
+for(const name of ['app.js','cloud-only.js','kpbl-investigation-policy.js','server-day-client.js','server-save-client.js','server-engine-preview.html','server-game-preview.html'])copyFileSync(resolve(root,name),resolve(output,name));
+for(const name of ['save-lifecycle.mjs','original-engine-command.mjs','save-wire-codec.mjs','advance-day-route.mjs','advance-day-store.mjs','advance-day-service.mjs','original-engine-day.mjs','original-engine-sandbox.mjs','detached-save-restore.mjs']){
  // The restore module and patched sandbox stay on EC2; do not overwrite them.
  const target=resolve(output,'server',name);
  copyFileSync(resolve(root,'server',name),target);

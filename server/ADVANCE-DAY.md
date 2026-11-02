@@ -105,12 +105,13 @@ configuration; credentials and the complete environment are never returned or
 logged. Restart explicitly preserves port 3300 and the verified data directory.
 Post-restart verification checks the running process's port and disabled flag.
 
-The opt-in `server-game-preview.html` now loads the original app.js UI and
+`server-game-preview.html` loads the original app.js UI and
 stylesheet. cloudGate fetches server capabilities before rendering. In this mode,
 advanceSeason calls only the server endpoint and reloads the acknowledged save;
 rendering and replay views cannot pre-generate fixtures or prepare national teams.
-Browser cloudSave and IndexedDB profile writes are blocked. Normal index.html
-keeps its existing behavior; the original-screen entrypoint is not published.
+Browser cloudSave and IndexedDB profile writes are blocked. Normal index.html selects server mode when the authenticated capability is
+enabled or the save is already server-owned. With an inactive server and an
+unclaimed save it retains legacy behavior. This branch is not yet published.
 The browser test uses a fresh synthetic world from the original engine and checks
 six navigation tabs, player record views, a photo command and server date refresh,
 with client simulation functions replaced by throwing sentinels.
@@ -125,9 +126,50 @@ photo handlers and hall fan vote controls use this route in server-screen mode.
 The current source has a photo handler but no visible photo file input; the browser
 test covers the command bridge directly rather than claiming a visible uploader.
 
-New game, backup restore and reset are explicitly blocked before mutating state
-in the opt-in server screen pending lossless, archived server-side replacement
-operations. Those existing features remain present in the normal game. Do not
-enable or publish the full migration before these paths are implemented.
+New game, backup restore and reset now use the archived replacement operations
+described below. They are connected to the original controls in server mode.
+Do not activate production until the updated staged integration checks pass.
 Staging scripts also accept the already-installed verified auth/SAVEPOINT wrapper,
 so subsequent checks can run against production source copies without a live edit.
+
+## Archived new-game / restore / reset
+
+`save-lifecycle.mjs` implements authenticated replacement operations. Before a
+slot is replaced, its metadata and every compressed field are copied into
+`be_save_versions` and `be_save_version_fields` in the same SQLite transaction.
+The replacement and its `be_lifecycle_requests` receipt commit together. A receipt
+failure rolls back both the replacement and archive. Archived rows are never
+deleted by these endpoints. Reset writes an empty-slot marker and increments the
+revision, so old requests cannot become valid again after a reset/new game.
+
+The original UI controls call `/v2/engine/new-game`, `/v2/engine/restore`, and
+`/v2/engine/reset` only in server mode. New leagues use the original world()
+constructor on the server. Restore uses the original packing/unpacking codecs.
+Reset retains its two explicit confirmations, whose server-mode text explains
+that the previous version is retained. A status response distinguishes an empty
+slot from a missing revision. `/v2/engine/save-request/:id` recovers only the
+current user's completion receipt without replaying a mutation.
+
+`server-save-client.js` persists only request ID, original revision, operation
+and backup fingerprint. It does not store backup contents in the browser. A lost
+restore response can be recovered on reload or retried by selecting the same file;
+a different file cannot silently replace the pending request. Large uploads use
+gzip. Concurrent newer saves reject stale replacements before any archive write.
+
+Normal PC/mobile clients select server mode from the authenticated capability
+(enabled or already server-owned); the optional preview flag also allows a
+read-only preview while disabled. Once globally enabled, the staged auth handler
+blocks all legacy PUT/PATCH/DELETE saves, including slots with no prior day receipt.
+This prevents an older browser client from racing the new server engine.
+
+Local verification includes the actual original UI on mobile and desktop, six
+navigation tabs, player record/photo routing, server-only day control, and
+reset/new-game/backup-restore control flows. Synthetic data is generated with the
+original engine. Archive byte preservation and transactional rollback are checked
+with real in-memory SQLite. The EC2 staging command also runs these storage
+invariants against the actual production shard-store source copy, and performs
+new-game/photo/reset/restore against the actual staged auth implementation.
+
+These lifecycle and updated UI changes are not deployed or enabled yet. The
+first-install deployment script must not be rerun over the existing foundation;
+a verified upgrade and frontend release are still required before activation.

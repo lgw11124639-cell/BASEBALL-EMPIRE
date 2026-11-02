@@ -28,6 +28,8 @@ source=source.replace(gate,gate+`
     }`);
 }
 if(!source.includes("enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'")||!source.includes('server-owned save; reload server state'))throw Error('Existing auth integration is not the verified disabled/guarded implementation');
+source=source.replace('SELECT 1 FROM be_day_requests WHERE user_id=? AND slot=? LIMIT 1','SELECT 1 FROM (SELECT user_id,slot FROM be_day_requests UNION ALL SELECT user_id,slot FROM be_lifecycle_requests) WHERE user_id=? AND slot=? LIMIT 1');
+source=source.replace("&&serverOwner.get(session.user_id,engineSlot)","&&(process.env.BE_SERVER_ENGINE_ENABLED==='1'||serverOwner.get(session.user_id,engineSlot))");
 // Copy only referenced source modules, recursively, leaving the verified store intact.
 const copied=new Set(['shard-store.mjs']);
 function dependencies(text,base=api){

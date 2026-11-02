@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {createAdvanceDayRoute} from './advance-day-route.mjs';
 test('route requires a session, defaults off, rejects caller-selected owners',async()=>{
- const db=new DatabaseSync(':memory:');db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER)');
+ const db=new DatabaseSync(':memory:');db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER);CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB)');
  let calls=0,reply;
  const dependencies={db,shards:{get(){calls++;return null}},restoreSave:s=>s,body:async req=>req.input,response:(res,status,payload)=>{reply={status,payload}}};
  const req={url:'/v2/engine/advance',method:'POST',headers:{'if-match':'1'},input:{requestId:'route-request-001'}};
