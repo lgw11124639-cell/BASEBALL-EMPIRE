@@ -49,6 +49,7 @@ export function createPrecomputeController({database,metadata,horizon=366,cacheP
    if(worker){const instance=worker;if(owner){const current=metadata(owner.user,owner.slot);if(current&&queue.status(owner.user,owner.slot,engineKey,current.rev,current.digest).ready<30)requests.set(key(owner.user,owner.slot),owner);}worker=null;working=false;owner=null;instance.ref();await instance.terminate()}
   },
   resume(){suspensions=Math.max(0,suspensions-1);if(!suspensions)next()},
+  getFast(user,slot,revision,digest){return queue.getFast(user,slot,engineKey,revision,digest)},
   get(user,slot,revision,digest){return queue.get(user,slot,engineKey,revision,digest)},
   ensure,
   async wait(user,slot,revision,digest,{timeoutMs=120000}={}){

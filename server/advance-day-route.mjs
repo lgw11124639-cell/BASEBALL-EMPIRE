@@ -69,7 +69,8 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
    if(path==='/v2/engine/command'){try{operation=validateGameCommand(input.command)}catch{response(res,400,{error:'invalid game command'},origin);return true}}
    const execute=operation?command:advance;
    const nativeWire=new URL(req.url,'http://localhost').searchParams.get('wireFormat')==='server-json-v1';
-   const {status,...payload}=await execute({userId:session.user_id,requestId:input.requestId,expectedRev:Number(match),operation,nativeWire});
+   const compactWire=new URL(req.url,'http://localhost').searchParams.get('wirePatch')==='1';
+   const {status,...payload}=await execute({userId:session.user_id,requestId:input.requestId,expectedRev:Number(match),operation,nativeWire,compactWire});
    if(status===200&&prepared){const current=store.metadata(session.user_id,'main');if(operation&&!payload.replayed){prepared.invalidate(session.user_id,'main');stateCache.clear()}if(operation&&current)prepared.ensure(session.user_id,'main',current.rev,current.digest);payload.preparation=prepared.status(session.user_id,'main',current?.rev??payload.rev)}
    if(!nativeWire&&payload.day?.timing?.storageFormat==='server-json-v1')delete payload.wireDelta;
    response(res,status,payload,origin);

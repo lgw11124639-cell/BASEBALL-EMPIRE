@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {DatabaseSync} from 'node:sqlite';
 import {mkdtempSync,rmSync,readFileSync} from 'node:fs';import {join} from 'node:path';import {tmpdir,getPriority} from 'node:os';import {gzipSync} from 'node:zlib';
+import {applyNativeValuePatch} from '../native-save.js';
 import {createOriginalEngineSandbox} from './original-engine-sandbox.mjs';import {createNativeSaveCodec} from './native-save-codec.mjs';
 import {createAdvanceDayStore} from './advance-day-store.mjs';import {createAdvanceDayService} from './advance-day-service.mjs';import {createPrecomputeController} from './precompute-controller.mjs';
 test('worker precomputes without advancing saves; prepared commits are atomic, fast and replay-safe',async()=>{
@@ -16,9 +17,12 @@ test('worker precomputes without advancing saves; prepared commits are atomic, f
   let reads=0;const load=store.load;store.load=(...args)=>{reads++;return load(...args)};
   const advance=createAdvanceDayService({store,restoreSave(){throw Error('No whole-save restore on prepared path')},runDay(){throw Error('No foreground simulation on prepared path')},precompute:controller,includeDelta:true});
   db.exec("CREATE TRIGGER fail_receipt BEFORE INSERT ON be_day_requests BEGIN SELECT RAISE(ABORT,'prepared receipt failure'); END");
-  const input={userId:1,expectedRev:1,requestId:'prepared-request-001',nativeWire:true};
+  const input={userId:1,expectedRev:1,requestId:'prepared-request-001',nativeWire:true,compactWire:true};
   assert.equal((await advance(input)).status,500);assert.equal(store.metadata(1,'main').rev,1);db.exec('DROP TRIGGER fail_receipt');
   const at=performance.now(),first=await advance(input);assert.equal(first.status,200);assert.equal(first.day.timing.precomputed,true);assert.equal(first.rev,2);assert.equal(first.digest,ready.nextDigest);assert.equal(reads,0);
+  const compact=first.wireDelta,applied={...wire,...compact.set};for(const [key,ops] of Object.entries(compact.patches))applied[key]=applyNativeValuePatch(wire[key],ops);for(const key of compact.unset)delete applied[key];
+  const stored=load(1,'main').save;assert.deepEqual(JSON.parse(JSON.stringify(applied)),{...stored},'compact client reconstruction must exactly match all committed shard values');
+  for(const [key,raw] of ready.set)assert.deepEqual(stored[key],JSON.parse(raw),'precompressed DB values must match the original engine delta');
   assert.ok(performance.now()-at<1000,'a prepared small world commits below one second');
   assert.equal((await advance(input)).replayed,true);assert.equal(store.metadata(1,'main').rev,2);
   assert.equal((await advance({...input,requestId:'prepared-request-stale'})).status,409);

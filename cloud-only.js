@@ -1,4 +1,4 @@
-import {isNativeSave,restoreNativeSave} from './native-save.js';
+import {isNativeSave,restoreNativeSave,applyNativeValuePatch} from './native-save.js';
 import {createServerSaveClient} from './server-save-client.js';
 import {createServerDayClient} from './server-day-client.js';
 // Cloud-only save transport. Never persists game state to local storage.
@@ -1228,7 +1228,7 @@ async function packOriginalServerBackup(state){
 }
 async function configureOriginalServerScreen(){
  window.beServerGameMode=true; // Fail closed while checking server authority.
- const client=createServerDayClient({api:API,wireFormat:'server-json-v1',getSession:()=>({token,username,expiresAt:Date.now()+60000}),storage:sessionStorage});
+ const client=createServerDayClient({api:API,wireFormat:'server-json-v1',wirePatch:true,getSession:()=>({token,username,expiresAt:Date.now()+60000}),storage:sessionStorage});
  const saves=createServerSaveClient({api:API,getSession:()=>({token,username}),storage:sessionStorage});
  const capability=await client.status();
  window.beServerGameCapability=capability;
@@ -1271,7 +1271,9 @@ async function configureOriginalServerScreen(){
   if(delta&&acknowledgedWireSave&&revision===beforeRevision&&delta.fromRevision===revision&&delta.toRevision===result.rev&&delta.set&&typeof delta.set==='object'&&!Array.isArray(delta.set)&&Array.isArray(delta.unset)){
    const forbidden=key=>['__proto__','constructor','prototype'].includes(key);
    if(Object.keys(delta.set).some(forbidden)||delta.unset.some(key=>typeof key!=='string'||forbidden(key)))throw Error('서버 변경 데이터 형식 오류');
-   const wire={...acknowledgedWireSave,...delta.set};for(const key of delta.unset)delete wire[key];
+   const wire={...acknowledgedWireSave,...delta.set};
+   if(delta.patches){for(const [key,ops] of Object.entries(delta.patches)){if(forbidden(key)||!Object.hasOwn(acknowledgedWireSave,key)||!Array.isArray(ops))throw Error('서버 변경 데이터 형식 오류');wire[key]=applyNativeValuePatch(acknowledgedWireSave[key],ops);delta.set[key]=wire[key]}}
+   for(const key of delta.unset)delete wire[key];
    next=await restoreServerWireChanges(wire,acknowledgedWireSave,baseline?.save,delta);
    revision=result.rev;verified=true;acknowledgedWireSave=wire;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;baseline={save:next,revision};
    window.beServerGameCapability={...window.beServerGameCapability,revision,hasSave:true,canAdvance:true};incremental=true;

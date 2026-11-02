@@ -67,3 +67,35 @@ export function restoreNativeSave(input,{clone=false,previousWire=null,previousS
  }
  return state;
 }
+
+// Sparse field changes retain historical rows on the client. Applied only to an
+// exact acknowledged revision; copy each affected container once.
+export function diffNativeValue(before,after){
+ const ops=[];
+ function walk(a,b,path){
+  if(Object.is(a,b))return;
+  if(!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b)){ops.push(['set',path,b]);return}
+  if(Array.isArray(b)){
+   for(let i=0;i<b.length;i++){if(i>=a.length)ops.push(['set',[...path,i],b[i]]);else walk(a[i],b[i],[...path,i])}
+   if(b.length<a.length)ops.push(['length',path,b.length]);return;
+  }
+  for(const key of Object.keys(a))if(!Object.hasOwn(b,key))ops.push(['delete',[...path,key]]);
+  for(const key of Object.keys(b)){if(!Object.hasOwn(a,key))ops.push(['set',[...path,key],b[key]]);else walk(a[key],b[key],[...path,key])}
+ }
+ walk(before,after,[]);return ops;
+}
+export function applyNativeValuePatch(before,ops){
+ const owned=new WeakSet();let root=before;
+ const copy=value=>{if(!value||typeof value!=='object')throw Error('Invalid patch container');if(owned.has(value))return value;const out=Array.isArray(value)?value.slice():{...value};owned.add(out);return out};
+ for(const op of ops){
+  const [type,path,value]=op;if(!['set','delete','length'].includes(type)||!Array.isArray(path)||path.length>64||path.some(key=>!(typeof key==='string'||Number.isSafeInteger(key)&&key>=0)||unsafe(String(key))))throw Error('Invalid native patch');
+  if(!path.length&&type==='set'){root=value;continue}
+  root=copy(root);let parent=root;const end=type==='length'?path.length:path.length-1;
+  if(end<0)throw Error('Invalid root patch');
+  for(let i=0;i<end;i++){const key=path[i];if(!Object.hasOwn(parent,key))throw Error('Missing patch path');parent[key]=copy(parent[key]);parent=parent[key]}
+  if(type==='length'){if(!Array.isArray(parent)||!Number.isSafeInteger(value)||value<0||value>parent.length)throw Error('Invalid patch length');parent.length=value}
+  else if(type==='delete')delete parent[path.at(-1)];
+  else Object.defineProperty(parent,path.at(-1),{value,enumerable:true,writable:true,configurable:true});
+ }
+ return root;
+}

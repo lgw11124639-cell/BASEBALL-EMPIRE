@@ -492,3 +492,30 @@ Stage and verify before upgrading. The installer backs up code and SQLite,
 stops only the game API before replacing runtime modules, enables precomputation,
 and restarts it. Code rollback must never overwrite newer canonical saves with
 an older database backup. Contract cards no longer show the stamina advice.
+
+
+## v2.2.1 measured foreground bottleneck
+
+The t3.medium v2.2.0 diagnostic measured 4,512 ms HTTP response, despite zero
+foreground engine time: loading the prepared escaped-JSON payload took 628 ms,
+parsing and digest verification 966 ms, and recompression/write 676 ms. The
+remaining time includes response serialization, compression and client parsing.
+Peak RSS was 1,214 MiB, and first preparation took 11,622 ms.
+
+The worker now prepares canonical shard gzip bytes and sparse wire changes.
+New clients explicitly negotiate `wirePatch=1`; old clients retain complete
+field deltas. The cache stores one compressed canonical representation, with
+legacy raw JSON deltas reconstructed on demand rather than duplicated on disk.
+Ready compact commits load only the small metadata/patch and compressed bytes,
+then write the already compressed shards in the same atomic receipt transaction.
+The trusted artifact is bound to user, engine hash, generation, revision and
+input digest in its immutable cache row; gzip CRC checks its stored content.
+Canonical data never depends on client-supplied patches or compressed shards.
+
+Sparse patches apply only to the exact acknowledged client revision and clone
+modified containers, preserving unchanged historical rows and the prior state.
+Tests compare the entire reconstructed wire save against every committed shard,
+and the precompressed values against the original engine delta. The benchmark
+reports responseJsonBytes, compactFields, compactJsonBytes and preparedShardBytes
+in addition to wall time and RSS. Actual t3.medium 1-second performance remains
+unconfirmed until this version is measured.

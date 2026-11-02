@@ -1,5 +1,5 @@
 // Stores pending request metadata/command input only; never an authoritative save.
-export function createServerDayClient({api,getSession,storage,fetchImpl=fetch,timeoutMs=180000,newId=()=>crypto.randomUUID(),wireFormat=null}){
+export function createServerDayClient({api,getSession,storage,fetchImpl=fetch,timeoutMs=180000,newId=()=>crypto.randomUUID(),wireFormat=null,wirePatch=false}){
  const active=new Map();
  function session(){const s=getSession();if(!s||typeof s.username!=='string'||typeof s.token!=='string'||Number(s.expiresAt)<=Date.now())throw Error('게임에서 다시 로그인해 주세요.');return s}
  const key=(s,command=false)=>'be-server-day-request-v1:'+encodeURIComponent(api)+':'+encodeURIComponent(s.username)+(command?':command':'');
@@ -31,7 +31,7 @@ export function createServerDayClient({api,getSession,storage,fetchImpl=fetch,ti
     }
    }catch(error){return Promise.reject(error)}
    const task=Promise.resolve().then(async()=>{
-    const data=await call((p.command?'/v2/engine/command':'/v2/engine/advance')+(wireFormat==='server-json-v1'?'?wireFormat=server-json-v1':''),{method:'POST',headers:{'Content-Type':'application/json','If-Match':String(p.expectedRev)},body:JSON.stringify({requestId:p.requestId,...(p.command?{command:p.command}:{})})},s);
+    const data=await call((p.command?'/v2/engine/command':'/v2/engine/advance')+(wireFormat==='server-json-v1'?'?wireFormat=server-json-v1'+(wirePatch?'&wirePatch=1':''):''),{method:'POST',headers:{'Content-Type':'application/json','If-Match':String(p.expectedRev)},body:JSON.stringify({requestId:p.requestId,...(p.command?{command:p.command}:{})})},s);
     if(data.request_id!==p.requestId||!Number.isSafeInteger(data.rev)||data.rev!==p.expectedRev+1)throw Error('서버 진행 결과를 확인할 수 없습니다. 같은 요청으로 다시 시도해 주세요.');
     storage.removeItem(id);return data;
    }).catch(error=>{

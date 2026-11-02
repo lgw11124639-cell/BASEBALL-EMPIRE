@@ -18,11 +18,11 @@ export function createAdvanceDayStore(db,shards){
  const nativeRemove=db.prepare('DELETE FROM be_save_shards WHERE user_id=? AND slot=? AND field=?');
  const fieldSize=db.prepare('SELECT length(content) AS bytes FROM be_save_shards WHERE user_id=? AND slot=? AND field=?');
  const nativeMeta=db.prepare('UPDATE be_save_shard_meta SET rev=?,updated_at=?,digest=?,compressed_bytes=? WHERE user_id=? AND slot=?');
- function patchSerialized(user,slot,expected,set,unset){
+ function patchSerialized(user,slot,expected,set,unset,preparedDelta=null){
   const m=metadata.get(user,slot);if(!m||m.rev!==expected)return {status:409,current_rev:m?.rev||0};
-  let bytes=Number(m.compressed_bytes)||0;const digest=nativeDeltaDigest(m.digest,expected+1,set,unset);
+  let bytes=Number(m.compressed_bytes)||0;const digest=preparedDelta?preparedDelta.nextDigest:nativeDeltaDigest(m.digest,expected+1,set,unset);
   for(const key of unset){bytes-=fieldSize.get(user,slot,key)?.bytes||0;nativeRemove.run(user,slot,key)}
-  for(const [key,raw] of set){bytes-=fieldSize.get(user,slot,key)?.bytes||0;const data=gzipSync(raw,{level:1});nativeUpsert.run(user,slot,key,data);bytes+=data.length}
+  for(const [key,raw] of (preparedDelta?.shards||set)){bytes-=fieldSize.get(user,slot,key)?.bytes||0;const data=preparedDelta?Buffer.from(raw,'base64'):gzipSync(raw,{level:1});nativeUpsert.run(user,slot,key,data);bytes+=data.length}
   const result={status:200,ok:true,slot,rev:expected+1,updated_at:new Date().toISOString(),digest,compressed_bytes:bytes};
   nativeMeta.run(result.rev,result.updated_at,result.digest,bytes,user,slot);return result;
  }
@@ -44,7 +44,7 @@ export function createAdvanceDayStore(db,shards){
    }
    catch(error){db.exec('ROLLBACK TO be_day_read');db.exec('RELEASE be_day_read');throw error}
   },
-  commit({user,slot,requestId,expectedRev,state,result,delta,serializedDelta}){
+  commit({user,slot,requestId,expectedRev,state,result,delta,serializedDelta,preparedDelta}){
    db.exec('BEGIN IMMEDIATE');
    try{
     let response=receipt(user,slot,requestId,expectedRev);
@@ -54,7 +54,7 @@ export function createAdvanceDayStore(db,shards){
      else if(current.rev!==expectedRev)response={status:409,error:'revision conflict',current_rev:current.rev};
      else{
       const commitStarted=performance.now();
-      const saved=serializedDelta?patchSerialized(user,slot,expectedRev,serializedDelta,delta.unset):delta&&typeof shards.patch==='function'?shards.patch(user,slot,expectedRev,delta.set,delta.unset):shards.put(user,slot,expectedRev,state);
+      const saved=preparedDelta?patchSerialized(user,slot,expectedRev,null,preparedDelta.unset,preparedDelta):serializedDelta?patchSerialized(user,slot,expectedRev,serializedDelta,delta.unset):delta&&typeof shards.patch==='function'?shards.patch(user,slot,expectedRev,delta.set,delta.unset):shards.put(user,slot,expectedRev,state);
       if(saved.status!==200)throw Error('Shard store violated atomic revision check');
       const {status,...metadata}=saved;
       const payload={...metadata,request_id:requestId,day:{...result,...(result.timing?{timing:{...result.timing,writeMs:Math.round(performance.now()-commitStarted)}}:{})}};
