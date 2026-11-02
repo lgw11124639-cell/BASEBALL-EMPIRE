@@ -1,5 +1,5 @@
 // Reuse the browser's lossless save codecs, excluding authentication/transport.
-// Every invocation has fresh caches; no save or identity survives between users.
+// Each request has isolated caches, shared only between its decode and encode.
 import {readFileSync} from 'node:fs';
 const path=new URL('../cloud-only.js',import.meta.url);
 export function createSaveWireCodec(source=readFileSync(path,'utf8')){
@@ -8,8 +8,10 @@ export function createSaveWireCodec(source=readFileSync(path,'utf8')){
  if(first<0||last<=first)throw Error('Canonical codec boundaries changed');
  const section=source.slice(first,last);
  if(/\b(?:fetch|localStorage|indexedDB)\b/.test(section))throw Error('Unexpected I/O in save codec');
- const functions=Function('window',section+'\nreturn {packCloudShards,packAmateurBuckets,packLeagueShards,packHistoryShards,packAuxiliaryFields,unpackReplayResults,unpackCloudShards,unpackLeagueShards,unpackAmateurBuckets,unpackHistoryShards,unpackAuxiliaryFields};')({});
+ const diagnostics={};
+ const functions=Function('window',section+'\nreturn {packCloudShards,packAmateurBuckets,packLeagueShards,packHistoryShards,packAuxiliaryFields,unpackReplayResults,unpackCloudShards,unpackLeagueShards,unpackAmateurBuckets,unpackHistoryShards,unpackAuxiliaryFields};')(diagnostics);
  return {
+  metrics(){return diagnostics.beCloudGzipSnapshot?.()??null},
   async restore(save){
    let state=structuredClone(save);
    for(const name of ['unpackAuxiliaryFields','unpackHistoryShards','unpackAmateurBuckets','unpackLeagueShards','unpackCloudShards','unpackReplayResults'])state=await functions[name](state);

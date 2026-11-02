@@ -19,6 +19,8 @@ export async function verifyAdvanceStore(createShardStore){
  const request={userId:1,requestId:'atomic-request-0001',expectedRev:1};
  const [first,concurrent]=await Promise.all([advance(request),advance(request)]);
  assert.equal(first.status,200);assert.deepEqual(concurrent,first);assert.equal(runs,1);
+ assert.equal(first.day.timing.changedFields,1);
+ assert.equal(first.day.timing.removedFields,0);
  assert.equal(store.load(1,'main').save.day,51);assert.equal(store.load(2,'main').save.day,50);
  const restarted=createAdvanceDayService({store:createAdvanceDayStore(db,shards),restoreSave:async s=>s,runDay});
  assert.equal((await restarted(request)).replayed,true);assert.equal(runs,1);
@@ -34,9 +36,11 @@ export async function verifyAdvanceStore(createShardStore){
  // A failure writing the receipt must roll back the already-written shard data.
  db.exec("CREATE TRIGGER fail_receipt BEFORE INSERT ON be_day_requests BEGIN SELECT RAISE(ABORT,'test receipt failure'); END");
  const before=store.load(1,'main');
- assert.throws(()=>store.commit({user:1,slot:'main',requestId:'atomic-fail-receipt',expectedRev:before.rev,state:{...initial,day:99},result:{}}),/test receipt failure/);
+ const oldFields=db.prepare('SELECT field,hex(content) AS bytes FROM be_save_shards WHERE user_id=1 AND slot=? ORDER BY field').all('main');
+ assert.throws(()=>store.commit({user:1,slot:'main',requestId:'atomic-fail-receipt',expectedRev:before.rev,state:{...initial,day:99},delta:{set:{day:99},unset:[]},result:{}}),/test receipt failure/);
  assert.equal(store.load(1,'main').rev,before.rev);assert.equal(store.load(1,'main').save.day,70);
  assert.equal(store.receipt(1,'main','atomic-fail-receipt',before.rev),null);
+ assert.deepEqual(db.prepare('SELECT field,hex(content) AS bytes FROM be_save_shards WHERE user_id=1 AND slot=? ORDER BY field').all('main'),oldFields);
  db.exec('DROP TRIGGER fail_receipt');
  // An engine exception must neither write state nor consume the request ID.
  const failing=createAdvanceDayService({store,restoreSave:async s=>s,runDay:()=>{throw Error('test engine failure')}});

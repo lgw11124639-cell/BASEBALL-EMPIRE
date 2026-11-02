@@ -21,7 +21,7 @@ export function createAdvanceDayStore(db,shards){
    try{const value=shards.get(user,slot);db.exec('RELEASE be_day_read');return value}
    catch(error){db.exec('ROLLBACK TO be_day_read');db.exec('RELEASE be_day_read');throw error}
   },
-  commit({user,slot,requestId,expectedRev,state,result}){
+  commit({user,slot,requestId,expectedRev,state,result,delta}){
    db.exec('BEGIN IMMEDIATE');
    try{
     let response=receipt(user,slot,requestId,expectedRev);
@@ -30,10 +30,11 @@ export function createAdvanceDayStore(db,shards){
      if(!current)response={status:404,error:'save not found'};
      else if(current.rev!==expectedRev)response={status:409,error:'revision conflict',current_rev:current.rev};
      else{
-      const saved=shards.put(user,slot,expectedRev,state);
+      const commitStarted=performance.now();
+      const saved=delta&&typeof shards.patch==='function'?shards.patch(user,slot,expectedRev,delta.set,delta.unset):shards.put(user,slot,expectedRev,state);
       if(saved.status!==200)throw Error('Shard store violated atomic revision check');
       const {status,...metadata}=saved;
-      const payload={...metadata,request_id:requestId,day:result};
+      const payload={...metadata,request_id:requestId,day:{...result,...(result.timing?{timing:{...result.timing,writeMs:Math.round(performance.now()-commitStarted)}}:{})}};
       insert.run(user,slot,requestId,expectedRev,JSON.stringify(payload));
       response={status:200,...payload,replayed:false};
      }

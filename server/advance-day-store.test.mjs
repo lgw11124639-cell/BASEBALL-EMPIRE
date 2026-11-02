@@ -9,6 +9,17 @@ function createTestShards(db){
  const fields=db.prepare('SELECT field,content FROM be_save_shards WHERE user_id=? AND slot=?');
  return {
   get(user,slot){const row=meta.get(user,slot);return row?{...row,save:Object.fromEntries(fields.all(user,slot).map(r=>[r.field,JSON.parse(gunzipSync(r.content))]))}:null},
+  patch(user,slot,expected,set,unset){
+   const current=meta.get(user,slot);
+   if(current?.rev!==expected)return {status:409,current_rev:current?.rev||0};
+   db.exec('SAVEPOINT be_shard_patch');
+   try{
+    for(const key of unset)db.prepare('DELETE FROM be_save_shards WHERE user_id=? AND slot=? AND field=?').run(user,slot,key);
+    for(const [key,value] of Object.entries(set))db.prepare('INSERT OR REPLACE INTO be_save_shards VALUES(?,?,?,?)').run(user,slot,key,gzipSync(JSON.stringify(value)));
+    db.prepare('UPDATE be_save_shard_meta SET rev=rev+1 WHERE user_id=? AND slot=?').run(user,slot);
+    db.exec('RELEASE be_shard_patch');return {status:200,ok:true,slot,rev:expected+1};
+   }catch(error){db.exec('ROLLBACK TO be_shard_patch');db.exec('RELEASE be_shard_patch');throw error}
+  },
   put(user,slot,expected,data){
    db.exec('SAVEPOINT be_shard_write');
    try{

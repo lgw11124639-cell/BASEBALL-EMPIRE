@@ -1,0 +1,22 @@
+// Read-only detached fixture benchmark. No engine, DB or HTTP operations.
+import {readFileSync,statSync} from 'node:fs';
+import {resolve} from 'node:path';
+import assert from 'node:assert/strict';
+import {createSaveWireCodec} from './save-wire-codec.mjs';
+import {buildWireDelta} from './wire-delta.mjs';
+const file=resolve(process.argv[2]||'server.local-backup/detached-real-save.json');
+const original=statSync(file),initial=JSON.parse(readFileSync(file,'utf8'));
+assert.ok(Array.isArray(initial.players)&&Array.isArray(initial.teams),'Expected detached full save');
+const baseline=await createSaveWireCodec().pack(initial);
+const codec=createSaveWireCodec();
+const state=await codec.restore(baseline);state.day++;
+let start=performance.now();
+const fresh=createSaveWireCodec(),cold=await fresh.pack(state),coldMs=Math.round(performance.now()-start);
+const tasksBefore=codec.metrics().tasks;
+start=performance.now();const warm=await codec.pack(state),warmMs=Math.round(performance.now()-start);
+assert.deepEqual(warm,cold,'Warm and fresh encodings must be identical');
+const delta=buildWireDelta(baseline,warm),rebuilt={...baseline,...delta.set};
+for(const key of delta.unset)delete rebuilt[key];
+assert.deepEqual(rebuilt,warm);
+const after=statSync(file);assert.equal(after.size,original.size);assert.equal(after.mtimeMs,original.mtimeMs);
+console.log(JSON.stringify({success:true,stage:'detached-codec-benchmark',coldPackMs:coldMs,warmPackMs:warmMs,coldGzipTasks:fresh.metrics().tasks,warmGzipTasks:codec.metrics().tasks-tasksBefore,changedFields:Object.keys(delta.set).length,totalFields:Object.keys(warm).length,identicalWire:true,sourceFileUnchanged:true,productionDatabaseOpened:false,saveSimulationPerformed:false}));

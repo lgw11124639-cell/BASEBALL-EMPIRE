@@ -213,3 +213,28 @@ After successful activation, `pm2 save` persists the current process configurati
 so a daemon/system restart retains the engine flag and heap setting. It does not
 restart other applications. The failure path also saves the recovered disabled
 configuration. No PM2 environment values or credentials are printed.
+
+### Incremental day persistence and running upgrades
+
+Day and supported command requests now use one isolated codec instance for both
+restore and encoding. Decoded archive compression caches survive that request's
+engine execution; unchanged shards reuse their original lossless wire encoding.
+Only changed and removed top-level wire fields enter `shards.patch`, inside the
+same revision-checked transaction as the durable receipt. No caches are shared
+between requests or users. Engine rules and simulation remain unchanged.
+The receipt's `day.timing` reports load, restore, engine, pack, delta and shard
+write times plus changed/removed/total field counts; HTTP transfer and the final
+SQLite COMMIT are outside those phase measurements.
+
+Optional read-only packaging measurement on a detached full fixture:
+`node --max-old-space-size=4096 server/benchmark-save-codec.mjs server.local-backup/detached-real-save.json`.
+This compares fresh/warm encoding of the same state and asserts identical wire
+output; it does not measure real simulation or advance a production save.
+
+For an already enabled API, run staging and actual HTTP verification first, then
+`node --experimental-sqlite server/upgrade-running-api.mjs`. This explicitly
+requires the existing enabled engine, preserves its flag and Node options,
+backs up SQLite and installed files, restarts only verified API process 4, and
+checks port ownership, health and authentication. Code rollback preserves the
+prior enabled state and never restores an old database over newer saves.
+`upgrade-disabled-api.mjs` continues to require a disabled engine.

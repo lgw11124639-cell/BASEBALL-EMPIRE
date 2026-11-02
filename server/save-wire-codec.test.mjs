@@ -32,3 +32,14 @@ test('new server saves remain readable by the existing lightweight home endpoint
  assert.equal(home.revision,2);assert.equal(home.day,266);assert.equal(home.team.id,0);assert.equal(home.standings.length,10);
  db.close();
 });
+test('request-scoped decoded caches avoid recompressing unchanged archive shards',async()=>{
+ const initial=seed(),wire=await createSaveWireCodec().pack(initial);
+ const warm=createSaveWireCodec(),state=await warm.restore(wire);
+ state.day++;
+ const before=warm.metrics().tasks;
+ const actual=await warm.pack(state),warmTasks=warm.metrics().tasks-before;
+ const cold=createSaveWireCodec(),expected=await cold.pack(state);
+ assert.deepEqual(actual,expected);
+ assert.deepEqual(await createSaveWireCodec().restore(actual),state);
+ assert.ok(warmTasks<cold.metrics().tasks,JSON.stringify({warmTasks,coldTasks:cold.metrics().tasks}));
+});

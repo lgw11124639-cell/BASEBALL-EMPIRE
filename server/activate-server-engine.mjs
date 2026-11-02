@@ -17,7 +17,7 @@ const runtime=readProcessRuntime(Number(info.pid));
 if(!runtime.listeningPorts.includes(3300)||runtime.configuration.BE_SERVER_ENGINE_ENABLED!=='0')throw Error('Expected the disabled API on port 3300');
 const database=resolve(runtime.configuration.DATA_DIR||resolve(api,'data'),'saves.sqlite');
 if(database!==resolve(api,'data/saves.sqlite'))throw Error('Unexpected database path');
-for(const name of ['app.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/save-wire-codec.mjs']){
+for(const name of ['app.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/save-wire-codec.mjs','server/wire-delta.mjs']){
  if(hash(readFileSync(resolve(api,name)))!==hash(readFileSync(resolve(repo,name))))throw Error('Production file does not match verified release: '+name+'; upgrade first');
 }
 const auth=readFileSync(resolve(api,'auth.mjs'),'utf8');
