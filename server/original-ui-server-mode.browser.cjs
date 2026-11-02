@@ -28,12 +28,18 @@ const assert=require('node:assert/strict');
   fixture.history.seasons[2025].players.push({id:p.id,teamId:p.teamId,games:25,pitchingWins:10,pitchingLosses:4,pitchingStrikeouts:130});
   fixture.players=fixture.players.filter(x=>x.id!==p.id);
  }
+ if(!fixturePath){
+  fixture.gameResults=[{year:fixture.year,day:fixture.day,away:0,home:1,awayRuns:4,homeRuns:7,awayInnings:[0,2,0,0,0,0,0,0,2],homeInnings:[0,0,0,3,0,0,4,0,0],awayBatters:[],homeBatters:[],awayPitchers:[{name:'원정 선발',started:true}],homePitchers:[{name:'홈 선발',started:true}]}];
+  fixture.day++;
+ }
  const startingWorld=structuredClone(fixture);
  const {restoreServerSave}=await import('./save-wire-codec.mjs');
+ const {packNativeSave}=await import('../native-save.js');
+ const native=process.argv.includes('--native');
  const {gunzipSync}=require('node:zlib');
  const server=createServer((req,res)=>{
   const name=decodeURIComponent(req.url.split('?')[0]).slice(1);
-  if(!['index.html','server-game-preview.html','app.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js','ui.css','manifest.webmanifest','update.js','vendor/fflate/fflate-0.8.2.min.js'].includes(name)){res.writeHead(404);return res.end()}
+  if(!['index.html','server-game-preview.html','app.js','native-save.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js','ui.css','manifest.webmanifest','update.js','vendor/fflate/fflate-0.8.2.min.js'].includes(name)){res.writeHead(404);return res.end()}
   let bytes=readFileSync(resolve(root,name));
   if(name==='app.js'){
    const source=bytes.toString(),at=source.lastIndexOf('(async()=>{try{app.innerHTML=');
@@ -53,7 +59,7 @@ const assert=require('node:assert/strict');
    const req=route.request(),path=new URL(req.url()).pathname;
    if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,PUT,PATCH,DELETE','access-control-allow-headers':'authorization,content-type,if-match'}});
    let data;
-   if(req.method()==='GET'&&path==='/v2/saves/main'){snapshotReads++;data={rev:revision,save:fixture};}
+   if(req.method()==='GET'&&path==='/v2/saves/main'){snapshotReads++;data={rev:revision,save:native?packNativeSave(fixture):fixture};}
    else if(path==='/v2/engine/status')data={enabled:true,canAdvance:!fixture.beServerSlotEmpty,revision,serverOwned:false};
    else if(req.method()==='POST'&&['/v2/engine/new-game','/v2/engine/reset','/v2/engine/restore'].includes(path)){
     lifecycle++;const bytes=req.postDataBuffer(),body=JSON.parse((req.headers()['content-encoding']==='gzip'?gunzipSync(bytes):bytes).toString());
@@ -68,13 +74,20 @@ const assert=require('node:assert/strict');
     const changedPlayer=fixture.players.find(p=>String(p.id)===body.command.playerId);changedPlayer.profile=changedPlayer.profile||{};changedPlayer.profile.photoData=body.command.photo;
     revision++;data={request_id:body.requestId,rev:revision};
    }
-   else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:{day:fixture.day},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}}}
+   else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:native?packNativeSave(fixture):{day:fixture.day},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}}}
    else{writes++;return route.fulfill({status:500,headers:{'access-control-allow-origin':'*'},body:'{}'})}
    return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(data)});
   });
   await page.goto('http://127.0.0.1:'+server.address().port+(process.argv.includes('--main')?'/index.html':'/server-game-preview.html'));
   await page.waitForSelector('#advance-day',{timeout:30000});
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);
+  if(!fixturePath){
+   const card=page.locator('.be-calendar-match-list .be-today-match').filter({hasText:'원정 선발'}).first();
+   await card.waitFor();assert.ok((await card.textContent()).includes('홈 선발'));
+   const centered=await card.evaluate(el=>{const box=el.getBoundingClientRect(),buttons=[...el.querySelectorAll('.be-today-actions button')].map(b=>b.getBoundingClientRect());return buttons.length===2&&Math.abs((buttons[0].left+buttons[1].right)/2-(box.left+box.right)/2)<3});
+   assert.equal(centered,true,'replay and article buttons are centered in the game card');
+  }
+
   for(const tab of ['roster','news','league','fa','national','home']){
    await page.locator('nav [data-tab="'+tab+'"]').click();
    await page.waitForSelector('main[data-view="'+tab+'"]',{timeout:30000});

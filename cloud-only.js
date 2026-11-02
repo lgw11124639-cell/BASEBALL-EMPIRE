@@ -1,3 +1,4 @@
+import {isNativeSave,restoreNativeSave} from './native-save.js';
 import {createServerSaveClient} from './server-save-client.js';
 import {createServerDayClient} from './server-day-client.js';
 // Cloud-only save transport. Never persists game state to local storage.
@@ -918,7 +919,7 @@ window.beFetchServerHomeView=async function(){
  return Object.freeze({revision:payload.revision,year:payload.year,day:payload.day,teamId:payload.teamId,
   updatedAt:payload.updatedAt??null,team:Object.freeze({id:t.id,name:t.name,city:t.city??null,stadium:t.stadium??null,wins:t.wins??null,losses:t.losses??null,draws:t.draws??null,fans:t.fans??null}),readOnly:true});
 };
-async function snapshot(){try{return await call('/v2/saves/main')}catch(e){if(e.status===404)return null;throw e}}
+async function snapshot(){try{return await call('/v2/saves/main?wireFormat=server-json-v1')}catch(e){if(e.status===404)return null;throw e}}
 // Read-only verification against the actual server snapshot; never overwrites the running game.
 function canonicalCloudValue(value){
  return JSON.stringify(value,function(_key,v){
@@ -944,6 +945,7 @@ window.beVerifyCloudServer=async()=>{
  return result;
 };
 async function restoreServerWireChanges(wire,previous,decoded,delta){
+ if(isNativeSave(wire))return restoreNativeSave(wire,{previousWire:previous,previousState:decoded,changedKeys:[...Object.keys(delta.set),...delta.unset]});
  if(!decoded)return unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(wire)))))));
  const changed=new Set([...Object.keys(delta.set),...delta.unset]),partial={...wire},reused={};
  // Replay history grows all season. Decode changed chunks only, retaining the
@@ -982,7 +984,7 @@ async function restoreServerWireChanges(wire,previous,decoded,delta){
  const restored=await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(partial)))))));
  return {...restored,...reused};
 }
-async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;const restored=s?.save&&!s.save.beServerSlotEmpty?await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(s.save))))))):null;baseline={save:restored,revision:rev};return restored}
+async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;const restored=s?.save&&!s.save.beServerSlotEmpty?await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(isNativeSave(s.save)?restoreNativeSave(s.save):structuredClone(s.save))))))):null;baseline={save:restored,revision:rev};return restored}
 // Read-only cloud consistency audit. Never overwrites game state or save revision.
 window.beAuditCloudConsistency=async function(){
  if(!token||!verified)throw Error('클라우드 로그인이 필요합니다');
@@ -1226,7 +1228,7 @@ async function packOriginalServerBackup(state){
 }
 async function configureOriginalServerScreen(){
  window.beServerGameMode=true; // Fail closed while checking server authority.
- const client=createServerDayClient({api:API,getSession:()=>({token,username,expiresAt:Date.now()+60000}),storage:sessionStorage});
+ const client=createServerDayClient({api:API,wireFormat:'server-json-v1',getSession:()=>({token,username,expiresAt:Date.now()+60000}),storage:sessionStorage});
  const saves=createServerSaveClient({api:API,getSession:()=>({token,username}),storage:sessionStorage});
  const capability=await client.status();
  window.beServerGameCapability=capability;

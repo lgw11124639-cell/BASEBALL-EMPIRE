@@ -30,6 +30,26 @@ source=source.replace(gate,gate+`
 if(!source.includes("enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'")||!source.includes('server-owned save; reload server state'))throw Error('Existing auth integration is not the verified disabled/guarded implementation');
 source=source.replace('SELECT 1 FROM be_day_requests WHERE user_id=? AND slot=? LIMIT 1','SELECT 1 FROM (SELECT user_id,slot FROM be_day_requests UNION ALL SELECT user_id,slot FROM be_lifecycle_requests) WHERE user_id=? AND slot=? LIMIT 1');
 source=source.replace("&&serverOwner.get(session.user_id,engineSlot)","&&(process.env.BE_SERVER_ENGINE_ENABLED==='1'||serverOwner.get(session.user_id,engineSlot))");
+// Negotiate plain server JSON while preserving older open clients on read.
+if(!source.includes('native server JSON negotiation')){
+ const getAnchor='const item=shards.get(session.user_id,slot);';
+ if(source.split(getAnchor).length!==2)throw Error('Unexpected save GET implementation');
+ source=source.replace(getAnchor,`let item=shards.get(session.user_id,slot);
+      // native server JSON negotiation: old clients receive a lossless legacy view.
+      if(item?.save?.beServerNativeManifest&&new URL(req.url,'http://localhost').searchParams.get('wireFormat')!=='server-json-v1')item={...item,save:await packServerSave(await restoreServerSave(item.save))};`);
+}
+if(!source.includes('beHttpGzipResponse')){
+ source="import {gzipSync as beHttpGzipSync} from 'node:zlib';\n"+source;
+ const begin=source.indexOf('  const response=(res,status,obj,origin)=>{'),end=source.indexOf('\n',begin);
+ if(begin<0||end<begin||!source.slice(begin,end).includes('res.end(JSON.stringify(obj))'))throw Error('Unexpected response helper');
+ source=source.slice(0,begin)+`  const response=(res,status,obj,origin)=>{
+    const json=JSON.stringify(obj);
+    const accepted=String(res.req?.headers?.['accept-encoding']||'').split(',').some(value=>{const m=/^\\s*gzip(?:\\s*;\\s*q=([0-9.]+))?\\s*$/i.exec(value);return m&&Number(m[1]??1)>0});
+    const beHttpGzipResponse=json.length>=16384&&accepted;
+    res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...(beHttpGzipResponse?{'content-encoding':'gzip'}:{}),vary:origin?'Origin, Accept-Encoding':'Accept-Encoding',...(origin?{'access-control-allow-origin':origin}:{})});
+    res.end(beHttpGzipResponse?beHttpGzipSync(Buffer.from(json),{level:1}):json);
+  };`+source.slice(end);
+}
 // Copy only referenced source modules, recursively, leaving the verified store intact.
 const copied=new Set(['shard-store.mjs']);
 function dependencies(text,base=api){

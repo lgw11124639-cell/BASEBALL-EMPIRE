@@ -23,8 +23,8 @@ if((runtime.configuration.BE_SERVER_ENGINE_ENABLED==='1')!==keepEnabled)throw Er
 const database=resolve(runtime.configuration.DATA_DIR||resolve(api,'data'),'saves.sqlite');
 log({stage:'runtime-verified',pm2Id:4,pid:runtime.pid,listeningPort:3300});
 if(database!==resolve(api,'data/saves.sqlite'))throw Error('Unexpected production DB path; review before deployment');
-const names=['auth.mjs','shard-store.mjs','app.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js',
- 'server/wire-delta.mjs','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/owned-engine-runtime.mjs','server/decoded-day-cache.mjs','server/original-engine-sandbox.mjs','server/save-wire-codec.mjs'];
+const names=['auth.mjs','shard-store.mjs','app.js','native-save.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js',
+ 'server/wire-delta.mjs','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/owned-engine-runtime.mjs','server/decoded-day-cache.mjs','server/native-save-codec.mjs','server/original-engine-sandbox.mjs','server/save-wire-codec.mjs'];
 for(const name of names){
  const src=resolve(stage,name);
  const check=spawnSync(process.execPath,['--check',src],{encoding:'utf8'});
@@ -74,8 +74,20 @@ try{
 }catch(error){
  let rollback=true;
  try{
-  for(const item of previous){const dest=resolve(api,item.name);if(item.existed)install(resolve(saved,'files',item.name),dest);else rmSync(dest,{force:true})}
-  pm2(['restart','4','--update-env'],restartEnv);rollback=await healthy();
+  const probe=new DatabaseSync(database,{readOnly:true});let nativeCommitted;
+  try{nativeCommitted=!!probe.prepare("SELECT 1 FROM be_save_shards WHERE field='beServerNativeManifest' LIMIT 1").get()}finally{probe.close()}
+  const previousCodec=resolve(saved,'files/server/save-wire-codec.mjs');
+  const compatible=existsSync(previousCodec)&&readFileSync(previousCodec,'utf8').includes('isNativeSave');
+  if(nativeCommitted&&!compatible){
+   // A user may advance between restart and the health check. Keep the decoder
+   // that understands that committed save; never downgrade or rewind the DB.
+   pm2(['restart','4','--update-env'],{...restartEnv,BE_SERVER_ENGINE_ENABLED:'0'});
+   rollback=false;
+   log({stage:'forward-repair-required',newCompatibleCodeRetained:true,engineEnabled:false,databaseRestored:false});
+  }else{
+   for(const item of previous){const dest=resolve(api,item.name);if(item.existed)install(resolve(saved,'files',item.name),dest);else rmSync(dest,{force:true})}
+   pm2(['restart','4','--update-env'],restartEnv);rollback=await healthy();
+  }
  }catch{rollback=false}
  log({success:false,error:String(error.message||error),codeRollbackHealthy:rollback,backupDirectory:saved,databaseRestored:false,saveSimulationPerformed:false});
  process.exitCode=1;

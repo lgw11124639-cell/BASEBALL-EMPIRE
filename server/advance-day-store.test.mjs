@@ -71,3 +71,28 @@ test('warm decoded state avoids reads and gzip restore but preserves DB authorit
  assert.equal((await advance({userId:2,expectedRev:1,requestId:'warm-cache-user-two'})).day.timing.cacheHit,false);
  cache.clear();db.close();
 });
+test('native format migrates atomically, detects changes with pre-mutation hashes and rolls back receipts',async()=>{
+ const {DatabaseSync}=await import('node:sqlite'),{createSaveWireCodec}=await import('./save-wire-codec.mjs'),{createNativeSaveCodec,nativeWireDelta}=await import('./native-save-codec.mjs');
+ const {createAdvanceDayStore}=await import('./advance-day-store.mjs'),{createAdvanceDayService}=await import('./advance-day-service.mjs');
+ const db=new DatabaseSync(':memory:');
+ db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,updated_at TEXT,digest TEXT,compressed_bytes INTEGER,PRIMARY KEY(user_id,slot));CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field))');
+ const shards=createTestShards(db),store=createAdvanceDayStore(db,shards),legacy=createSaveWireCodec();
+ const initial={year:2046,day:100,players:[{id:1,name:'A',games:1}],teams:[],gameResults:[],history:{seasons:{2045:{complete:true}}}};
+ shards.put(1,'main',0,await legacy.pack(initial));
+ db.exec('UPDATE be_save_shard_meta SET compressed_bytes=(SELECT sum(length(content)) FROM be_save_shards)');
+ const advance=createAdvanceDayService({store,restoreSave:s=>legacy.restore(s),codecFactory:createSaveWireCodec,ownsRestoredState:true,includeDelta:true,runDay:async s=>{s.day++;s.players[0].games++;return {state:s,result:{}}}});
+ const first=await advance({userId:1,expectedRev:1,requestId:'native-migration1',nativeWire:true});assert.equal(first.status,200);assert.equal(first.day.timing.storageFormat,'server-json-v1');
+ const before=store.load(1,'main');assert.ok(before.save.beServerNativeManifest);assert.equal((await legacy.restore(before.save)).players[0].games,2);
+ const native=new createNativeSaveCodec();
+ const owned=await native.restore(before.save,{takeOwnership:true});owned.players[0].games=99;
+ const next=await native.pack(owned),delta=nativeWireDelta(before.save,next,before.fieldHashes);
+ assert.ok(Object.keys(delta.set).some(k=>k.startsWith('beServerPart_players')),'in-place mutation cannot change the saved baseline hashes');
+ const previous=store.load(1,'main');
+ db.exec("CREATE TRIGGER native_receipt_failure BEFORE INSERT ON be_day_requests BEGIN SELECT RAISE(ABORT,'native receipt failure'); END");
+ assert.throws(()=>store.commit({user:1,slot:'main',requestId:'native-rollback-1',expectedRev:2,state:next,delta,serializedDelta:delta.serializedSet,result:{}}),/native receipt failure/);
+ assert.deepEqual(store.load(1,'main'),previous);db.exec('DROP TRIGGER native_receipt_failure');
+ const second=await advance({userId:1,expectedRev:2,requestId:'native-continue-1',nativeWire:true});assert.equal(second.status,200);assert.equal((await legacy.restore(store.load(1,'main').save)).players[0].games,3);
+ assert.equal(db.prepare('SELECT compressed_bytes AS n FROM be_save_shard_meta WHERE user_id=1').get().n,db.prepare('SELECT sum(length(content)) AS n FROM be_save_shards WHERE user_id=1').get().n);
+ assert.equal((await advance({userId:1,expectedRev:1,requestId:'native-migration1',nativeWire:true})).replayed,true);
+ db.close();
+});

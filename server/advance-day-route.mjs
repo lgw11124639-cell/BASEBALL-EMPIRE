@@ -57,7 +57,9 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
    let operation;
    if(path==='/v2/engine/command'){try{operation=validateGameCommand(input.command)}catch{response(res,400,{error:'invalid game command'},origin);return true}}
    const execute=operation?command:advance;
-   const {status,...payload}=await execute({userId:session.user_id,requestId:input.requestId,expectedRev:Number(match),operation});
+   const nativeWire=new URL(req.url,'http://localhost').searchParams.get('wireFormat')==='server-json-v1';
+   const {status,...payload}=await execute({userId:session.user_id,requestId:input.requestId,expectedRev:Number(match),operation,nativeWire});
+   if(!nativeWire&&payload.day?.timing?.storageFormat==='server-json-v1')delete payload.wireDelta;
    response(res,status,payload,origin);
   }catch{
    response(res,500,{error:'day advance unavailable'},origin);

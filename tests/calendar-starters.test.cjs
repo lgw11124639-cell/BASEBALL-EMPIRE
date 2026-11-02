@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');
+const c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);const starter=state.players.find(p=>p.position==='P');const game={awayPitchers:[{playerId:starter.id,started:true}],homePitchers:[{name:'홈 선발',role:'선발'}]};`);
+assert.equal(run("beRecordedStarter(game,'away')"),run('starter.name'));
+assert.equal(run("beRecordedStarter(game,'home')"),'홈 선발');
+assert.equal(run("beRecordedStarter(null,'home')"),'선발 미정');
+assert.equal(run("beRecordedStarter({},'home')"),'선발 미기록');
+assert.ok(run('beStarterMatchLine(game)').indexOf(run('starter.name'))<run('beStarterMatchLine(game)').indexOf('홈 선발'));
+assert.ok(run('beStarterMatchLine(game,true)').indexOf('홈 선발')<run('beStarterMatchLine(game,true)').indexOf(run('starter.name')));
+console.log('PASS actual recorded starters and home-first international alignment');
+run(`window.beServerGameMode=true;state.year=2027;state.seasonStartDate='2027-04-01';state.day=21;state.gameResults=[{year:2027,day:20,away:0,home:1,awayRuns:4,homeRuns:7,awayPitchers:[{name:'원정 선발'}],homePitchers:[{name:'홈 선발'}]}];beCalendarSelected='';beCalendarManual=false;`);
+const html=run('seasonProgressPanel()');
+assert.ok(html.includes('원정 선발')&&html.includes('홈 선발'));
+assert.ok(html.includes('경기 다시보기')&&html.includes('경기 기사'));
+assert.ok(!html.includes('경기 관전하기'));
+assert.match(html,/is-selected[^>]*beCalendarPick/);

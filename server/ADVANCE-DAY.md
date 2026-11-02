@@ -301,3 +301,40 @@ preserved domestic rows, and transfer/contract metadata. Overseas statistics are
 season-end aggregates, not newly simulated daily scores. Future compact transfer
 career rows are retained beyond the former twelve-season cutoff; missing older
 results are not fabricated.
+
+## v2.1.7 server JSON storage
+
+The current client requests `?wireFormat=server-json-v1` on snapshot and engine
+requests. Existing servers ignore this query and remain compatible. On the first
+successful engine operation, a legacy save is decoded and converted atomically
+with the normal revision update and durable receipt. Failed conversion or commit
+leaves the original save intact. No game is simulated during deployment.
+
+`native-save.js` divides large state roots into plain JSON parts described by
+`beServerNativeManifest`. Large player, archive and replay data no longer passes
+through inner gzip/Base64 or the mobile save encoder. SQLite still compresses
+individual JSON fields once; HTTP independently negotiates gzip for large JSON
+responses. Ten small team compatibility views retain the old encoding for the
+installed home reader. Old clients receive a lossless legacy view on snapshot
+reads and reload after an engine operation instead of consuming native deltas.
+
+The server hashes the JSON bytes it reads before giving detached objects to the
+engine, compares one serialization per output field, and writes changed bytes
+without serializing them again. The bounded decoded cache retains at most one
+committed world for five minutes and twelve uses. Reuse checks the authoritative
+DB revision and digest and clones via JSON before any mutation. Cold reads remain
+fully supported. Timing reports identify `storageFormat` and cache hits; production
+speed improvements must be measured after deployment, not inferred from tests.
+
+The standard upgrade makes a SQLite backup and source backup before installing.
+Never restore an older database over newer saves. If a user commits native data
+between restart and a failed deployment health check, automatic rollback must not
+install an incompatible legacy decoder: compatible new code is retained, the
+engine is disabled, and the upgrade reports `forward-repair-required`.
+
+UI changes include centered replay/article actions and recorded starters on
+calendar cards, recent completed-game selection, foreign recruitment origins,
+readable career rank cards and expanded overseas record/contract dossiers.
+Historical overseas amounts stay explicitly unrecorded. Newly accepted contracts
+and extensions store currency, annual salary, bonus, total and the game's fixed
+reference conversion; rendering never invents amounts for old contracts.

@@ -1,6 +1,7 @@
 // Reuse the browser's lossless save codecs, excluding authentication/transport.
 // Each request has isolated caches, shared only between its decode and encode.
 import {readFileSync} from 'node:fs';
+import {isNativeSave,restoreNativeSave} from '../native-save.js';
 import {gzipSync,gunzipSync} from 'node:zlib';
 const path=new URL('../cloud-only.js',import.meta.url);
 export function createSaveWireCodec(source=readFileSync(path,'utf8'),{nativeGzip=true}={}){
@@ -16,11 +17,12 @@ export function createSaveWireCodec(source=readFileSync(path,'utf8'),{nativeGzip
   if(typeof encoded!=='string'||encoded.length%4===1||!/^[A-Za-z0-9+/]*={0,2}$/.test(encoded))throw Error('Invalid base64 gzip data');
   return gunzipSync(Buffer.from(encoded,'base64')).toString('utf8');
  }}:{};
- const functions=Function('window',section+'\nreturn {packCloudShards,packAmateurBuckets,packLeagueShards,packHistoryShards,packAuxiliaryFields,unpackReplayResults,unpackCloudShards,unpackLeagueShards,unpackAmateurBuckets,unpackHistoryShards,unpackAuxiliaryFields,restoreServerWireChanges};')(diagnostics);
+ const functions=Function('window','isNativeSave','restoreNativeSave',section+'\nreturn {packCloudShards,packAmateurBuckets,packLeagueShards,packHistoryShards,packAuxiliaryFields,unpackReplayResults,unpackCloudShards,unpackLeagueShards,unpackAmateurBuckets,unpackHistoryShards,unpackAuxiliaryFields,restoreServerWireChanges};')(diagnostics,isNativeSave,restoreNativeSave);
  return {
   restoreChanges: functions.restoreServerWireChanges,
   metrics(){return diagnostics.beCloudGzipSnapshot?.()??null},
   async restore(save){
+   if(isNativeSave(save))return restoreNativeSave(save,{clone:true});
    // Encoded strings are immutable. Clone raw object fields without copying
    // every large base64 string before immediately decoding and deleting it.
    let state=Object.fromEntries(Object.entries(save).map(([key,value])=>[key,value&&typeof value==='object'?structuredClone(value):value]));
