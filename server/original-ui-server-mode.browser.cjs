@@ -112,7 +112,7 @@ const assert=require('node:assert/strict');
   await page.goto('http://127.0.0.1:'+server.address().port+(process.argv.includes('--main')?'/index.html':'/server-game-preview.html'));
   await page.waitForSelector('#advance-day',{timeout:30000});
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);
-  assert.ok((await page.locator('#be-preparation-status').textContent()).includes('준비 완료'));
+  assert.equal(await page.locator('#be-preparation-status').isVisible(),false,'speculative preparation is disabled');
   if(!fixturePath){
    assert.equal(await page.locator('.be-cal-day.is-today.is-selected').count(),1,'calendar today matches the completed date');
    const card=page.locator('.be-calendar-match-list .be-today-match').filter({hasText:'원정 선발'}).first();

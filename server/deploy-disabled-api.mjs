@@ -55,7 +55,7 @@ writeFileSync(resolve(saved,'manifest.json'),JSON.stringify({createdAt:new Date(
 log({stage:'backup-complete',backupDirectory:saved,sqliteBackup:true});
 const memoryPolicy=engineNodeOptions(runtime.configuration.NODE_OPTIONS||'',totalmem());
 log({stage:'memory-budget',heapLimitMiB:memoryPolicy.heapLimitMiB});
-const restartEnv={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:engineFlag,BE_SERVER_PRECOMPUTE:keepEnabled?'1':'0',NODE_OPTIONS:memoryPolicy.options};
+const restartEnv={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:engineFlag,BE_SERVER_PRECOMPUTE:'0',NODE_OPTIONS:memoryPolicy.options};
 function install(src,dest){mkdirSync(dirname(dest),{recursive:true});const tmp=dest+'.engine-stage-tmp';copyFileSync(src,tmp);renameSync(tmp,dest)}
 async function healthy(){
  for(let n=0;n<30;n++){
@@ -74,7 +74,7 @@ try{
  if(!await healthy())throw Error('API health or authentication check failed');
  const after=JSON.parse(pm2(['jlist'])).find(p=>p.pm_id===4);
  const afterRuntime=readProcessRuntime(Number(after?.pid));
- if(afterRuntime.configuration.BE_SERVER_ENGINE_ENABLED!==engineFlag||afterRuntime.configuration.BE_SERVER_PRECOMPUTE!==(keepEnabled?'1':'0')||!afterRuntime.listeningPorts.includes(3300))throw Error('Cannot confirm expected engine state and API port');
+ if(afterRuntime.configuration.BE_SERVER_ENGINE_ENABLED!==engineFlag||afterRuntime.configuration.BE_SERVER_PRECOMPUTE!=='0'||!afterRuntime.listeningPorts.includes(3300))throw Error('Cannot confirm expected engine state and API port');
  log({success:true,stage:upgrade?'production-api-upgraded':'production-foundation-installed',engineEnabled:keepEnabled,pm2Id:4,health200:true,unauthenticated401:true,saveSimulationPerformed:false,backupDirectory:saved,clientPublished:false});
 }catch(error){
  let rollback=true;

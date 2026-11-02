@@ -1,5 +1,22 @@
 # Server day API staging
 
+Current policy (v2.2.7): speculative preparation is disabled by user request.
+Production routes never construct a preparation controller, including with an
+old enabled environment flag. Install/activation defaults are zero. The client
+no longer polls preparation status or advertises ready days. Older preparation
+sections below document historical implementations and detached tests only.
+
+To stop the already installed API immediately without replacing saves:
+`node server/disable-precompute.mjs`. It validates PM2 ID 4, port 3300 and the
+installed route, backs up that source, disables its preparation gate, restarts
+only the game API with BE_SERVER_PRECOMPUTE=0, and checks health/runtime config.
+The source gate remains disabled across restarts even with an older PM2 dump.
+No save database is opened. Future standard upgrades also preserve this policy.
+Day requests calculate the actual day on demand; prepared-day subsecond timings
+are not a promise for the on-demand path. The standard benchmark now runs one
+foreground detached day, without speculative year preparation.
+
+
 These modules are not installed in production. The route defaults to disabled.
 
 `advance-day-route.mjs` handles POST `/v2/engine/advance`, after the existing

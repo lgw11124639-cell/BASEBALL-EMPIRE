@@ -1,4 +1,3 @@
-import {createPrecomputeController} from './precompute-controller.mjs';
 import {totalmem} from 'node:os';
 import {createDecodedDayCache} from './decoded-day-cache.mjs';
 import {createSaveWireCodec} from './save-wire-codec.mjs';
@@ -11,8 +10,8 @@ import {createAdvanceDayService} from './advance-day-service.mjs';
 // Kept disabled until server-owned client flows and legacy write guards are ready.
 export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,response,enabled=false,codecFactory=createSaveWireCodec,precompute=false,precomputeController=null}){
  const store=createAdvanceDayStore(db,shards);
- let prepared=precomputeController;
- if(!prepared&&enabled&&precompute){try{const file=db.prepare('PRAGMA database_list').all().find(row=>row.name==='main')?.file;if(file)prepared=createPrecomputeController({database:file,metadata:(user,slot)=>store.metadata(user,slot)})}catch{console.error('Background preparation unavailable; using regular engine')}}
+ // Production preparation is disabled. Injection is retained for detached tests.
+ const prepared=precomputeController;
  const stateCache=createDecodedDayCache({maxRssBytes:totalmem()*.80});
  const advance=createAdvanceDayService({store,restoreSave,encodeSave,codecFactory,includeDelta:true,ownsRestoredState:true,stateCache,precompute:prepared});
  const command=createAdvanceDayService({store,restoreSave,encodeSave,runDay:runOriginalEngineCommand,fingerprint:commandFingerprint,codecFactory,includeDelta:true,ownsRestoredState:true,stateCache:prepared?null:stateCache});

@@ -1,1 +1,1 @@
-{"version":"2.2.6","build":"20261102-player-directory19","notes":"선수 명단의 반복 압축 해제와 등번호 정렬의 전체 명단 재검색 제거"}
+{"version":"2.2.7","build":"20261102-no-precompute20","notes":"사용자 요청에 따라 사전 계산 중단, 진행 버튼을 누를 때만 경기 계산"}

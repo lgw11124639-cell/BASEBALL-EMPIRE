@@ -38,7 +38,7 @@ const db=new DatabaseSync(database,{readOnly:true});try{await backup(db,resolve(
 log({stage:'activation-backup-complete',backupDirectory:saved,publicBuild:version.build});
 const previousOptions=runtime.configuration.NODE_OPTIONS||'';
 const engineOptions=engineNodeOptions(previousOptions,totalmem()).options;
-const environment=enabled=>({...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:enabled,BE_SERVER_PRECOMPUTE:enabled==='1'?'1':runtime.configuration.BE_SERVER_PRECOMPUTE||'0',NODE_OPTIONS:enabled==='1'?engineOptions:previousOptions});
+const environment=enabled=>({...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:enabled,BE_SERVER_PRECOMPUTE:'0',NODE_OPTIONS:enabled==='1'?engineOptions:previousOptions});
 async function healthy(){for(let n=0;n<30;n++){try{const response=await fetch('http://127.0.0.1:3300/health',{signal:AbortSignal.timeout(1000)});if(response.ok)return true}catch{}await new Promise(r=>setTimeout(r,500))}return false}
 let proxyChanged=false;
 try{
