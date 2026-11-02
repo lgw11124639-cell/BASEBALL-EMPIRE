@@ -36,6 +36,9 @@ const assert=require('node:assert/strict');
  if(process.argv.includes('--replay-pressure')&&!fixturePath){
   const game=fixture.gameResults[0];fixture.gameResults=Array.from({length:80},(_,i)=>({...game,day:game.day-79+i,broadcastEvents:Array.from({length:500},(_,n)=>({inning:Math.floor(n/60)+1,side:n%2?'away':'home',text:'중계 기록 '.repeat(35)+n}))}));
  }
+ if(process.argv.includes('--player-pressure')&&!fixturePath){
+  const base=fixture.players[0];for(let i=fixture.players.length;i<3400;i++)fixture.players.push({...structuredClone(base),id:100000+i,name:'보존 선수 '+i,teamId:i%10,retired:true,level:'은퇴',jerseyNumber:null,profile:{...structuredClone(base.profile),historicalNotes:'선수 보존 기록 '.repeat(500)}});
+ }
  const startingWorld=structuredClone(fixture);
  const {restoreServerSave}=await import('./save-wire-codec.mjs');
  const {packNativeSave}=await import('../native-save.js');
@@ -48,7 +51,8 @@ const assert=require('node:assert/strict');
   if(name==='app.js'){
    const source=bytes.toString(),at=source.lastIndexOf('(async()=>{try{app.innerHTML=');
    const poison="window.__clientSimulationCalls=0;for(const name of ['simulateLeagueDay','offseasonDay','nationalTeamPreparationDay','world']){eval(name+' = ()=>{window.__clientSimulationCalls++;throw Error(\\\"Client simulation forbidden\\\")}')}\n";
-   bytes=Buffer.from(source.slice(0,at)+poison+source.slice(at));
+   const measured=process.argv.includes('--player-pressure')?"const measuredRender=render;render=function(...args){const started=performance.now();try{return measuredRender(...args)}finally{(window.__playerRenderTimes||(window.__playerRenderTimes=[])).push({view:tab,ms:Math.round(performance.now()-started)})}};const measuredDetail=playerDetail;playerDetail=function(...args){const started=performance.now();try{return measuredDetail(...args)}finally{(window.__playerDetailTimes||(window.__playerDetailTimes=[])).push(Math.round(performance.now()-started))}};\n":'';
+   bytes=Buffer.from(source.slice(0,at)+poison+measured+source.slice(at));
   }
   res.setHeader('Content-Type',extname(name)==='.js'?'text/javascript':extname(name)==='.css'?'text/css':'text/html');res.end(bytes);
  });
@@ -83,6 +87,28 @@ const assert=require('node:assert/strict');
    else{writes++;return route.fulfill({status:500,headers:{'access-control-allow-origin':'*'},body:'{}'})}
    return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(data)});
   });
+  async function assertAutoReading(){
+  const autoStart=advances;
+  await page.evaluate(()=>{window.scrollTo(0,400);document.querySelector('main.game-shell').dataset.autoHome='kept'});
+  const homeReadingTop=await page.evaluate(()=>window.scrollY),homeRevision=revision;
+  await page.locator('#auto-season').evaluate(button=>button.click());
+  await page.waitForFunction(start=>Number(window.beServerGameCapability?.revision)>=start+1,homeRevision,{timeout:15000});
+  assert.equal(await page.locator('main[data-view="home"][data-auto-home="kept"]').count(),1,'starting and completing automatic days must not redraw the home page');
+  assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-homeReadingTop)<=2,'automatic start and day completion do not move home scroll');
+  await page.locator('nav [data-tab="roster"]').click();
+  await page.waitForSelector('main[data-view="roster"]');
+  await page.evaluate(()=>{window.scrollTo(0,400);document.querySelector('main.game-shell').dataset.autoReading='kept'});
+  const readingTop=await page.evaluate(()=>window.scrollY);assert.ok(readingTop>100,'fixture can scroll while browsing the roster');
+  await page.waitForFunction(start=>Number(window.beServerGameCapability?.revision)>=start+2,revision,{timeout:15000});
+  assert.ok(advances>=autoStart+2,'automatic requests continue after changing tabs');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'automatic progress control fits the viewport');
+  assert.equal(await page.locator('main[data-view="roster"][data-auto-reading="kept"]').count(),1,'day completion must not replace the page being read');
+  assert.equal(await page.locator('nav [data-tab="roster"]').getAttribute('aria-current'),'page');
+  assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-readingTop)<=2,'day completion preserves the reading scroll position');
+  await page.locator('#be-auto-progress').evaluate(button=>button.click());
+  const settled=advances;await page.waitForTimeout(1000);assert.ok(advances<=settled+1,'stop from the roster prevents further automatic requests');
+  assert.equal(await page.locator('main[data-view="roster"]').count(),1);assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-readingTop)<=2);
+  }
   await page.goto('http://127.0.0.1:'+server.address().port+(process.argv.includes('--main')?'/index.html':'/server-game-preview.html'));
   await page.waitForSelector('#advance-day',{timeout:30000});
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);
@@ -182,6 +208,7 @@ const assert=require('node:assert/strict');
   assert.equal(snapshotReads,readsBeforeFallback+1,'older or replayed responses safely reload the snapshot');
   assert.equal(await page.evaluate(()=>window.beLastServerDayTiming.incremental),false);
   assert.equal(advances,2);assert.equal(writes,0);
+  if(process.argv.includes('--player-pressure')){await assertAutoReading();assert.deepEqual(errors,[]);console.log(JSON.stringify(await page.evaluate(()=>({stage:'synthetic-player-navigation',renders:window.__playerRenderTimes,playerDialogs:window.__playerDetailTimes}))));console.log('Mobile 3400-player navigation, player details, photo, day and automatic-reading pressure PASS');return;}
   await page.click('#back-to-title');await page.click('#be-cloud-reset');
   await page.waitForSelector('#entry-new');await page.click('#entry-new');await page.click('#start');
   await page.waitForSelector('#advance-day');await page.waitForFunction(()=>window.beServerGameCapability?.revision===6);
@@ -192,26 +219,7 @@ const assert=require('node:assert/strict');
   await page.waitForFunction(()=>window.beServerGameCapability?.revision===7);
   assert.equal(lifecycle,3);assert.equal(fixture.day,30);assert.equal(writes,0);
   await page.waitForFunction(old=>document.querySelector('.header-season').textContent!==old,beforeRestore);
-  const autoStart=advances;
-  await page.evaluate(()=>{window.scrollTo(0,400);document.querySelector('main.game-shell').dataset.autoHome='kept'});
-  const homeReadingTop=await page.evaluate(()=>window.scrollY),homeRevision=revision;
-  await page.locator('#auto-season').evaluate(button=>button.click());
-  await page.waitForFunction(start=>Number(window.beServerGameCapability?.revision)>=start+1,homeRevision,{timeout:15000});
-  assert.equal(await page.locator('main[data-view="home"][data-auto-home="kept"]').count(),1,'starting and completing automatic days must not redraw the home page');
-  assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-homeReadingTop)<=2,'automatic start and day completion do not move home scroll');
-  await page.locator('nav [data-tab="roster"]').click();
-  await page.waitForSelector('main[data-view="roster"]');
-  await page.evaluate(()=>{window.scrollTo(0,400);document.querySelector('main.game-shell').dataset.autoReading='kept'});
-  const readingTop=await page.evaluate(()=>window.scrollY);assert.ok(readingTop>100,'fixture can scroll while browsing the roster');
-  await page.waitForFunction(start=>Number(window.beServerGameCapability?.revision)>=start+2,revision,{timeout:15000});
-  assert.ok(advances>=autoStart+2,'automatic requests continue after changing tabs');
-  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'automatic progress control fits the viewport');
-  assert.equal(await page.locator('main[data-view="roster"][data-auto-reading="kept"]').count(),1,'day completion must not replace the page being read');
-  assert.equal(await page.locator('nav [data-tab="roster"]').getAttribute('aria-current'),'page');
-  assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-readingTop)<=2,'day completion preserves the reading scroll position');
-  await page.locator('#be-auto-progress').evaluate(button=>button.click());
-  const settled=advances;await page.waitForTimeout(1000);assert.ok(advances<=settled+1,'stop from the roster prevents further automatic requests');
-  assert.equal(await page.locator('main[data-view="roster"]').count(),1);assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-readingTop)<=2);
+  await assertAutoReading();
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);
   assert.deepEqual(errors,[]);
   console.log((process.argv.includes('--desktop')?'Original desktop UI:':'Original mobile UI:')+' six tabs, player records/photo, server day, archived reset/new-game/restore routing, zero client simulation/save uploads PASS');

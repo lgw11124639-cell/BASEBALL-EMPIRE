@@ -152,6 +152,9 @@ function restoreLazyNative(wire,manifest,{previousWire,previousState,changedKeys
   if(node.kind==='map'){
    const object={};for(const read of reads){const rows=read();for(let i=0;i<rows.length;i++){const key=rows[i][0];property(object,key,()=>read()[i][1])}}return ()=>object;
   }
+  // The live player directory is scanned by almost every screen. Keep stable
+  // player objects once read; only historical leagues and replays use eviction.
+  if(root==='players'){let players=null;return ()=>{if(!players){players=[];for(const read of reads)players.push(...read())}return players}}
   const size=root==='gameResults'?1:64,target=new Array(node.length),deleted=new Set();
   const index=key=>typeof key==='string'&&/^(0|[1-9][0-9]*)$/.test(key)?Number(key):null;
   const value=i=>reads[Math.floor(i/size)]()[i%size];

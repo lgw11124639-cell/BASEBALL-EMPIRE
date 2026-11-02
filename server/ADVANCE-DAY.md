@@ -579,3 +579,30 @@ Browser tests explicitly start auto progression while scrolled down at home,
 verify that the original home DOM and scroll survive a completed day, then
 navigate to the roster, verify more completed days, and stop without a scroll
 jump. Replay-pressure coverage includes 40,000 synthetic broadcast events.
+
+
+## v2.2.6 player directory pressure
+
+Lazy eviction was inappropriate for state.players: filtering and sorting the
+live directory revisited player chunks, re-inflating them after the archive LRU
+evicted earlier chunks. Player objects could also change identity and lose
+local display normalization. The player directory now materializes once on its
+first access per restored root, while large historical leagues and replays
+remain lazy. Its JSON contents are unchanged. This retains one directory rather
+than repeatedly allocating it; it does not expand historical world archives.
+
+jerseyNumber also filtered and sorted the whole player array on every comparator
+call. Read-only browser mode now retains one assignment result per team and
+snapshot/day, using the same priority/reserved-number/overflow algorithm. The
+canonical engine follows the original path. Tests check full assignment parity,
+snapshot invalidation, player identity, and no repeat player-chunk decoding
+across 50 directory scans after forced archive eviction.
+
+The optional --player-pressure UI scenario includes 3,400 players with profiles
+larger than the decoded cache budget. It covers navigation, player dialogs,
+photos, progression and auto reading, and reports synchronous browser timings.
+A local Chromium mobile-layout run recorded initial roster rendering 252 ms,
+subsequent roster renders 80/90 ms, and player HTML construction 159/8 ms under
+concurrent regression load. These are synthetic local measurements, not physical
+iPhone timings or end-to-end network latency. This browser fix needs no backend
+reinstall. Existing canonical saves are untouched by the tests.

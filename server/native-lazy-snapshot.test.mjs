@@ -4,7 +4,7 @@ const encode=wire=>Object.fromEntries(Object.entries(wire).map(([key,value])=>[k
 test('compressed bootstrap and wire copies do not decode archives; arrays preserve complete JSON and iteration',()=>{
  const original={schema:1,year:2046,day:2,players:Array.from({length:130},(_,id)=>({id,name:'p'+id})),gameResults:Array.from({length:10},(_,day)=>({day,broadcastEvents:[{text:'event'+day}]})),amateurCareerArchive:{2040:{players:Array.from({length:75},(_,id)=>({id}))}}};
  let reads=0;const wire=compressedNativeWire(encode(packNativeSave(original)),{decode:b=>gunzipSync(Buffer.from(b,'base64')).toString(),maxChars:100,onDecode:()=>reads++}),state=restoreNativeSave(wire);
- assert.equal(reads,0,'opening a world must not hydrate historical chunks');assert.equal(state.day,2);assert.equal(state.players.length,130);assert.equal(reads,0);
+ assert.equal(reads,0,'opening a world must not hydrate historical chunks');assert.equal(state.day,2);assert.equal(state.gameResults.length,10);assert.equal(reads,0);assert.equal(state.players.length,130);assert.equal(reads,3,'only the live player directory is materialized');
  assert.deepEqual(state.players.slice(62,67),original.players.slice(62,67));assert.equal(state.players.find(p=>p.id===129).name,'p129');assert.ok(state.players.every(p=>p.id>=0));
  assert.deepEqual(JSON.parse(JSON.stringify(state)),original,'all deferred history remains available without deleting records');
  const before=reads,next=copyNativeWire(wire,{day:3});assert.equal(reads,before,'copying the acknowledged wire must not invoke part getters');
@@ -30,4 +30,12 @@ test('roster and standings scans do not repeatedly inflate replay events after L
  sums();assert.equal(reads,8);for(let player=0;player<50;player++)sums();assert.equal(reads,8,'repeated player statistics retain small box scores without replay decoding');
  assert.deepEqual(state.gameResults[0].broadcastEvents,original.gameResults[0].broadcastEvents);assert.equal(reads,9,'replay remains available when explicitly opened');
  assert.deepEqual(JSON.parse(JSON.stringify(state)),original,'summary cache must preserve every replay field');
+});
+test('live player identity and local profile edits survive repeated directory scans and archive eviction',()=>{
+ const original={players:Array.from({length:130},(_,id)=>({id,name:'p'+id,profile:{note:'details '.repeat(50)}})),gameResults:[{day:1,broadcastEvents:[{text:'replay '.repeat(100)}]}]};let reads=0;
+ const state=restoreNativeSave(compressedNativeWire(encode(packNativeSave(original)),{decode:b=>gunzipSync(Buffer.from(b,'base64')).toString(),maxChars:1,onDecode:()=>reads++}));
+ const player=state.players[0];player.jerseyNumber=42;assert.equal(reads,3);
+ assert.equal(state.gameResults[0].broadcastEvents.length,1);const before=reads;
+ for(let screen=0;screen<50;screen++){assert.equal(state.players.find(p=>p.id===0),player);assert.equal(state.players.filter(p=>p.id<65).length,65)}
+ assert.equal(reads,before,'opening player screens must not repeatedly inflate the player directory');assert.equal(state.players[0].jerseyNumber,42);
 });

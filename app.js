@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-responsive-auto18';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-player-directory19';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -4935,9 +4935,14 @@ function honorRetiredPlayers(year){
   }
  }
 }
+const beUiJerseyCache=new WeakMap();
 function jerseyNumber(p){
  if(!state?.players)return p.jerseyNumber??'—';
  const teamId=p.teamId;
+ const ui=typeof window!=='undefined'&&window.beServerGameMode===true;
+ let cache=ui?beUiJerseyCache.get(state):null;
+ if(ui&&(!cache||cache.players!==state.players||cache.length!==state.players.length||cache.day!==state.day||cache.year!==state.year)){cache={players:state.players,length:state.players.length,day:state.day,year:state.year,teams:new Map()};beUiJerseyCache.set(state,cache)}
+ const cached=cache?.teams.get(String(teamId));if(cached)return cached.has(p)?cached.get(p):p.jerseyNumber??'—';
  const roster=state.players.filter(x=>String(x.teamId)===String(teamId)&&!x.retired&&!['방출','은퇴','계약종료'].includes(x.level)).sort((a,b)=>{
   const priority=x=>x.level==='1군'?0:x.level==='2군'?1:x.level==='육성'?2:3;
   return priority(a)-priority(b)||Number(a.id)-Number(b.id);
@@ -4958,6 +4963,7 @@ function jerseyNumber(p){
   if(n>99){n=100;while(used.has(n))n++}
   x.jerseyNumber=n;used.add(n);
  }
+ if(cache)cache.teams.set(String(teamId),new Map(roster.map(x=>[x,x.jerseyNumber])));
  return p.jerseyNumber??'—';
 }
 function positionName(p,b){const primary=playerFieldingPositions(p).primary;return primary==='P'?'투수':({C:'포수','1B':'1루수','2B':'2루수','3B':'3루수',SS:'유격수',LF:'좌익수',CF:'중견수',RF:'우익수',IF:'내야수',OF:'외야수'}[primary]||primary)}
