@@ -65,10 +65,21 @@ const assert=require('node:assert/strict');
    await page.locator('nav [data-tab="'+tab+'"]').click();
    await page.waitForSelector('main[data-view="'+tab+'"]',{timeout:30000});
   }
+  const assertFullViewport=async selector=>{
+   const box=await page.locator(selector).boundingBox(),viewport=page.viewportSize();
+   assert.ok(Math.abs(box.x)<1&&Math.abs(box.y)<1,selector+' starts at viewport origin');
+   assert.ok(Math.abs(box.width-viewport.width)<1&&Math.abs(box.height-viewport.height)<1,selector+' fills viewport '+JSON.stringify({box,viewport}));
+   assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).overflowY),'hidden');
+  };
+  await page.locator('nav [data-tab="league"]').click();
+  await page.locator('[data-league-team]').first().click();
+  await assertFullViewport('#league-team-overlay .league-club-dialog');
+  await page.click('#close-league-team');
   await page.locator('nav [data-tab="roster"]').click();
   await page.waitForSelector('[data-player]');
   const player=page.locator('[data-player]').first(),playerId=await player.getAttribute('data-player');
   await player.click();await page.waitForSelector('#player-overlay');
+  await assertFullViewport('#player-overlay .player-panel');
   await page.locator('[data-profile-tab="record"]').click();
   assert.match(await page.locator('#player-record-lazy').textContent(),/1군 시즌 기록/);
   const photo=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=10;c.height=10;c.getContext('2d').fillRect(0,0,10,10);return c.toDataURL('image/jpeg').split(',')[1]});

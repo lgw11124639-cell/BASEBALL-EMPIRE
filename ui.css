@@ -20055,3 +20055,46 @@ body .be-editorial-modal > .editorial-story {
  .player-discipline .discipline-archive { padding: 0 12px; }
  .player-discipline .discipline-archive-case > summary .discipline-status { margin-left: 5px; }
 }
+
+/* Full-viewport club roster and player profile dialogs. */
+html:has(#league-team-overlay),
+html:has(#player-overlay),
+body:has(#league-team-overlay),
+body:has(#player-overlay) {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+#league-team-overlay.game-news-overlay,
+#player-overlay.player-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+}
+
+#league-team-overlay .game-news-dialog.league-club-dialog,
+#player-overlay .player-panel.pro-profile.empire-profile {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  transform: none !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
