@@ -7,6 +7,7 @@ import {pathToFileURL} from 'node:url';
 import {createHash,randomBytes} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import {packServerSave,restoreServerSave} from './save-wire-codec.mjs';
+import {createOriginalEngineSandbox} from './original-engine-sandbox.mjs';
 const file=resolve(process.argv[2]||'server.local-backup/detached-real-save.json');
 const stage=resolve('server.local-backup/advance-api');
 const started=performance.now(),initialStat=statSync(file);
@@ -23,9 +24,21 @@ function semanticHash(value){
  visit(value);return hash.digest('hex');
 }
 let db;
+const openingDay=process.argv.includes('--opening-day');
+let expectedGames=null;
 try{
  let state=JSON.parse(readFileSync(file,'utf8'));
  assert.ok(Array.isArray(state.players)&&Array.isArray(state.teams),'Expected detached full save');
+ if(openingDay){
+  assert.equal(state.gameResults?.length||0,0,'Opening-day fixture requires no existing games');
+  const originalDay=state.day;
+  // Calendar selection only; no warm-up simulations or production date changes.
+  {const probe=createOriginalEngineSandbox(readFileSync(new URL('../app.js',import.meta.url),'utf8'),state);
+   const selected=probe.invoke(`(()=>{const start=seasonDate(1);const march=new Date(state.year+'-03-20T12:00:00');const first=Math.max(state.day,Math.round((march-start)/86400000)+1);for(let day=first;day<first+60;day++){const count=scheduledPairs(day,true).length;if(count>0)return {day,count}}throw Error('No opening fixtures found')})()`);
+   state.day=selected.day;expectedGames=selected.count;
+  }
+  log({stage:'opening-day-fixture-selected',originalDay,testDay:state.day,expectedGames,productionCalendarChanged:false});
+ }
  const before={year:state.year,day:state.day,players:state.players.length,teams:state.teams.length,games:state.gameResults?.length||0};
  // This runner must not reuse the incomplete-year fixture or rewind any dates.
  assert.ok(state.day<300,'Use original pre-season detached-real-save.json, not the regular-complete fixture');
@@ -82,9 +95,22 @@ try{
  const saved=await restoreServerSave(snapshot.save);
  assert.equal(saved.year,result.to.year);assert.equal(saved.day,result.to.day);
  assert.equal(saved.teams.length,before.teams);assert.ok(saved.players.length>=before.players);
+ if(openingDay){
+  const games=(saved.gameResults||[]).filter(g=>Number(g.day)===before.day&&(g.year==null||Number(g.year)===before.year));
+  assert.equal(games.length,expectedGames,'Scheduled game count not persisted');
+  const keys=new Set(games.map(g=>[g.year??before.year,g.day,g.away,g.home].join(':')));
+  assert.equal(keys.size,games.length,'Duplicate persisted game');
+  assert.ok(saved.players.some(p=>Number(p.games)>0),'No player game records persisted');
+  for(const g of games){
+   assert.ok(Number.isFinite(g.awayRuns)&&Number.isFinite(g.homeRuns),'Invalid final score');
+   assert.ok(Array.isArray(g.awayBatters)&&g.awayBatters.length>0&&Array.isArray(g.homeBatters)&&g.homeBatters.length>0,'Batting box scores missing');
+   assert.ok(Array.isArray(g.awayPitchers)&&g.awayPitchers.length>0&&Array.isArray(g.homePitchers)&&g.homePitchers.length>0,'Pitching box scores missing');
+  }
+ }
+
  assert.equal(shards.get(2,'main'),null);
  const lastStat=statSync(file);
  assert.equal(lastStat.size,initialStat.size);assert.equal(lastStat.mtimeMs,initialStat.mtimeMs);
- log({success:true,stage:'real-authenticated-day-api',before,after:{year:saved.year,day:saved.day,players:saved.players.length,games:saved.gameResults?.length||0},revision:2,exactlyOneDate:true,durableRetry:true,staleRevisionRejected:true,legacyWritesBlocked:true,mobileHomeReadable:true,fullWireRoundtrip:true,userIsolation:true,sourceFileUnchanged:true,productionDatabaseOpened:false,productionChanged:false,elapsedSeconds:Math.round((performance.now()-started)/1000)});
+ log({success:true,stage:'real-authenticated-day-api',before,after:{year:saved.year,day:saved.day,players:saved.players.length,games:saved.gameResults?.length||0},revision:2,openingDayFixture:openingDay,expectedGames,gameRecordsVerified:openingDay,exactlyOneDate:true,durableRetry:true,staleRevisionRejected:true,legacyWritesBlocked:true,mobileHomeReadable:true,fullWireRoundtrip:true,userIsolation:true,sourceFileUnchanged:true,productionDatabaseOpened:false,productionChanged:false,elapsedSeconds:Math.round((performance.now()-started)/1000)});
 }catch(error){log({success:false,stage:'real-authenticated-day-api',error:String(error.stack||error),productionDatabaseOpened:false,productionChanged:false});process.exitCode=1}
 finally{db?.close()}
