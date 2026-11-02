@@ -10,6 +10,10 @@ export function validateGameCommand(input){
   if(bytes.length<4||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255)throw Error('Invalid JPEG data');
   return {type:input.type,playerId:String(input.playerId),photo:input.photo};
  }
+ if(input.type==='all-star-vote'){
+  if(Object.keys(input).some(k=>!['type','playerIds'].includes(k))||!Array.isArray(input.playerIds)||!input.playerIds.length||input.playerIds.length>24||input.playerIds.some(id=>!['string','number'].includes(typeof id)||typeof id==='number'&&!Number.isFinite(id)||!String(id)||String(id).length>64)||new Set(input.playerIds.map(String)).size!==input.playerIds.length)throw Error('Invalid all-star ballot');
+  return {type:input.type,playerIds:input.playerIds.map(String).sort()};
+ }
  if(input.type==='club-hall-vote'){
   if(Object.keys(input).some(k=>!['type','voteId','choice'].includes(k))||typeof input.voteId!=='string'||!input.voteId||input.voteId.length>200||!['yes','no'].includes(input.choice))throw Error('Invalid fan vote');
   return {type:input.type,voteId:input.voteId,choice:input.choice};
@@ -28,6 +32,8 @@ export function runOriginalEngineCommand(save,command,{appSource,timeoutMs=12000
   if(command.type==='player-photo'){
    const player=state.players.find(p=>String(p.id)===command.playerId);if(!player)throw Error('Player not found');
    ensureProfile(player).photoData=command.photo;
+  }else if(command.type==='all-star-vote'){
+   if(!castAllStarBallot(command.playerIds))throw Error('All-star voting is closed, already cast, or exceeds a position quota');
   }else if(command.type==='club-hall-vote'){
    if(!castClubHallFanVote(command.voteId,command.choice))throw Error('Fan vote is not open or already cast');
   }

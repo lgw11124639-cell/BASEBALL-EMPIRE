@@ -39,6 +39,10 @@ const assert=require('node:assert/strict');
  if(process.argv.includes('--player-pressure')&&!fixturePath){
   const base=fixture.players[0];for(let i=fixture.players.length;i<3400;i++)fixture.players.push({...structuredClone(base),id:100000+i,name:'보존 선수 '+i,teamId:i%10,retired:true,level:'은퇴',jerseyNumber:null,profile:{...structuredClone(base.profile),historicalNotes:'선수 보존 기록 '.repeat(500)}});
  }
+ if(process.argv.includes('--front-office')){
+  const {createOwnedEngineRuntime}=await import('./owned-engine-runtime.mjs'),runtime=createOwnedEngineRuntime(readFileSync(resolve(root,'app.js'),'utf8'),fixture);
+  runtime.invoke("state.year=2028;state.seasonStartDate='2028-01-01';state.day=32;for(const t of state.teams){t.budget=100000000000;financeTeam(t.id)}springCampDay();state.day=41;springCampDay();state.day=153;allStarVotingDay();const candidate=state.players.find(p=>p.level==='2군');candidate.level='FA대기';state.faMarket=[{playerId:candidate.id,year:2027,previousTeamId:candidate.teamId,lastContactTeams:[state.teamId],lastOutcome:'선수 제안 거절',lastBestAnnual:200000000,lastBestYears:2}]");fixture=JSON.parse(runtime.invoke('JSON.stringify(state)'));
+ }
  const startingWorld=structuredClone(fixture);
  const {restoreServerSave}=await import('./save-wire-codec.mjs');
  const {packNativeSave}=await import('../native-save.js');
@@ -80,7 +84,7 @@ const assert=require('node:assert/strict');
     revision++;data={request_id:body.requestId,rev:revision,operation,previousVersionArchived:true};receipts.set(body.requestId,data);
    }
    else if(req.method()==='POST'&&path==='/v2/engine/command'){
-    commands++;const body=JSON.parse(req.postData());assert.equal(body.command.type,'player-photo');
+    commands++;const body=JSON.parse(req.postData());if(body.command.type==='all-star-vote'){const {runOriginalEngineCommand}=await import('./original-engine-command.mjs');fixture=runOriginalEngineCommand(fixture,body.command,{appSource:readFileSync(resolve(root,'app.js'),'utf8')}).state;revision++;data={request_id:body.requestId,rev:revision};return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(data)})}assert.equal(body.command.type,'player-photo');
     const changedPlayer=fixture.players.find(p=>String(p.id)===body.command.playerId);changedPlayer.profile=changedPlayer.profile||{};changedPlayer.profile.photoData=body.command.photo;
     revision++;data={request_id:body.requestId,rev:revision};
    }
@@ -91,11 +95,13 @@ const assert=require('node:assert/strict');
   async function assertAutoReading(){
   const autoStart=advances;
   await page.evaluate(()=>{window.scrollTo(0,400);document.querySelector('main.game-shell').dataset.autoHome='kept'});
+  const calendarBefore=await page.locator('.be-cal-day.is-today b').textContent();
   const homeReadingTop=await page.evaluate(()=>window.scrollY),homeRevision=revision;
   await page.locator('#auto-season').evaluate(button=>button.click());
   await page.waitForFunction(start=>Number(window.beServerGameCapability?.revision)>=start+1,homeRevision,{timeout:15000});
+  await page.waitForFunction(old=>document.querySelector('.be-cal-day.is-today b')?.textContent!==old,calendarBefore);
   assert.equal(await page.locator('main[data-view="home"][data-auto-home="kept"]').count(),1,'starting and completing automatic days must not redraw the home page');
-  assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-homeReadingTop)<=2,'automatic start and day completion do not move home scroll');
+  const autoHomeAfter=await page.evaluate(()=>window.scrollY);assert.ok(Math.abs(autoHomeAfter-homeReadingTop)<=2,'automatic home scroll: '+homeReadingTop+' -> '+autoHomeAfter);
   await page.locator('nav [data-tab="roster"]').click();
   await page.waitForSelector('main[data-view="roster"]');
   await page.evaluate(()=>{window.scrollTo(0,400);document.querySelector('main.game-shell').dataset.autoReading='kept'});
@@ -112,6 +118,16 @@ const assert=require('node:assert/strict');
   }
   await page.goto('http://127.0.0.1:'+server.address().port+(process.argv.includes('--main')?'/index.html':'/server-game-preview.html'));
   await page.waitForSelector('#advance-day',{timeout:30000});
+  if(process.argv.includes('--front-office')){
+   await page.getByRole('heading',{name:'프런트 보고서',exact:true}).waitFor();
+   await page.locator('[data-front-report="finance"]').click();await page.getByRole('dialog',{name:'프런트 보고서',exact:true}).waitFor();
+   await page.locator('#game-news-overlay .front-finance').waitFor();assert.ok(await page.locator('#game-news-overlay .front-finance').count());const box=await page.locator('#game-news-overlay').boundingBox();assert.ok(box.height>700&&box.y===0,'front reports cover full viewport');
+   await page.locator('#game-news-overlay nav button').filter({hasText:'영입·예산'}).click();await page.locator('#front-report-content[aria-busy="false"]').waitFor();assert.match(await page.locator('#game-news-overlay').textContent(),/FA 보강 검토/);assert.match(await page.locator('#game-news-overlay').textContent(),/실제 제안 이력/);
+   await page.locator('#game-news-overlay nav button').filter({hasText:'캠프·청백전·올스타'}).click();await page.locator('#front-report-content[aria-busy="false"]').waitFor();assert.match(await page.locator('#game-news-overlay').textContent(),/캠프 집행/);assert.ok(await page.locator('[data-all-star-player]').count()>0);
+   const checkbox=page.locator('[data-all-star-player]').first();await checkbox.evaluate(input=>input.checked=true);await page.locator('#submit-all-star-ballot').click();await page.waitForFunction(()=>document.querySelector('#all-star-ballot-status')?.textContent.includes('오늘 투표를 완료'));
+   assert.equal(commands,1);assert.equal(fixture.allStarVoting[2028].userBallots.length,1);assert.equal(fixture.day,153,'voting does not advance a day');assert.equal(await page.locator('#submit-all-star-ballot').isDisabled(),true);
+   await page.locator('#close-game-news').click();await assertAutoReading();assert.deepEqual(errors,[]);console.log('Front office full-screen reports, plans, camp records, persisted all-star vote and automatic calendar/tab/scroll PASS');return;
+  }
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);
   assert.equal(await page.locator('#be-preparation-status').isVisible(),false,'speculative preparation is disabled');
   if(!fixturePath){
@@ -178,7 +194,7 @@ const assert=require('node:assert/strict');
   assert.ok(await page.locator('.be-contract-progress').evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).backgroundColor==='rgb(255, 255, 255)')));
   assert.equal(await page.locator('#player-scout-lazy [class]').count(),0,'hidden evaluation work is not built while opening a player');
   assert.equal(await page.locator('details[data-player-lazy="milestones"]').getAttribute('data-loaded'),null,'collapsed career records are deferred');
-  await page.locator('[data-profile-tab="scout"]').click();
+  await page.locator('[data-profile-tab="scout"]').click();assert.match(await page.locator('#player-scout-lazy').textContent(),/선수 성장 분석/);assert.equal(await page.locator('details[data-player-lazy="zones"] .batter-zone-card').count(),0,'evaluation does not inflate all replay heatmaps');
   const development=page.locator('.pitch-development-history');
   if(await development.count())assert.equal(await development.evaluate(n=>getComputedStyle(n).backgroundColor),'rgb(255, 255, 255)');
   await page.locator('[data-profile-tab="record"]').click();

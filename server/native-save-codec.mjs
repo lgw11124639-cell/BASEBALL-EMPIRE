@@ -4,11 +4,12 @@ import {createHash} from 'node:crypto';
 import {packNativeSave,restoreNativeSave,isNativeSave,NATIVE_SAVE_MANIFEST} from '../native-save.js';
 import {createSaveWireCodec} from './save-wire-codec.mjs';
 export function createNativeSaveCodec(){
- let legacy=null,tracking=null,baseline=null,refs=null,reusedFields=new Set(),appendStarts=new Map();
+ let legacy=null,tracking=null,baseline=null,refs=null,reusedFields=new Set(),appendStarts=new Map(),playerSnapshots=new Map();
  return {
   mode:'server-json-v1',
-  track(state,wire){
-   baseline=wire;refs=new Map();
+  track(state,wire,{capturePlayers=false}={}){
+   baseline=wire;refs=new Map();playerSnapshots=new Map();
+   if(capturePlayers)for(const [key,value] of Object.entries(wire))if(key.startsWith('beServerPart_players_')&&Array.isArray(value))playerSnapshots.set(key,snapshotPlayerPart(value));
    const visit=(value,node,path)=>{refs.set(JSON.stringify(path),value);if(node.kind==='object')for(const [key,child] of Object.entries(node.fields))visit(value?.[key],child,[...path,key])};
    for(const [key,node] of Object.entries(wire[NATIVE_SAVE_MANIFEST].fields))visit(state[key],node,[key]);
    tracking=trackArchiveWrites(state);
@@ -20,7 +21,8 @@ export function createNativeSaveCodec(){
   },
   reusedFields(){return reusedFields},
   appendStarts(){return appendStarts},
-  release(){legacy=null;tracking=null;baseline=null;refs=null;reusedFields=new Set();appendStarts=new Map()},
+  playerSnapshots(){return playerSnapshots},
+  release(){legacy=null;tracking=null;baseline=null;refs=null;reusedFields=new Set();appendStarts=new Map();playerSnapshots=new Map()},
   async restore(wire,{takeOwnership=false}={}){
    if(isNativeSave(wire))return restoreNativeSave(wire,{clone:!takeOwnership});
    legacy=createSaveWireCodec();return legacy.restore(wire);
@@ -90,4 +92,29 @@ export function normalizeNativeWire(previous,wire,delta,appendStarts=new Map()){
   const start=appendStarts.get(key);
   normalized[key]=start!==undefined?previous[key].concat(JSON.parse(JSON.stringify(wire[key].slice(start)))):JSON.parse(raw);
  }return normalized;
+}
+
+// Capture immutable JSON leaves before the owned engine can mutate player rows.
+// Profiles are expanded one level further so fatigue/skills do not resend all
+// their historical arrays. Primitive strings/numbers need no serialization.
+export function snapshotPlayerPart(rows){
+ function capture(value,depth){
+  if(value===null||typeof value!=='object')return {primitive:true,value};
+  if(!Array.isArray(value)&&depth<2)return {fields:new Map(Object.keys(value).map(key=>[key,capture(value[key],depth+1)]))};
+  return {json:JSON.stringify(value)};
+ }return rows.map(row=>capture(row,0));
+}
+export function diffPlayerPart(before,rows){
+ const ops=[];let overflow=false;
+ function add(op){if(ops.length>=4096){overflow=true;return}ops.push(op)}
+ function walk(old,value,path){
+  if(overflow)return;
+  if(old.primitive){if(!Object.is(old.value,value))add(['set',path,value]);return}
+  if(!old.fields){if(old.json!==JSON.stringify(value))add(['set',path,value]);return}
+  if(!value||typeof value!=='object'||Array.isArray(value)){add(['set',path,value]);return}
+  for(const key of old.fields.keys())if(!Object.hasOwn(value,key))add(['delete',[...path,key]]);
+  for(const key of Object.keys(value)){const next=[...path,key];if(old.fields.has(key))walk(old.fields.get(key),value[key],next);else add(['set',next,value[key]])}
+ }
+ for(let i=0;i<rows.length&&!overflow;i++){if(i<before.length)walk(before[i],rows[i],[i]);else add(['set',[i],rows[i]])}
+ if(rows.length<before.length)add(['length',[],rows.length]);return overflow?null:ops;
 }

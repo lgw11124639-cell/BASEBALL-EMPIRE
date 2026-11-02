@@ -39,7 +39,7 @@ console.log(JSON.stringify({cpuModel:cpus()[0]?.model,cpuCount:cpus().length,lea
 for(let index=0;index<days;index++){
  let profiler=null;const post=(session,method)=>new Promise((ok,fail)=>session.post(method,(error,result)=>error?fail(error):ok(result)));
  if(args.includes('--profile')){profiler=new Session();profiler.connect();await post(profiler,'Profiler.enable');await post(profiler,'Profiler.start')}
- const t=performance.now(),tracked=codec.track(state,wire),assembled=performance.now();
+ const t=performance.now(),tracked=codec.track(state,wire,{capturePlayers:true}),assembled=performance.now();
  const cpuBefore=process.cpuUsage();
  let outcome,failure=null;const requested={year:state.year,day:state.day};
  try{outcome=runOriginalEngineDay(state,{appSource,timeoutMs},{takeOwnership:true,runtime,cloneState:tracked.clone,readArchive:tracked.raw})}catch(error){failure=error}

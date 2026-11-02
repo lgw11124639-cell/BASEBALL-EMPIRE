@@ -36,3 +36,10 @@ test('append proof requires untouched canonical archive rows, and rejects in-pla
   const key='beServerPart_nationalTeamResults_event_matchResults_0';assert.equal(codec.appendStarts().get(key),editOld?undefined:2);const {normalizeNativeWire}=await import('./native-save-codec.mjs'),normalized=normalizeNativeWire(wire,packed,nativeWireDelta(wire,packed),codec.appendStarts());assert.deepEqual(normalized,JSON.parse(JSON.stringify(packed)));assert.equal(normalized[key][0]===wire[key][0],!editOld);codec.release();assert.equal(codec.appendStarts().size,0);
  }
 });
+test('player snapshots detect in-place leaf mutations and preserve canonical sparse results',async()=>{
+ const {snapshotPlayerPart,diffPlayerPart}=await import('./native-save-codec.mjs'),{applyNativeValuePatch}=await import('../native-save.js');
+ const rows=[{id:1,hits:2,remove:true,profile:{baseball:{fatigue:1},history:[{year:2045,hits:80}],photo:'immutable'.repeat(2000)}},{id:2,name:'old'}],acknowledged=structuredClone(rows),snapshot=snapshotPlayerPart(rows);
+ rows[0].hits++;rows[0].profile.baseball.fatigue=3;delete rows[0].remove;rows[0].omitted=undefined;rows[1].name=null;rows.push({id:3,value:NaN});const next=JSON.parse(JSON.stringify(rows)),ops=diffPlayerPart(snapshot,next),applied=applyNativeValuePatch(acknowledged,ops);
+ assert.deepEqual(applied,next);assert.equal(applied[0].profile.history,acknowledged[0].profile.history);assert.equal(applied[0].profile.photo,acknowledged[0].profile.photo);
+ assert.deepEqual(applyNativeValuePatch(acknowledged,diffPlayerPart(snapshot,[next[0]])),[next[0]]);
+});

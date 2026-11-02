@@ -26,3 +26,12 @@ test('unsupported commands, arbitrary fields and executable photo content are re
  assert.equal(commandFingerprint({type:'club-hall-vote',voteId:'v',choice:'yes'}),commandFingerprint({choice:'yes',voteId:'v',type:'club-hall-vote'}));
  assert.notEqual(commandFingerprint({type:'club-hall-vote',voteId:'v',choice:'yes'}),commandFingerprint({type:'club-hall-vote',voteId:'v',choice:'no'}));
 });
+test('all-star ballot is a detached, once-per-day command with no simulation or official record changes',()=>{
+ const state=structuredClone(seed);state.year=2028;state.seasonStartDate='2028-01-01';state.day=153;const before=JSON.stringify(state),command={type:'all-star-vote',playerIds:[String(state.players.find(p=>p.level==='1군').id)]};
+ const out=runOriginalEngineCommand(state,command,{appSource});assert.equal(out.state.allStarVoting[2028].userBallots.length,1);assert.equal(out.state.day,153);assert.deepEqual(out.state.gameResults,state.gameResults);assert.deepEqual(out.state.history,state.history);assert.equal(JSON.stringify(state),before);assert.throws(()=>runOriginalEngineCommand(out.state,command,{appSource}),/already cast/);
+ const closed=structuredClone(state);closed.day=1;assert.throws(()=>runOriginalEngineCommand(closed,command,{appSource}),/closed/);
+});
+test('all-star ballot command rejects duplicate/oversized/arbitrary input and fingerprints a stable player set',()=>{
+ for(const playerIds of [[],Array(25).fill('1'),['1','1'],[{}],[NaN],[Infinity]])assert.throws(()=>validateGameCommand({type:'all-star-vote',playerIds}));
+ assert.throws(()=>validateGameCommand({type:'all-star-vote',playerIds:['1'],userId:2}));assert.equal(commandFingerprint({type:'all-star-vote',playerIds:['1','2']}),commandFingerprint({type:'all-star-vote',playerIds:['2','1']}));
+});

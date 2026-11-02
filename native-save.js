@@ -1,7 +1,7 @@
 // Server JSON wire format. Parts contain plain JSON values, never inner gzip/Base64.
 export const NATIVE_SAVE_MANIFEST='beServerNativeManifest';
 const PREFIX='beServerPart_';
-const roots=new Set(['players','gameResults','clubNotices','clubTransactionArchive','trainingReports','highSchoolBaseball','collegeBaseball','independentBaseball','amateurCareerArchive','nationalTeamResults','minorLeague','history','international','careerRecords','draftResults','faMarket','leagueOffice','postseasons','retiredPlayers']);
+const roots=new Set(['allStarVoting','allStarGames','clubScrimmages','springCamps','players','gameResults','clubNotices','clubTransactionArchive','trainingReports','highSchoolBaseball','collegeBaseball','independentBaseball','amateurCareerArchive','nationalTeamResults','minorLeague','history','international','careerRecords','draftResults','faMarket','leagueOffice','postseasons','retiredPlayers']);
 const unsafe=key=>['__proto__','constructor','prototype'].includes(key);
 const segment=key=>encodeURIComponent(String(key)).replace(/_/g,'%5F');
 export const isNativeSave=wire=>!!wire&&Object.hasOwn(wire,NATIVE_SAVE_MANIFEST);

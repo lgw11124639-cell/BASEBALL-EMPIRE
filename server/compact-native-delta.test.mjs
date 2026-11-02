@@ -23,3 +23,9 @@ test('on-demand patches use committed DB bytes despite in-place baseline mutatio
   const retry=await advance(options(3));assert.equal(retry.status,200);previous=apply(previous,JSON.parse(JSON.stringify(retry.wireDelta)));assert.deepEqual(previous,JSON.parse(JSON.stringify(store.load(1,'main').save)));assert.equal(calls,4);
  }finally{cache.clear();db.close()}
 });
+test('all large player parts use immutable leaf snapshots beyond the generic byte budget',async()=>{
+ const {snapshotPlayerPart}=await import('./native-save-codec.mjs');const previous={},next={},snapshots=new Map(),photo='preserved image data'.repeat(22000);
+ for(let i=0;i<50;i++){const key='beServerPart_players_'+i;previous[key]=[{id:i,hits:1,profile:{photo,baseball:{fatigue:1}}}];snapshots.set(key,snapshotPlayerPart(previous[key]));next[key]=[{id:i,hits:2,profile:{photo,baseball:{fatigue:2}}}]}
+ const delta=nativeWireDelta(previous,next),result=compactNativeDelta(delta,()=>{throw Error('Player path must not reread old DB JSON')},next,null,snapshots);
+ assert.equal(result.metrics.patchFields,50);assert.ok(result.metrics.compactBytes<result.metrics.fullBytes*.01);assert.deepEqual(apply(previous,result),next);
+});

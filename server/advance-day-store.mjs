@@ -35,9 +35,9 @@ export function createAdvanceDayStore(db,shards){
  }
  return {
   receipt,
-  compactDelta(user,slot,expectedRev,delta,normalizedNext=null,appendStarts=null){
+  compactDelta(user,slot,expectedRev,delta,normalizedNext=null,appendStarts=null,playerSnapshots=null){
    if(rev.get(user,slot)?.rev!==expectedRev)return null;
-   return compactNativeDelta(delta,key=>fieldContent.get(user,slot,key)?.content,normalizedNext,appendStarts);
+   return compactNativeDelta(delta,key=>fieldContent.get(user,slot,key)?.content,normalizedNext,appendStarts,playerSnapshots);
   },
   metadata(user,slot){return metadata.get(user,slot)||null},
   compressedSnapshot(user,slot){

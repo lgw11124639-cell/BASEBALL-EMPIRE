@@ -71,14 +71,14 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
      try{state=JSON.parse(JSON.stringify(cached.state));timing.cacheHit=true}
      catch{state=await codec.restore(snapshot.save,{takeOwnership:ownsRestoredState&&!!snapshot.fieldHashes});timing.cacheHit=false}
     }else{state=await(codec?codec.restore(snapshot.save,{takeOwnership:ownsRestoredState&&!!snapshot.fieldHashes}):restoreSave(structuredClone(snapshot.save)));timing.cacheHit=false}
-    const tracked=native&&inputNative&&ownsRestoredState?codec.track(state,snapshot.save):null;
+    const tracked=native&&inputNative&&ownsRestoredState?codec.track(state,snapshot.save,{capturePlayers:nativeWire&&compactWire&&includeDelta}):null;
     mark('restoreMs');
     failurePhase='engine';const outcome=await runDay(state,operation,{takeOwnership:ownsRestoredState,runtime:cached?.runtime,...(tracked?{cloneState:tracked.clone,readArchive:tracked.raw}:{})});timing.engineReused=!!cached?.runtime&&outcome.runtime===cached.runtime;mark('engineMs');
     failurePhase='pack';const wire=await(codec?codec.pack(outcome.state):encodeSave(outcome.state));mark('packMs');
     failurePhase='compare';const delta=native?nativeWireDelta(snapshot.save,wire,snapshot.fieldHashes,codec.reusedFields()):buildWireDelta(snapshot.save,wire);mark('deltaMs');
     timing.storageFormat=native?'server-json-v1':'legacy-gzip';
     timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;timing.reusedArchiveFields=codec?.reusedFields?.().size||0;
-    const appendStarts=codec?.appendStarts?.()||new Map();
+    const appendStarts=codec?.appendStarts?.()||new Map(),playerSnapshots=codec?.playerSnapshots?.()||new Map();
     failurePhase='normalize';let preparedCache=null;
     if(native&&ownsRestoredState&&stateCache&&!precompute){
      // Finish normalization before committing, so even preparation failures leave
@@ -89,7 +89,8 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     }
     mark('cacheMs');
     failurePhase='response-delta';
-    const compact=nativeWire&&compactWire&&includeDelta&&store.compactDelta?store.compactDelta(userId,slot,expectedRev,delta,preparedCache?.wire,appendStarts):null;
+    const compact=nativeWire&&compactWire&&includeDelta&&store.compactDelta?store.compactDelta(userId,slot,expectedRev,delta,preparedCache?.wire,appendStarts,playerSnapshots):null;
+    playerSnapshots.clear();
     if(compact)timing.responseDelta=compact.metrics;
     mark('wireMs');
     const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};

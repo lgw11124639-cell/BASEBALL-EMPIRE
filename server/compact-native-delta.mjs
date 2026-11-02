@@ -1,9 +1,10 @@
 import {gunzipSync} from 'node:zlib';
+import {diffPlayerPart} from './native-save-codec.mjs';
 import {diffNativeValue} from '../native-save.js';
 const unsafe=key=>['__proto__','constructor','prototype'].includes(String(key));
 // Read old values from immutable committed shard bytes, never the engine's
 // in-place world. A matching revision is checked by the store before calling.
-export function compactNativeDelta(delta,readField,normalizedNext=null,appendStarts=null){
+export function compactNativeDelta(delta,readField,normalizedNext=null,appendStarts=null,playerSnapshots=null){
  const set=Object.create(null),patches=Object.create(null),largest=[];let fullBytes=0,compactBytes=0,visitedBytes=0;
  for(const [key,raw] of delta.serializedSet){
   const bytes=Buffer.byteLength(raw);fullBytes+=bytes;largest.push({field:key,bytes});
@@ -14,6 +15,16 @@ export function compactNativeDelta(delta,readField,normalizedNext=null,appendSta
   if(Number.isSafeInteger(start)&&start>=0&&Array.isArray(after)&&after.length>start){
    const ops=after.slice(start).map((row,i)=>['set',[start+i],row]),patchBytes=Buffer.byteLength(JSON.stringify(ops));
    if(patchBytes<bytes*.70){patches[key]=ops;compactBytes+=patchBytes;continue}
+  }
+  // Player baselines were captured before simulation. Compare small immutable
+  // leaves directly, without reading/parsing an entire old player shard again.
+  const playerBefore=playerSnapshots?.get(key);
+  if(playerBefore&&Array.isArray(after)){
+   const ops=diffPlayerPart(playerBefore,after);
+   if(ops&&!ops.some(([,path])=>path.length>64||path.some(unsafe))){
+    const patchBytes=Buffer.byteLength(JSON.stringify(ops));
+    if(patchBytes<bytes*.70){patches[key]=ops;compactBytes+=patchBytes;continue}
+   }
   }
   // Bound work on dense/very large fields and leave tiny scalar fields alone.
   if(!key.startsWith('beServerPart_')||bytes<2048||bytes>1048576||visitedBytes+bytes>16777216){fallback();continue}
