@@ -20328,3 +20328,23 @@ main.game-shell .record-room { padding: 26px !important; }
 .be-broadcast-zone-grid > span.be-zone-neutral { background:transparent; }
 .be-zone-legend { display:block; max-width:230px; margin:5px auto 0; font-size:10px; line-height:1.5; color:#536779; }
 .be-zone-marker { z-index:2; }
+
+/* Front reports share the article reader; only the body scrolls. */
+#game-news-overlay.front-report-overlay { padding:0 !important; background:#eef2f3 !important; }
+#game-news-overlay.front-report-overlay .game-news-dialog { width:100% !important; max-width:100% !important; height:100dvh !important; max-height:100dvh !important; margin:0 !important; border-radius:0 !important; padding:0 !important; }
+#game-news-overlay.front-report-overlay .game-news-dialog > header { padding:calc(env(safe-area-inset-top,0px) + 22px) max(22px,calc((100vw - 820px)/2)) 22px !important; border-bottom:1px solid #cad8d6 !important; background:#fbfcfb !important; }
+#game-news-overlay.front-report-overlay .game-news-dialog > header h2 { color:#173f40 !important; font-size:clamp(21px,3vw,32px) !important; line-height:1.45 !important; letter-spacing:-.04em; }
+#game-news-overlay.front-report-overlay .game-news-dialog > header small { color:#527975 !important; font-size:10px !important; letter-spacing:.13em; line-height:1.6; }
+#game-news-overlay.front-report-overlay .game-news-dialog > .front-report-article { flex:1 1 0% !important; min-height:0 !important; overflow-x:hidden !important; overflow-y:auto !important; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y; box-sizing:border-box; width:100%; padding:28px max(24px,calc((100vw - 760px)/2)) calc(72px + env(safe-area-inset-bottom,0px)); background:#fff; color:#30494e; font-size:16px; line-height:1.95; overflow-wrap:anywhere; }
+.front-report-article > p { margin:0 0 25px; }
+.front-report-article > p:first-child { font-size:19px; line-height:1.85; color:#173f40; font-weight:600; padding-bottom:24px; border-bottom:1px solid #e1e9e7; }
+.front-report-article > h3 { margin:34px 0 18px; font-size:20px; color:#173f40; }
+.front-report-article .front-article-player { background:none; color:#22695f; padding:0; border:0; border-bottom:1px solid #7aa298; border-radius:0; font:inherit; font-weight:700; }
+.front-article-records { margin-top:32px; border-top:1px solid #d4e1dd; padding-top:20px; }
+.front-article-records > summary { color:#245d54; cursor:pointer; font-weight:700; }
+.front-reports-section { border-top:3px solid #386f65; }
+.front-reports-section .be-report-item { background:#fff; border:1px solid #e2e9e6; box-shadow:0 3px 12px #193e3710; padding:20px; text-align:left; }
+.front-reports-section .be-report-item strong { color:#203e43; line-height:1.65; letter-spacing:-.02em; }
+.front-reports-section .be-report-item small { color:#778e8d; font-size:11px; letter-spacing:.02em; }
+.front-reports-section .be-report-item:hover { border-color:#8eafa5; background:#f7faf8; }
+@media(max-width:600px) { #game-news-overlay.front-report-overlay .game-news-dialog > header { padding:calc(env(safe-area-inset-top,0px) + 18px) 22px 20px !important; } }
