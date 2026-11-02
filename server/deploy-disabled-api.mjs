@@ -6,6 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {DatabaseSync,backup} from 'node:sqlite';
 import {createHash} from 'node:crypto';
 import {readProcessRuntime} from './process-runtime.mjs';
+const upgrade=process.argv.includes('--upgrade');
 const repo=resolve('.'),api='/opt/baseball-empire-api',stage=resolve(repo,'server.local-backup/advance-api');
 const log=x=>console.log(JSON.stringify(x));
 const digest=file=>createHash('sha256').update(readFileSync(file)).digest('hex');
@@ -38,14 +39,14 @@ const verified=JSON.parse(readFileSync(resolve(stage,'http-verification.json'),'
 for(const [name,expected] of Object.entries(inputs.productionSourceHashes))if(digest(resolve(api,name))!==expected)throw Error('Production source changed; restage first: '+name);
 if(digest(resolve(api,'server.mjs'))!==verified.productionServerHash||digest(resolve(stage,'auth.mjs'))!==verified.stagedAuthHash||digest(resolve(stage,'shard-store.mjs'))!==verified.stagedStoreHash)throw Error('HTTP verification no longer matches this deployment');
 const liveAuth=readFileSync(resolve(api,'auth.mjs'),'utf8');
-if(liveAuth.includes('createAdvanceDayRoute'))throw Error('Engine foundation already installed; do not redeploy with this first-install script');
+if(upgrade!==liveAuth.includes('createAdvanceDayRoute'))throw Error(upgrade?'Engine foundation is not installed; upgrade refused':'Engine foundation already installed; use upgrade-disabled-api.mjs');
 const stamp=new Date().toISOString().replace(/[:.]/g,'-');
-const saved=resolve(repo,'server.local-backup/deploy-'+stamp);mkdirSync(saved,{recursive:true,mode:0o700});
+const saved=resolve(repo,'server.local-backup/'+(upgrade?'upgrade-':'deploy-')+stamp);mkdirSync(saved,{recursive:true,mode:0o700});
 const previous=names.map(name=>({name,existed:existsSync(resolve(api,name))}));
 for(const item of previous)if(item.existed){mkdirSync(dirname(resolve(saved,'files',item.name)),{recursive:true,mode:0o700});copyFileSync(resolve(api,item.name),resolve(saved,'files',item.name))}
 const readOnly=new DatabaseSync(database,{readOnly:true});
 try{await backup(readOnly,resolve(saved,'saves.sqlite'))}finally{readOnly.close()}
-writeFileSync(resolve(saved,'manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),engineEnabled:false,files:previous},null,2),{mode:0o600});
+writeFileSync(resolve(saved,'manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),engineEnabled:false,mode:upgrade?'upgrade':'first-install',files:previous},null,2),{mode:0o600});
 log({stage:'backup-complete',backupDirectory:saved,sqliteBackup:true});
 const restartEnv={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:'0'};
 function install(src,dest){mkdirSync(dirname(dest),{recursive:true});const tmp=dest+'.engine-stage-tmp';copyFileSync(src,tmp);renameSync(tmp,dest)}
@@ -66,7 +67,7 @@ try{
  const after=JSON.parse(pm2(['jlist'])).find(p=>p.pm_id===4);
  const afterRuntime=readProcessRuntime(Number(after?.pid));
  if(afterRuntime.configuration.BE_SERVER_ENGINE_ENABLED!=='0'||!afterRuntime.listeningPorts.includes(3300))throw Error('Cannot confirm disabled engine and API port');
- log({success:true,stage:'production-foundation-installed',engineEnabled:false,pm2Id:4,health200:true,unauthenticated401:true,saveSimulationPerformed:false,backupDirectory:saved,clientPublished:false});
+ log({success:true,stage:upgrade?'production-api-upgraded':'production-foundation-installed',engineEnabled:false,pm2Id:4,health200:true,unauthenticated401:true,saveSimulationPerformed:false,backupDirectory:saved,clientPublished:false});
 }catch(error){
  let rollback=true;
  try{

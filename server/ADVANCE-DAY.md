@@ -173,3 +173,15 @@ new-game/photo/reset/restore against the actual staged auth implementation.
 These lifecycle and updated UI changes are not deployed or enabled yet. The
 first-install deployment script must not be rerun over the existing foundation;
 a verified upgrade and frontend release are still required before activation.
+
+## Upgrading the installed disabled foundation
+
+After the updated stage/auth/HTTP checks succeed, run
+`node --experimental-sqlite server/upgrade-disabled-api.mjs`. This reuses the
+backup/hash verification/rollback deployment code with an explicit upgrade mode.
+It requires the existing engine auth integration and a disabled running engine;
+first-install and upgrade modes reject the wrong starting state. It installs
+all new lifecycle and command dependencies, including both browser helper modules
+needed by cloud-only.js. It restarts only PM2 ID 4 and verifies port ownership,
+health, authentication, and BE_SERVER_ENGINE_ENABLED=0 after restart. No user save
+is advanced, replaced or reset. Frontend publication and activation are separate.
