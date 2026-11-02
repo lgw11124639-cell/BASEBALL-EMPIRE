@@ -35,6 +35,6 @@ for(let index=0;index<days;index++){
  state=restoreNativeSave(normalized,{previousWire:packed,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
  codec.release();wire=normalized;hashes=delta.fieldHashes;
  const memory=process.memoryUsage();
- console.log(JSON.stringify({stage:'detached-day-benchmark',day:index+1,productionWrites:false,totalMs:Math.round(performance.now()-t),assembleMs:Math.round(assembled-t),engineMs:Math.round(engineDone-assembled),packMs:Math.round(packedAt-engineDone),compareMs:Math.round(comparedAt-packedAt),normalizeMs:Math.round(performance.now()-comparedAt),changedFields:Object.keys(delta.set).length,reusedFields:hashes.size-delta.serializedFields.size,rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576),enginePhases:outcome.result.enginePhases}));
+ console.log(JSON.stringify({stage:'detached-day-benchmark',day:index+1,productionWrites:false,totalMs:Math.round(performance.now()-t),assembleMs:Math.round(assembled-t),engineMs:Math.round(engineDone-assembled),packMs:Math.round(packedAt-engineDone),compareMs:Math.round(comparedAt-packedAt),normalizeMs:Math.round(performance.now()-comparedAt),changedFields:Object.keys(delta.set).length,reusedFields:hashes.size-delta.serializedFields.size,rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576),peakRssMiB:Math.round(process.resourceUsage().maxRSS/1024),enginePhases:outcome.result.enginePhases}));
 }
 console.log(JSON.stringify({success:true,productionWrites:false,productionDayUnchanged:true}));
