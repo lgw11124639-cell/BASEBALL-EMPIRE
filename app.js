@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-rookie-history23';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-lineup-selection24';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -4564,26 +4564,33 @@ function playerFieldingPositions(p){
 function fieldingPositionLabel(p){const v=playerFieldingPositions(p);return v.secondary.length?v.secondary.map(pos=>(({C:'포수','1B':'1루수','2B':'2루수','3B':'3루수',SS:'유격수',LF:'좌익수',CF:'중견수',RF:'우익수'})[pos]||pos)+' · '+((v.proficiency[pos]||0)>=80?'숙련':'적응 중')).join(' / '):'없음'}
 function defensiveFit(p,slot){const v=playerFieldingPositions(p);if(slot==='DH'&&v.primary!=='P')return 0;if(v.primary===slot)return 22;if(v.secondary.includes(slot))return 8+Math.max(0,(v.proficiency[slot]||65)-60)*.2;return slot==='C'?-100:slot==='SS'?-70:-40}
 function chooseBattingNine(players,opponentHand,formScore,style='분석형',philosophy='밸런스'){
+ const previousLookupCache=beInningLookupCache;beInningLookupCache=previousLookupCache||{staff:new Map(),profiles:new WeakMap(),arsenals:new WeakMap(),skills:new WeakMap()};try{
  const slots=['C','SS','2B','3B','1B','CF','LF','RF'];
  const pool=players.filter((p,i,a)=>p&&p.position!=='P'&&a.findIndex(x=>x&&String(x.id)===String(p.id))===i);
  const base=new Map(pool.map(p=>{const fatigue=Number(playerBaseball(p).fatigue)||0;return [p.id,(formScore?formScore(p):bePlayerEvaluation(p))-fatigue*.3-Math.max(0,fatigue-35)*.55-Math.max(0,fatigue-60)*1.2]}));
  const positional=new Map(pool.map(p=>[p.id,slots.map(slot=>({fit:defensiveFit(p,slot),score:battingDefensiveSelectionScore(p,slot,base.get(p.id))}))]));
  function assign(emergency){
-  const scores=new Float64Array(256);scores.fill(-Infinity);scores[0]=0;const paths=Array(256).fill(null);
-  for(const p of pool){const positions=positional.get(p.id);let available=emergency?255:0;if(!emergency)for(let i=0;i<8;i++)if(positions[i].fit>=5)available|=1<<i;
-   for(let mask=255;mask>=0;mask--){const baseScore=scores[mask];if(!Number.isFinite(baseScore))continue;const previous=paths[mask];let candidates=available&~mask;
-    while(candidates){const bit=candidates&-candidates,i=31-Math.clz32(bit);candidates^=bit;
+  const scores=new Float64Array(256);scores.fill(-Infinity);scores[0]=0;
+  // Each descending-mask update uses the preceding player's stage. Keep only
+  // its chosen slot, then reconstruct backwards instead of allocating a linked
+  // path object on every improvement. Iteration and strict tie order stay fixed.
+  const choices=new Int8Array(pool.length*256);choices.fill(-1);
+  const finite=Number.isFinite,clz32=Math.clz32;
+  for(let playerIndex=0;playerIndex<pool.length;playerIndex++){const p=pool[playerIndex],positions=positional.get(p.id),offset=playerIndex*256;let available=emergency?255:0;if(!emergency)for(let i=0;i<8;i++)if(positions[i].fit>=5)available|=1<<i;
+   for(let mask=255;mask>=0;mask--){const baseScore=scores[mask];if(!finite(baseScore))continue;let candidates=available&~mask;
+    while(candidates){const bit=candidates&-candidates,i=31-clz32(bit);candidates^=bit;
      const next=mask|bit,score=baseScore+positions[i].score;
-     if(score>scores[next]){scores[next]=score;paths[next]={p,slot:slots[i],previous};}
+     if(score>scores[next]){scores[next]=score;choices[offset+next]=i;}
    }}}
-  if(!Number.isFinite(scores[255]))return null;const chosen=[],assigned=new Map(),emergencies=new Map();let path=paths[255];
-  while(path){chosen.push(path.p);assigned.set(path.p.id,path.slot);if(defensiveFit(path.p,path.slot)<5)emergencies.set(path.p.id,path.slot);path=path.previous;}
+  if(!finite(scores[255]))return null;const chosen=[],assigned=new Map(),emergencies=new Map();let mask=255;
+  for(let playerIndex=pool.length-1;playerIndex>=0;playerIndex--){const i=choices[playerIndex*256+mask];if(i<0)continue;const p=pool[playerIndex],slot=slots[i];chosen.push(p);assigned.set(p.id,slot);if(defensiveFit(p,slot)<5)emergencies.set(p.id,slot);mask^=1<<i;}
   return {chosen,assigned,emergencies};
  }
  const result=assign(false)||assign(true);
  if(!result){const partial=battingOrder(pool.slice(0,9),style,philosophy);partial.assignedPositions=new Map(partial.map(p=>[p.id,playerFieldingPositions(p).primary]));partial.emergencyPositions=new Map();return partial;}
  const dh=pool.filter(p=>!result.assigned.has(p.id)).sort((a,b)=>base.get(b.id)-base.get(a.id)||a.id-b.id)[0];if(dh){result.chosen.push(dh);result.assigned.set(dh.id,'DH')}
  const ordered=battingOrder(result.chosen,style,philosophy);ordered.assignedPositions=result.assigned;ordered.emergencyPositions=result.emergencies;return ordered;
+ }finally{beInningLookupCache=previousLookupCache}
 }
 function selectNationalHitters(players,count,score=nationalTeamFormScore){
  // One selection has fixed form inputs; avoid rescanning season boxes per comparison.
