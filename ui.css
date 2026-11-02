@@ -20317,3 +20317,6 @@ main.game-shell .record-room { padding: 26px !important; }
 
 .be-auto-progress { font-size: 11px; padding: 8px 10px; white-space: nowrap; }
 .be-auto-progress[hidden] { display: none !important; }
+
+/* Auto controls must not change document height when starting or stopping. */
+.be-auto-progress { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 90; box-shadow: 0 4px 18px #15354a26; }

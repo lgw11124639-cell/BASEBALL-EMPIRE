@@ -558,3 +558,24 @@ only the initial scan decodes them, then confirms replay access and full JSON
 parity. The actual mobile UI browser scenario also runs with 80 synthetic games
 and 500 broadcast events each, including navigating away while auto-advancing.
 Physical iOS responsiveness still needs confirmation on the affected device.
+
+
+## v2.2.5 interaction while automatically advancing
+
+Automatic day completion no longer calls the full renderer on home or other
+views. Starting/stopping automatic progression updates controls in place; a
+fixed stop control does not change page height. Dates update independently and
+explicit navigation displays the latest state. Clicking the current navigation
+tab can refresh its contents. Browsing and dialogs remain intact between ticks.
+
+Player opening no longer calculates the hidden scouting pane, awards, milestones
+or collapsed minor/amateur/position record sections. Those sections load only
+when selected/expanded, after allowing a paint, and cancel work when closed.
+Read-only UI box-score calculations reuse a per-snapshot player/game index;
+canonical engine calculations retain their original full-scan path. A parity
+test checks names, reused IDs, eligibility, append and snapshot replacement.
+
+Browser tests explicitly start auto progression while scrolled down at home,
+verify that the original home DOM and scroll survive a completed day, then
+navigate to the roster, verify more completed days, and stop without a scroll
+jump. Replay-pressure coverage includes 40,000 synthetic broadcast events.
