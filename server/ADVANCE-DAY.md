@@ -541,3 +541,20 @@ Native boot skips legacy eager replay expansion. No save is trimmed or deleted.
 Tests cover full JSON parity, array indexing/iteration, exact incremental updates,
 a boot with zero decoded archive parts, session isolation and unchanged revision.
 Real iOS Safari memory and load time still require confirmation on the device.
+
+
+## v2.2.4 repeated game scanning on mobile
+
+After lazy bootstrap, current-season statistics could scan each game once per
+player. With a bounded decoded-part cache, scans repeatedly inflated and parsed
+large broadcastEvents arrays even though only the small box-score lines were
+needed. Compressed game parts now retain small score/line views separately;
+broadcastEvents stays behind a getter backed by the existing bounded LRU and
+remains fully available for replay. No scores, statistics or events are dropped.
+This is a browser read-path change and needs no backend reinstall.
+
+The regression forces LRU eviction, scans game lines 50 times, and verifies that
+only the initial scan decodes them, then confirms replay access and full JSON
+parity. The actual mobile UI browser scenario also runs with 80 synthetic games
+and 500 broadcast events each, including navigating away while auto-advancing.
+Physical iOS responsiveness still needs confirmation on the affected device.

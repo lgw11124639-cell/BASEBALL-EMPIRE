@@ -115,13 +115,24 @@ export function compressedNativeWire(encoded,{decode,maxChars=4000000,onDecode=(
   if(unsafe(key))throw Error('Invalid compressed native field');
   if(!key.startsWith(PREFIX)){wire[key]=encoded[key];continue}
   const gzip=encoded[key],token={};if(typeof gzip!=='string')throw Error('Invalid compressed native part');
-  Object.defineProperty(wire,key,{enumerable:true,configurable:true,get(){
+  const load=()=>{
    let entry=cache.get(token);if(entry){cache.delete(token);cache.set(token,entry);return entry.value}
    const text=decode(gzip);entry={value:JSON.parse(text),chars:text.length};onDecode(key,text.length);
    cache.set(token,entry);chars+=entry.chars;
    while(chars>maxChars&&cache.size>1){const [id,old]=cache.entries().next().value;cache.delete(id);chars-=old.chars}
    return entry.value;
-  }});
+  };
+  let summary=null;
+  const read=key.startsWith(PREFIX+'gameResults_')?()=>{
+   if(summary)return summary;
+   summary=load().map((game,i)=>{
+    const view={};for(const field of Object.keys(game)){
+     if(field==='broadcastEvents')Object.defineProperty(view,field,{enumerable:true,configurable:true,get:()=>load()[i][field],set(value){Object.defineProperty(this,field,{value,writable:true,enumerable:true,configurable:true})}});
+     else Object.defineProperty(view,field,{value:game[field],writable:true,enumerable:true,configurable:true});
+    }return view;
+   });return summary;
+  }:load;
+  Object.defineProperty(wire,key,{enumerable:true,configurable:true,get:read});
  }
  lazyWires.add(wire);return wire;
 }

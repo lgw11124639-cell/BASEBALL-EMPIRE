@@ -23,3 +23,11 @@ test('compressed HTTP snapshot is session scoped and does not advance the save',
  const wire=compressedNativeWire(reply.payload.save,{decode:b=>gunzipSync(Buffer.from(b,'base64')).toString()});assert.deepEqual(JSON.parse(JSON.stringify(restoreNativeSave(wire))),source);
  assert.equal(db.prepare('SELECT rev FROM be_save_shard_meta WHERE user_id=1').get().rev,7);assert.equal(db.prepare('SELECT count(*) AS n FROM be_day_requests').get().n,0);db.close();
 });
+test('roster and standings scans do not repeatedly inflate replay events after LRU eviction',()=>{
+ const original={players:[],gameResults:Array.from({length:8},(_,day)=>({day,awayRuns:day,awayPitchers:[{id:1,innings:6}],broadcastEvents:Array.from({length:100},(_,i)=>({text:'Replay event '+i}))}))};
+ let reads=0;const wire=compressedNativeWire(encode(packNativeSave(original)),{decode:b=>gunzipSync(Buffer.from(b,'base64')).toString(),maxChars:1,onDecode:()=>reads++}),state=restoreNativeSave(wire);
+ const sums=()=>state.gameResults.reduce((sum,g)=>sum+g.awayRuns+g.awayPitchers[0].innings,0);
+ sums();assert.equal(reads,8);for(let player=0;player<50;player++)sums();assert.equal(reads,8,'repeated player statistics retain small box scores without replay decoding');
+ assert.deepEqual(state.gameResults[0].broadcastEvents,original.gameResults[0].broadcastEvents);assert.equal(reads,9,'replay remains available when explicitly opened');
+ assert.deepEqual(JSON.parse(JSON.stringify(state)),original,'summary cache must preserve every replay field');
+});

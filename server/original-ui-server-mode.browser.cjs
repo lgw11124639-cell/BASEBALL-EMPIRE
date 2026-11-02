@@ -33,6 +33,9 @@ const assert=require('node:assert/strict');
   fixture.gameResults=[{year:fixture.year,day:fixture.day,away:0,home:1,awayRuns:4,homeRuns:7,awayInnings:[0,2,0,0,0,0,0,0,2],homeInnings:[0,0,0,3,0,0,4,0,0],awayBatters:[],homeBatters:[],awayPitchers:[{name:'원정 선발',started:true}],homePitchers:[{name:'홈 선발',started:true}]}];
   fixture.day++;
  }
+ if(process.argv.includes('--replay-pressure')&&!fixturePath){
+  const game=fixture.gameResults[0];fixture.gameResults=Array.from({length:80},(_,i)=>({...game,day:game.day-79+i,broadcastEvents:Array.from({length:500},(_,n)=>({inning:Math.floor(n/60)+1,side:n%2?'away':'home',text:'중계 기록 '.repeat(35)+n}))}));
+ }
  const startingWorld=structuredClone(fixture);
  const {restoreServerSave}=await import('./save-wire-codec.mjs');
  const {packNativeSave}=await import('../native-save.js');
