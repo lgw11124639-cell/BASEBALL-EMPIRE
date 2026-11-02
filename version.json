@@ -1,1 +1,1 @@
-{"version":"2.2.9","build":"20261102-season-award-index22","notes":"시즌 종료 시 수비 출전 집계를 공유하여 시상 계산 반복 제거"}
+{"version":"2.2.10","build":"20261102-rookie-history23","notes":"신인상 과거 시즌 반복 조회 제거와 다년 기록 회귀 검증"}
