@@ -82,3 +82,18 @@ account in that DB, checks real HTTP preflight headers, session authentication,
 disabled engine routing and Origin rejection, then stops only its own child.
 It does not use PM2 or open the production DB. Test directories stay inside the
 ignored server.local-backup tree and contain no production save data.
+
+First production foundation deployment is `deploy-disabled-api.mjs`. It verifies
+PM2 ID 4 is the expected server at port 3300, checks staged file hashes against
+the repo, and checks production source hashes against the successful HTTP stage.
+It creates a consistent SQLite backup with node:sqlite's backup API and backs up
+every file it will replace before installing anything. It installs the modules
+and restarts only PM2 ID 4 with BE_SERVER_ENGINE_ENABLED=0. A failed health check
+restores code and restarts that process; it never restores the DB over newer user
+saves. Backup files remain in server.local-backup. This is a first-install script;
+it refuses to run over an already installed engine foundation.
+
+The route stays disabled; no real user save is advanced. The existing Pages UI
+is not published or replaced. Refresh stage-auth and staged-http first to produce
+the required source hashes before using the deployment command. This script does
+not change Nginx or manage any unrelated PM2 applications.

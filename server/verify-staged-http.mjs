@@ -1,10 +1,10 @@
 // Verify the actual HTTP entrypoint with a disposable DB, port and dummy token.
 // Never restart PM2, read production environment values, or open production DB.
 import assert from 'node:assert/strict';
-import {readFileSync,copyFileSync,mkdtempSync,chmodSync} from 'node:fs';
+import {readFileSync,writeFileSync,copyFileSync,mkdtempSync,chmodSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {spawn} from 'node:child_process';
-import {randomBytes} from 'node:crypto';
+import {randomBytes,createHash} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import net from 'node:net';
 const stage=resolve('server.local-backup/advance-api');
@@ -46,5 +46,9 @@ finally{
  child.kill('SIGTERM');
  let timer;
  await Promise.race([stopped,new Promise(r=>{timer=setTimeout(()=>{child.kill('SIGKILL');r()},2000)})]);clearTimeout(timer);
+}
+if(report.success){
+ const hash=file=>createHash('sha256').update(readFileSync(file)).digest('hex');
+ writeFileSync(resolve(stage,'http-verification.json'),JSON.stringify({productionServerHash:hash(source),stagedAuthHash:hash(resolve(stage,'auth.mjs')),stagedStoreHash:hash(resolve(stage,'shard-store.mjs'))}),{mode:0o600});
 }
 console.log(JSON.stringify(report));
