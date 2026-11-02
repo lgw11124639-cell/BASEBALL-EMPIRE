@@ -8,8 +8,8 @@ import {createAdvanceDayService} from './advance-day-service.mjs';
 // Kept disabled until server-owned client flows and legacy write guards are ready.
 export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,response,enabled=false,codecFactory=createSaveWireCodec}){
  const store=createAdvanceDayStore(db,shards);
- const advance=createAdvanceDayService({store,restoreSave,encodeSave,codecFactory});
- const command=createAdvanceDayService({store,restoreSave,encodeSave,runDay:runOriginalEngineCommand,fingerprint:commandFingerprint,codecFactory});
+ const advance=createAdvanceDayService({store,restoreSave,encodeSave,codecFactory,includeDelta:true});
+ const command=createAdvanceDayService({store,restoreSave,encodeSave,runDay:runOriginalEngineCommand,fingerprint:commandFingerprint,codecFactory,includeDelta:true});
  const meta=db.prepare('SELECT rev FROM be_save_shard_meta WHERE user_id=? AND slot=?');
  const lifecycleStore=createSaveLifecycleStore(db,shards);
  const lifecycle=createSaveLifecycleService({store:lifecycleStore,restoreSave,encodeSave});

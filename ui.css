@@ -20098,3 +20098,53 @@ body:has(#player-overlay) {
   overflow-y: auto !important;
   overscroll-behavior: contain;
 }
+
+/* Subtle club colours distinguish the canvas, navigation and content cards. */
+body:has(main.game-shell) {
+  background: linear-gradient(135deg, #dbe8f2 0%, #e6f0ed 55%, #e2e8f3 100%) !important;
+  background-attachment: fixed !important;
+}
+main.game-shell { background: transparent !important; }
+main.game-shell .dashboard-section {
+  background: #fbfdff !important;
+  border-color: #cfdee8 !important;
+}
+#player-overlay .player-panel.pro-profile.empire-profile {
+  background: #e3edf2 !important;
+}
+#player-overlay .empire-profile .profile-content {
+  background: linear-gradient(125deg, #e3edf4 0%, #e7f0ed 65%, #e6ebf5 100%) !important;
+}
+#player-overlay .empire-profile .profile-top {
+  background: #e8f0f7 !important;
+  border-bottom-color: #c9dae7 !important;
+}
+#player-overlay .empire-profile .profile-tabs {
+  background: #dce8ee !important;
+  border-bottom-color: #c4d8df !important;
+}
+#player-overlay .empire-profile .profile-tabs button.active {
+  background: #edf7f2 !important;
+}
+#player-overlay .empire-profile .table-wrap {
+  background: #fff !important;
+  border-color: #c7d9e5 !important;
+}
+#player-overlay .empire-profile .table-wrap thead th { background: #dce8f4 !important; }
+#player-overlay .empire-profile .table-wrap tbody tr:nth-child(even) td { background: #eff5fa !important; }
+#player-overlay .empire-profile .table-wrap tbody tr:nth-child(odd) td { background: #fff !important; }
+#player-overlay .empire-profile .be-contract-metric { background: #f8fcff !important; }
+#league-team-overlay .game-news-dialog.league-club-dialog { background: #e4eef2 !important; }
+#league-team-overlay .game-news-header { background: #e8f0f7 !important; }
+.be-server-day-timing {
+  margin-top: 12px; padding: 12px 15px; border: 1px solid #c4dbdf;
+  border-radius: 10px; background: #eaf5f1; color: #244d56;
+  font-size: 13px; line-height: 1.7;
+}
+.be-server-day-timing summary { cursor: pointer; }
+.be-server-day-timing p { margin: 7px 0 0; overflow-wrap: anywhere; }
+#player-overlay .empire-profile .season-trends > div[style] > div {
+  background: #f7fbff !important; border-color: #c8dce9 !important;
+}
+#player-overlay .empire-profile .season-trends > div[style] > div:nth-child(2) { background: #f1faf6 !important; }
+#player-overlay .empire-profile .season-trends > div[style] > div:nth-child(3) { background: #f6f4fc !important; }

@@ -44,3 +44,42 @@ test('request-scoped decoded caches avoid recompressing unchanged archive shards
  assert.equal(warmTasks,0);
  assert.ok(cold.metrics().tasks>0);
 });
+test('incremental browser decode matches full decode and reuses untouched archives',async()=>{
+ const codec=createSaveWireCodec(),original=seed(),wire=await codec.pack(original),decoded=await codec.restore(wire);
+ const next=structuredClone(original);next.day++;next.players[0].games++;
+ const updated=await codec.pack(next),{buildWireDelta}=await import('./wire-delta.mjs'),delta=buildWireDelta(wire,updated);
+ const actual=await codec.restoreChanges(updated,wire,decoded,delta);
+ assert.deepEqual(actual,await createSaveWireCodec().restore(updated));
+ assert.equal(actual.history,decoded.history);
+ assert.equal(actual.amateurCareerArchive,decoded.amateurCareerArchive);
+ assert.equal(actual.highSchoolBaseball,decoded.highSchoolBaseball);
+ assert.notEqual(actual.players,decoded.players);
+ next.history.seasons[2045].complete=false;delete next.trainingReports;
+ const last=await codec.pack(next),delta2=buildWireDelta(updated,last);
+ const again=await codec.restoreChanges(last,updated,actual,delta2);
+ assert.deepEqual(again,await createSaveWireCodec().restore(last));
+ assert.notEqual(again.history,actual.history);assert.ok(!Object.hasOwn(again,'trainingReports'));
+});
+test('replay chunk reuse retains old games and decodes appended or edited chunks exactly',async()=>{
+ const codec=createSaveWireCodec(),state=seed();state.gameResults=Array.from({length:9},(_,i)=>({day:i+1,home:0,away:1,broadcastEvents:[{inning:1,text:'play '+i}]}));
+ const before=await codec.pack(state),decoded=await codec.restore(before);
+ state.gameResults.push({day:10,home:1,away:0,broadcastEvents:[{inning:9,text:'new game'}]});
+ const after=await codec.pack(state),{buildWireDelta}=await import('./wire-delta.mjs');
+ const next=await codec.restoreChanges(after,before,decoded,buildWireDelta(before,after));
+ assert.deepEqual(next,await createSaveWireCodec().restore(after));
+ assert.equal(next.gameResults[0],decoded.gameResults[0],'unchanged replay chunk is not parsed again');
+ assert.equal(next.gameResults[7],decoded.gameResults[7]);
+ state.gameResults[0].broadcastEvents[0].text='corrected';
+ const edited=await codec.pack(state),last=await codec.restoreChanges(edited,after,next,buildWireDelta(after,edited));
+ assert.deepEqual(last,await createSaveWireCodec().restore(edited));
+ assert.notEqual(last.gameResults[0],next.gameResults[0]);assert.equal(last.gameResults[4],next.gameResults[4]);
+});
+test('native server gzip stays readable by the original browser streams and rejects corrupt shards',async()=>{
+ const original=seed(),native=createSaveWireCodec(),browser=createSaveWireCodec(undefined,{nativeGzip:false});
+ const nativeWire=await native.pack(original);
+ assert.deepEqual(await browser.restore(nativeWire),original);
+ const browserWire=await browser.pack(original);
+ assert.deepEqual(await native.restore(browserWire),original);
+ const broken=structuredClone(nativeWire);broken.beShard_teams_0='@@@not-gzip';
+ await assert.rejects(()=>native.restore(broken));
+});

@@ -34,12 +34,12 @@ const assert=require('node:assert/strict');
   const page=await browser.newPage({viewport:process.argv.includes('--desktop')?{width:1440,height:900}:{width:390,height:844},isMobile:!process.argv.includes('--desktop'),serviceWorkers:'block'});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
   await page.addInitScript(()=>localStorage.setItem('be-cloud-session-v1',JSON.stringify({token:'a'.repeat(64),username:'test',expiresAt:Date.now()+600000})));
-  let revision=1,advances=0,commands=0,writes=0,lifecycle=0;const receipts=new Map();
+  let revision=1,advances=0,commands=0,writes=0,lifecycle=0,snapshotReads=0;const receipts=new Map();
   await page.route('https://baseball-empire-save.duckdns.org/**',async route=>{
    const req=route.request(),path=new URL(req.url()).pathname;
    if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,PUT,PATCH,DELETE','access-control-allow-headers':'authorization,content-type,if-match'}});
    let data;
-   if(req.method()==='GET'&&path==='/v2/saves/main')data={rev:revision,save:fixture};
+   if(req.method()==='GET'&&path==='/v2/saves/main'){snapshotReads++;data={rev:revision,save:fixture};}
    else if(path==='/v2/engine/status')data={enabled:true,canAdvance:!fixture.beServerSlotEmpty,revision,serverOwned:false};
    else if(req.method()==='POST'&&['/v2/engine/new-game','/v2/engine/reset','/v2/engine/restore'].includes(path)){
     lifecycle++;const bytes=req.postDataBuffer(),body=JSON.parse((req.headers()['content-encoding']==='gzip'?gunzipSync(bytes):bytes).toString());
@@ -54,7 +54,7 @@ const assert=require('node:assert/strict');
     fixture.players.find(p=>String(p.id)===body.command.playerId).profile.photoData=body.command.photo;
     revision++;data={request_id:body.requestId,rev:revision};
    }
-   else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;fixture.day++;revision++;data={request_id:JSON.parse(req.postData()).requestId,rev:revision}}
+   else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:{day:fixture.day},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}}}
    else{writes++;return route.fulfill({status:500,headers:{'access-control-allow-origin':'*'},body:'{}'})}
    return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(data)});
   });
@@ -82,25 +82,38 @@ const assert=require('node:assert/strict');
   await assertFullViewport('#player-overlay .player-panel');
   await page.locator('[data-profile-tab="record"]').click();
   assert.match(await page.locator('#player-record-lazy').textContent(),/1군 시즌 기록/);
+  if(process.env.BE_UI_SCREENSHOT)await page.screenshot({path:process.env.BE_UI_SCREENSHOT});
   const photo=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=10;c.height=10;c.getContext('2d').fillRect(0,0,10,10);return c.toDataURL('image/jpeg').split(',')[1]});
   const confirmedPhoto=await page.evaluate(async({playerId,photo})=>{const next=await window.beExecuteServerGameCommand({type:'player-photo',playerId,photo:'data:image/jpeg;base64,'+photo});return next.players.find(p=>String(p.id)===playerId).profile.photoData},{playerId,photo});
   assert.match(confirmedPhoto,/^data:image\/jpeg;base64,/);
   assert.equal(commands,1);assert.ok(fixture.players.find(p=>String(p.id)===playerId).profile.photoData);
   await page.click('#close-player');await page.locator('nav [data-tab="home"]').click();
   const priorDate=await page.locator('.header-season').textContent();
+  const readsBeforeDay=snapshotReads;
   await page.click('#advance-day');
+  await page.waitForFunction(()=>document.querySelector('#advance-day').textContent.includes('초'));
   await page.waitForFunction(()=>window.beNewsDay!==undefined||document.querySelector('.header-season')?.textContent.includes('2027'),null,{timeout:10000});
   await page.waitForFunction(()=>!document.querySelector('#advance-day').disabled);
   assert.notEqual(await page.locator('.header-season').textContent(),priorDate);
+  assert.equal(snapshotReads,readsBeforeDay,'day response avoids a full save download');
+  assert.equal(await page.locator('.be-server-day-timing').count(),1);
+  assert.equal(await page.evaluate(()=>window.beLastServerDayTiming.incremental),true);
   assert.equal(advances,1);assert.equal(revision,3);assert.equal(writes,0);
+  const readsBeforeFallback=snapshotReads;
+  await page.click('#advance-day');
+  await page.waitForFunction(()=>window.beServerGameCapability?.revision===4);
+  await page.waitForFunction(()=>!document.querySelector('#advance-day').disabled);
+  assert.equal(snapshotReads,readsBeforeFallback+1,'older or replayed responses safely reload the snapshot');
+  assert.equal(await page.evaluate(()=>window.beLastServerDayTiming.incremental),false);
+  assert.equal(advances,2);assert.equal(writes,0);
   await page.click('#back-to-title');await page.click('#be-cloud-reset');
   await page.waitForSelector('#entry-new');await page.click('#entry-new');await page.click('#start');
-  await page.waitForSelector('#advance-day');await page.waitForFunction(()=>window.beServerGameCapability?.revision===5);
+  await page.waitForSelector('#advance-day');await page.waitForFunction(()=>window.beServerGameCapability?.revision===6);
   assert.equal(lifecycle,2);assert.equal(fixture.day,startingWorld.day);
   const backup=structuredClone(startingWorld);backup.day=30;
   const beforeRestore=await page.locator('.header-season').textContent();
   await page.locator('#restore').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
-  await page.waitForFunction(()=>window.beServerGameCapability?.revision===6);
+  await page.waitForFunction(()=>window.beServerGameCapability?.revision===7);
   assert.equal(lifecycle,3);assert.equal(fixture.day,30);assert.equal(writes,0);
   await page.waitForFunction(old=>document.querySelector('.header-season').textContent!==old,beforeRestore);
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);

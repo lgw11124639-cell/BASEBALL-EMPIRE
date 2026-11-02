@@ -1,16 +1,24 @@
 // Reuse the browser's lossless save codecs, excluding authentication/transport.
 // Each request has isolated caches, shared only between its decode and encode.
 import {readFileSync} from 'node:fs';
+import {gzipSync,gunzipSync} from 'node:zlib';
 const path=new URL('../cloud-only.js',import.meta.url);
-export function createSaveWireCodec(source=readFileSync(path,'utf8')){
+export function createSaveWireCodec(source=readFileSync(path,'utf8'),{nativeGzip=true}={}){
  const first=source.indexOf('const replayCompressionCache=new WeakMap();');
  const last=source.indexOf('const cloudPayloadHistory=[];',first);
  if(first<0||last<=first)throw Error('Canonical codec boundaries changed');
- const section=source.slice(first,last);
+ const changesStart=source.indexOf('async function restoreServerWireChanges(wire,previous,decoded,delta){');
+ const changesEnd=source.indexOf('async function check(){',changesStart);
+ if(changesStart<0||changesEnd<=changesStart)throw Error('Canonical incremental decoder boundaries changed');
+ const section=source.slice(first,last)+'\n'+source.slice(changesStart,changesEnd);
  if(/\b(?:fetch|localStorage|indexedDB)\b/.test(section))throw Error('Unexpected I/O in save codec');
- const diagnostics={};
- const functions=Function('window',section+'\nreturn {packCloudShards,packAmateurBuckets,packLeagueShards,packHistoryShards,packAuxiliaryFields,unpackReplayResults,unpackCloudShards,unpackLeagueShards,unpackAmateurBuckets,unpackHistoryShards,unpackAuxiliaryFields};')(diagnostics);
+ const diagnostics=nativeGzip?{fflate:{gzipSync:bytes=>gzipSync(bytes,{level:1})},beDecodeSaveGzip(encoded){
+  if(typeof encoded!=='string'||encoded.length%4===1||!/^[A-Za-z0-9+/]*={0,2}$/.test(encoded))throw Error('Invalid base64 gzip data');
+  return gunzipSync(Buffer.from(encoded,'base64')).toString('utf8');
+ }}:{};
+ const functions=Function('window',section+'\nreturn {packCloudShards,packAmateurBuckets,packLeagueShards,packHistoryShards,packAuxiliaryFields,unpackReplayResults,unpackCloudShards,unpackLeagueShards,unpackAmateurBuckets,unpackHistoryShards,unpackAuxiliaryFields,restoreServerWireChanges};')(diagnostics);
  return {
+  restoreChanges: functions.restoreServerWireChanges,
   metrics(){return diagnostics.beCloudGzipSnapshot?.()??null},
   async restore(save){
    let state=structuredClone(save);

@@ -10,6 +10,14 @@ export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={}){
  const sandbox=createOriginalEngineSandbox(appSource??readFileSync(defaultApp,'utf8'),save,{timeoutMs});
  // Compatible with the deployed sandbox patch; do not overwrite its local file.
  sandbox.context.structuredClone=structuredClone;
+ sandbox.context.__enginePhaseTimes={};
+ sandbox.invoke(`(()=>{
+  for(const name of ['simulateLeagueDay','offseasonDay','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','minorLeagueDay','nationalTeamPreparationDay','nationalTeamTournamentDay','runOffseasonContracts','beginNextSeason','validateSeasonIntegrity','saveSeasonSnapshot']){
+   const original=eval('typeof '+name+'==="function"?'+name+':null');if(!original)continue;
+   const wrapped=function(...args){const started=performance.now();try{return original.apply(this,args)}finally{__enginePhaseTimes[name]=(__enginePhaseTimes[name]||0)+performance.now()-started}};
+   eval(name+' = wrapped');
+  }
+ })()`);
  const started=performance.now();
  const result=sandbox.invoke(`(()=>{
   const iso=day=>{const d=seasonDate(day);if(!Number.isFinite(d.getTime()))throw Error('Invalid calendar');return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -41,5 +49,5 @@ export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={}){
   }
   return {from,to:{year:state.year,day:state.day,date:iso(state.day)},consumedPreparedDay:prepared};
  })()`);
- return {state:sandbox.invoke('state'),result:structuredClone(result),elapsedMs:Math.round(performance.now()-started)};
+ return {state:sandbox.invoke('state'),result:{...structuredClone(result),enginePhases:Object.fromEntries(Object.entries(sandbox.context.__enginePhaseTimes).map(([key,value])=>[key,Math.round(value)]))},elapsedMs:Math.round(performance.now()-started)};
 }

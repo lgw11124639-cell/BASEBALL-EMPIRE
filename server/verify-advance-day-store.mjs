@@ -15,10 +15,11 @@ export async function verifyAdvanceStore(createShardStore){
  shards.put(1,'main',0,initial);shards.put(2,'main',0,initial);
  let runs=0;
  const runDay=async state=>{runs++;state.day++;return {state,result:{to:{day:state.day}}}};
- const advance=createAdvanceDayService({store,restoreSave:async s=>s,runDay});
+ const advance=createAdvanceDayService({store,restoreSave:async s=>s,runDay,includeDelta:true});
  const request={userId:1,requestId:'atomic-request-0001',expectedRev:1};
  const [first,concurrent]=await Promise.all([advance(request),advance(request)]);
- assert.equal(first.status,200);assert.deepEqual(concurrent,first);assert.equal(runs,1);
+ assert.equal(first.status,200);assert.equal(first.wireDelta.fromRevision,1);assert.equal(first.wireDelta.toRevision,2);assert.deepEqual(first.wireDelta.set.day,51);
+ assert.equal(store.receipt(1,'main',request.requestId,1).wireDelta,undefined,'wire payload is not duplicated in durable receipts');assert.deepEqual(concurrent,first);assert.equal(runs,1);
  assert.equal(first.day.timing.changedFields,1);
  assert.equal(first.day.timing.removedFields,0);
  assert.equal(store.load(1,'main').save.day,51);assert.equal(store.load(2,'main').save.day,50);

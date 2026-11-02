@@ -36,6 +36,13 @@ function remember(){try{if(token)localStorage.setItem(KEY,JSON.stringify({token,
 // Lossless replay-event packing inside the JSON save (no Content-Encoding header).
 // The live game state is never mutated; old uncompressed saves remain readable.
 const replayCompressionCache=new WeakMap();
+async function decodeCloudGzipText(encoded){
+ if(typeof window.beDecodeSaveGzip==='function')return window.beDecodeSaveGzip(encoded);
+ const binary=atob(encoded),bytes=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+ return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+}
+
 async function packReplayResults(state){
  if(typeof CompressionStream!=='function'||typeof TextEncoder==='undefined'||!Array.isArray(state?.gameResults))return state;
  const games=state.gameResults;let changed=false;
@@ -71,10 +78,7 @@ async function unpackReplayResults(state){
  if(!packed.length)return state;
  if(typeof DecompressionStream!=='function')throw Error('이 저장 데이터를 불러오려면 gzip 압축 해제를 지원하는 브라우저가 필요합니다');
  await Promise.all(packed.map(async game=>{
-  const binary=atob(game.bePackedBroadcastGzip);const bytes=new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
-  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-  const events=JSON.parse(await new Response(stream).text());
+  const events=JSON.parse(await decodeCloudGzipText(game.bePackedBroadcastGzip));
   if(!Array.isArray(events))throw Error('경기 다시보기 데이터 형식이 올바르지 않습니다');
   game.broadcastEvents=events;delete game.bePackedBroadcastGzip;
  }));return state;
@@ -335,8 +339,7 @@ async function unpackCloudShards(state){
    const entries=await Promise.all(meta.groups.map(async group=>{
     if(typeof group!=='string'||!/^([0-9]{4}-([1-9]|1[0-2])|legacy-[0-9]+)$/.test(group))throw Error('훈련 보고서 묶음 형식 오류');
     const name='beShard_trainingReports_month_'+group,encoded=state[name];if(typeof encoded!=='string')throw Error('훈련 보고서 일부 누락: '+name);
-    const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-    const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text(),rows=JSON.parse(raw);
+    const raw=await decodeCloudGzipText(encoded),rows=JSON.parse(raw);
     if(!Array.isArray(rows))throw Error('훈련 보고서 묶음 오류');
     shardGzipCache.set(name,{raw,encoded});return {name,rows};
    }));
@@ -354,8 +357,7 @@ async function unpackCloudShards(state){
     const pieces=await Promise.all(Array.from({length:part.count},async(_,i)=>{
      const name='beShard_clubTransactionArchive_'+year+'_'+i,encoded=state[name];
      if(typeof encoded!=='string')throw Error('구단 변동 기록 일부 누락: '+name);
-     const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-     const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+     const raw=await decodeCloudGzipText(encoded);
      const value=JSON.parse(raw);if(!Array.isArray(value))throw Error('구단 변동 기록 배열 오류');
      shardGzipCache.set(name,{raw,encoded});delete state[name];return value;
     }));
@@ -368,8 +370,7 @@ async function unpackCloudShards(state){
    const groups={};
    for(const group of ['base','live'])groups[group]=(await Promise.all(Array.from({length:meta.count},async(_,i)=>{
     const name='beShard_players_'+group+'_'+i,encoded=state[name];if(typeof encoded!=='string')throw Error('선수 분할 기록 일부 누락: '+name);
-    const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-    const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    const raw=await decodeCloudGzipText(encoded);
     const value=JSON.parse(raw);if(!Array.isArray(value))throw Error('선수 분할 기록 배열 오류');
     shardGzipCache.set(name,{raw,encoded});delete state[name];return value;
    }))).flat();
@@ -379,9 +380,7 @@ async function unpackCloudShards(state){
   const pieces=await Promise.all(Array.from({length:meta.count},async(_,i)=>{
    const name=`beShard_${key}_${i}`,encoded=state[name];
    if(typeof encoded!=='string')throw Error('클라우드 저장 데이터 일부가 누락되었습니다: '+name);
-   const binary=atob(encoded),bytes=new Uint8Array(binary.length);
-   for(let j=0;j<binary.length;j++)bytes[j]=binary.charCodeAt(j);
-   const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+   const raw=await decodeCloudGzipText(encoded);
    const decoded=JSON.parse(raw);
    if(!Array.isArray(decoded))throw Error('클라우드 저장 배열 형식 오류: '+name);
    shardGzipCache.set(key+':'+i,{raw,encoded});
@@ -494,7 +493,7 @@ async function unpackLeagueShards(state){
      for(const part of d.days){
       const chunks=await Promise.all(Array.from({length:part.count},async(_,i)=>{
        const key=leagueDayName(field,season,d.name,part.day,i),encoded=state[key];if(typeof encoded!=='string')throw Error('경기 로그 일부 누락: '+key);
-       const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+       const raw=await decodeCloudGzipText(encoded);
        const value=JSON.parse(raw);if(!Array.isArray(value)||value.some(row=>!row||row.day!==part.day))throw Error('경기 로그 날짜 오류');shardGzipCache.set(key,{raw,encoded});keys.push(key);return value;
       }));
       const values=chunks.flat();if(values.length!==part.length)throw Error('경기 로그 날짜별 길이 불일치');rows.push(...values);
@@ -505,8 +504,7 @@ async function unpackLeagueShards(state){
      const groups={},keys=[];
      for(const group of ['base','live'])groups[group]=(await Promise.all(Array.from({length:d.count},async(_,i)=>{
       const key=leagueRowName(field,season,d.name,group,i),encoded=state[key];if(typeof encoded!=='string')throw Error('리그 선수 기록 누락: '+key);
-      const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-      const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+      const raw=await decodeCloudGzipText(encoded);
       const value=JSON.parse(raw);if(!Array.isArray(value))throw Error('리그 선수 기록 배열 오류');shardGzipCache.set(key,{raw,encoded});keys.push(key);return value;
      }))).flat();
      if(groups.base.length!==d.length||groups.live.length!==d.length)throw Error('리그 선수 기록 길이 불일치');
@@ -515,8 +513,7 @@ async function unpackLeagueShards(state){
     const pieces=await Promise.all(Array.from({length:d.count},async(_,i)=>{
      const key=leagueShardName(field,season,d.name,i),encoded=state[key];
      if(typeof encoded!=='string')throw Error('리그 기록 누락: '+key);
-     const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-     const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+     const raw=await decodeCloudGzipText(encoded);
      const value=JSON.parse(raw);shardGzipCache.set(key,{raw,encoded});return {key,value};
     }));
     const value=d.kind==='array'?pieces.flatMap(p=>{
@@ -570,8 +567,7 @@ async function unpackYearAmateurBuckets(state,meta){
   if(!/^\d{4}$/.test(year)||!Array.isArray(indices)||new Set(indices).size!==indices.length||indices.some(i=>!Number.isInteger(i)||i<0||i>=amateurBucketCount))throw Error('아마추어 연도별 조각 오류');
   const chunks=await Promise.all(indices.map(async index=>{
    const name='beAmateurYear_'+year+'_'+index,encoded=state[name];if(typeof encoded!=='string')throw Error('아마추어 연도별 경력 누락: '+name);
-   const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-   const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+   const raw=await decodeCloudGzipText(encoded);
    const value=JSON.parse(raw);if(!value||typeof value!=='object'||Array.isArray(value))throw Error('아마추어 경력 객체 오류');
    shardGzipCache.set(name,{raw,encoded});delete state[name];return value;
   }));
@@ -610,8 +606,7 @@ async function unpackAmateurBuckets(state){
  const chunks=await Promise.all(Array.from({length:meta.count},async(_,i)=>{
   const name='beAmateurBucket_'+i,encoded=state[name];
   if(typeof encoded!=='string')throw Error('아마추어 경력 묶음 누락: '+name);
-  const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-  const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  const raw=await decodeCloudGzipText(encoded);
   const obj=JSON.parse(raw);
   if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error('아마추어 경력 묶음 오류');
   shardGzipCache.set('amateur:'+i,{raw,encoded});return obj;
@@ -672,9 +667,7 @@ async function unpackHistoryShards(state){
  const decode=async name=>{
   const encoded=state[name];
   if(typeof encoded!=='string')throw Error('역사 기록 조각 누락: '+name);
-  const binary=atob(encoded),bytes=new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
-  const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  const raw=await decodeCloudGzipText(encoded);
   shardGzipCache.set(name,{raw,encoded});
   delete state[name];
   return JSON.parse(raw);
@@ -786,10 +779,7 @@ async function unpackAuxiliaryFields(state){
   const individual=state['bePackedAux_'+key];
   const encoded=typeof individual==='string'?individual:hasLegacy?packed[key]:null;
   if(typeof encoded!=='string')continue;
-  const binary=atob(encoded),bytes=new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
-  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-  const raw=await new Response(stream).text();state[key]=JSON.parse(raw);
+  const raw=await decodeCloudGzipText(encoded);state[key]=JSON.parse(raw);
   const cacheEntry={key,raw,encoded};auxiliaryLastCompressed.set(key,cacheEntry);if(state[key]&&typeof state[key]==='object')auxiliaryCompressionCache.set(state[key],cacheEntry);
   delete state['bePackedAux_'+key];
  }
@@ -953,6 +943,45 @@ window.beVerifyCloudServer=async()=>{
  window.beCloudServerAudit=result;
  return result;
 };
+async function restoreServerWireChanges(wire,previous,decoded,delta){
+ if(!decoded)return unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(wire)))))));
+ const changed=new Set([...Object.keys(delta.set),...delta.unset]),partial={...wire},reused={};
+ // Replay history grows all season. Decode changed chunks only, retaining the
+ // already decoded games for byte-identical chunks from the exact prior revision.
+ const games=wire.beShardManifest?.fields?.gameResults,oldGames=previous.beShardManifest?.fields?.gameResults;
+ if(games&&!games.kind&&oldGames&&!oldGames.kind&&Number.isSafeInteger(games.size)&&games.size>0&&games.size===oldGames.size&&Number.isSafeInteger(games.length)&&games.length>=0&&Number.isSafeInteger(games.count)&&games.count<=100000&&games.count===Math.ceil(games.length/games.size)&&Array.isArray(decoded.gameResults)&&decoded.gameResults.length===oldGames.length&&!changed.has('gameResults')&&!wire.bePackedAux_gameResults){
+  const chunks=await mapCloudWork(Array.from({length:games.count},(_,i)=>i),6,async i=>{
+   const key='beShard_gameResults_'+i,start=i*games.size,length=Math.min(games.size,games.length-start);
+   if(typeof wire[key]==='string'&&wire[key]===previous[key]&&start+length<=decoded.gameResults.length)return decoded.gameResults.slice(start,start+length);
+   const part=await unpackCloudShards({beShardManifest:{version:1,fields:{gameResults:{count:1,length,size:games.size}}},beShard_gameResults_0:wire[key]});
+   return part.gameResults;
+  });
+  reused.gameResults=chunks.flat();
+  partial.beShardManifest={...wire.beShardManifest,fields:{...wire.beShardManifest.fields}};delete partial.beShardManifest.fields.gameResults;
+  for(const key of Object.keys(partial))if(key.startsWith('beShard_gameResults_'))delete partial[key];
+ }
+
+ const families=[
+  {manifest:'beShardManifest',prefixes:['beShard_'],roots:meta=>Object.keys(meta.fields||{})},
+  {manifest:'beLeagueShardManifest',prefixes:['beLeaguePart_','beLeagueRows_','beLeagueDay_'],roots:meta=>Object.keys(meta.fields||{})},
+  {manifest:'beAmateurBucketManifest',prefixes:['beAmateurBucket_','beAmateurYear_'],roots:()=>['amateurCareerArchive']},
+  {manifest:'beHistoryShardManifest',prefixes:['beHistorySeason_','beHistoryField_'],roots:()=>['history']}
+ ];
+ for(const family of families){
+  const metadata=wire[family.manifest];
+  if(!metadata||!previous[family.manifest])continue;
+  const belongs=key=>key===family.manifest||family.prefixes.some(prefix=>key.startsWith(prefix));
+  const roots=family.roots(metadata);
+  if([...changed].some(key=>belongs(key)||roots.includes(key))||roots.some(key=>!Object.hasOwn(decoded,key)))continue;
+  for(const key of Object.keys(partial))if(belongs(key))delete partial[key];
+  for(const key of roots)reused[key]=decoded[key];
+ }
+ for(const key of auxiliarySaveFields){const packed='bePackedAux_'+key;
+  if(typeof wire[packed]==='string'&&!changed.has(packed)&&!changed.has(key)&&!changed.has('bePackedAuxiliaryGzip')&&Object.hasOwn(decoded,key)){delete partial[packed];reused[key]=decoded[key]}
+ }
+ const restored=await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(partial)))))));
+ return {...restored,...reused};
+}
 async function check(){if(!token)throw Error('클라우드 로그인이 필요합니다');const s=await snapshot();const rev=s?revisionOf(s):0;if(rev===null)throw Error('서버 저장 버전 확인 실패');revision=rev;verified=true;acknowledgedWireSave=s?.save||null;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;const restored=s?.save&&!s.save.beServerSlotEmpty?await unpackReplayResults(await unpackCloudShards(await unpackLeagueShards(await unpackAmateurBuckets(await unpackHistoryShards(await unpackAuxiliaryFields(structuredClone(s.save))))))):null;baseline={save:restored,revision:rev};return restored}
 // Read-only cloud consistency audit. Never overwrites game state or save revision.
 window.beAuditCloudConsistency=async function(){
@@ -1226,8 +1255,22 @@ async function configureOriginalServerScreen(){
  const recovered=await saves.recover();if(recovered)window.beRecoveredServerSave=await check();
  window.beAdvanceServerGame=async()=>{
   if(!window.beServerGameCapability?.canAdvance)throw Error('서버 하루 진행 기능이 아직 활성화되지 않았습니다.');
-  await client.advance(revision);
-  return window.beReloadServerGame();
+  const started=performance.now(),beforeRevision=revision;
+  window.beServerDayProgress?.('서버 계산·저장 중');
+  const result=await client.advance(revision),responseAt=performance.now();
+  window.beServerDayProgress?.('화면 데이터 반영 중');
+  let next,incremental=false;
+  const delta=result.wireDelta;
+  if(delta&&acknowledgedWireSave&&revision===beforeRevision&&delta.fromRevision===revision&&delta.toRevision===result.rev&&delta.set&&typeof delta.set==='object'&&!Array.isArray(delta.set)&&Array.isArray(delta.unset)){
+   const forbidden=key=>['__proto__','constructor','prototype'].includes(key);
+   if(Object.keys(delta.set).some(forbidden)||delta.unset.some(key=>typeof key!=='string'||forbidden(key)))throw Error('서버 변경 데이터 형식 오류');
+   const wire={...acknowledgedWireSave,...delta.set};for(const key of delta.unset)delete wire[key];
+   next=await restoreServerWireChanges(wire,acknowledgedWireSave,baseline?.save,delta);
+   revision=result.rev;verified=true;acknowledgedWireSave=wire;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;baseline={save:next,revision};
+   window.beServerGameCapability={...window.beServerGameCapability,revision,hasSave:true,canAdvance:true};incremental=true;
+  }else next=await window.beReloadServerGame();
+  window.beLastServerDayTiming={totalMs:performance.now()-started,responseMs:responseAt-started,refreshMs:performance.now()-responseAt,incremental,server:result.day?.timing||null,enginePhases:result.day?.enginePhases||null};
+  return next;
  };
 }
 export async function cloudGate(onReady){

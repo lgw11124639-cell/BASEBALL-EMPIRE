@@ -238,3 +238,28 @@ backs up SQLite and installed files, restarts only verified API process 4, and
 checks port ownership, health and authentication. Code rollback preserves the
 prior enabled state and never restores an old database over newer saves.
 `upgrade-disabled-api.mjs` continues to require a disabled engine.
+
+### Incremental responses, visible timings, and international decisions (2.1.4)
+
+Fresh authenticated day responses optionally carry `wireDelta` bound to the
+loaded and committed revisions. The durable SQLite receipt contains metadata
+only. Retrying an already committed request returns the original metadata and
+the browser safely reloads the full snapshot, without executing a second day.
+An ordinary response updates the acknowledged in-memory wire baseline and only
+unpacks compressed families that actually changed. Unchanged decoded archives
+are reused for rendering; no client simulation or save upload is introduced.
+Older clients ignore the extra response field and still reload normally.
+The day button shows elapsed wall time and current stage. The completed home
+panel shows total/response/refresh times and server persistence phases, with
+nested engine phase measurements for locating remaining slow operations.
+Node uses native level-1 zlib for the existing small-shard fast gzip path and native Buffer/zlib decoding for all canonical gzip shards. Browser decoding retains its existing stream fallback. Incremental replay decoding also reuses unchanged game chunks, rather than parsing the season replay history again after each new game.
+National match form scoring indexes season games once per match instead of
+repeatedly rescanning the full game history during lineup and bullpen sorting.
+
+International games share `finishPitcherDecisions` with major games, preserving
+starter eligibility, relief wins, loss responsibility, save/hold opportunities,
+blown-save exclusions, quality starts, complete games and shutouts. Both teams'
+full usage rows and batting stat deltas are retained, including foreign-country
+matches; domestic counters remain isolated by the existing snapshot/restore.
+New records carry `recordVersion:2`. Legacy results lacking decision data are
+shown as unrecorded rather than assigned invented wins/saves/holds.
