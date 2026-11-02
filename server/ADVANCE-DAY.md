@@ -279,3 +279,25 @@ base64 strings are shared until decoded. The engine details now separately
 report preparation time. No gameplay phases or integrity checks are skipped.
 Stage and deploy the new runtime with the ordinary verified running-upgrade
 sequence; no activation, reset or save repair is required.
+
+### Short-lived decoded day cache (2.1.6)
+
+The day/command services share at most one committed decoded world and its codec
+for 60 seconds. A warm request first checks SQLite metadata and requires the
+same authenticated user, slot, revision and digest. The cache is consumed before
+execution. Its world is normalized through a detached JSON clone, matching the
+persisted wire's JSON semantics, and only a successful, non-replayed atomic
+commit may repopulate it. Other-device writes, digest changes, expiration,
+restarts and failed requests take the ordinary authoritative restore path.
+Durable receipts and revision checks are unchanged. Codec histories are dropped
+after twelve reuses to prevent retaining removed shard generations indefinitely.
+The timing panel identifies warm requests as `불러오기 재사용`. Initial requests
+and expired entries still restore from compressed storage. No mutable world is
+shared with a concurrent request or another user.
+
+The FA screen also lists registered overseas transfers. Exported players removed
+from `state.players` open a read-only archived profile with overseas season rows,
+preserved domestic rows, and transfer/contract metadata. Overseas statistics are
+season-end aggregates, not newly simulated daily scores. Future compact transfer
+career rows are retained beyond the former twelve-season cutoff; missing older
+results are not fabricated.

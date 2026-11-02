@@ -2,7 +2,7 @@ import {buildWireDelta} from './wire-delta.mjs';
 import {runOriginalEngineDay} from './original-engine-day.mjs';
 // userId must come from the existing authenticated session, never the body.
 // restoreSave must restore a detached full state; store.commit is atomic.
-export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s,runDay=runOriginalEngineDay,fingerprint=()=>'day',codecFactory=null,includeDelta=false,ownsRestoredState=false}){
+export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s,runDay=runOriginalEngineDay,fingerprint=()=>'day',codecFactory=null,includeDelta=false,ownsRestoredState=false,stateCache=null}){
  if(!store||typeof restoreSave!=='function')throw Error('Advance-day dependencies missing');
  const active=new Map();
  return async function advance({userId,slot='main',requestId,expectedRev,operation}){
@@ -23,16 +23,24 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
    try{
     const timing={},started=performance.now();
     let phase=started;const mark=name=>{const now=performance.now();timing[name]=Math.round(now-phase);phase=now};
-    const snapshot=store.load(userId,slot);mark('loadMs');
+    const meta=stateCache&&typeof store.metadata==='function'?store.metadata(userId,slot):null;
+    const cached=meta?.rev===expectedRev?stateCache?.take(userId,slot,meta.rev,meta.digest):null;
+    const snapshot=cached?{...meta,save:cached.wire}:store.load(userId,slot);mark('loadMs');
     if(!snapshot)return {status:404,error:'save not found'};
     if(snapshot.rev!==expectedRev)return {status:409,error:'revision conflict',current_rev:snapshot.rev};
-    const codec=codecFactory?.();
-    const state=await(codec?codec.restore(snapshot.save):restoreSave(structuredClone(snapshot.save)));mark('restoreMs');
+    const codec=cached?.codec||codecFactory?.();
+    let state;
+    if(cached){
+     try{state=JSON.parse(JSON.stringify(cached.state));timing.cacheHit=true}
+     catch{state=await codec.restore(snapshot.save);timing.cacheHit=false}
+    }else{state=await(codec?codec.restore(snapshot.save):restoreSave(structuredClone(snapshot.save)));timing.cacheHit=false}
+    mark('restoreMs');
     const outcome=await runDay(state,operation,{takeOwnership:ownsRestoredState});mark('engineMs');
     const wire=await(codec?codec.pack(outcome.state):encodeSave(outcome.state));mark('packMs');
     const delta=buildWireDelta(snapshot.save,wire);mark('deltaMs');
     timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;
     const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,result:{...outcome.result,requestFingerprint,timing}}));
+    if(response.status===200&&!response.replayed)stateCache?.put({user:userId,slot,rev:response.rev,digest:response.digest,state:outcome.state,wire,codec});
     if(response.status===200&&performance.now()-started>2000)console.info(JSON.stringify({stage:'server-day-performance',...response.day?.timing,enginePhases:response.day?.enginePhases||null}));
     if(response.status===200&&!response.replayed&&includeDelta)return {...response,wireDelta:{fromRevision:expectedRev,toRevision:response.rev,...delta}};
     return response;

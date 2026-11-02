@@ -20232,3 +20232,16 @@ main.game-shell .record-room { padding: 26px !important; }
  .record-holder .history-club-mark img { width: 23px; height: 25px; }
  .record-season-stamp { flex-wrap: wrap; margin-top: 17px; gap: 6px; }
 }
+/* Eligibility cards use the same white surface as other profile data cards. */
+#player-overlay .player-panel.empire-profile .be-contract-progress { background: #fff !important; border-color: #dce3e9 !important; }
+.overseas-player-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; }
+.overseas-player-card { display: grid; gap: 10px; background: #fff; color: #24485f; border: 1px solid #dce3e9; border-radius: 10px; padding: 20px; text-align: left; }
+.overseas-player-card:hover { border-color: #8ba5b8; }
+.overseas-player-card > strong { font-size: 21px; }
+.overseas-player-card > span, .overseas-player-card > small { font-size: 12px; color: #758897; line-height: 1.7; }
+.overseas-player-card .overseas-player-league { font-size: 10px; letter-spacing: .8px; color: #416882; }
+.overseas-player-card > b { border-top: 1px solid #edf0f3; padding-top: 12px; font-size: 11px; font-weight: 600; }
+#player-overlay .overseas-profile-hero { background: #1d3c4d; color: #fff; padding: 28px; }
+#player-overlay .overseas-profile-hero h2 { font-size: 32px; margin: 10px 0; color: #fff; }
+#player-overlay .overseas-profile-hero > span, #player-overlay .overseas-profile-hero > p { color: #b9ceda; font-size: 12px; }
+#player-overlay .player-panel.empire-profile .pitch-development-history { background: #fff !important; border-color: #dce3e9 !important; }

@@ -9,6 +9,7 @@ export function createAdvanceDayStore(db,shards){
  const find=db.prepare('SELECT expected_rev,response FROM be_day_requests WHERE user_id=? AND slot=? AND request_id=?');
  const insert=db.prepare('INSERT INTO be_day_requests(user_id,slot,request_id,expected_rev,response) VALUES(?,?,?,?,?)');
  const rev=db.prepare('SELECT rev FROM be_save_shard_meta WHERE user_id=? AND slot=?');
+ const metadata=db.prepare('SELECT * FROM be_save_shard_meta WHERE user_id=? AND slot=?');
  function receipt(user,slot,requestId,expectedRev){
   const item=find.get(user,slot,requestId);
   if(!item)return null;
@@ -16,6 +17,7 @@ export function createAdvanceDayStore(db,shards){
  }
  return {
   receipt,
+  metadata(user,slot){return metadata.get(user,slot)||null},
   load(user,slot){
    db.exec('SAVEPOINT be_day_read');
    try{const value=shards.get(user,slot);db.exec('RELEASE be_day_read');return value}

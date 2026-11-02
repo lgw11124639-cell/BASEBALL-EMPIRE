@@ -21,6 +21,13 @@ const assert=require('node:assert/strict');
   fixture.history=fixture.history||{};fixture.history.seasons=fixture.history.seasons||{};
   for(const year of [2025,2026])fixture.history.seasons[year]={year,complete:true,teams:fixture.teams,players:players.map((p,i)=>({id:p.id,name:p.name,teamId:p.teamId,games:40,atBats:p.position==='P'?0:150,hits:45+i,homeRuns:5+i,maxVelocity:p.position==='P'?150+i%10:0,inningsPitched:p.position==='P'?100:0,earnedRuns:35,pitchingStrikeouts:90,pitchingWins:8,pitchingLosses:4}))};
  }
+ if(!fixturePath){
+  const p=fixture.players.find(p=>Number(p.teamId)===1&&p.position==='P'&&!p.foreignPlayer);
+  fixture.international=fixture.international||{};
+  fixture.international.overseasTransfers=[{id:p.id,name:p.name,position:'P',fromTeamId:p.teamId,league:'MLB',club:'Test Overseas Club',startYear:2026,contract:{years:3},player:structuredClone(p),seasons:[{year:2026,league:'MLB',club:'Test Overseas Club',games:26,era:3.12}]}];
+  fixture.history.seasons[2025].players.push({id:p.id,teamId:p.teamId,games:25,pitchingWins:10,pitchingLosses:4,pitchingStrikeouts:130});
+  fixture.players=fixture.players.filter(x=>x.id!==p.id);
+ }
  const startingWorld=structuredClone(fixture);
  const {restoreServerSave}=await import('./save-wire-codec.mjs');
  const {gunzipSync}=require('node:zlib');
@@ -58,7 +65,7 @@ const assert=require('node:assert/strict');
    }
    else if(req.method()==='POST'&&path==='/v2/engine/command'){
     commands++;const body=JSON.parse(req.postData());assert.equal(body.command.type,'player-photo');
-    fixture.players.find(p=>String(p.id)===body.command.playerId).profile.photoData=body.command.photo;
+    const changedPlayer=fixture.players.find(p=>String(p.id)===body.command.playerId);changedPlayer.profile=changedPlayer.profile||{};changedPlayer.profile.photoData=body.command.photo;
     revision++;data={request_id:body.requestId,rev:revision};
    }
    else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:{day:fixture.day},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}}}
@@ -95,15 +102,33 @@ const assert=require('node:assert/strict');
    assert.ok(Math.abs(box.width-viewport.width)<1&&Math.abs(box.height-viewport.height)<1,selector+' fills viewport '+JSON.stringify({box,viewport}));
    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).overflowY),'hidden');
   };
+  if(!fixturePath){
+   await page.locator('nav [data-tab="fa"]').click();
+   await page.locator('.overseas-player-card').first().click();await page.waitForSelector('#player-overlay');
+   await assertFullViewport('#player-overlay .player-panel');
+   assert.match(await page.locator('[data-profile-pane="overseas"]').textContent(),/3.12/);
+   await page.locator('[data-profile-tab="domestic"]').click();
+   assert.match(await page.locator('[data-profile-pane="domestic"]').textContent(),/130/);
+   await page.locator('[data-profile-tab="transfer"]').click();
+   assert.match(await page.locator('[data-profile-pane="transfer"]').textContent(),/Test Overseas Club/);
+   await page.click('#close-player');
+  }
   await page.locator('nav [data-tab="league"]').click();
   await page.locator('[data-league-team]').first().click();
   await assertFullViewport('#league-team-overlay .league-club-dialog');
   await page.click('#close-league-team');
   await page.locator('nav [data-tab="roster"]').click();
   await page.waitForSelector('[data-player]');
-  const player=page.locator('[data-player]').first(),playerId=await player.getAttribute('data-player');
+  const candidate=!fixturePath?fixture.players.find(p=>String(p.teamId)===String(fixture.teamId)&&p.position==='P'&&!p.foreignPlayer):null;
+  const player=candidate?page.locator('[data-player="'+candidate.id+'"]').first():page.locator('[data-player]').first(),playerId=await player.getAttribute('data-player');
   await player.click();await page.waitForSelector('#player-overlay');
   await assertFullViewport('#player-overlay .player-panel');
+  await page.locator('[data-profile-tab="career"]').click();
+  assert.ok(await page.locator('.be-contract-progress').count()>0);
+  assert.ok(await page.locator('.be-contract-progress').evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).backgroundColor==='rgb(255, 255, 255)')));
+  await page.locator('[data-profile-tab="scout"]').click();
+  const development=page.locator('.pitch-development-history');
+  if(await development.count())assert.equal(await development.evaluate(n=>getComputedStyle(n).backgroundColor),'rgb(255, 255, 255)');
   await page.locator('[data-profile-tab="record"]').click();
   assert.match(await page.locator('#player-record-lazy').textContent(),/1군 시즌 기록/);
   if(!fixturePath){const cells=page.locator('.season-record-table tbody tr:not(.career-total-row) :is(td,th)');assert.ok(await cells.count()>0);assert.ok(await cells.evaluateAll(nodes=>nodes.every(node=>getComputedStyle(node).backgroundColor==='rgb(255, 255, 255)')),'all season table body cells are white');}
