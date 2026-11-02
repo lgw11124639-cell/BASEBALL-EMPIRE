@@ -44,9 +44,9 @@ export async function verifyAdvanceStore(createShardStore){
  assert.deepEqual(db.prepare('SELECT field,hex(content) AS bytes FROM be_save_shards WHERE user_id=1 AND slot=? ORDER BY field').all('main'),oldFields);
  db.exec('DROP TRIGGER fail_receipt');
  // An engine exception must neither write state nor consume the request ID.
- const failing=createAdvanceDayService({store,restoreSave:async s=>s,runDay:()=>{throw Error('test engine failure')}});
+ const failing=createAdvanceDayService({store,restoreSave:async s=>s,ownsRestoredState:true,runDay:(state,operation,options)=>{assert.equal(options.takeOwnership,true);state.day=999;state.players.push({id:'uncommitted'});throw Error('test engine failure')}});
  const errorRequest={...request,requestId:'atomic-engine-fail',expectedRev:before.rev};
- assert.equal((await failing(errorRequest)).status,500);assert.equal(store.load(1,'main').rev,before.rev);
+ assert.equal((await failing(errorRequest)).status,500);assert.deepEqual(store.load(1,'main'),before);
  assert.equal((await advance(errorRequest)).status,200);
  const command=createAdvanceDayService({store,restoreSave:async s=>s,runDay:async state=>({state,result:{type:'test-command'}}),fingerprint:op=>'command:'+op.choice});
  const commandRequest={userId:1,requestId:'atomic-command-id',expectedRev:store.load(1,'main').rev,operation:{choice:'yes'}};

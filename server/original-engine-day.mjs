@@ -2,15 +2,18 @@
 // to the API transaction layer; a failed run never mutates its input save.
 import {readFileSync} from 'node:fs';
 import {createOriginalEngineSandbox} from './original-engine-sandbox.mjs';
+import {createOwnedEngineRuntime} from './owned-engine-runtime.mjs';
 
 const defaultApp=new URL('../app.js',import.meta.url);
-export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={}){
+export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={},{takeOwnership=false}={}){
  if(!save||!Number.isSafeInteger(save.year)||!Number.isSafeInteger(save.day)||save.day<1||!Array.isArray(save.players)||!Array.isArray(save.teams))throw Error('Invalid full engine save');
  for(const key of Object.keys(save))if(/^be(?:Shard|LeagueShard|HistoryShard|AmateurBucket)Manifest$/.test(key)||key.startsWith('bePackedAux'))throw Error('Restore compressed save before simulation');
- const sandbox=createOriginalEngineSandbox(appSource??readFileSync(defaultApp,'utf8'),save,{timeoutMs});
+ const setupStarted=performance.now();
+ const createRuntime=takeOwnership?createOwnedEngineRuntime:createOriginalEngineSandbox;
+ const sandbox=createRuntime(appSource??readFileSync(defaultApp,'utf8'),save,{timeoutMs});
  // Compatible with the deployed sandbox patch; do not overwrite its local file.
  sandbox.context.structuredClone=structuredClone;
- sandbox.context.__enginePhaseTimes={};
+ sandbox.context.__enginePhaseTimes={'엔진 준비':performance.now()-setupStarted};
  sandbox.invoke(`(()=>{
   for(const name of ['simulateLeagueDay','offseasonDay','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','minorLeagueDay','nationalTeamPreparationDay','nationalTeamTournamentDay','runOffseasonContracts','beginNextSeason','validateSeasonIntegrity','saveSeasonSnapshot']){
    const original=eval('typeof '+name+'==="function"?'+name+':null');if(!original)continue;

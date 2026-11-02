@@ -20099,52 +20099,136 @@ body:has(#player-overlay) {
   overscroll-behavior: contain;
 }
 
-/* Subtle club colours distinguish the canvas, navigation and content cards. */
-body:has(main.game-shell) {
-  background: linear-gradient(135deg, #dbe8f2 0%, #e6f0ed 55%, #e2e8f3 100%) !important;
-  background-attachment: fixed !important;
-}
+/* Neutral canvas and white data surfaces match the existing navy UI. */
+body:has(main.game-shell) { background: #f3f5f7 !important; }
 main.game-shell { background: transparent !important; }
-main.game-shell .dashboard-section {
-  background: #fbfdff !important;
-  border-color: #cfdee8 !important;
-}
-#player-overlay .player-panel.pro-profile.empire-profile {
-  background: #e3edf2 !important;
-}
-#player-overlay .empire-profile .profile-content {
-  background: linear-gradient(125deg, #e3edf4 0%, #e7f0ed 65%, #e6ebf5 100%) !important;
-}
-#player-overlay .empire-profile .profile-top {
-  background: #e8f0f7 !important;
-  border-bottom-color: #c9dae7 !important;
-}
-#player-overlay .empire-profile .profile-tabs {
-  background: #dce8ee !important;
-  border-bottom-color: #c4d8df !important;
-}
-#player-overlay .empire-profile .profile-tabs button.active {
-  background: #edf7f2 !important;
-}
-#player-overlay .empire-profile .table-wrap {
-  background: #fff !important;
-  border-color: #c7d9e5 !important;
-}
-#player-overlay .empire-profile .table-wrap thead th { background: #dce8f4 !important; }
-#player-overlay .empire-profile .table-wrap tbody tr:nth-child(even) td { background: #eff5fa !important; }
-#player-overlay .empire-profile .table-wrap tbody tr:nth-child(odd) td { background: #fff !important; }
-#player-overlay .empire-profile .be-contract-metric { background: #f8fcff !important; }
-#league-team-overlay .game-news-dialog.league-club-dialog { background: #e4eef2 !important; }
-#league-team-overlay .game-news-header { background: #e8f0f7 !important; }
+main.game-shell .dashboard-section { background: #fff !important; border-color: #dce3e9 !important; }
+#player-overlay .player-panel.pro-profile.empire-profile,
+#player-overlay .empire-profile .profile-content,
+#league-team-overlay .game-news-dialog.league-club-dialog { background: #f3f5f7 !important; }
+#player-overlay .empire-profile .profile-top,
+#player-overlay .empire-profile .profile-tabs,
+#player-overlay .empire-profile .profile-tabs button.active,
+#league-team-overlay .game-news-header { background: #fff !important; border-bottom-color: #dce3e9 !important; }
+#player-overlay .empire-profile .table-wrap,
+#player-overlay .empire-profile .season-record-scroll,
+#player-overlay .empire-profile .be-contract-metric,
+#player-overlay .empire-profile .season-trends > div[style] > div { background: #fff !important; border-color: #dce3e9 !important; }
+main.game-shell table,
+#player-overlay .empire-profile table,
+#league-team-overlay table { background: #fff !important; }
+main.game-shell table tbody tr,
+main.game-shell table tbody :is(th, td),
+#player-overlay .empire-profile table tbody tr,
+#player-overlay .empire-profile table tbody :is(th, td),
+#league-team-overlay table tbody tr,
+#league-team-overlay table tbody :is(th, td) { background: #fff !important; }
+main.game-shell table thead :is(th, td),
+#player-overlay .empire-profile table thead :is(th, td),
+#league-team-overlay table thead :is(th, td) { background: #f0f3f6 !important; }
+#player-overlay .empire-profile .season-record-table .career-total-row :is(th, td),
+main.game-shell table tfoot :is(th, td),
+#player-overlay .empire-profile table tfoot :is(th, td) { background: #f0f3f6 !important; }
 .be-server-day-timing {
-  margin-top: 12px; padding: 12px 15px; border: 1px solid #c4dbdf;
-  border-radius: 10px; background: #eaf5f1; color: #244d56;
+  margin-top: 12px; padding: 12px 15px; border: 1px solid #dce3e9;
+  border-radius: 10px; background: #f7f9fb; color: #365467;
   font-size: 13px; line-height: 1.7;
 }
 .be-server-day-timing summary { cursor: pointer; }
 .be-server-day-timing p { margin: 7px 0 0; overflow-wrap: anywhere; }
-#player-overlay .empire-profile .season-trends > div[style] > div {
-  background: #f7fbff !important; border-color: #c8dce9 !important;
+
+/* Record room: editorial hierarchy, navy accents and white data surfaces. */
+main.game-shell .record-room { padding: 26px !important; }
+.record-section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 24px; }
+.record-section-heading h3 { margin: 7px 0 8px; font-size: 23px; letter-spacing: -.6px; line-height: 1.35; }
+.record-section-heading .support-text { margin: 0; color: #71808c; line-height: 1.7; font-size: 12px; }
+.record-scope { white-space: nowrap; border: 1px solid #dce3e9; padding: 6px 10px; border-radius: 5px; color: #657687; font-size: 10px; letter-spacing: .6px; }
+.record-metric-group { display: flex; gap: 16px; align-items: center; margin: 10px 0; }
+.record-metric-group > span { flex: 0 0 55px; color: #7b8895; font-size: 11px; }
+.record-room .career-leader-tabs { margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.record-room .career-leader-tabs button { min-height: 34px; padding: 7px 13px; border-radius: 6px; border: 1px solid #e0e5eb; background: #fff; color: #687b8d; font-size: 12px; box-shadow: none; }
+.record-room .career-leader-tabs button.active { background: #1d3c50; border-color: #1d3c50; color: #fff; }
+.record-room .career-leader-tabs button:focus-visible,
+.record-room [data-player]:focus-visible { outline: 2px solid #2774b7; outline-offset: 3px; }
+.record-leader-hero { display: flex; align-items: center; justify-content: space-between; gap: 30px; margin: 24px 0 26px; padding: 30px 34px; background: #1b374a; color: #fff; border-radius: 12px; }
+.record-eyebrow { font-size: 10px; letter-spacing: 1.7px; color: #a8bccb; }
+.record-leader-copy h4 { margin: 12px 0 5px; font-weight: 500; font-size: 15px; color: #dce6ed; }
+.record-leader-number { font-size: 56px; font-weight: 750; line-height: 1.2; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+.record-leader-number > span { margin-left: 9px; font-size: 15px; font-weight: 400; letter-spacing: 0; color: #a8bccb; }
+.record-leader-profile { display: flex; align-items: center; gap: 20px; padding: 14px 0 14px 34px; border: 0; border-left: 1px solid #ffffff26; background: none; color: #fff; text-align: left; border-radius: 0; }
+.record-leader-profile > img { width: 64px; height: 64px; object-fit: contain; }
+.record-leader-profile > span { display: grid; gap: 7px; }
+.record-leader-profile small { color: #b7c7d3; font-size: 12px; }
+.record-leader-profile strong { font-size: 26px; line-height: 1.3; letter-spacing: -.7px; }
+.record-leader-profile > span > span { color: #b7c7d3; font-size: 11px; }
+.record-leader-profile b { margin-left: 8px; }
+.record-room .career-leader-table { border-color: #e0e5eb; border-radius: 9px; }
+.record-room .career-leader-heading, .record-room .career-leader-row { grid-template-columns: 54px minmax(120px, 1.2fr) minmax(100px, 1fr) minmax(85px, .5fr); padding: 15px 20px; gap: 12px; }
+.record-room .career-leader-heading { background: #f3f5f7; color: #778595; font-size: 11px; font-weight: 500; }
+.record-room .career-leader-heading > :last-child { text-align: right; }
+.record-room .career-leader-row { background: #fff; border-color: #edf0f3; border-radius: 0; min-height: 76px; }
+.record-room .career-leader-row:hover { background: #f8fafb; }
+.record-rank-number { color: #98a4af; font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.record-rank-top .record-rank-number { color: #24485f; font-size: 21px; font-weight: 750; }
+.record-player-cell strong { font-size: 15px; letter-spacing: -.3px; }
+.record-player-cell small { margin-top: 4px; color: #8b98a4; }
+.record-team-cell { display: flex; align-items: center; gap: 9px; color: #627586; font-size: 12px; }
+.record-team-cell img { width: 23px; height: 25px; object-fit: contain; }
+.record-room .career-leader-value { color: #1d3c50; }
+.record-room .career-leader-value strong { font-size: 19px; letter-spacing: -.3px; }
+.record-value-track { display: block; width: 75px; max-width: 100%; height: 3px; background: #edf1f4; margin: 7px 0 0 auto; border-radius: 2px; overflow: hidden; }
+.record-value-track i { display: block; height: 100%; background: #54748b; border-radius: 2px; }
+.record-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.record-stat-card { background: #fff; border: 1px solid #dce3e9; border-top: 2px solid #284d65; padding: 22px; border-radius: 8px; min-width: 0; }
+.record-stat-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 650; color: #526b7d; }
+.record-stat-code { font-size: 10px; font-weight: 600; letter-spacing: .8px; color: #98a5af; }
+.record-stat-number { display: flex; align-items: baseline; gap: 6px; margin: 23px 0; color: #183c54; }
+.record-stat-number strong { font-size: 43px; line-height: 1.1; letter-spacing: -1.8px; font-variant-numeric: tabular-nums; }
+.record-stat-number > span { color: #8b99a5; font-size: 12px; }
+.record-stat-divider { height: 1px; background: #edf0f3; margin-bottom: 18px; }
+.record-holder { display: flex; align-items: center; gap: 10px; background: none; border: 0; border-radius: 0; padding: 0; text-align: left; width: 100%; color: #294d65; }
+.record-holder > span:nth-child(2) { display: grid; gap: 5px; min-width: 0; flex: 1; }
+.record-holder strong { font-size: 15px; }
+.record-holder small { font-size: 10px; color: #8a99a6; }
+.record-holder > span:last-child { color: #8b99a5; }
+.record-holder .history-club-mark img { width: 28px; height: 30px; object-fit: contain; }
+.record-season-stamp { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 22px; padding-top: 14px; border-top: 1px solid #edf0f3; }
+.record-season-stamp > span { color: #98a5af; font-size: 8px; letter-spacing: .8px; }
+.record-season-stamp strong { color: #516d81; font-size: 14px; }
+.record-season-stamp small { font-size: 10px; font-weight: 400; }
+.record-method-note { font-size: 11px; color: #8a99a6; line-height: 1.8; margin: 15px 0 0; }
+.record-stat-empty { color: #91a0ab; font-size: 12px; line-height: 1.8; }
+@media (width <= 1100px) {
+ .record-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-#player-overlay .empire-profile .season-trends > div[style] > div:nth-child(2) { background: #f1faf6 !important; }
-#player-overlay .empire-profile .season-trends > div[style] > div:nth-child(3) { background: #f6f4fc !important; }
+@media (width <= 600px) {
+ main.game-shell .record-room { padding: 18px 14px !important; }
+ .record-section-heading { margin-bottom: 19px; gap: 10px; }
+ .record-section-heading h3 { font-size: 19px; }
+ .record-section-heading .support-text { font-size: 10px; }
+ .record-scope { font-size: 9px; padding: 5px 7px; }
+ .record-metric-group { align-items: flex-start; gap: 9px; }
+ .record-metric-group > span { flex-basis: 32px; padding-top: 9px; font-size: 10px; }
+ .record-room .career-leader-tabs { gap: 5px; }
+ .record-room .career-leader-tabs button { padding: 7px 9px; font-size: 11px; }
+ .record-leader-hero { align-items: stretch; flex-direction: column; padding: 23px; gap: 19px; margin: 21px 0; }
+ .record-leader-number { font-size: 49px; }
+ .record-leader-profile { border-left: 0; border-top: 1px solid #ffffff26; padding: 18px 0 0; gap: 15px; }
+ .record-leader-profile > img { width: 42px; height: 46px; }
+ .record-leader-profile strong { font-size: 22px; }
+ .record-room .career-leader-heading, .record-room .career-leader-row { grid-template-columns: 26px minmax(65px, 1fr) minmax(57px, .8fr) 61px; padding: 13px 10px; gap: 6px; }
+ .record-room .career-leader-row { min-height: 68px; }
+ .record-player-cell strong { font-size: 13px; }
+ .record-team-cell { gap: 4px; font-size: 10px; }
+ .record-team-cell img { width: 17px; height: 20px; }
+ .record-room .career-leader-value strong { font-size: 16px; }
+ .record-stat-grid { gap: 10px; }
+ .record-stat-card { padding: 16px 13px; }
+ .record-stat-label { font-size: 12px; }
+ .record-stat-number { margin: 21px 0; }
+ .record-stat-number strong { font-size: 35px; }
+ .record-holder { gap: 6px; }
+ .record-holder strong { font-size: 13px; }
+ .record-holder .history-club-mark img { width: 23px; height: 25px; }
+ .record-season-stamp { flex-wrap: wrap; margin-top: 17px; gap: 6px; }
+}

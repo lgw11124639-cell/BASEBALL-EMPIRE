@@ -1,0 +1,17 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createOwnedEngineRuntime} from './owned-engine-runtime.mjs';
+import {runOriginalEngineDay} from './original-engine-day.mjs';
+test('owned and detached runtimes produce the same complete original-engine day',()=>{
+ const source=`const Math=Object.assign(Object.create(globalThis.Math),{random:()=>.5});
+ const Date=class extends globalThis.Date{constructor(...args){super(...(args.length?args:['2026-11-02T00:00:00Z']))}static now(){return 1793577600000}};
+`+readFileSync(new URL('../app.js',import.meta.url),'utf8');
+ const boot=createOwnedEngineRuntime(source,{year:2027,day:1,players:[],teams:[],gameResults:[]});
+ const seed=boot.invoke('world(0)'),baseline=structuredClone(seed);
+ const detached=runOriginalEngineDay(seed,{appSource:source});
+ const owned=runOriginalEngineDay(structuredClone(seed),{appSource:source},{takeOwnership:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(owned.state)),JSON.parse(JSON.stringify(detached.state)));
+ assert.deepEqual(JSON.parse(JSON.stringify(seed)),JSON.parse(JSON.stringify(baseline)));
+ assert.equal(owned.result.to.date,detached.result.to.date);
+});

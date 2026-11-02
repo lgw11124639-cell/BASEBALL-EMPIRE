@@ -2,7 +2,7 @@ import {buildWireDelta} from './wire-delta.mjs';
 import {runOriginalEngineDay} from './original-engine-day.mjs';
 // userId must come from the existing authenticated session, never the body.
 // restoreSave must restore a detached full state; store.commit is atomic.
-export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s,runDay=runOriginalEngineDay,fingerprint=()=>'day',codecFactory=null,includeDelta=false}){
+export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s,runDay=runOriginalEngineDay,fingerprint=()=>'day',codecFactory=null,includeDelta=false,ownsRestoredState=false}){
  if(!store||typeof restoreSave!=='function')throw Error('Advance-day dependencies missing');
  const active=new Map();
  return async function advance({userId,slot='main',requestId,expectedRev,operation}){
@@ -28,7 +28,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     if(snapshot.rev!==expectedRev)return {status:409,error:'revision conflict',current_rev:snapshot.rev};
     const codec=codecFactory?.();
     const state=await(codec?codec.restore(snapshot.save):restoreSave(structuredClone(snapshot.save)));mark('restoreMs');
-    const outcome=await runDay(state,operation);mark('engineMs');
+    const outcome=await runDay(state,operation,{takeOwnership:ownsRestoredState});mark('engineMs');
     const wire=await(codec?codec.pack(outcome.state):encodeSave(outcome.state));mark('packMs');
     const delta=buildWireDelta(snapshot.save,wire);mark('deltaMs');
     timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;

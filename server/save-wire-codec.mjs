@@ -21,7 +21,9 @@ export function createSaveWireCodec(source=readFileSync(path,'utf8'),{nativeGzip
   restoreChanges: functions.restoreServerWireChanges,
   metrics(){return diagnostics.beCloudGzipSnapshot?.()??null},
   async restore(save){
-   let state=structuredClone(save);
+   // Encoded strings are immutable. Clone raw object fields without copying
+   // every large base64 string before immediately decoding and deleting it.
+   let state=Object.fromEntries(Object.entries(save).map(([key,value])=>[key,value&&typeof value==='object'?structuredClone(value):value]));
    for(const name of ['unpackAuxiliaryFields','unpackHistoryShards','unpackAmateurBuckets','unpackLeagueShards','unpackCloudShards','unpackReplayResults'])state=await functions[name](state);
    return state;
   },

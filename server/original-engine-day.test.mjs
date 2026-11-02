@@ -45,3 +45,20 @@ test('ambiguous partially simulated saves are rejected',()=>{
  const input=seed();input.gameResults=[{day:90,away:0,home:1}];assert.throws(()=>run(input),/without completion marker/);
  const prepared={...seed(),beWatchedCompletedDay:90};assert.throws(()=>run(prepared),/no game results/);
 });
+test('API-owned decoded state skips the second clone with identical day results',()=>{
+ const input=seed(),copy=structuredClone(input),detached=run(input);
+ const owned=runOriginalEngineDay(copy,{appSource},{takeOwnership:true});
+ assert.equal(owned.state,copy,'request already owns its decoded state');
+ assert.deepEqual(structuredClone(owned.state),structuredClone(detached.state));
+ assert.equal(owned.result.to.date,detached.result.to.date);
+ assert.deepEqual(input,seed(),'default entry still leaves the caller input untouched');
+});
+test('cached compiled code never shares context state between owned requests',()=>{
+ const first=runOriginalEngineDay({...seed(),marker:'first'},{appSource},{takeOwnership:true});
+ const second=runOriginalEngineDay(seed(),{appSource},{takeOwnership:true});
+ assert.equal(second.state.marker,undefined);
+ assert.equal(second.state.day,91);assert.equal(first.state.day,91);
+ const bad=seed();bad.fail=true;
+ assert.throws(()=>runOriginalEngineDay(bad,{appSource},{takeOwnership:true}),/engine failed/);
+ assert.equal(runOriginalEngineDay(seed(),{appSource},{takeOwnership:true}).state.day,91);
+});

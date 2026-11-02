@@ -83,3 +83,11 @@ test('native server gzip stays readable by the original browser streams and reje
  const broken=structuredClone(nativeWire);broken.beShard_teams_0='@@@not-gzip';
  await assert.rejects(()=>native.restore(broken));
 });
+test('wire decoding owns raw nested fields without changing its acknowledged baseline',async()=>{
+ const original=seed();original.extension={nested:{value:1}};
+ const wire=await createSaveWireCodec().pack(original),before=structuredClone(wire);
+ const restored=await createSaveWireCodec().restore(wire);
+ restored.extension.nested.value=99;restored.players[0].name='changed';
+ assert.deepEqual(wire,before);
+ assert.notEqual(restored.extension,wire.extension);
+});

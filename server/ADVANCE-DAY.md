@@ -263,3 +263,19 @@ full usage rows and batting stat deltas are retained, including foreign-country
 matches; domestic counters remain isolated by the existing snapshot/restore.
 New records carry `recordVersion:2`. Legacy results lacking decision data are
 shown as unrecorded rather than assigned invented wins/saves/holds.
+
+### Owned request state and compiled engine code (2.1.5)
+
+The day route explicitly transfers its freshly decoded, detached request state
+to `owned-engine-runtime.mjs`. This removes the second full-world
+`structuredClone` that previously ran inside the fixture sandbox, without sharing
+a mutable world between requests. Only compiled trusted application code is
+cached; each request still gets a new VM context. Failed work is discarded and
+cannot affect the acknowledged wire baseline or the database. Standalone
+`runOriginalEngineDay` callers retain input cloning by default. The existing
+EC2 fixture sandbox, including its local patch, is left unchanged.
+Wire decoding copies its container and clones raw object fields, while immutable
+base64 strings are shared until decoded. The engine details now separately
+report preparation time. No gameplay phases or integrity checks are skipped.
+Stage and deploy the new runtime with the ordinary verified running-upgrade
+sequence; no activation, reset or save repair is required.
