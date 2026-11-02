@@ -69,3 +69,12 @@ test('a concurrent newer save wins without archiving or replacing stale data',as
   assert.equal(db.prepare('SELECT count(*) AS n FROM be_save_versions').get().n,0);
  }finally{db.close()}
 });
+
+test('production null-prototype root objects retain identical save semantics',async()=>{
+ const {verifySaveLifecycle}=await import('./verify-save-lifecycle.mjs');
+ const productionShape=db=>{
+  const shards=createTestShards(db),get=shards.get;
+  return {...shards,get(user,slot){const snapshot=get(user,slot);return snapshot?{...snapshot,save:Object.assign(Object.create(null),snapshot.save)}:null}};
+ };
+ assert.equal((await verifySaveLifecycle(productionShape)).success,true);
+});
