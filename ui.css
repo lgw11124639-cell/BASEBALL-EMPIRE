@@ -20385,3 +20385,7 @@ main.game-shell .record-room { padding: 26px !important; }
 #game-news-overlay.front-report-overlay table.front-report-table .front-col-center { text-align:center !important; }
 
 #game-news-overlay.front-report-overlay table.front-report-table :is(th,td) { border-left:1px solid #cddbd6 !important; border-right:1px solid #cddbd6 !important; text-align:center !important; }
+/* Camp fact tiles must stay readable inside the article reader. */
+#game-news-overlay.front-report-overlay .profile-facts > div { background:#f4f8f7 !important; border-color:#cddcd7 !important; }
+#game-news-overlay.front-report-overlay .profile-facts > div small { color:#526d70 !important; opacity:1 !important; }
+#game-news-overlay.front-report-overlay .profile-facts > div strong { color:#173f43 !important; opacity:1 !important; font-size:18px !important; }

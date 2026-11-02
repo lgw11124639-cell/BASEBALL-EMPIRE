@@ -1,0 +1,22 @@
+const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+(async()=>{const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});try{for(const width of [390,1080]){
+ const page=await browser.newPage({viewport:{width,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='baseball.test')return route.abort();const name=u.pathname.slice(1)||'index.html',file=path.join(root,name);if(!fs.existsSync(file))return route.fulfill({status:404,body:''});let body=fs.readFileSync(file);if(name==='update.js')body=Buffer.from('');if(name==='app.js'){let source=body.toString();source=source.slice(0,source.lastIndexOf('(async()=>')).replace(/^import .*;\s*$/m,'');source+=`\nstate=world(0);entryMode='game';tab='home';state.beWatchedCompletedDay=state.day;state.clubNotices=[{id:'report-test',kind:'프런트 투자',year:state.year,day:state.day,teams:[0],title:'구단 투자 집행 보고',body:Array(35).fill('선수 육성을 위해 30억원을 집행했습니다.').join('\\n\\n')}];const date=seasonDate(state.day).toISOString().slice(0,10);const g={year:state.year,day:state.day,date,away:0,home:1,awayRuns:1,homeRuns:0,awayInnings:[1,0,0,0,0,0,0,0,0],homeInnings:Array(9).fill(0),awayBatters:[{id:999,name:'시험 타자',atBats:1,hits:1,homeRuns:1,runsBattedIn:1}],homeBatters:[],awayPitchers:[],homePitchers:[],broadcastEvents:[{inning:1,side:'away',batterId:999,batter:'시험 타자',pitcher:'시험 투수',outcome:'홈런',score:1,runs:1,outsBefore:0,outsAfter:0,bases:[],afterBases:[],pitchSequence:[{number:1,type:'직구',velocity:140,zoneX:50,zoneY:50,call:'인플레이',ballsAfter:0,strikesAfter:0}]}]};state.springCamps={[state.year]:{games:[g],clubs:{0:{location:'미국 캠프',startDate:date,endDate:date,participants:[],level:1,cost:100000000,practiceCost:5000000,expenses:{lodging:1,facilities:2,travel:3,setup:4}}}}};state.clubScrimmages={[state.year]:{games:[{...g,home:0,clubId:0,labels:{away:'백팀',home:'청팀'}}]}};state.allStarGames={[state.year]:{...g,labels:{away:'드림',home:'나눔'}}};render();window.exhibitionTestYear=state.year;window.frontTest={front(){document.querySelector('main').innerHTML=frontOfficePanel()},calendar:()=>seasonProgressPanel(),list:()=>homeOfficeNewsPanel(),open:(kind,id)=>beOpenFrontReport(kind,id)};`;body=Buffer.from(source)}await route.fulfill({body,contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.html')?'text/html':'application/json'})});
+ await page.goto('https://baseball.test/');await page.waitForFunction(()=>!!window.frontTest);
+ assert.equal(await page.locator('.be-calendar-match-list .be-exhibition-match').count(),3);
+ assert.equal(await page.locator('.be-exhibition-match button').count(),6);
+ for(const kind of ['camp','scrimmage','allstar']){
+  await page.evaluate(kind=>beOpenExhibitionArticle(kind,window.exhibitionTestYear,0),kind);
+  assert.equal(await page.locator('.news-article-body .scoreboard-table').count(),5);
+  assert.match(await page.locator('.news-article-body').innerText(),/시험 타자/);
+  if(kind==='scrimmage')assert.match(await page.locator('.news-article-body').innerText(),/백팀/);
+  if(kind==='allstar')assert.match(await page.locator('.news-article-body').innerText(),/드림/);
+  await page.locator('.be-article-replay button').click();await page.waitForSelector('#be-replay-overlay');
+  await page.locator('#be-replay-next').click();assert.match(await page.locator('#be-replay-batter').innerText(),/시험 타자/);
+  await page.evaluate(()=>beCloseGameReplay());
+ }
+ await page.evaluate(()=>beOpenFrontReport('camp'));await page.waitForSelector('#front-report-content[aria-busy="false"]');await page.locator('.front-article-records').evaluate(el=>el.open=true);
+ const colors=await page.locator('.profile-facts > div').first().evaluate(el=>({fg:getComputedStyle(el.querySelector('strong')).color,bg:getComputedStyle(el).backgroundColor,label:getComputedStyle(el.querySelector('small')).color}));assert.notEqual(colors.fg,'rgb(255, 255, 255)');assert.notEqual(colors.fg,colors.bg);assert.notEqual(colors.label,'rgb(183, 211, 236)');
+ assert.deepEqual(errors,[]);console.log('PASS three exhibition types in today matches, articles, full pitch replay and readable camp facts',width);await page.close();
+}}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});
