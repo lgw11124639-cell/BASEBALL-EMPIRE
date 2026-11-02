@@ -11,10 +11,11 @@ const stage=resolve(repo,'server.local-backup/advance-api');
 if(!readFileSync(resolve(stage,'shard-store.mjs'),'utf8').includes('SAVEPOINT be_shard_write'))throw Error('Run stage-advance-day.mjs first');
 let source=readFileSync(resolve(api,'auth.mjs'),'utf8');
 const productionSourceHashes={'auth.mjs':hash(source),'shard-store.mjs':hash(readFileSync(resolve(api,'shard-store.mjs')))};
-if(source.includes('createAdvanceDayRoute'))throw Error('Auth already includes engine routing; review instead of patching twice');
+const alreadyIntegrated=source.includes('createAdvanceDayRoute');
 const init='return async(req,res,origin)=>{';
 const gate="if(!session){response(res,401,{error:'unauthorized'},origin);return true;}";
 for(const anchor of [init,gate])if(source.split(anchor).length!==2)throw Error('Authentication structure changed; refusing patch');
+if(!alreadyIntegrated){
 source="import {createAdvanceDayRoute} from './server/advance-day-route.mjs';\nimport {restoreServerSave,packServerSave} from './server/save-wire-codec.mjs';\n"+source;
 source=source.replace(init,`const handleAdvance=createAdvanceDayRoute({db,shards,restoreSave:restoreServerSave,encodeSave:packServerSave,body,response,enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'});
   const serverOwner=db.prepare('SELECT 1 FROM be_day_requests WHERE user_id=? AND slot=? LIMIT 1');
@@ -25,6 +26,8 @@ source=source.replace(gate,gate+`
     if(engineSlot&&['PUT','PATCH','DELETE'].includes(req.method)&&serverOwner.get(session.user_id,engineSlot)){
       response(res,409,{error:'server-owned save; reload server state'},origin);return true;
     }`);
+}
+if(!source.includes("enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'")||!source.includes('server-owned save; reload server state'))throw Error('Existing auth integration is not the verified disabled/guarded implementation');
 // Copy only referenced source modules, recursively, leaving the verified store intact.
 const copied=new Set(['shard-store.mjs']);
 function dependencies(text,base=api){

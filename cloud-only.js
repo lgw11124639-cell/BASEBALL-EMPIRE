@@ -1,3 +1,4 @@
+import {createServerDayClient} from './server-day-client.js';
 // Cloud-only save transport. Never persists game state to local storage.
 const API='https://baseball-empire-save.duckdns.org';
 const KEY='be-cloud-session-v1';
@@ -1006,6 +1007,7 @@ window.beVerifyCloudPacking=async()=>{
 };
 
 export async function cloudSave(state){
+ if(window.beServerGameMode===true)throw Error('서버 화면에서는 브라우저 저장을 사용할 수 없습니다.');
  if(!state)throw Error('저장할 게임이 없습니다');
  if(!token||!verified||revision===null)throw Error('클라우드 로그인 또는 저장 상태 확인이 필요합니다');
  // Optimistic concurrency: the server validates If-Match atomically on PUT.
@@ -1184,6 +1186,25 @@ export async function cloudSave(state){
  revision=next;acknowledgedWireSave={...payload,...detached,...reusableManifests};acknowledgedObjectJson=incrementalSaveSupported?cloudObjectJson(acknowledgedWireSave):null;acknowledgedObjectJsonSource=acknowledgedWireSave;baseline={save:state,revision:next};
  window.beCloudSaveStages={...window.beCloudSaveStages,postSaveCloneMs:+(performance.now()-snapshotStarted).toFixed(1),fullSaveMs:+(performance.now()-window.beCloudSaveStartAt).toFixed(1)};if(window.beCloudSaveTiming?.finalStatus>=200&&window.beCloudSaveTiming.finalStatus<300)recordCloudPayload(window.beCloudSaveTiming.bytes);return result;
 }
+// Original-screen server mode is opt-in until all management commands migrate.
+async function configureOriginalServerScreen(){
+ if(window.beServerGamePreview!==true)return;
+ window.beServerGameMode=true; // Fail closed; never fall back to local simulation.
+ const client=createServerDayClient({api:API,getSession:()=>({token,username,expiresAt:Date.now()+60000}),storage:sessionStorage});
+ const capability=await client.status();
+ window.beServerGameCapability=capability;
+ window.beReloadServerGame=async()=>{const data=await check();if(!data)throw Error('서버에 저장된 게임이 없습니다.');return data};
+ window.beExecuteServerGameCommand=async command=>{
+  if(!window.beServerGameCapability?.canAdvance)throw Error('서버 변경 기능이 아직 활성화되지 않았습니다.');
+  await client.command(revision,command);
+  return window.beReloadServerGame();
+ };
+ window.beAdvanceServerGame=async()=>{
+  if(!window.beServerGameCapability?.canAdvance)throw Error('서버 하루 진행 기능이 아직 활성화되지 않았습니다.');
+  await client.advance(revision);
+  return window.beReloadServerGame();
+ };
+}
 export async function cloudGate(onReady){
  const overlay=document.createElement('div');overlay.id='be-cloud-gate';
  overlay.className='cloud-gate';
@@ -1206,6 +1227,7 @@ export async function cloudGate(onReady){
    else r=await call('/v2/auth/login','POST',{username:name.value.trim(),password:pass.value});if(!r.token)throw Error('로그인 응답 오류');token=r.token;username=name.value.trim();remember()}
   pass.value='';confirmPass.value='';
   const data=await check();
+  await configureOriginalServerScreen();
   if(data&&(!Array.isArray(data.teams)||data.teams.length!==10||!Array.isArray(data.players)||data.schema!==1))throw Error('서버 저장 데이터 형식이 잘못됐습니다');
   await onReady(data);
   overlay.remove();
@@ -1223,7 +1245,7 @@ export async function cloudGate(onReady){
    reset=document.createElement('button');reset.id='be-cloud-reset';reset.type='button';reset.textContent='클라우드 초기화';
    reset.className='cloud-account-action cloud-account-action--reset';
    const syncVisibility=()=>{const show=document.body.classList.contains('be-start-screen');logout.style.display=show?'':'none';reset.style.display=show?'':'none'};
-   reset.onclick=async()=>{if(!confirm('정말 클라우드 저장 데이터를 삭제할까요? 이 작업은 되돌릴 수 없습니다.'))return;if(!confirm('마지막 확인: 이 계정의 클라우드 게임 저장을 영구 삭제합니다. 계속할까요?'))return;reset.disabled=true;try{const current=await snapshot();if(!current){alert('초기화할 클라우드 저장 데이터가 없습니다.');return}const currentRev=revisionOf(current);if(currentRev===null)throw Error('저장 버전을 확인하지 못했습니다');if(!verified||revision!==currentRev)throw Error('다른 기기에서 저장 데이터가 변경됐습니다. 새로고침 후 다시 시도하세요');await call('/v2/saves/main','DELETE',undefined,currentRev);revision=0;verified=true;baseline=null;alert('클라우드 저장 데이터가 삭제되었습니다. 새 게임을 시작할 수 있습니다.');location.reload()}catch(e){alert('클라우드 초기화 실패: '+(e.message||e)+'\n서버가 저장 삭제 API를 지원하는지 확인해야 합니다.')}finally{reset.disabled=false}};
+   reset.onclick=async()=>{if(window.beServerGameMode===true){alert('서버 화면에서는 초기화를 아직 사용할 수 없습니다.');return}if(!confirm('정말 클라우드 저장 데이터를 삭제할까요? 이 작업은 되돌릴 수 없습니다.'))return;if(!confirm('마지막 확인: 이 계정의 클라우드 게임 저장을 영구 삭제합니다. 계속할까요?'))return;reset.disabled=true;try{const current=await snapshot();if(!current){alert('초기화할 클라우드 저장 데이터가 없습니다.');return}const currentRev=revisionOf(current);if(currentRev===null)throw Error('저장 버전을 확인하지 못했습니다');if(!verified||revision!==currentRev)throw Error('다른 기기에서 저장 데이터가 변경됐습니다. 새로고침 후 다시 시도하세요');await call('/v2/saves/main','DELETE',undefined,currentRev);revision=0;verified=true;baseline=null;alert('클라우드 저장 데이터가 삭제되었습니다. 새 게임을 시작할 수 있습니다.');location.reload()}catch(e){alert('클라우드 초기화 실패: '+(e.message||e)+'\n서버가 저장 삭제 API를 지원하는지 확인해야 합니다.')}finally{reset.disabled=false}};
    document.body.append(reset);
    new MutationObserver(syncVisibility).observe(document.body,{attributes:true,attributeFilter:['class']});syncVisibility();
   }

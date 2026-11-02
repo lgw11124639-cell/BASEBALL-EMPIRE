@@ -8,7 +8,7 @@ const db=new DatabaseSync(':memory:');
 db.exec(`CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,updated_at TEXT,digest TEXT,compressed_bytes INTEGER,PRIMARY KEY(user_id,slot));
 CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field));`);
 delete process.env.BE_SERVER_ENGINE_ENABLED;
-const handler=installAuth(db);
+let handler=installAuth(db);
 const token='a'.repeat(64),digest=createHash('sha256').update(token).digest('hex');
 db.prepare('INSERT INTO be_users(id,username,salt,password_hash,created_at) VALUES(?,?,?,?,?)').run(1,'staging_test','unused','unused',new Date().toISOString());
 db.prepare('INSERT INTO be_sessions(token_hash,user_id,expires_at) VALUES(?,?,?)').run(digest,1,Date.now()+60000);
@@ -33,5 +33,8 @@ const enabled=installAuth(db);
 let status;
 await enabled({url:'/v2/engine/advance',method:'POST',headers:{authorization:'Bearer '+token,'if-match':'1'},async *[Symbol.asyncIterator](){yield Buffer.from(JSON.stringify({requestId:'staged-auth-0002'}))}},{writeHead(s){status=s},end(){}},null);
 assert.equal(status,404); // Authenticated empty test DB; never invokes simulation.
+handler=enabled;
+assert.equal((await request('/v2/engine/command','POST',true,{requestId:'staged-photo-command-01',command:{type:'player-photo',playerId:'1',photo:'data:image/jpeg;base64,/9j/4A=='}})).status,404);
+assert.equal((await request('/v2/engine/command','POST',true,{requestId:'staged-bad-command-0001',command:{type:'arbitrary-script'}})).status,400);
 db.close();
 console.log(JSON.stringify({success:true,stage:'staged-auth',unauthenticated401:true,disabled503:true,legacyWritesBlocked:true,authenticatedRouteReached:true,productionDatabaseOpened:false}));

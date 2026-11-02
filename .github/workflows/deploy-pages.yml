@@ -39,7 +39,7 @@ jobs:
       - name: Assemble public application files
         run: |
           mkdir -p _site
-          cp app.js kpbl-investigation-policy.js cloud-only.js cloud-save.js index.html manifest.webmanifest sw.js ui.css update.js version.json _site/
+          cp app.js kpbl-investigation-policy.js cloud-only.js cloud-save.js server-day-client.js index.html manifest.webmanifest sw.js ui.css update.js version.json _site/
           cp -R vendor _site/vendor
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3

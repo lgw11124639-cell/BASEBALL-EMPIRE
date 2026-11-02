@@ -43,6 +43,12 @@ export async function verifyAdvanceStore(createShardStore){
  const errorRequest={...request,requestId:'atomic-engine-fail',expectedRev:before.rev};
  assert.equal((await failing(errorRequest)).status,500);assert.equal(store.load(1,'main').rev,before.rev);
  assert.equal((await advance(errorRequest)).status,200);
+ const command=createAdvanceDayService({store,restoreSave:async s=>s,runDay:async state=>({state,result:{type:'test-command'}}),fingerprint:op=>'command:'+op.choice});
+ const commandRequest={userId:1,requestId:'atomic-command-id',expectedRev:store.load(1,'main').rev,operation:{choice:'yes'}};
+ assert.equal((await command(commandRequest)).status,200);
+ assert.equal((await command(commandRequest)).replayed,true);
+ assert.equal((await command({...commandRequest,operation:{choice:'no'}})).status,409);
+ assert.equal((await advance(commandRequest)).status,409);
  assert.equal((await advance({...request,userId:0})).status,401);
  assert.equal((await advance({...request,slot:'other'})).status,400);
  db.close();

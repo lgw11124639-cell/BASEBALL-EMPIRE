@@ -28,3 +28,13 @@ test('definitive stale revision requires refresh and another click, never auto-a
  const client=createServerDayClient({api:'https://example.test',getSession:()=>session,storage:storage(),newId:()=> 'client-request-0004',fetchImpl:async()=>{calls++;return {ok:false,status:409,json:async()=>({error:'revision conflict',current_rev:3})}}});
  await assert.rejects(client.advance(2));assert.equal(calls,1);assert.equal(client.hasPending(),false);
 });
+test('command retries preserve the original payload and do not submit another mutation',async()=>{
+ const saved=storage(),requests=[];
+ const opts={api:'https://example.test',getSession:()=>session,storage:saved,newId:()=> 'client-command-0001'};
+ const command={type:'club-hall-vote',voteId:'vote',choice:'yes'};
+ const first=createServerDayClient({...opts,fetchImpl:async(url,init)=>{requests.push({url,body:init.body});throw Error('lost response')}});
+ await assert.rejects(first.command(4,command));
+ const next=createServerDayClient({...opts,fetchImpl:async(url,init)=>{requests.push({url,body:init.body});return ok(JSON.parse(init.body).requestId,5)}});
+ await assert.rejects(next.command(4,{...command,choice:'no'}));assert.equal(requests.length,1);
+ await next.command(5,command);assert.deepEqual(requests[0],requests[1]);assert.match(requests[1].url,/\/engine\/command$/);
+});

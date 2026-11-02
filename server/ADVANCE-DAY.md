@@ -104,3 +104,30 @@ Only PORT, DATA_DIR and BE_SERVER_ENGINE_ENABLED are selected from runtime
 configuration; credentials and the complete environment are never returned or
 logged. Restart explicitly preserves port 3300 and the verified data directory.
 Post-restart verification checks the running process's port and disabled flag.
+
+The opt-in `server-game-preview.html` now loads the original app.js UI and
+stylesheet. cloudGate fetches server capabilities before rendering. In this mode,
+advanceSeason calls only the server endpoint and reloads the acknowledged save;
+rendering and replay views cannot pre-generate fixtures or prepare national teams.
+Browser cloudSave and IndexedDB profile writes are blocked. Normal index.html
+keeps its existing behavior; the original-screen entrypoint is not published.
+The browser test uses a fresh synthetic world from the original engine and checks
+six navigation tabs, player record views, a photo command and server date refresh,
+with client simulation functions replaced by throwing sentinels.
+
+The authenticated `/v2/engine/command` accepts only `player-photo` and
+`club-hall-vote`. It reuses canonical ensureProfile/castClubHallFanVote on a detached
+VM state without advancing the date or generating games. Atomic receipts carry a
+canonical operation fingerprint; reusing an ID with different content is rejected.
+The client retains pending command content across lost responses and refuses to
+silently submit a different command under the same pending ID. Original profile
+photo handlers and hall fan vote controls use this route in server-screen mode.
+The current source has a photo handler but no visible photo file input; the browser
+test covers the command bridge directly rather than claiming a visible uploader.
+
+New game, backup restore and reset are explicitly blocked before mutating state
+in the opt-in server screen pending lossless, archived server-side replacement
+operations. Those existing features remain present in the normal game. Do not
+enable or publish the full migration before these paths are implemented.
+Staging scripts also accept the already-installed verified auth/SAVEPOINT wrapper,
+so subsequent checks can run against production source copies without a live edit.

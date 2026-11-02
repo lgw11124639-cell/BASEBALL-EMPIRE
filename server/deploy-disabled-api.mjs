@@ -20,7 +20,7 @@ const database=resolve(runtime.configuration.DATA_DIR||resolve(api,'data'),'save
 log({stage:'runtime-verified',pm2Id:4,pid:runtime.pid,listeningPort:3300});
 if(database!==resolve(api,'data/saves.sqlite'))throw Error('Unexpected production DB path; review before deployment');
 const names=['auth.mjs','shard-store.mjs','app.js','cloud-only.js','kpbl-investigation-policy.js',
- 'server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/original-engine-sandbox.mjs','server/save-wire-codec.mjs'];
+ 'server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/original-engine-sandbox.mjs','server/save-wire-codec.mjs'];
 for(const name of names){
  const src=resolve(stage,name);
  const check=spawnSync(process.execPath,['--check',src],{encoding:'utf8'});

@@ -10,18 +10,20 @@ const input=resolve(process.argv[2]||'/opt/baseball-empire-api/shard-store.mjs')
 const output=resolve(root,'server.local-backup/advance-api');
 mkdirSync(output,{recursive:true,mode:0o700});
 let source=readFileSync(input,'utf8');
+if(!source.includes('SAVEPOINT be_shard_write')){
 for(const [from,to] of [["db.exec('BEGIN IMMEDIATE');","db.exec('SAVEPOINT be_shard_write');"],["db.exec('COMMIT');","db.exec('RELEASE be_shard_write');"],["db.exec('ROLLBACK');","db.exec('ROLLBACK TO be_shard_write'); db.exec('RELEASE be_shard_write');"]]){
  if(source.split(from).length!==2)throw Error('Unexpected shard-store transaction implementation; refusing patch');
  source=source.replace(from,to);
 }
+}else if(!source.includes("RELEASE be_shard_write")||!source.includes("ROLLBACK TO be_shard_write"))throw Error('Unknown SAVEPOINT transaction implementation');
 const staged=resolve(output,'shard-store.mjs');writeFileSync(staged,source,{mode:0o600});
 const check=spawnSync(process.execPath,['--check',staged],{encoding:'utf8'});
 if(check.status!==0)throw Error(check.stderr);
 const {createShardStore}=await import(pathToFileURL(staged).href);
 console.log(JSON.stringify(await verifyAdvanceStore(createShardStore)));
 mkdirSync(resolve(output,'server'),{recursive:true,mode:0o700});
-for(const name of ['app.js','cloud-only.js','kpbl-investigation-policy.js','server-day-client.js','server-engine-preview.html'])copyFileSync(resolve(root,name),resolve(output,name));
-for(const name of ['save-wire-codec.mjs','advance-day-route.mjs','advance-day-store.mjs','advance-day-service.mjs','original-engine-day.mjs','original-engine-sandbox.mjs','detached-save-restore.mjs']){
+for(const name of ['app.js','cloud-only.js','kpbl-investigation-policy.js','server-day-client.js','server-engine-preview.html','server-game-preview.html'])copyFileSync(resolve(root,name),resolve(output,name));
+for(const name of ['original-engine-command.mjs','save-wire-codec.mjs','advance-day-route.mjs','advance-day-store.mjs','advance-day-service.mjs','original-engine-day.mjs','original-engine-sandbox.mjs','detached-save-restore.mjs']){
  // The restore module and patched sandbox stay on EC2; do not overwrite them.
  const target=resolve(output,'server',name);
  copyFileSync(resolve(root,'server',name),target);
