@@ -33,3 +33,19 @@ Staging command (from the EC2 repository):
 ```sh
 node --experimental-sqlite server/stage-advance-day.mjs
 ```
+
+The staged authenticated route now uses `save-wire-codec.mjs` to call the original
+browser compression/sharding functions, with isolated per-call caches and no
+transport/authentication code. This preserves the team-shard format expected by
+the existing lightweight home reader. Codec fixture round trips and the home
+reader compatibility are tested locally; real-save compatibility still needs a
+detached test before activation.
+
+After staging the store, run `node --experimental-sqlite
+server/stage-auth-advance.mjs` to generate a patched auth.mjs and copy its source
+dependencies into the private staging directory. It checks the original session
+validation anchor before adding the route; all engine calls use session.user_id.
+It blocks PUT/PATCH/DELETE through v2 saves for server-owned slots. The script
+verifies unauthorized requests, disabled engine requests and legacy write guards
+against in-memory SQLite. Other legacy endpoints and the production reverse proxy
+must be reviewed before activation. No live server files are changed.
