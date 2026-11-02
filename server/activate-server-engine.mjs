@@ -1,3 +1,5 @@
+import {totalmem} from 'node:os';
+import {engineNodeOptions} from './memory-policy.mjs';
 // Activation never advances a save. Verify public clients, back up SQLite and
 // proxy config, then enable only the identified API process. No DB restore on failure.
 import {readFileSync,writeFileSync,mkdirSync,realpathSync} from 'node:fs';
@@ -17,7 +19,7 @@ const runtime=readProcessRuntime(Number(info.pid));
 if(!runtime.listeningPorts.includes(3300)||runtime.configuration.BE_SERVER_ENGINE_ENABLED!=='0')throw Error('Expected the disabled API on port 3300');
 const database=resolve(runtime.configuration.DATA_DIR||resolve(api,'data'),'saves.sqlite');
 if(database!==resolve(api,'data/saves.sqlite'))throw Error('Unexpected database path');
-for(const name of ['app.js','native-save.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/owned-engine-runtime.mjs','server/decoded-day-cache.mjs','server/native-save-codec.mjs','server/archive-write-tracker.mjs','server/save-wire-codec.mjs','server/wire-delta.mjs']){
+for(const name of ['app.js','native-save.js','cloud-only.js','server-day-client.js','server-save-client.js','kpbl-investigation-policy.js','server/save-lifecycle.mjs','server/original-engine-command.mjs','server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/owned-engine-runtime.mjs','server/decoded-day-cache.mjs','server/native-save-codec.mjs','server/archive-write-tracker.mjs','server/prepared-day-store.mjs','server/precompute-controller.mjs','server/precompute-worker.mjs','server/precompute-engine-key.mjs','server/save-wire-codec.mjs','server/wire-delta.mjs']){
  if(hash(readFileSync(resolve(api,name)))!==hash(readFileSync(resolve(repo,name))))throw Error('Production file does not match verified release: '+name+'; upgrade first');
 }
 const auth=readFileSync(resolve(api,'auth.mjs'),'utf8');
@@ -35,8 +37,8 @@ writeFileSync(resolve(saved,'nginx.original'),original,{mode:0o600});writeFileSy
 const db=new DatabaseSync(database,{readOnly:true});try{await backup(db,resolve(saved,'saves.sqlite'))}finally{db.close()}
 log({stage:'activation-backup-complete',backupDirectory:saved,publicBuild:version.build});
 const previousOptions=runtime.configuration.NODE_OPTIONS||'';
-const engineOptions=(previousOptions.replace(/--max[-_]old[-_]space[-_]size(?:=|\s+)\d+/g,'').trim()+' --max-old-space-size=4096').trim();
-const environment=enabled=>({...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:enabled,NODE_OPTIONS:enabled==='1'?engineOptions:previousOptions});
+const engineOptions=engineNodeOptions(previousOptions,totalmem()).options;
+const environment=enabled=>({...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:enabled,BE_SERVER_PRECOMPUTE:enabled==='1'?'1':runtime.configuration.BE_SERVER_PRECOMPUTE||'0',NODE_OPTIONS:enabled==='1'?engineOptions:previousOptions});
 async function healthy(){for(let n=0;n<30;n++){try{const response=await fetch('http://127.0.0.1:3300/health',{signal:AbortSignal.timeout(1000)});if(response.ok)return true}catch{}await new Promise(r=>setTimeout(r,500))}return false}
 let proxyChanged=false;
 try{

@@ -20310,3 +20310,7 @@ main.game-shell .record-room { padding: 26px !important; }
 .be-calendar-match-list .be-today-actions { margin-top: 6px !important; padding-top: 0 !important; gap: 6px !important; }
 .be-calendar-match-list .be-today-actions > button { height: 30px; min-height: 30px; padding: 5px 9px !important; }
 .be-calendar-match-list .be-today-actions > small { margin: 0 !important; }
+
+.be-preparation-status { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 14px; padding: 10px 14px; margin: 0 0 14px; border: 1px solid #d8e5eb; border-radius: 10px; background: #fff; color: #255066; font-size: 12px; }
+.be-preparation-status strong { font-size: 12px; }
+.be-preparation-status span { color: #708697; }

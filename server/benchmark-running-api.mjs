@@ -11,13 +11,13 @@ const p=JSON.parse(pm2(['jlist'])).find(p=>p.pm_id===4);
 if(!p||p.pm2_env.status!=='online'||resolve(p.pm2_env.pm_exec_path)!==resolve(api,'server.mjs'))throw Error('PM2 ID 4 is not the expected running game API');
 const runtime=readProcessRuntime(Number(p.pid));
 if(!runtime.listeningPorts.includes(3300)||resolve(runtime.configuration.DATA_DIR||resolve(api,'data'))!==dirname(database))throw Error('Unexpected API port or DB directory');
-const env={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:runtime.configuration.BE_SERVER_ENGINE_ENABLED||'0',NODE_OPTIONS:runtime.configuration.NODE_OPTIONS||''};
+const env={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:runtime.configuration.BE_SERVER_ENGINE_ENABLED||'0',BE_SERVER_PRECOMPUTE:runtime.configuration.BE_SERVER_PRECOMPUTE||'0',NODE_OPTIONS:runtime.configuration.NODE_OPTIONS||''};
 const policy=engineNodeOptions('',totalmem());
 let benchmarkStatus=1;
 try{
  pm2(['stop','4']);
  console.log(JSON.stringify({stage:'game-api-paused',pm2Id:4,productionSaveWrites:false,benchmarkHeapMiB:policy.heapLimitMiB}));
- const result=spawnSync(process.execPath,['--experimental-sqlite','--max-old-space-size='+policy.heapLimitMiB,resolve('server/benchmark-owned-day.mjs'),'--database',database,'--days','1','--profile'],{stdio:'inherit',env:{...process.env,NODE_OPTIONS:''},timeout:240000});
+ const result=spawnSync(process.execPath,['--experimental-sqlite','--max-old-space-size='+policy.heapLimitMiB,resolve('server/benchmark-prepared-api.mjs'),'--database',database],{stdio:'inherit',env:{...process.env,NODE_OPTIONS:''},timeout:240000});
  benchmarkStatus=result.status??1;
 }finally{
  pm2(['restart','4','--update-env'],env);

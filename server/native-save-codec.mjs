@@ -67,3 +67,12 @@ export function nativeWireDelta(previous,wire,baselineHashes=null,reusedFields=n
  }
  return {set,unset,serializedSet,serializedFields,fieldHashes};
 }
+
+// The authoritative writer and speculative worker must derive the same next
+// digest from field JSON bytes. No request ID or wall-clock timestamp enters it.
+export function nativeDeltaDigest(previousDigest,nextRevision,set,unset){
+ const digest=createHash('sha256');digest.update('be-shard-delta-v2');digest.update(previousDigest);digest.update(String(nextRevision));
+ for(const key of [...unset].sort()){if(['__proto__','constructor','prototype'].includes(key))throw Error('Invalid field');digest.update('DELETE');digest.update(key)}
+ for(const key of [...set.keys()].sort()){if(['__proto__','constructor','prototype'].includes(key))throw Error('Invalid field');digest.update('SET');digest.update(key);digest.update(set.get(key))}
+ return digest.digest('hex');
+}

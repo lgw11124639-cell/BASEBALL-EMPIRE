@@ -19,7 +19,7 @@ db.exec(`CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,u
 CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field));`);db.close();
 const probe=net.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
 const origin='https://lgw11124639-cell.github.io',base='http://127.0.0.1:'+port;
-const child=spawn(process.execPath,['--experimental-sqlite','--max-old-space-size=4096',resolve(stage,'server.mjs')],{env:{...process.env,PORT:String(port),DATA_DIR:directory,SAVE_API_TOKEN:randomBytes(40).toString('hex'),ALLOWED_ORIGIN:origin,BE_SERVER_ENGINE_ENABLED:'0'},stdio:['ignore','ignore','pipe']});
+const child=spawn(process.execPath,['--experimental-sqlite','--max-old-space-size=4096',resolve(stage,'server.mjs')],{env:{...process.env,PORT:String(port),DATA_DIR:directory,SAVE_API_TOKEN:randomBytes(40).toString('hex'),ALLOWED_ORIGIN:origin,BE_SERVER_ENGINE_ENABLED:'0',BE_SERVER_PRECOMPUTE:'0'},stdio:['ignore','ignore','pipe']});
 let errors='';child.stderr.on('data',chunk=>{errors=(errors+chunk).slice(-4000)});
 let report;
 try{

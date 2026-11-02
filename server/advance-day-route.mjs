@@ -1,3 +1,4 @@
+import {createPrecomputeController} from './precompute-controller.mjs';
 import {totalmem} from 'node:os';
 import {createDecodedDayCache} from './decoded-day-cache.mjs';
 import {createSaveWireCodec} from './save-wire-codec.mjs';
@@ -8,11 +9,13 @@ import {createAdvanceDayStore} from './advance-day-store.mjs';
 import {createAdvanceDayService} from './advance-day-service.mjs';
 // Install only after auth.mjs has authenticated the existing Bearer session.
 // Kept disabled until server-owned client flows and legacy write guards are ready.
-export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,response,enabled=false,codecFactory=createSaveWireCodec}){
+export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,response,enabled=false,codecFactory=createSaveWireCodec,precompute=false,precomputeController=null}){
  const store=createAdvanceDayStore(db,shards);
+ let prepared=precomputeController;
+ if(!prepared&&enabled&&precompute){try{const file=db.prepare('PRAGMA database_list').all().find(row=>row.name==='main')?.file;if(file)prepared=createPrecomputeController({database:file,metadata:(user,slot)=>store.metadata(user,slot)})}catch{console.error('Background preparation unavailable; using regular engine')}}
  const stateCache=createDecodedDayCache({maxRssBytes:totalmem()*.80});
- const advance=createAdvanceDayService({store,restoreSave,encodeSave,codecFactory,includeDelta:true,ownsRestoredState:true,stateCache});
- const command=createAdvanceDayService({store,restoreSave,encodeSave,runDay:runOriginalEngineCommand,fingerprint:commandFingerprint,codecFactory,includeDelta:true,stateCache});
+ const advance=createAdvanceDayService({store,restoreSave,encodeSave,codecFactory,includeDelta:true,ownsRestoredState:true,stateCache,precompute:prepared});
+ const command=createAdvanceDayService({store,restoreSave,encodeSave,runDay:runOriginalEngineCommand,fingerprint:commandFingerprint,codecFactory,includeDelta:true,ownsRestoredState:true,stateCache:prepared?null:stateCache});
  const meta=db.prepare('SELECT rev FROM be_save_shard_meta WHERE user_id=? AND slot=?');
  const lifecycleStore=createSaveLifecycleStore(db,shards);
  const lifecycle=createSaveLifecycleService({store:lifecycleStore,restoreSave,encodeSave});
@@ -35,7 +38,9 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
    try{
     const current=meta.get(session.user_id,'main'),marker=empty.get(session.user_id,'main');
     const isEmpty=marker?JSON.parse(gunzipSync(marker.content,{maxOutputLength:1024}).toString('utf8'))===true:false;
-    response(res,200,{enabled,serverOwned:!!owner.get(session.user_id,'main'),revision:current?.rev??0,hasSave:!!current&&!isEmpty,canAdvance:enabled&&!!current&&!isEmpty},origin);
+    const currentMeta=store.metadata(session.user_id,'main');
+    if(prepared&&currentMeta&&!isEmpty)prepared.ensure(session.user_id,'main',currentMeta.rev,currentMeta.digest);
+    response(res,200,{enabled,serverOwned:!!owner.get(session.user_id,'main'),revision:current?.rev??0,hasSave:!!current&&!isEmpty,canAdvance:enabled&&!!current&&!isEmpty,...(prepared?{preparation:prepared.status(session.user_id,'main',current?.rev??0)}:{})},origin);
    }catch{response(res,500,{error:'server status unavailable'},origin)}
    return true;
   }
@@ -49,8 +54,13 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
     try{validateLifecycleRequest(lifecycleType,input)}catch{response(res,400,{error:'invalid save operation'},origin);return true}
     if(typeof match!=='string'||!/^\d+$/.test(match)){response(res,400,{error:'If-Match revision required'},origin);return true}
     const {requestId,...operation}=input;
+    await prepared?.pause?.();
+    try{
     const {status,...payload}=await lifecycle({userId:session.user_id,requestId,expectedRev:Number(match),type:lifecycleType,input:operation});
+    if(status===200&&prepared&&!payload.replayed)prepared.invalidate(session.user_id,'main');
+    if(status===200&&prepared&&lifecycleType!=='reset'){const current=store.metadata(session.user_id,'main');if(current)prepared.ensure(session.user_id,'main',current.rev,current.digest)}
     response(res,status,payload,origin);return true;
+    }finally{prepared?.resume?.()}
    }
    if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!(path==='/v2/engine/command'?['requestId','command']:['requestId']).includes(k))||typeof match!=='string'||!/^\d+$/.test(match)){
     response(res,400,{error:'requestId and If-Match revision required'},origin);return true;
@@ -60,6 +70,7 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
    const execute=operation?command:advance;
    const nativeWire=new URL(req.url,'http://localhost').searchParams.get('wireFormat')==='server-json-v1';
    const {status,...payload}=await execute({userId:session.user_id,requestId:input.requestId,expectedRev:Number(match),operation,nativeWire});
+   if(status===200&&prepared){const current=store.metadata(session.user_id,'main');if(operation&&!payload.replayed){prepared.invalidate(session.user_id,'main');stateCache.clear()}if(operation&&current)prepared.ensure(session.user_id,'main',current.rev,current.digest);payload.preparation=prepared.status(session.user_id,'main',current?.rev??payload.rev)}
    if(!nativeWire&&payload.day?.timing?.storageFormat==='server-json-v1')delete payload.wireDelta;
    response(res,status,payload,origin);
   }catch{

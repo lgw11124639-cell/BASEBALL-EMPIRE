@@ -2,7 +2,7 @@ import {readFileSync,readdirSync,readlinkSync} from 'node:fs';
 // Inspect only explicitly named non-secret configuration; never return an env dump.
 export function selectRuntimeConfig(text){
  const selected={};
- for(const entry of text.split('\0')){const i=entry.indexOf('=');const name=entry.slice(0,i);if(['PORT','DATA_DIR','BE_SERVER_ENGINE_ENABLED','NODE_OPTIONS'].includes(name))selected[name]=entry.slice(i+1)}
+ for(const entry of text.split('\0')){const i=entry.indexOf('=');const name=entry.slice(0,i);if(['PORT','DATA_DIR','BE_SERVER_ENGINE_ENABLED','BE_SERVER_PRECOMPUTE','NODE_OPTIONS'].includes(name))selected[name]=entry.slice(i+1)}
  return selected;
 }
 export function readProcessRuntime(pid){

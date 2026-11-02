@@ -61,7 +61,7 @@ const assert=require('node:assert/strict');
    if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,PUT,PATCH,DELETE','access-control-allow-headers':'authorization,content-type,if-match'}});
    let data;
    if(req.method()==='GET'&&path==='/v2/saves/main'){snapshotReads++;data={rev:revision,save:native?packNativeSave(fixture):fixture};}
-   else if(path==='/v2/engine/status')data={enabled:true,canAdvance:!fixture.beServerSlotEmpty,revision,serverOwned:false};
+   else if(path==='/v2/engine/status')data={enabled:true,canAdvance:!fixture.beServerSlotEmpty,revision,serverOwned:false,preparation:{enabled:true,ready:Math.max(0,5-advances),horizon:366,working:true}};
    else if(req.method()==='POST'&&['/v2/engine/new-game','/v2/engine/reset','/v2/engine/restore'].includes(path)){
     lifecycle++;const bytes=req.postDataBuffer(),body=JSON.parse((req.headers()['content-encoding']==='gzip'?gunzipSync(bytes):bytes).toString());
     const operation=path.split('/').at(-1);
@@ -82,6 +82,7 @@ const assert=require('node:assert/strict');
   await page.goto('http://127.0.0.1:'+server.address().port+(process.argv.includes('--main')?'/index.html':'/server-game-preview.html'));
   await page.waitForSelector('#advance-day',{timeout:30000});
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);
+  assert.ok((await page.locator('#be-preparation-status').textContent()).includes('준비 완료'));
   if(!fixturePath){
    assert.equal(await page.locator('.be-cal-day.is-today.is-selected').count(),1,'calendar today matches the completed date');
    const card=page.locator('.be-calendar-match-list .be-today-match').filter({hasText:'원정 선발'}).first();
@@ -141,6 +142,7 @@ const assert=require('node:assert/strict');
   await player.click();await page.waitForSelector('#player-overlay');
   await assertFullViewport('#player-overlay .player-panel');
   await page.locator('[data-profile-tab="career"]').click();
+  assert.ok(!(await page.locator('[data-profile-pane="career"]').textContent()).includes('체력 관리'));
   assert.ok(await page.locator('.be-contract-progress').count()>0);
   assert.ok(await page.locator('.be-contract-progress').evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).backgroundColor==='rgb(255, 255, 255)')));
   await page.locator('[data-profile-tab="scout"]').click();

@@ -1,10 +1,10 @@
 import {isNativeSave,restoreNativeSave} from '../native-save.js';
-import {createNativeSaveCodec,nativeWireDelta} from './native-save-codec.mjs';
+import {createNativeSaveCodec,nativeWireDelta,nativeDeltaDigest} from './native-save-codec.mjs';
 import {buildWireDelta} from './wire-delta.mjs';
 import {runOriginalEngineDay} from './original-engine-day.mjs';
 // userId must come from the existing authenticated session, never the body.
 // restoreSave must restore a detached full state; store.commit is atomic.
-export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s,runDay=runOriginalEngineDay,fingerprint=()=>'day',codecFactory=null,includeDelta=false,ownsRestoredState=false,stateCache=null}){
+export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s,runDay=runOriginalEngineDay,fingerprint=()=>'day',codecFactory=null,includeDelta=false,ownsRestoredState=false,stateCache=null,precompute=null}){
  if(!store||typeof restoreSave!=='function')throw Error('Advance-day dependencies missing');
  const active=new Map();
  return async function advance({userId,slot='main',requestId,expectedRev,operation,nativeWire=false}){
@@ -25,7 +25,25 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
    try{
     const timing={},started=performance.now();
     let phase=started;const mark=name=>{const now=performance.now();timing[name]=Math.round(now-phase);phase=now};
-    const meta=stateCache&&typeof store.metadata==='function'?store.metadata(userId,slot):null;
+    const meta=(stateCache||precompute)&&typeof store.metadata==='function'?store.metadata(userId,slot):null;
+    if(precompute&&nativeWire&&!operation&&meta){
+     if(meta.rev!==expectedRev)return {status:409,error:'revision conflict',current_rev:meta.rev};
+     let prepared=null;try{
+      prepared=precompute.get(userId,slot,expectedRev,meta.digest);
+      if(!prepared){const waiting=performance.now();prepared=await precompute.wait?.(userId,slot,expectedRev,meta.digest);timing.prepareWaitMs=Math.round(performance.now()-waiting)}
+     }catch{precompute.invalidate(userId,slot)}
+     if(prepared){
+      mark('loadMs');timing.loadMs=Math.max(0,timing.loadMs-(timing.prepareWaitMs||0));const serializedDelta=new Map(prepared.set),unset=prepared.unset;
+      if(nativeDeltaDigest(meta.digest,expectedRev+1,serializedDelta,unset)!==prepared.nextDigest){precompute.invalidate(userId,slot);throw Error('Prepared day digest mismatch')}
+      const set=Object.fromEntries([...serializedDelta].map(([key,raw])=>[key,JSON.parse(raw)]));mark('restoreMs');
+      stateCache?.clear();const background=prepared.result.timing;
+      Object.assign(timing,{precomputed:true,backgroundEngineMs:background.engineMs,backgroundTotalMs:background.totalMs,engineMs:0,packMs:0,deltaMs:0,cacheMs:0,storageFormat:'server-json-v1',changedFields:serializedDelta.size,totalFields:background.totalFields});
+      const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};
+      const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,serializedDelta,delta:{set,unset},result:{...prepared.result,requestFingerprint,timing}}));
+      if(response.status===200&&!response.replayed){try{precompute.committed(userId,slot,response.rev,response.digest)}catch{}}
+      return response.status===200&&!response.replayed&&includeDelta?{...response,wireDelta:{fromRevision:expectedRev,toRevision:response.rev,set,unset}}:response;
+     }
+    }
     const cached=meta?.rev===expectedRev?stateCache?.take(userId,slot,meta.rev,meta.digest):null;
     const snapshot=cached?{...meta,save:cached.wire,fieldHashes:cached.fieldHashes}:store.load(userId,slot);mark('loadMs');
     if(!snapshot)return {status:404,error:'save not found'};
@@ -52,7 +70,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     timing.storageFormat=native?'server-json-v1':'legacy-gzip';
     timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;timing.reusedArchiveFields=codec?.reusedFields?.().size||0;
     let preparedCache=null;
-    if(native&&ownsRestoredState&&stateCache){
+    if(native&&ownsRestoredState&&stateCache&&!precompute){
      // Finish normalization before committing, so even preparation failures leave
      // the DB untouched. Only computed parts are parsed; archives stay shared.
      const normalized={...wire};for(const [key,raw] of delta.serializedFields)normalized[key]=JSON.parse(raw);
@@ -63,7 +81,8 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};
     const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,serializedDelta:delta.serializedSet,result:{...outcome.result,requestFingerprint,timing}}));
     if(response.status===200&&!response.replayed){
-     if(preparedCache)stateCache.put({user:userId,slot,rev:response.rev,digest:response.digest,...preparedCache});
+     if(precompute){stateCache?.clear();try{precompute.invalidate(userId,slot);precompute.ensure(userId,slot,response.rev,response.digest)}catch{}}
+     else if(preparedCache)stateCache.put({user:userId,slot,rev:response.rev,digest:response.digest,...preparedCache});
      else stateCache?.put({user:userId,slot,rev:response.rev,digest:response.digest,state:native?undefined:outcome.state,wire:native?Object.fromEntries(Object.keys(wire).map(key=>[key,null])):wire,codec,fieldHashes:delta.fieldHashes,serializedFields:delta.serializedFields});
     }
     if(response.status===200&&performance.now()-started>2000)console.info(JSON.stringify({stage:'server-day-performance',...response.day?.timing,enginePhases:response.day?.enginePhases||null}));

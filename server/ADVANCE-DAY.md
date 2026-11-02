@@ -450,3 +450,45 @@ old-engine days. The full regression suite passed 124 files before the version
 bump. Actual target latency remains unconfirmed; use the existing one-day paused
 read-only benchmark, which now also reports the processed calendar date. No
 production source or save is upgraded by that diagnostic command.
+
+
+## v2.2.0 prepared days
+
+With `BE_SERVER_PRECOMPUTE=1`, an authenticated status request starts one
+low-priority worker. It reads the canonical database read-only, simulates the
+unchanged engine, and stores compressed per-day deltas in a separate disposable
+`prepared-days/queue.sqlite`. It looks ahead up to 366 days while the client
+continues heartbeats. It retains one decoded world, never 366 world snapshots.
+Ready days commit their changed fields and durable request receipt through the
+existing canonical transaction. Revision, input digest, engine source hash and
+branch generation must match. Commands and save replacement invalidate futures;
+failed operations and receipt replays do not. Old workers cannot republish an
+invalidated branch or replace an already published day.
+
+This reduces foreground work; it does not promise every click is instantaneous.
+Initial loading, overtaking the queue and changing a lineup/contract can require
+waiting for preparation. There is no mandatory annual blocking batch. Status
+shows ready days without changing the selected date or canonical revision.
+
+Resource limits: one worker, at most 1536 MiB worker old-space, stop between days
+above 70% total physical-memory process RSS, a global 512 MiB compressed payload
+budget, and a 1 GiB free-disk reserve. RSS can temporarily exceed the threshold
+inside a single day; these are guards, not a measured peak-memory guarantee.
+Idle workers are terminated after heartbeats stop (60 seconds checked between
+days), or after a completed horizon. Buffers of at least 30 days do not restart
+an idle worker until consumed. Heavy save lifecycle operations pause the worker.
+The installed API heap cap remains governed by memory-policy.mjs.
+
+`node --experimental-sqlite server/benchmark-running-api.mjs` now pauses only the
+verified game API (PM2 4, port 3300), runs preparation against the read-only source,
+then measures an actual HTTP day request against a temporary backup on the same
+volume while the worker can prepare subsequent days. It verifies the canonical
+revision/digest never changed and resumes the original API in finally. Inspect
+`background-day-ready` and `prepared-advance-benchmark`, including HTTP latency,
+queue bytes and peak RSS. This diagnostic does not install the new API.
+Production t3.medium latency and peak memory remain to be measured.
+
+Stage and verify before upgrading. The installer backs up code and SQLite,
+stops only the game API before replacing runtime modules, enables precomputation,
+and restarts it. Code rollback must never overwrite newer canonical saves with
+an older database backup. Contract cards no longer show the stamina advice.

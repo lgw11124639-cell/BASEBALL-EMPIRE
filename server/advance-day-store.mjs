@@ -1,5 +1,6 @@
 import {gzipSync,gunzipSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
+import {nativeDeltaDigest} from './native-save-codec.mjs';
 // Requires a SAVEPOINT-compatible shard store on the same SQLite connection.
 // No simulation or asynchronous work may run inside commit().
 export function createAdvanceDayStore(db,shards){
@@ -19,12 +20,10 @@ export function createAdvanceDayStore(db,shards){
  const nativeMeta=db.prepare('UPDATE be_save_shard_meta SET rev=?,updated_at=?,digest=?,compressed_bytes=? WHERE user_id=? AND slot=?');
  function patchSerialized(user,slot,expected,set,unset){
   const m=metadata.get(user,slot);if(!m||m.rev!==expected)return {status:409,current_rev:m?.rev||0};
-  let bytes=Number(m.compressed_bytes)||0;const digest=createHash('sha256');digest.update('be-shard-delta-v2');digest.update(m.digest);digest.update(String(expected+1));
-  for(const key of [...unset].sort()){if(['__proto__','constructor','prototype'].includes(key))throw Error('Invalid field');digest.update('DELETE');digest.update(key)}
-  for(const key of [...set.keys()].sort()){if(['__proto__','constructor','prototype'].includes(key))throw Error('Invalid field');digest.update('SET');digest.update(key);digest.update(set.get(key))}
+  let bytes=Number(m.compressed_bytes)||0;const digest=nativeDeltaDigest(m.digest,expected+1,set,unset);
   for(const key of unset){bytes-=fieldSize.get(user,slot,key)?.bytes||0;nativeRemove.run(user,slot,key)}
   for(const [key,raw] of set){bytes-=fieldSize.get(user,slot,key)?.bytes||0;const data=gzipSync(raw,{level:1});nativeUpsert.run(user,slot,key,data);bytes+=data.length}
-  const result={status:200,ok:true,slot,rev:expected+1,updated_at:new Date().toISOString(),digest:digest.digest('hex'),compressed_bytes:bytes};
+  const result={status:200,ok:true,slot,rev:expected+1,updated_at:new Date().toISOString(),digest,compressed_bytes:bytes};
   nativeMeta.run(result.rev,result.updated_at,result.digest,bytes,user,slot);return result;
  }
  function receipt(user,slot,requestId,expectedRev){

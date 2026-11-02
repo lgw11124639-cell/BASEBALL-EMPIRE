@@ -30,6 +30,12 @@ source=source.replace(gate,gate+`
 if(!source.includes("enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'")||!source.includes('server-owned save; reload server state'))throw Error('Existing auth integration is not the verified disabled/guarded implementation');
 source=source.replace('SELECT 1 FROM be_day_requests WHERE user_id=? AND slot=? LIMIT 1','SELECT 1 FROM (SELECT user_id,slot FROM be_day_requests UNION ALL SELECT user_id,slot FROM be_lifecycle_requests) WHERE user_id=? AND slot=? LIMIT 1');
 source=source.replace("&&serverOwner.get(session.user_id,engineSlot)","&&(process.env.BE_SERVER_ENGINE_ENABLED==='1'||serverOwner.get(session.user_id,engineSlot))");
+// Background preparation is enabled only by the verified running upgrade.
+if(!source.includes("precompute:process.env.BE_SERVER_PRECOMPUTE==='1'")){
+ const anchor="enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'});";
+ if(source.split(anchor).length!==2)throw Error('Unexpected engine factory; cannot add preparation gate');
+ source=source.replace(anchor,"enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1',precompute:process.env.BE_SERVER_PRECOMPUTE==='1'});");
+}
 // Negotiate plain server JSON while preserving older open clients on read.
 if(!source.includes('native server JSON negotiation')){
  const getAnchor='const item=shards.get(session.user_id,slot);';

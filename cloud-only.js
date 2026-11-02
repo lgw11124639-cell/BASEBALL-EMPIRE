@@ -1255,6 +1255,11 @@ async function configureOriginalServerScreen(){
  };
  // Receipt recovery reads metadata only, and never executes a new operation.
  const recovered=await saves.recover();if(recovered)window.beRecoveredServerSave=await check();
+ if(!window.bePreparationPollStarted){window.bePreparationPollStarted=true;setInterval(async()=>{
+  if(window.bePreparationPolling||document.visibilityState==='hidden'||!document.querySelector('main.game-shell')||!window.beServerGameCapability?.canAdvance)return;
+  window.bePreparationPolling=true;
+  try{const current=await client.status();window.beServerGameCapability={...window.beServerGameCapability,preparation:current.preparation};window.beRefreshPreparation?.()}catch{}finally{window.bePreparationPolling=false}
+ },3000)}
  window.beAdvanceServerGame=async()=>{
   if(!window.beServerGameCapability?.canAdvance)throw Error('서버 하루 진행 기능이 아직 활성화되지 않았습니다.');
   const started=performance.now(),beforeRevision=revision;
@@ -1271,6 +1276,7 @@ async function configureOriginalServerScreen(){
    revision=result.rev;verified=true;acknowledgedWireSave=wire;acknowledgedObjectJson=null;acknowledgedObjectJsonSource=null;baseline={save:next,revision};
    window.beServerGameCapability={...window.beServerGameCapability,revision,hasSave:true,canAdvance:true};incremental=true;
   }else next=await window.beReloadServerGame();
+  if(result.preparation)window.beServerGameCapability={...window.beServerGameCapability,preparation:result.preparation};
   window.beLastServerDayTiming={totalMs:performance.now()-started,responseMs:responseAt-started,refreshMs:performance.now()-responseAt,incremental,server:result.day?.timing||null,enginePhases:result.day?.enginePhases||null};
   return next;
  };

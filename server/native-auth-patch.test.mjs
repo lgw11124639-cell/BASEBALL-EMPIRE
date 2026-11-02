@@ -30,3 +30,9 @@ test('actual staged GET patch serves native JSON to new clients and a lossless l
  assert.equal(old.save.beServerNativeManifest,undefined);
  assert.deepEqual(await restoreServerSave(old.save),world);
 });
+test('preparation gate patch is explicit, idempotent and rejects unknown auth factories',()=>{
+ const part=script.slice(script.indexOf('// Background preparation is enabled'),script.indexOf('// Negotiate plain server JSON'));
+ const patch=input=>vm.runInNewContext('let source='+JSON.stringify(input)+';'+part+';source');
+ const before="const handleAdvance=createAdvanceDayRoute({enabled:process.env.BE_SERVER_ENGINE_ENABLED==='1'});";
+ const once=patch(before);assert.ok(once.includes("precompute:process.env.BE_SERVER_PRECOMPUTE==='1'"));assert.equal(patch(once),once);assert.throws(()=>patch('unknown factory'),/Unexpected engine factory/);
+});

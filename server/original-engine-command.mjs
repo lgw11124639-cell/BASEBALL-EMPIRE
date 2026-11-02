@@ -1,6 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {createOriginalEngineSandbox} from './original-engine-sandbox.mjs';
+import {createOwnedEngineRuntime} from './owned-engine-runtime.mjs';
 export function validateGameCommand(input){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid game command');
  if(input.type==='player-photo'){
@@ -16,10 +17,11 @@ export function validateGameCommand(input){
  throw Error('Unsupported game command');
 }
 export const commandFingerprint=command=>'command:'+createHash('sha256').update(JSON.stringify(validateGameCommand(command))).digest('hex');
-export function runOriginalEngineCommand(save,command,{appSource,timeoutMs=120000}={}){
+export function runOriginalEngineCommand(save,command,{appSource,timeoutMs=120000,takeOwnership=false,cloneState=structuredClone,readArchive=null}={}){
  command=validateGameCommand(command);
- const vm=createOriginalEngineSandbox(appSource??readFileSync(new URL('../app.js',import.meta.url),'utf8'),save,{timeoutMs});
- vm.context.structuredClone=structuredClone;vm.context.__gameCommand=command;
+ const createRuntime=takeOwnership?createOwnedEngineRuntime:createOriginalEngineSandbox;
+ const vm=createRuntime(appSource??readFileSync(new URL('../app.js',import.meta.url),'utf8'),save,{timeoutMs});
+ vm.context.structuredClone=cloneState;if(readArchive)vm.context.window.beEngineReadArchive=readArchive;vm.context.__gameCommand=command;
  const result=vm.invoke(`(()=>{
   const before={year:state.year,day:state.day,games:state.gameResults?.length||0};
   const command=__gameCommand;
