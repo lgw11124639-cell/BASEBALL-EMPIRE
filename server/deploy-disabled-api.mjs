@@ -5,6 +5,7 @@ import {resolve,dirname} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {DatabaseSync,backup} from 'node:sqlite';
 import {createHash} from 'node:crypto';
+import {readProcessRuntime} from './process-runtime.mjs';
 const repo=resolve('.'),api='/opt/baseball-empire-api',stage=resolve(repo,'server.local-backup/advance-api');
 const log=x=>console.log(JSON.stringify(x));
 const digest=file=>createHash('sha256').update(readFileSync(file)).digest('hex');
@@ -12,10 +13,11 @@ function pm2(args,env=process.env){const r=spawnSync('pm2',args,{encoding:'utf8'
 const processes=JSON.parse(pm2(['jlist']));
 const processInfo=processes.find(p=>p.pm_id===4);
 if(!processInfo||resolve(processInfo.pm2_env.pm_exec_path)!==resolve(api,'server.mjs'))throw Error('PM2 ID 4 does not match the expected API; refusing deployment');
-const port=Number(processInfo.pm2_env.PORT||3200);
-if(port!==3300)throw Error('Expected the API process to use port 3300; refusing to affect another service');
-if(processInfo.pm2_env.BE_SERVER_ENGINE_ENABLED==='1')throw Error('Unexpected existing engine enable flag; refusing first deployment');
-const database=resolve(processInfo.pm2_env.DATA_DIR||resolve(api,'data'),'saves.sqlite');
+const runtime=readProcessRuntime(Number(processInfo.pid));
+if(!runtime.listeningPorts.includes(3300))throw Error('PM2 API process does not own listening port 3300; refusing deployment');
+if(runtime.configuration.BE_SERVER_ENGINE_ENABLED==='1')throw Error('Unexpected existing engine enable flag; refusing first deployment');
+const database=resolve(runtime.configuration.DATA_DIR||resolve(api,'data'),'saves.sqlite');
+log({stage:'runtime-verified',pm2Id:4,pid:runtime.pid,listeningPort:3300});
 if(database!==resolve(api,'data/saves.sqlite'))throw Error('Unexpected production DB path; review before deployment');
 const names=['auth.mjs','shard-store.mjs','app.js','cloud-only.js','kpbl-investigation-policy.js',
  'server/advance-day-route.mjs','server/advance-day-service.mjs','server/advance-day-store.mjs','server/original-engine-day.mjs','server/original-engine-sandbox.mjs','server/save-wire-codec.mjs'];
@@ -45,7 +47,7 @@ const readOnly=new DatabaseSync(database,{readOnly:true});
 try{await backup(readOnly,resolve(saved,'saves.sqlite'))}finally{readOnly.close()}
 writeFileSync(resolve(saved,'manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),engineEnabled:false,files:previous},null,2),{mode:0o600});
 log({stage:'backup-complete',backupDirectory:saved,sqliteBackup:true});
-const restartEnv={...process.env,BE_SERVER_ENGINE_ENABLED:'0'};
+const restartEnv={...process.env,PORT:'3300',DATA_DIR:dirname(database),BE_SERVER_ENGINE_ENABLED:'0'};
 function install(src,dest){mkdirSync(dirname(dest),{recursive:true});const tmp=dest+'.engine-stage-tmp';copyFileSync(src,tmp);renameSync(tmp,dest)}
 async function healthy(){
  for(let n=0;n<30;n++){
@@ -62,7 +64,8 @@ try{
  pm2(['restart','4','--update-env'],restartEnv);
  if(!await healthy())throw Error('API health or authentication check failed');
  const after=JSON.parse(pm2(['jlist'])).find(p=>p.pm_id===4);
- if(after?.pm2_env?.BE_SERVER_ENGINE_ENABLED!=='0')throw Error('Cannot confirm disabled engine flag');
+ const afterRuntime=readProcessRuntime(Number(after?.pid));
+ if(afterRuntime.configuration.BE_SERVER_ENGINE_ENABLED!=='0'||!afterRuntime.listeningPorts.includes(3300))throw Error('Cannot confirm disabled engine and API port');
  log({success:true,stage:'production-foundation-installed',engineEnabled:false,pm2Id:4,health200:true,unauthenticated401:true,saveSimulationPerformed:false,backupDirectory:saved,clientPublished:false});
 }catch(error){
  let rollback=true;

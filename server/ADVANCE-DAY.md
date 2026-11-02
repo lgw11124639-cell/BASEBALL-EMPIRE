@@ -97,3 +97,10 @@ The route stays disabled; no real user save is advanced. The existing Pages UI
 is not published or replaced. Refresh stage-auth and staged-http first to produce
 the required source hashes before using the deployment command. This script does
 not change Nginx or manage any unrelated PM2 applications.
+
+Deployment identifies port ownership from the actual PM2 process PID's listening
+socket descriptors, rather than assuming PORT is present in PM2's JSON metadata.
+Only PORT, DATA_DIR and BE_SERVER_ENGINE_ENABLED are selected from runtime
+configuration; credentials and the complete environment are never returned or
+logged. Restart explicitly preserves port 3300 and the verified data directory.
+Post-restart verification checks the running process's port and disabled flag.
