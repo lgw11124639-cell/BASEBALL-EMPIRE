@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-front-articles29';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-formal-reports30';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -5648,50 +5648,64 @@ function clubTrainingReportPanel(team){
  const scrimmages=state.clubScrimmages?.[state.year]?.games||[];
  return springCampPanel(team)+'<section class="dashboard-section"><h3>구단 청백전</h3><p>2월 5일·28일 · 투수·포지션별로 선수단을 나눠 청팀과 백팀이 경기합니다.</p>'+scrimmages.map((game,index)=>({game,index})).filter(({game})=>game.clubId===team.id).map(({game,index})=>'<button class="be-report-item" onclick="beOpenExhibitionReplay(\'scrimmage\','+state.year+','+index+')"><span><small>'+esc(game.date)+' · 운영비 '+formatKoreanWon(game.cost)+'</small><strong>백팀 '+game.awayRuns+' : '+game.homeRuns+' 청팀</strong></span><span>기록·다시보기 ›</span></button>').join('')+'</section>'+allStarVotingPanel();
 }
+function frontReportAmount(value){
+ const n=Number(value)||0;return Math.abs(n)>=100000000?(n/100000000).toLocaleString('ko-KR',{maximumFractionDigits:2})+'억원':formatKoreanWon(n);
+}
+function frontReportSection(number,title,body){return '<section class="front-document-section"><h3><span>'+number+'</span>'+title+'</h3>'+body+'</section>'}
+function frontReportTable(caption,headers,rows){
+ return '<div class="front-report-table-wrap"><table class="front-report-table"><caption>'+esc(caption)+'</caption><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map((cell,i)=>i===0?'<th scope="row">'+esc(String(cell))+'</th>':'<td>'+esc(String(cell))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+}
+function frontReportBars(caption,items){
+ const max=Math.max(1,...items.map(x=>Number(x.amount)||0));
+ return '<figure class="front-report-chart"><figcaption>'+esc(caption)+'</figcaption>'+items.map(x=>'<div class="front-report-chart-row"><div><span>'+esc(x.label)+'</span><strong>'+esc(frontReportAmount(x.amount))+'</strong></div><div class="front-report-chart-track"><i style="width:'+Math.max(0,Number(x.amount)||0)/max*100+'%"></i></div></div>').join('')+'<small>막대 길이는 항목 간 금액 비율을 표시합니다.</small></figure>';
+}
 function frontReportArticle(team,kind){
- const won=n=>formatKoreanWon(Number(n)||0),name=esc(team.city+' '+team.name),f=team.finance||{};
- const paragraph=text=>'<p>'+text+'</p>';
+ const won=frontReportAmount,p=text=>'<p>'+text+'</p>',section=frontReportSection,f=team.finance||{};
  if(kind==='plans'){
-  const plan=frontOfficePlanData(team),direction=clubCompetitivePlan(team.id);
-  return paragraph(name+' 프런트는 '+esc(direction.mode)+' 기조 아래 '+esc(direction.reason))+
-   paragraph('선수단 점검에서는 '+plan.needs.map(x=>esc(x.position)+' '+x.count+'명(목표 '+x.target+'명)').join(', ')+'을 우선 검토 대상으로 정했다. 포지션별 인원은 현재 소속 선수 기준이며, 실제 영입은 선수의 기량과 계약 조건을 함께 살펴 결정한다.')+
-   paragraph('현재 자금 중 '+won(plan.reserve)+'은 운영 예비금으로 남기고, 나머지 '+won(plan.available)+'을 보강과 투자 검토 범위로 삼는다. 선수 보강 '+won(plan.funds.players)+', 육성·전력 프로그램 '+won(plan.funds.development)+', 시설 '+won(plan.funds.facilities)+', 캠프·연습경기 '+won(plan.funds.camp)+'의 배정안이다.')+
-   paragraph('이 금액은 현재 잔액을 기준으로 한 계획 상한이며, 집행된 지출이나 확정 계약이 아니다. 월 결산과 협상 결과에 따라 다시 조정한다.')+
-   '<h3>영입 검토 명단</h3>'+(plan.candidates.length?plan.candidates.map(({p,record,offered})=>paragraph('<button type="button" class="front-article-player" data-front-player="'+esc(String(p.id))+'" onclick="beOpenFrontCandidate(this.dataset.frontPlayer)">'+esc(p.name)+'</button>('+esc(p.position)+', '+p.age+'세)은 '+(offered?'최근 실제 제안 이력이 있는 선수다. '+esc(record.lastOutcome||'협상 결과를 검토하고 있다.'):'선수층을 기준으로 추린 검토 후보로, 우리 구단이 제안한 상태는 아니다.')+(record.lastBestAnnual?' 시장 최고 제안은 연봉 '+won(record.lastBestAnnual)+', '+(Number(record.lastBestYears)||1)+'년이다.':'')+' 최종 영입 여부는 선수 의사와 구단 간 경쟁, 보상금과 연봉 부담에 따라 달라진다.')).join(''):paragraph('현재 FA 시장에는 검토 가능한 후보가 없다. 기존 선수 육성과 드래프트, 외국인 선수 보강을 함께 살펴볼 예정이다.'));
+  const plan=frontOfficePlanData(team),direction=clubCompetitivePlan(team.id),shortages=plan.needs.filter(x=>x.count<x.target);
+  return section('01','검토 목적 및 운영 기조',p(esc(direction.mode)+' 기조에 따른 선수단 구성과 가용 재원의 배분안을 검토한다. 본 보고서는 현재 선수층과 FA 시장 기록을 기준으로 작성한 검토안이며, 영입 또는 지출의 확정을 의미하지 않는다.'))+
+   section('02','선수단 구성 진단',frontReportTable('포지션별 선수층 비교',['포지션','소속 인원','기준 인원','차이'],plan.needs.map(x=>[x.position,x.count+'명',x.target+'명',(x.count-x.target>0?'+':'')+(x.count-x.target)+'명']))+p('포지션별 비교 현황: '+plan.needs.map(x=>esc(x.position)+' '+x.count+'명 / 기준 '+x.target+'명').join(' · ')+'.')+p(shortages.length?'기준 인원에 미달한 포지션은 '+shortages.map(x=>esc(x.position)).join(', ')+'이다. 연령 구성, 주전 경쟁력 및 대체 자원 수준을 추가 검토한 후 보강 우선순위를 결정한다.':'비교 대상 포지션은 모두 기준 인원을 충족한다. 인원수만으로 보강 필요성을 판단하지 않으며, 주전 경쟁력과 연령 구성에 대한 추가 검토가 필요하다.'))+
+   section('03','재원 배분 검토안',frontReportTable('분야별 배정 상한 · 미집행 검토안',['분야','배정 상한','배분 비율'],[['선수 보강',won(plan.funds.players),'60%'],['육성·전력',won(plan.funds.development),'20%'],['시설',won(plan.funds.facilities),'10%'],['캠프·연습경기',won(plan.funds.camp),'10%']])+frontReportBars('가용 재원 배분 검토',[{label:'선수 보강',amount:plan.funds.players},{label:'육성·전력',amount:plan.funds.development},{label:'시설',amount:plan.funds.facilities},{label:'캠프·연습경기',amount:plan.funds.camp}])+p('보유 자금 중 운영 예비금은 '+won(plan.reserve)+', 예비금 차감 후 검토 가능한 재원은 '+won(plan.available)+'이다.')+p('분야별 배정 상한은 선수 보강 '+won(plan.funds.players)+', 육성·전력 프로그램 '+won(plan.funds.development)+', 시설 '+won(plan.funds.facilities)+', 캠프·연습경기 '+won(plan.funds.camp)+'으로 산정한다. 실제 집행액은 별도 계약 및 재정 거래 기록을 따른다.'))+
+   section('04','FA 후보 검토 현황',plan.candidates.length?plan.candidates.map(({p:player,record,offered})=>p('<button type="button" class="front-article-player" data-front-player="'+esc(String(player.id))+'" onclick="beOpenFrontCandidate(this.dataset.frontPlayer)">'+esc(player.name)+'</button> · '+esc(player.position)+' · '+player.age+'세<br>'+ (offered?'협상 이력: 최근 구단 제안 기록 확인. '+esc(record.lastOutcome||'세부 결과 미기록'):'검토 단계: 선수층 기준 후보. 구단 제안 이력 없음.')+(record.lastBestAnnual?'<br>시장 최고 제안: 연봉 '+won(record.lastBestAnnual)+' / '+(Number(record.lastBestYears)||1)+'년. 해당 조건은 우리 구단의 제안액과 구분한다.':''))).join(''):p('현재 FA 시장 내 검토 가능한 후보가 없다. 기존 자원 육성, 드래프트 및 외국인 선수 보강을 병행 검토한다.'))+
+   section('05','후속 검토 사항',p('후보별 기량·연령·계약기간·보상금 부담과 선수 의사를 확인한다. 월 결산 및 협상 결과를 반영해 예비금과 배정 상한을 재산정한다.'));
  }
  if(kind==='camp'||kind==='events'){
-  const record=state.springCamps?.[state.year],camp=record?.clubs?.[team.id],games=(record?.games||[]).filter(g=>g.away===team.id||g.home===team.id),scrimmages=(state.clubScrimmages?.[state.year]?.games||[]).filter(g=>g.clubId===team.id);
-  return paragraph(camp?name+'은 '+esc(camp.location)+'에서 '+esc(camp.startDate)+'부터 '+esc(camp.endDate)+'까지 '+camp.participants.length+'명의 선수와 '+(camp.staffCount||0)+'명의 지도자가 참여하는 스프링캠프를 편성했다.':name+'은 2월 1일부터 3월 15일까지 운영하는 스프링캠프를 통해 새 시즌을 준비한다. 현재 시즌에 집행된 캠프 기록은 아직 없다.')+
-   (camp?paragraph('캠프에 집행한 금액은 '+won(camp.cost)+', 연습경기 운영비는 '+won(camp.practiceCost)+'이다. 숙박·식사와 훈련장, 이동·장비 비용을 포함하며 구단 예산에서 실제 지출로 기록한다.'):'')+
-   paragraph('현재 시즌 저장 기록에는 우리 구단 연습경기 '+games.length+'경기와 청백전 '+scrimmages.length+'경기가 남아 있다. 경기 결과와 개인 기록은 정규시즌 성적·시상과 구분해 보관한다.')+
-   paragraph('올스타전은 '+esc(allStarDate(state.year).toISOString().slice(0,10))+'에 열린다. 6월 1일부터 경기 전날까지 팬 투표를 진행하며 팬 득표 70%, 선수단 투표 30%를 반영하고 감독 추천으로 선수단을 보충한다.')+
-   '<details class="front-article-records"><summary>캠프 상세·경기 기록·올스타 투표</summary>'+clubTrainingReportPanel(team)+'</details>';
+  const record=state.springCamps?.[state.year],camp=record?.clubs?.[team.id],games=(record?.games||[]).filter(g=>g.away===team.id||g.home===team.id),scrimmages=(state.clubScrimmages?.[state.year]?.games||[]).filter(g=>g.clubId===team.id),star=state.allStarGames?.[state.year],date=allStarDate(state.year),passed=seasonDate(beDisplayDay()).getTime()>date.getTime();
+  return section('01','전지훈련 운영 현황',p(camp?'훈련지: '+esc(camp.location)+'. 운영 기간: '+esc(camp.startDate)+' ~ '+esc(camp.endDate)+'. 참가 규모: 선수 '+camp.participants.length+'명, 지도자 '+(camp.staffCount||0)+'명.':'보고 기준일 현재 해당 시즌의 캠프 집행 기록이 확인되지 않는다. 정례 운영 기간은 2월 1일~3월 15일이며, 기록 미확인은 향후 편성 또는 실제 개최를 의미하지 않는다.'))+
+   section('02','비용 집행 및 실전 점검',frontReportTable('훈련·경기 운영 실적',['항목','확인 실적'],[['캠프 집행액',camp?won(camp.cost):'미확인'],['연습경기 운영비',camp?won(camp.practiceCost):'미확인'],['연습경기',games.length+'경기'],['청백전',scrimmages.length+'경기']])+p(camp?'캠프 집행액은 '+won(camp.cost)+', 연습경기 운영비는 '+won(camp.practiceCost)+'이다. 숙박·식사, 훈련장, 이동 및 장비 관련 비용을 포함한다.':'캠프 관련 집행액은 확인 가능한 기록이 없어 본 보고서에 산정하지 않는다.')+p('구단 관련 저장 기록은 연습경기 '+games.length+'경기, 청백전 '+scrimmages.length+'경기이다. 해당 경기의 승패와 개인 성적은 정규시즌 기록 및 시상 집계에서 제외한다.'))+
+   section('03','올스타 행사 운영 현황',p(star?'해당 시즌 올스타전 결과: 드림 '+star.awayRuns+' : '+star.homeRuns+' 나눔. MVP는 '+esc(star.mvp?.name||'기록 미확인')+'이다.':passed?'해당 시즌 올스타전 기준 일정('+esc(date.toISOString().slice(0,10))+')은 경과했으나, 경기 결과 저장 기록은 확인되지 않는다.':'해당 시즌 올스타전 기준 일정은 '+esc(date.toISOString().slice(0,10))+'이다. 팬 투표 운영 기간은 6월 1일부터 경기 전날까지이며, 팬 득표 70%와 선수단 투표 30%를 반영한다.'))+
+   section('04','확인 자료','<details class="front-article-records"><summary>훈련 집행 내역·경기 기록·투표 현황</summary>'+clubTrainingReportPanel(team)+'</details>');
  }
- const ledger=(f.ledger||[]).filter(x=>Number(x.year)===Number(state.year)),tot=f.annualTotals?.[String(state.year)],income=tot?Number(tot.income)||0:ledger.reduce((n,x)=>n+Math.max(0,Number(x.amount)||0),0),expense=tot?Number(tot.expense)||0:ledger.reduce((n,x)=>n+Math.max(0,-(Number(x.amount)||0)),0),net=income-expense;
- const projects=[f.project,...Object.values(f.extraProjects||{})].filter(x=>x&&frontProjectActive(team,x.id));
- return paragraph(name+'의 '+state.year+'시즌 현재 보유 자금은 '+won(team.budget)+'으로 집계됐다. 이 금액은 구단 운영에 사용할 수 있는 잔액이다.')+
-  paragraph('올해 기록된 총수입은 '+won(income)+', 총지출은 '+won(expense)+'이다. 수입에서 지출을 뺀 순증감은 '+(net>=0?'증가 ':'감소 ')+won(Math.abs(net))+'으로 나타났다. 지출에는 선수 계약과 구단 운영, 시설·육성 투자가 포함된다.')+
-  paragraph(Number(f.unpaidOperatingCosts)>0?'미지급 운영비 '+won(f.unpaidOperatingCosts)+'은 다음 결산에서 우선 정산해야 한다.':'현재 기록된 미지급 운영비는 없다.')+
-  '<h3>자금을 쓰는 곳</h3>'+(projects.length?projects.map(x=>paragraph(esc(x.name)+'에 '+won(x.cost)+'을 집행했다. 해당 프로그램은 '+x.untilYear+'년 '+x.untilMonth+'월까지 적용된다.')).join(''):paragraph('현재 진행 중인 특별 투자 기록은 없다. 향후 선수 보강과 육성, 시설 투자, 캠프 운영을 검토한다.'))+
-  paragraph('구단은 운영에 필요한 예비금을 확보한 뒤 남은 자금을 선수단과 훈련 환경에 배분한다. 영입·예산 계획 보고서에서 검토 후보와 배정안을 확인할 수 있다.');
+ const ledger=(f.ledger||[]).filter(x=>Number(x.year)===Number(state.year)),tot=f.annualTotals?.[String(state.year)],income=tot?Number(tot.income)||0:ledger.reduce((n,x)=>n+Math.max(0,Number(x.amount)||0),0),expense=tot?Number(tot.expense)||0:ledger.reduce((n,x)=>n+Math.max(0,-(Number(x.amount)||0)),0),net=income-expense,projects=[f.project,...Object.values(f.extraProjects||{})].filter(x=>x&&frontProjectActive(team,x.id));
+ return section('01','재무 현황 요약',frontReportTable('당해 시즌 누적 재무 요약',['항목','금액','구분'],[['보유 자금',won(team.budget),'기준일 현재 잔액'],['누적 수입',won(income),'당해 시즌'],['누적 지출',won(expense),'당해 시즌'],['수입·지출 차액',(net>=0?'+':'−')+won(Math.abs(net)),net>=0?'순유입':'순유출'],['미지급 운영비',won(f.unpaidOperatingCosts),'기록 기준']])+frontReportBars('누적 수입·지출 규모 비교',[{label:'누적 수입',amount:income},{label:'누적 지출',amount:expense}])+p('보고 기준일 현재 보유 자금은 '+won(team.budget)+'이다. 당해 시즌 누적 수입은 '+won(income)+', 누적 지출은 '+won(expense)+'이며, 수입·지출 차액은 '+(net>=0?'순유입 ':'순유출 ')+won(Math.abs(net))+'이다.'))+
+  section('02','지급 의무 및 유동성 검토',p(Number(f.unpaidOperatingCosts)>0?'기록된 미지급 운영비는 '+won(f.unpaidOperatingCosts)+'이다. 차기 결산 시 우선 정산 대상으로 관리한다.':'기록상 미지급 운영비는 없다. 향후 선수 계약 및 정기 운영비 지급을 고려해 운영 예비금을 유지할 필요가 있다.')+p('보유 자금은 현재 잔액이며 누적 손익과 구분한다. 본 보고서의 수입·지출 차액은 저장된 재정 거래 기준으로, 회계상 당기순이익을 의미하지 않는다.'))+
+  section('03','주요 투자 집행 현황',projects.length?projects.map(x=>p('사업명: '+esc(x.name)+'<br>집행액: '+won(x.cost)+'<br>프로그램 적용 종료: '+x.untilYear+'년 '+x.untilMonth+'월.')).join(''):p('보고 기준일 현재 진행 중인 특별 투자 사업 기록이 없다.'))+
+  section('04','자금 운용 검토 의견',p('운영 예비금을 우선 확보하고, 잔여 재원에 대해 선수 보강·육성·시설 및 훈련 투자 수요를 검토한다. 세부 배정 상한과 후보 현황은 「선수단 전력 및 영입 검토 보고」를 참조한다.'));
 }
+function frontNoticeReport(team,notice){
+ const p=text=>'<p>'+text+'</p>',section=frontReportSection;
+ return section('01','집행 기록',p(esc(publicNoticeBody(notice)).replace(/\n/g,'<br>')))+
+  section('02','기록 범위',p('본 건은 '+esc(kpblDisplayDate(notice))+'에 등록된 「'+esc(notice.title)+'」 기록을 기준으로 작성했다. 본문에 기재되지 않은 세부 비용, 참여 인원 및 성과는 별도로 확인되지 않는다.'))+
+  section('03','후속 관리 사항',p('관련 지출은 재정 거래 내역과 대조하고, 적용 기간 및 운영 결과를 후속 보고에서 확인한다. 현재 자금 현황과 향후 배정안은 보고 기준일이 다른 자료이므로 본 건의 집행 내역과 구분해 검토한다.'));
+}
+function frontNoticeTitle(notice){return notice.title+' · '+(/투자|재정/.test(notice.kind)?'집행 현황 보고':'운영 현황 보고')}
 function beOpenFrontReport(kind='finance',noticeId=null){
  const team=state.teams[state.teamId];if(!team)return;const notice=noticeId==null?null:(state.clubNotices||[]).find(x=>String(x.id)===String(noticeId)&&x.teams?.some(id=>String(id)===String(team.id)));
- const buildBody=()=>notice?'<p>'+esc(publicNoticeBody(notice)).replace(/\n/g,'</p><p>')+'</p>':frontReportArticle(team,kind);
- const title=notice?.title||frontReportHeadlines(team)[kind==='events'?'camp':kind]||team.name+' 프런트 보고서';
- beOpenUnifiedGameArticleView({title,date:notice?kpblDisplayDate(notice):seasonDateLabel(beDisplayDay()),body:'<div id="front-report-content" class="front-report-article" aria-busy="true"><p>구단 보고서를 불러오는 중입니다.</p></div>',afterOpen(){const overlay=document.querySelector('#game-news-overlay');overlay.classList.add('front-report-overlay');overlay.querySelector('[role="dialog"]').setAttribute('aria-label','프런트 보고서');overlay.querySelector('header small').textContent='FRONT OFFICE REPORT · '+team.name+' · '+(notice?kpblDisplayDate(notice):seasonDateLabel(beDisplayDay()));const content=overlay.querySelector('#front-report-content');requestAnimationFrame(()=>setTimeout(()=>{if(!overlay.isConnected)return;try{content.innerHTML=buildBody()}catch(error){content.textContent='보고서를 불러오지 못했습니다: '+error.message}content.setAttribute('aria-busy','false')},0));}});
+ const buildBody=()=>notice?frontNoticeReport(team,notice):frontReportArticle(team,kind);
+ const title=(notice?frontNoticeTitle(notice):null)||frontReportHeadlines(team)[kind==='events'?'camp':kind]||team.name+' 프런트 보고서';
+ beOpenUnifiedGameArticleView({title,date:notice?kpblDisplayDate(notice):seasonDateLabel(beDisplayDay()),body:'<div id="front-report-content" class="front-report-article" aria-busy="true"><p>구단 보고서를 불러오는 중입니다.</p></div>',afterOpen(){const overlay=document.querySelector('#game-news-overlay');overlay.classList.add('front-report-overlay');overlay.querySelector('[role="dialog"]').setAttribute('aria-label','프런트 보고서');overlay.querySelector('header small').textContent='FRONT OFFICE REPORT · '+team.name+' · '+(notice?kpblDisplayDate(notice):seasonDateLabel(beDisplayDay()));const content=overlay.querySelector('#front-report-content');requestAnimationFrame(()=>setTimeout(()=>{if(!overlay.isConnected)return;try{content.innerHTML='<div class="front-document-meta"><span>보고 구단 · '+esc(team.city+' '+team.name)+'</span><span>기준일 · '+esc(notice?kpblDisplayDate(notice):seasonDateLabel(beDisplayDay()))+'</span><span>작성 기준 · 저장된 구단 운영 기록</span><span>금액 표기 · 억원 단위 소수 둘째 자리 반올림</span></div>'+buildBody()}catch(error){content.textContent='보고서를 불러오지 못했습니다: '+error.message}content.setAttribute('aria-busy','false')},0));}});
 }
 function beOpenFrontCandidate(id){closeGameArticle();showPlayer(id)}
 window.beOpenFrontReport=beOpenFrontReport;window.beOpenFrontCandidate=beOpenFrontCandidate;window.beSubmitAllStarBallot=beSubmitAllStarBallot;
 function frontReportHeadlines(team){
- return {finance:team.name+' 자금 '+formatKoreanWon(team.budget)+'…올해 수입·지출과 투자 점검',plans:team.name+' 전력 보강 구상…영입 후보와 예산 배분은',camp:team.name+' 새 시즌 준비…캠프 비용과 연습경기 보고'};
+ return {finance:'재무 운영 현황 보고',plans:'선수단 전력 및 영입 검토 보고',camp:'전지훈련 및 구단 행사 운영 보고'};
 }
 function frontReportsSection(){return '<section class="dashboard-section front-reports-section"><div class="section-title"><div><span class="section-kicker">FRONT OFFICE REPORT</span><h2>프런트 보고서</h2></div></div>'+homeOfficeNewsPanel()+'</section>'}
 function homeOfficeNewsPanel(){
  const team=state.teams[state.teamId],titles=frontReportHeadlines(team);
  const cards=[['finance','재정 보고'],['plans','영입·예산'],['camp','캠프·연습경기']];
  const reports=(state.clubNotices||[]).filter(n=>n.teams?.some(id=>String(id)===String(team.id))&&['재정 보고','프런트 투자','프런트 특별 투자','프런트 추가 투자','스프링캠프','연습경기','청백전','올스타전'].includes(n.kind)).slice(-4).reverse();
- return '<div class="be-report-list baseball-news-list">'+cards.map(([kind,label])=>'<button type="button" class="be-report-item" data-front-report="'+kind+'" onclick="beOpenFrontReport(\''+kind+'\')"><span><small>'+label+' · '+esc(seasonDateLabel(beDisplayDay()))+'</small><strong>'+esc(titles[kind])+'</strong></span><span>›</span></button>').join('')+reports.map(n=>'<button type="button" class="be-report-item" data-front-notice="'+esc(String(n.id))+'" onclick="beOpenFrontReport(\'finance\',this.dataset.frontNotice)"><span><small>'+esc(n.kind)+' · '+esc(kpblDisplayDate(n))+'</small><strong>'+esc(n.title)+'</strong></span><span>›</span></button>').join('')+'</div>';
+ return '<div class="be-report-list baseball-news-list">'+cards.map(([kind,label])=>'<button type="button" class="be-report-item" data-front-report="'+kind+'" onclick="beOpenFrontReport(\''+kind+'\')"><span><small>'+label+' · '+esc(seasonDateLabel(beDisplayDay()))+'</small><strong>'+esc(titles[kind])+'</strong></span><span>›</span></button>').join('')+reports.map(n=>'<button type="button" class="be-report-item" data-front-notice="'+esc(String(n.id))+'" onclick="beOpenFrontReport(\'finance\',this.dataset.frontNotice)"><span><small>'+esc(n.kind)+' · '+esc(kpblDisplayDate(n))+'</small><strong>'+esc(frontNoticeTitle(n))+'</strong></span><span>›</span></button>').join('')+'</div>';
 }
 
 function baseballNewsPanel(limit=0){

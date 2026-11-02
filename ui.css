@@ -20348,3 +20348,27 @@ main.game-shell .record-room { padding: 26px !important; }
 .front-reports-section .be-report-item small { color:#778e8d; font-size:11px; letter-spacing:.02em; }
 .front-reports-section .be-report-item:hover { border-color:#8eafa5; background:#f7faf8; }
 @media(max-width:600px) { #game-news-overlay.front-report-overlay .game-news-dialog > header { padding:calc(env(safe-area-inset-top,0px) + 18px) 22px 20px !important; } }
+
+/* Formal front office documents: numbered sections, tabular figures and charts. */
+.front-document-meta { display:grid; gap:7px; padding:18px 0 22px; border-bottom:2px solid #254b4b; margin-bottom:30px; color:#637b7e; font-size:12px; line-height:1.6; }
+.front-document-section { margin:0 0 36px; }
+.front-document-section > h3 { display:flex; gap:12px; align-items:baseline; margin:0 0 18px; color:#193f43; font-size:18px; line-height:1.6; letter-spacing:-.025em; }
+.front-document-section > h3 > span { color:#75928d; font-size:12px; letter-spacing:.08em; }
+.front-document-section > p { margin:0 0 17px; font-size:15px; line-height:1.95; }
+.front-report-table-wrap { width:100%; overflow-x:auto; margin:18px 0 24px; }
+.front-report-table { width:100%; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; line-height:1.65; }
+.front-report-table caption { text-align:left; font-size:12px; color:#61787b; padding:0 0 10px; }
+.front-report-table th,.front-report-table td { padding:12px 10px; border-bottom:1px solid #dfe7e5; text-align:left; background:white; color:#344e52; overflow-wrap:normal; }
+.front-report-table thead th { background:#eef4f1; border-top:2px solid #395f58; font-weight:700; color:#274b44; }
+.front-report-table tbody th { font-weight:600; }
+.front-report-table td:nth-child(2) { text-align:right; white-space:nowrap; }
+.front-report-chart { margin:24px 0; padding:20px; border:1px solid #dce6e2; background:#f8faf9; border-radius:4px; }
+.front-report-chart figcaption { font-size:13px; font-weight:700; color:#244b46; margin-bottom:20px; }
+.front-report-chart-row { margin-bottom:16px; }
+.front-report-chart-row > div:first-child { display:flex; justify-content:space-between; gap:12px; font-size:12px; line-height:1.7; margin-bottom:6px; }
+.front-report-chart-row strong { font-variant-numeric:tabular-nums; }
+.front-report-chart-track { height:12px; background:#e5eeea; overflow:hidden; }
+.front-report-chart-track i { display:block; height:100%; background:#3d776b; }
+.front-report-chart-row:nth-of-type(2) .front-report-chart-track i { background:#879cab; }
+.front-report-chart > small { font-size:10px; color:#708580; line-height:1.7; display:block; }
+#game-news-overlay.front-report-overlay .game-news-dialog > header h2 { display:block !important; -webkit-line-clamp:unset !important; overflow:visible !important; text-overflow:clip !important; font-size:clamp(20px,3vw,28px) !important; }
