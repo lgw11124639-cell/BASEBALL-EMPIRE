@@ -13,6 +13,7 @@ import {runOriginalEngineDay} from './original-engine-day.mjs';
 const args=process.argv.slice(2),databaseIndex=args.indexOf('--database');
 if(databaseIndex<0||!args[databaseIndex+1])throw Error('Usage: node --max-old-space-size=2496 server/benchmark-owned-day.mjs --database /opt/baseball-empire-api/data/saves.sqlite');
 const days=Math.min(5,Math.max(1,Number(args[args.indexOf('--days')+1])||3));
+const timeoutAt=args.indexOf('--engine-timeout-ms'),timeoutMs=timeoutAt<0?120000:Math.max(1000,Math.min(120000,Number(args[timeoutAt+1])||15000));
 const db=new DatabaseSync(resolve(args[databaseIndex+1]),{readOnly:true});
 let wire={},hashes=new Map(),source;
 const started=performance.now();
@@ -40,10 +41,11 @@ for(let index=0;index<days;index++){
  if(args.includes('--profile')){profiler=new Session();profiler.connect();await post(profiler,'Profiler.enable');await post(profiler,'Profiler.start')}
  const t=performance.now(),tracked=codec.track(state,wire),assembled=performance.now();
  const cpuBefore=process.cpuUsage();
- let outcome;const requested={year:state.year,day:state.day};
- try{outcome=runOriginalEngineDay(state,{appSource},{takeOwnership:true,runtime,cloneState:tracked.clone,readArchive:tracked.raw})}catch(error){console.error(JSON.stringify({stage:'detached-day-error',requested,productionWrites:false,message:String(error?.message||error),stack:String(error?.stack||'').slice(0,5000)}));throw error}
+ let outcome,failure=null;const requested={year:state.year,day:state.day};
+ try{outcome=runOriginalEngineDay(state,{appSource,timeoutMs},{takeOwnership:true,runtime,cloneState:tracked.clone,readArchive:tracked.raw})}catch(error){failure=error}
  const engineDone=performance.now(),cpuAfter=process.cpuUsage(cpuBefore),engineCpuMs=(cpuAfter.user+cpuAfter.system)/1000;
  if(profiler){const {profile}=await post(profiler,'Profiler.stop');profiler.disconnect();const nodes=new Map(profile.nodes.map(n=>[n.id,n])),counts=new Map();for(const id of profile.samples||[]){const f=nodes.get(id)?.callFrame;if(!f)continue;const key=(f.functionName||'<anonymous>')+':'+(f.lineNumber+1)+' '+String(f.url).split('/').at(-1);counts.set(key,(counts.get(key)||0)+1)}console.log(JSON.stringify({stage:'engine-cpu-profile',engineCpuMs:Math.round(engineCpuMs),cpuToWall:+(engineCpuMs/(engineDone-assembled)).toFixed(2),top:[...counts].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([functionName,samples])=>({functionName,samplePercent:+(100*samples/(profile.samples?.length||1)).toFixed(1)}))}))}
+ if(failure){console.error(JSON.stringify({stage:'detached-day-error',requested,timeoutMs,productionWrites:false,message:String(failure?.message||failure),stack:String(failure?.stack||'').slice(0,5000)}));throw failure}
  const packed=await codec.pack(outcome.state),packedAt=performance.now(),delta=nativeWireDelta(wire,packed,hashes,codec.reusedFields()),comparedAt=performance.now();
  const normalized={...packed};for(const [key,raw] of delta.serializedFields)normalized[key]=JSON.parse(raw);
  state=restoreNativeSave(normalized,{previousWire:packed,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});

@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),vm=require('node:vm');const context=require('./helpers/game-context.cjs')();const run=s=>vm.runInContext(s,context);
+run(`state={year:2046,players:[],teams:[],gameResults:[],history:{seasons:{}}};for(let i=0;i<100;i++)state.players.push({id:i,name:'선수'+i,position:i%5===0?'P':'C',games:i<70?30:0,atBats:i<70?80:0,hits:i%20,joinYear:2046});
+for(let day=1;day<=60;day++)state.gameResults.push({year:day===1?2045:2046,day,awayPositions:Object.fromEntries(Array.from({length:9},(_,i)=>[String((day+i)%70),['C','1B','2B','3B','SS','LF','CF','RF','DH'][i]])),homePositions:Object.fromEntries(Array.from({length:9},(_,i)=>[String((day*3+i)%70),['DH','RF','CF','LF','SS','3B','2B','1B','C'][i]]))});
+if(awardCandidates(['overall','all',p=>p.hits]).length!==0)throw Error('Default box-score aggregation changed');
+const indexed=seasonPositionAppearanceIndex();const positions=['투수','포수','1루수','2루수','3루수','유격수','외야수','지명타자'];
+for(const player of state.players)for(const position of positions)if(goldPositionEligible(player,position)!==goldPositionEligible(player,position,indexed))throw Error('Eligibility changed');
+for(const position of positions){const category=['gold','gold:'+position,p=>p.hits],expected=state.players.filter(p=>goldPositionEligible(p,position)).filter(p=>p.games>0||p.atBats>0||p.inningsPitched>0).sort((a,b)=>b.hits-a.hits||a.id-b.id).slice(0,5).map(p=>p.id),actual=awardCandidates(category,state.players,indexed).map(p=>p.id);if(JSON.stringify(expected)!==JSON.stringify(actual))throw Error('Award winners changed');}
+`);
+// A mature league must read every game's position maps once, independent of
+// retired player count and the number of Gold Glove categories.
+run(`let mapReads=0;state.gameResults=Array.from({length:720},(_,day)=>({year:2046,day,get awayPositions(){mapReads++;return {'1':'C','2':'SS'}},get homePositions(){mapReads++;return {'3':'CF','4':'DH'}}}));state.players=Array.from({length:3400},(_,id)=>({id,position:id%5===0?'P':'C',games:id<100?144:0,atBats:id<100?500:0,hits:id%100}));const largeIndex=seasonPositionAppearanceIndex();for(const position of positions)awardCandidates(['gold','gold:'+position,p=>p.hits],state.players,largeIndex);if(mapReads!==1440)throw Error('Repeated game scans: '+mapReads);`);
+console.log('Season award position index: eligibility/winner parity and 3400-player one-pass aggregation PASS');

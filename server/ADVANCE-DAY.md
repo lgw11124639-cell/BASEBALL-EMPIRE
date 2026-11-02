@@ -652,3 +652,9 @@ errors log server-day-error with phase and request/revision metadata; route/
 response failures log server-day-route-error. Client errors retain the request ID
 and now show HTTP status even when a proxy returns HTML. Actual screenshot error
 cause and t3.medium 1-second end-to-end performance require server evidence.
+
+### 2.2.9 시즌 종료 집계
+
+골든글러브 후보 자격은 선수·부문마다 시즌 경기 전체를 다시 읽는 대신, 당해 시즌의 양 팀 수비 위치를 한 번 모은 인덱스를 공유합니다. 출전 기준, 후보 점수와 동점 순서는 유지합니다. 선수 3,400명·720경기 아카이브 프록시 합성 재현에서 기존 계산은 5초 제한에 도달했고 인덱스 경로는 약 31ms였습니다. 이는 실제 서버 하루 진행 시간의 보장이 아닙니다. 마지막 경기만 제어한 네이티브 저장 테스트로 143→144경기 이후 실제 시상·시즌 기록·저장 복원 경로를 검증합니다.
+
+진단용 `benchmark-running-api.mjs`는 분리 계산당 15초 제한을 적용하고 실패 시에도 CPU 프로파일을 출력합니다. 운영 진행 제한은 변경하지 않습니다. 사전 계산은 계속 비활성화됩니다.

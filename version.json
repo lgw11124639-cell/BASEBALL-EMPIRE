@@ -1,1 +1,1 @@
-{"version":"2.2.8","build":"20261102-demand-runtime21","notes":"요청 시 계산 엔진 재사용, 서버 오류 단계 기록과 HTTP 오류 코드 표시"}
+{"version":"2.2.9","build":"20261102-season-award-index22","notes":"시즌 종료 시 수비 출전 집계를 공유하여 시상 계산 반복 제거"}
