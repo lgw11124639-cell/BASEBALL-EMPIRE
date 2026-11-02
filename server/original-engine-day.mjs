@@ -1,25 +1,27 @@
 // Canonical engine orchestration only. Persistence and authentication belong
-// to the API transaction layer; a failed run never mutates its input save.
+// to the API transaction layer. Unowned calls isolate their input; owned calls
+// consume their state/runtime and must be discarded after failure.
 import {readFileSync} from 'node:fs';
 import {createOriginalEngineSandbox} from './original-engine-sandbox.mjs';
 import {createOwnedEngineRuntime} from './owned-engine-runtime.mjs';
 
 const defaultApp=new URL('../app.js',import.meta.url);
-export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={},{takeOwnership=false,cloneState=structuredClone,readArchive=null}={}){
+export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={},{takeOwnership=false,cloneState=structuredClone,readArchive=null,runtime=null}={}){
  if(!save||!Number.isSafeInteger(save.year)||!Number.isSafeInteger(save.day)||save.day<1||!Array.isArray(save.players)||!Array.isArray(save.teams))throw Error('Invalid full engine save');
  for(const key of Object.keys(save))if(/^be(?:Shard|LeagueShard|HistoryShard|AmateurBucket)Manifest$/.test(key)||key.startsWith('bePackedAux'))throw Error('Restore compressed save before simulation');
  const setupStarted=performance.now();
  const createRuntime=takeOwnership?createOwnedEngineRuntime:createOriginalEngineSandbox;
- const sandbox=createRuntime(appSource??readFileSync(defaultApp,'utf8'),save,{timeoutMs});
+ const source=appSource??readFileSync(defaultApp,'utf8'),reused=takeOwnership&&runtime?.source===source&&runtime.timeoutMs===timeoutMs&&typeof runtime.park==='function';
+ const sandbox=reused?runtime:createRuntime(source,save,{timeoutMs});if(reused)sandbox.park(save);
  // Compatible with the deployed sandbox patch; do not overwrite its local file.
  sandbox.context.structuredClone=cloneState;
  if(readArchive)sandbox.context.window.beEngineReadArchive=readArchive;
  sandbox.context.__enginePhaseTimes={'엔진 준비':performance.now()-setupStarted};
  sandbox.invoke(`(()=>{
   for(const name of ['simulateLeagueDay','offseasonDay','highSchoolBaseballDay','collegeBaseballDay','independentBaseballDay','minorLeagueDay','nationalTeamPreparationDay','nationalTeamTournamentDay','runOffseasonContracts','beginNextSeason','validateSeasonIntegrity','saveSeasonSnapshot']){
-   const original=eval('typeof '+name+'==="function"?'+name+':null');if(!original)continue;
+   const found=eval('typeof '+name+'==="function"?'+name+':null');if(!found)continue;const original=found.__beEngineOriginal||found;
    const wrapped=function(...args){const started=performance.now();try{return original.apply(this,args)}finally{__enginePhaseTimes[name]=(__enginePhaseTimes[name]||0)+performance.now()-started}};
-   eval(name+' = wrapped');
+   wrapped.__beEngineOriginal=original;eval(name+' = wrapped');
   }
  })()`);
  const started=performance.now();
@@ -53,5 +55,6 @@ export function runOriginalEngineDay(save,{appSource,timeoutMs=120000}={},{takeO
   }
   return {from,to:{year:state.year,day:state.day,date:iso(state.day)},consumedPreparedDay:prepared};
  })()`);
- return {state:sandbox.invoke('state'),result:{...structuredClone(result),enginePhases:Object.fromEntries(Object.entries(sandbox.context.__enginePhaseTimes).map(([key,value])=>[key,Math.round(value)]))},elapsedMs:Math.round(performance.now()-started)};
+ const outcome={state:sandbox.invoke('state'),result:{...structuredClone(result),enginePhases:Object.fromEntries(Object.entries(sandbox.context.__enginePhaseTimes).map(([key,value])=>[key,Math.round(value)]))},elapsedMs:Math.round(performance.now()-started)};
+ if(takeOwnership)Object.defineProperty(outcome,'runtime',{value:sandbox});return outcome;
 }

@@ -57,7 +57,7 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
     try{validateLifecycleRequest(lifecycleType,input)}catch{response(res,400,{error:'invalid save operation'},origin);return true}
     if(typeof match!=='string'||!/^\d+$/.test(match)){response(res,400,{error:'If-Match revision required'},origin);return true}
     const {requestId,...operation}=input;
-    await prepared?.pause?.();
+    stateCache.clear();await prepared?.pause?.();
     try{
     const {status,...payload}=await lifecycle({userId:session.user_id,requestId,expectedRev:Number(match),type:lifecycleType,input:operation});
     if(status===200&&prepared&&!payload.replayed)prepared.invalidate(session.user_id,'main');
@@ -77,7 +77,8 @@ export function createAdvanceDayRoute({db,shards,restoreSave,encodeSave,body,res
    if(status===200&&prepared){const current=store.metadata(session.user_id,'main');if(operation&&!payload.replayed){prepared.invalidate(session.user_id,'main');stateCache.clear()}if(operation&&current)prepared.ensure(session.user_id,'main',current.rev,current.digest);payload.preparation=prepared.status(session.user_id,'main',current?.rev??payload.rev)}
    if(!nativeWire&&payload.day?.timing?.storageFormat==='server-json-v1')delete payload.wireDelta;
    response(res,status,payload,origin);
-  }catch{
+  }catch(error){
+   console.error(JSON.stringify({stage:'server-day-route-error',path,userId:session.user_id,message:String(error?.message||error).slice(0,2000),stack:String(error?.stack||'').slice(0,5000)}));
    response(res,500,{error:'day advance unavailable'},origin);
   }
   return true;

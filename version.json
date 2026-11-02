@@ -1,1 +1,1 @@
-{"version":"2.2.7","build":"20261102-no-precompute20","notes":"사용자 요청에 따라 사전 계산 중단, 진행 버튼을 누를 때만 경기 계산"}
+{"version":"2.2.8","build":"20261102-demand-runtime21","notes":"요청 시 계산 엔진 재사용, 서버 오류 단계 기록과 HTTP 오류 코드 표시"}

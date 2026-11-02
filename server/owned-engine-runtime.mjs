@@ -1,5 +1,6 @@
 // Internal API path only: the codec already owns a detached request state.
-// Compile trusted source once, but allocate a fresh VM context for every request.
+// Compile trusted source once; fresh contexts remain the default. A consumed
+// committed cache entry may retain one private context for the same owner.
 // The detached fixture sandbox remains unchanged for callers needing input isolation.
 import vm from 'node:vm';
 import {selectUnannouncedTests,investigationCalendar} from '../kpbl-investigation-policy.js';
@@ -24,6 +25,22 @@ export function createOwnedEngineRuntime(appSource,ownedState,{timeoutMs=120000}
  });
  compiled.script.runInContext(context,{timeout:timeoutMs});
  context.__detachedSave=ownedState;
- vm.runInContext('state = __detachedSave',context,{timeout:timeoutMs});
- return {context,invoke(expression){return vm.runInContext(expression,context,{timeout:timeoutMs})}};
+ vm.runInContext('state = __detachedSave',context,{timeout:timeoutMs});delete context.__detachedSave;
+ const invoke=expression=>vm.runInContext(expression,context,{timeout:timeoutMs});
+ return {source:appSource,timeoutMs,context,invoke,park(nextState){
+  // This context can be retained only in the consumed, owner/revision-bound day
+  // cache. Keep completed-match zone aggregates and warmed functions, not future
+  // simulation results or references to the previous archive tracker.
+  context.__ownedNextState=nextState;
+  invoke(`state=__ownedNextState;
+   if(typeof playerConductClockCache!=='undefined')playerConductClockCache=null;
+   if(typeof beInningLookupCache!=='undefined')beInningLookupCache=null;
+   if(typeof tradeReviewContext!=='undefined')tradeReviewContext=null;
+   if(typeof awardCandidatesCache!=='undefined')awardCandidatesCache=null;
+   if(typeof splitSaveCount!=='undefined')splitSaveCount=0;
+   if(typeof beZoneCache!=='undefined')beZoneCache.profiles=new Map();`);
+  delete context.__ownedNextState;context.structuredClone=structuredClone;
+  for(const key of Object.keys(context.window))if(key!=='addEventListener')delete context.window[key];
+  delete context.__gameCommand;delete context.__enginePhaseTimes;
+ }};
 }

@@ -1,6 +1,6 @@
 # Server day API staging
 
-Current policy (v2.2.7): speculative preparation is disabled by user request.
+Current policy (v2.2.8): speculative preparation is disabled by user request.
 Production routes never construct a preparation controller, including with an
 old enabled environment flag. Install/activation defaults are zero. The client
 no longer polls preparation status or advertises ready days. Older preparation
@@ -13,8 +13,8 @@ only the game API with BE_SERVER_PRECOMPUTE=0, and checks health/runtime config.
 The source gate remains disabled across restarts even with an older PM2 dump.
 No save database is opened. Future standard upgrades also preserve this policy.
 Day requests calculate the actual day on demand; prepared-day subsecond timings
-are not a promise for the on-demand path. The standard benchmark now runs one
-foreground detached day, without speculative year preparation.
+are not a promise for the on-demand path. The standard benchmark profiles three explicitly requested detached days
+without speculative year preparation or canonical save writes.
 
 
 These modules are not installed in production. The route defaults to disabled.
@@ -624,3 +624,31 @@ subsequent roster renders 80/90 ms, and player HTML construction 159/8 ms under
 concurrent regression load. These are synthetic local measurements, not physical
 iPhone timings or end-to-end network latency. This browser fix needs no backend
 reinstall. Existing canonical saves are untouched by the tests.
+
+
+## v2.2.8 on-demand runtime reuse and error evidence
+
+Speculative preparation remains disabled. A successful requested day can park
+its trusted VM alongside the existing decoded-state cache. The next explicit
+request can reuse it only through the cache's authenticated user/slot/revision/
+digest checks, with identical source and timeout. This retains warmed functions
+and completed-match zone totals; no future day or background game is run.
+Transient caches, tracker clone/raw functions, phase counters and window data
+are cleared before retaining the canonical normalized state. Failed transactions
+consume/discard the runtime; retries restore the committed DB state. Lifecycle
+operations clear the cache. Runtime objects never enter save or response JSON.
+
+Fixed-RNG complete-world comparisons cover consecutive major/minor/amateur/
+governance days. A real SQLite API test covers reuse, receipt rollback, retry,
+owner isolation and no persisted runtime. A synthetic April probe measured some
+warm engine days around 1.1–1.3 seconds; this excludes storage/HTTP and is not an
+EC2 production latency claim. Cold loading and first execution can remain slower.
+
+The paused read-only benchmark now profiles three detached on-demand days with
+runtime reuse, reports engineReused and verifies source revision/digest afterward.
+It never commits those test days. On failure it emits detached-day-error with
+the requested day and stack, then the wrapper resumes only PM2 API 4. Production
+errors log server-day-error with phase and request/revision metadata; route/
+response failures log server-day-route-error. Client errors retain the request ID
+and now show HTTP status even when a proxy returns HTML. Actual screenshot error
+cause and t3.medium 1-second end-to-end performance require server evidence.

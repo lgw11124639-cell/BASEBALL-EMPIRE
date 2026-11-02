@@ -22,6 +22,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
   }
   // Defer execution so active is populated before any asynchronous dependency.
   const promise=Promise.resolve().then(async()=>{
+   let failurePhase='load';
    try{
     const timing={},started=performance.now();
     let phase=started;const mark=name=>{const now=performance.now();timing[name]=Math.round(now-phase);phase=now};
@@ -60,7 +61,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     timing.nativeMigration=native&&!inputNative;
     timing.inputFormat=inputNative?'server-json-v1':'legacy-gzip';
     const codec=cached?.codec&&((cached.codec.mode==='server-json-v1')===native)?cached.codec:native?createNativeSaveCodec():codecFactory?.();
-    let state;
+    failurePhase='restore';let state;
     if(cached?.state&&native&&ownsRestoredState){state=cached.state;timing.cacheHit=true;timing.cacheMode='native-owned-archives'}else if(cached?.serializedFields){
      // Cache immutable JSON bytes, never a mutable native world. Each operation
      // parses fresh owned values without SQLite I/O, gunzip or a world clone.
@@ -72,22 +73,22 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     }else{state=await(codec?codec.restore(snapshot.save,{takeOwnership:ownsRestoredState&&!!snapshot.fieldHashes}):restoreSave(structuredClone(snapshot.save)));timing.cacheHit=false}
     const tracked=native&&inputNative&&ownsRestoredState?codec.track(state,snapshot.save):null;
     mark('restoreMs');
-    const outcome=await runDay(state,operation,{takeOwnership:ownsRestoredState,...(tracked?{cloneState:tracked.clone,readArchive:tracked.raw}:{})});mark('engineMs');
-    const wire=await(codec?codec.pack(outcome.state):encodeSave(outcome.state));mark('packMs');
-    const delta=native?nativeWireDelta(snapshot.save,wire,snapshot.fieldHashes,codec.reusedFields()):buildWireDelta(snapshot.save,wire);mark('deltaMs');
+    failurePhase='engine';const outcome=await runDay(state,operation,{takeOwnership:ownsRestoredState,runtime:cached?.runtime,...(tracked?{cloneState:tracked.clone,readArchive:tracked.raw}:{})});timing.engineReused=!!cached?.runtime&&outcome.runtime===cached.runtime;mark('engineMs');
+    failurePhase='pack';const wire=await(codec?codec.pack(outcome.state):encodeSave(outcome.state));mark('packMs');
+    failurePhase='compare';const delta=native?nativeWireDelta(snapshot.save,wire,snapshot.fieldHashes,codec.reusedFields()):buildWireDelta(snapshot.save,wire);mark('deltaMs');
     timing.storageFormat=native?'server-json-v1':'legacy-gzip';
     timing.changedFields=Object.keys(delta.set).length;timing.removedFields=delta.unset.length;timing.totalFields=Object.keys(wire).length;timing.reusedArchiveFields=codec?.reusedFields?.().size||0;
-    let preparedCache=null;
+    failurePhase='normalize';let preparedCache=null;
     if(native&&ownsRestoredState&&stateCache&&!precompute){
      // Finish normalization before committing, so even preparation failures leave
      // the DB untouched. Only computed parts are parsed; archives stay shared.
      const normalized={...wire};for(const [key,raw] of delta.serializedFields)normalized[key]=JSON.parse(raw);
      const normalizedState=restoreNativeSave(normalized,{previousWire:wire,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
-     codec.release();preparedCache={state:normalizedState,wire:normalized,codec,fieldHashes:delta.fieldHashes};
+     codec.release();outcome.runtime?.park(normalizedState);preparedCache={state:normalizedState,wire:normalized,codec,fieldHashes:delta.fieldHashes,runtime:outcome.runtime};
     }
     mark('cacheMs');
     const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};
-    const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,serializedDelta:delta.serializedSet,result:{...outcome.result,requestFingerprint,timing}}));
+    failurePhase='commit';const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,serializedDelta:delta.serializedSet,result:{...outcome.result,requestFingerprint,timing}}));
     if(response.status===200&&!response.replayed){
      if(precompute){stateCache?.clear();try{precompute.invalidate(userId,slot);precompute.ensure(userId,slot,response.rev,response.digest)}catch{}}
      else if(preparedCache)stateCache.put({user:userId,slot,rev:response.rev,digest:response.digest,...preparedCache});
@@ -98,7 +99,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     return response;
    }catch(error){
     // No save or receipt is committed for decoding, engine or persistence errors.
-    console.error('Server day advance failed:',error?.message||'unknown error');
+    console.error(JSON.stringify({stage:'server-day-error',phase:failurePhase,userId,slot,requestId,expectedRev,message:String(error?.message||error).slice(0,2000),stack:String(error?.stack||'').slice(0,5000)}));
     return {status:500,error:'day advance failed; reload server status before retrying'};
    }finally{active.delete(key)}
   });

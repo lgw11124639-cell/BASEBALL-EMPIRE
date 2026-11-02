@@ -38,3 +38,8 @@ test('command retries preserve the original payload and do not submit another mu
  await assert.rejects(next.command(4,{...command,choice:'no'}));assert.equal(requests.length,1);
  await next.command(5,command);assert.deepEqual(requests[0],requests[1]);assert.match(requests[1].url,/\/engine\/command$/);
 });
+test('HTTP failure status is visible even for a non-JSON proxy error and retry keeps the same request',async()=>{
+ const saved=storage(),calls=[];let fail=true;
+ const client=createServerDayClient({api:'https://example.test',getSession:()=>session,storage:saved,newId:()=> 'client-http-error-001',fetchImpl:async(url,init)=>{calls.push(init);if(fail)return {ok:false,status:502,json:async()=>{throw Error('HTML proxy error')}};return ok(JSON.parse(init.body).requestId,2)}});
+ await assert.rejects(client.advance(1),/HTTP 502/);assert.equal(client.hasPending(),true);fail=false;await client.advance(1);assert.equal(calls[0].body,calls[1].body);assert.equal(client.hasPending(),false);
+});
