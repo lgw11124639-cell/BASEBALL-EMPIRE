@@ -20303,3 +20303,10 @@ main.game-shell .record-room { padding: 26px !important; }
  .os-career-head button { align-self: flex-start; }
  .be-match-starters { font-size: 10px; grid-template-columns: 1fr 20px 1fr; }
 }
+
+/* Compact calendar match cards: teams, starters, then optional replay actions. */
+.be-calendar-match-list .be-today-match { padding: 8px 12px !important; min-height: 0 !important; }
+.be-calendar-match-list .be-match-starters { margin: 4px 0 0; line-height: 1.35; }
+.be-calendar-match-list .be-today-actions { margin-top: 6px !important; padding-top: 0 !important; gap: 6px !important; }
+.be-calendar-match-list .be-today-actions > button { height: 30px; min-height: 30px; padding: 5px 9px !important; }
+.be-calendar-match-list .be-today-actions > small { margin: 0 !important; }

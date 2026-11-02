@@ -320,10 +320,13 @@ reads and reload after an engine operation instead of consuming native deltas.
 
 The server hashes the JSON bytes it reads before giving detached objects to the
 engine, compares one serialization per output field, and writes changed bytes
-without serializing them again. The bounded decoded cache retains at most one
-committed world for five minutes and twelve uses. Reuse checks the authoritative
-DB revision and digest and clones via JSON before any mutation. Cold reads remain
-fully supported. Timing reports identify `storageFormat` and cache hits; production
+without serializing them again. The bounded cache retains at most one committed entry for five minutes.
+Legacy entries retain decoded state for at most twelve uses and clone it before
+mutation. Native entries retain immutable JSON field strings and parse fresh
+owned values on each operation, avoiding SQL reads, decompression and a separate
+whole-world clone. Every reuse checks the authoritative DB revision and digest;
+failed operations consume the entry and fall back to SQL on retry. Cold reads
+remain fully supported. Timing reports identify `storageFormat` and cache hits; production
 speed improvements must be measured after deployment, not inferred from tests.
 
 The standard upgrade makes a SQLite backup and source backup before installing.
@@ -338,3 +341,22 @@ readable career rank cards and expanded overseas record/contract dossiers.
 Historical overseas amounts stay explicitly unrecorded. Newly accepted contracts
 and extensions store currency, annual salary, bonus, total and the game's fixed
 reference conversion; rendering never invents amounts for old contracts.
+
+
+## v2.1.8 current-day calendar and native reads
+
+The header and calendar today now display the completed day, while the stored
+engine cursor continues pointing at the next day to compute. After each advance,
+the displayed today matches its completed scores, recorded starters and centered
+replay/article actions. The today button uses that same date. The simulation
+cursor and number of games played are unchanged. Manually selected future
+fixtures can preview starters using the engine rotation without mutating state. Pending instructions and
+completion labels are removed; cards use compact spacing.
+
+Timing reports distinguish `nativeMigration`, `inputFormat` and native JSON cache
+reuse. A first migration rewrites almost all fields once; ordinary advances
+should rewrite only changed parts. The JSON-byte cache is consumed before use,
+stores no mutable native world, and preserves JSON persistence semantics for
+undefined/non-finite values. Production latency still requires measurement on the
+actual save after upgrade; synthetic tests prove cache hits avoid SQL loading,
+not a promised number of seconds.

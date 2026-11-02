@@ -22,12 +22,13 @@ export function createNativeSaveCodec(){
  };
 }
 export function nativeWireDelta(previous,wire,baselineHashes=null){
- const set=Object.create(null),unset=Object.keys(previous).filter(key=>!Object.hasOwn(wire,key)),serializedSet=new Map(),fieldHashes=new Map();
+ const set=Object.create(null),unset=Object.keys(previous).filter(key=>!Object.hasOwn(wire,key)),serializedSet=new Map(),serializedFields=new Map(),fieldHashes=new Map();
  for(const [key,value] of Object.entries(wire)){
   const raw=JSON.stringify(value);if(raw===undefined)throw Error('Invalid native JSON field');
+  serializedFields.set(key,raw);
   const hash=createHash('sha256').update(raw).digest('hex');fieldHashes.set(key,hash);
   const unchanged=baselineHashes?.get(key)===hash||(!baselineHashes&&Object.hasOwn(previous,key)&&JSON.stringify(previous[key])===raw);
   if(!unchanged){set[key]=value;serializedSet.set(key,raw)}
  }
- return {set,unset,serializedSet,fieldHashes};
+ return {set,unset,serializedSet,serializedFields,fieldHashes};
 }

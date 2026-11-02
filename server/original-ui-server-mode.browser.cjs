@@ -29,6 +29,7 @@ const assert=require('node:assert/strict');
   fixture.players=fixture.players.filter(x=>x.id!==p.id);
  }
  if(!fixturePath){
+  fixture.day=110;
   fixture.gameResults=[{year:fixture.year,day:fixture.day,away:0,home:1,awayRuns:4,homeRuns:7,awayInnings:[0,2,0,0,0,0,0,0,2],homeInnings:[0,0,0,3,0,0,4,0,0],awayBatters:[],homeBatters:[],awayPitchers:[{name:'원정 선발',started:true}],homePitchers:[{name:'홈 선발',started:true}]}];
   fixture.day++;
  }
@@ -74,7 +75,7 @@ const assert=require('node:assert/strict');
     const changedPlayer=fixture.players.find(p=>String(p.id)===body.command.playerId);changedPlayer.profile=changedPlayer.profile||{};changedPlayer.profile.photoData=body.command.photo;
     revision++;data={request_id:body.requestId,rev:revision};
    }
-   else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:native?packNativeSave(fixture):{day:fixture.day},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}}}
+   else if(req.method()==='POST'&&path==='/v2/engine/advance'){advances++;if(!fixturePath)fixture.gameResults.push({...fixture.gameResults[0],day:fixture.day,awayRuns:8,homeRuns:3});fixture.day++;revision++;await new Promise(r=>setTimeout(r,350));data={request_id:JSON.parse(req.postData()).requestId,rev:revision,...(advances===1?{wireDelta:{fromRevision:revision-1,toRevision:revision,set:native?packNativeSave(fixture):{day:fixture.day,gameResults:fixture.gameResults},unset:[]}}:{}),day:{timing:{engineMs:20,packMs:10,changedFields:1,totalFields:10}}}}
    else{writes++;return route.fulfill({status:500,headers:{'access-control-allow-origin':'*'},body:'{}'})}
    return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(data)});
   });
@@ -82,8 +83,11 @@ const assert=require('node:assert/strict');
   await page.waitForSelector('#advance-day',{timeout:30000});
   assert.equal(await page.evaluate(()=>window.__clientSimulationCalls),0);
   if(!fixturePath){
+   assert.equal(await page.locator('.be-cal-day.is-today.is-selected').count(),1,'calendar today matches the completed date');
    const card=page.locator('.be-calendar-match-list .be-today-match').filter({hasText:'원정 선발'}).first();
    await card.waitFor();assert.ok((await card.textContent()).includes('홈 선발'));
+   assert.ok(!(await card.textContent()).includes('경기 종료'));
+   assert.ok((await card.boundingBox()).height<115,'completed card stays compact');
    const centered=await card.evaluate(el=>{const box=el.getBoundingClientRect(),buttons=[...el.querySelectorAll('.be-today-actions button')].map(b=>b.getBoundingClientRect());return buttons.length===2&&Math.abs((buttons[0].left+buttons[1].right)/2-(box.left+box.right)/2)<3});
    assert.equal(centered,true,'replay and article buttons are centered in the game card');
   }
@@ -162,6 +166,7 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('.be-server-day-timing').count(),1);
   assert.equal(await page.evaluate(()=>window.beLastServerDayTiming.incremental),true);
   assert.equal(advances,1);assert.equal(revision,3);assert.equal(writes,0);
+  if(!fixturePath){const today=page.locator('.be-calendar-match-list .be-today-match').filter({hasText:'원정 선발'}).first();await today.waitFor();assert.ok((await today.textContent()).includes('8 : 3'));assert.equal(await today.getByRole('button',{name:'경기 다시보기',exact:true}).count(),1);assert.equal(await today.getByRole('button',{name:'경기 기사',exact:true}).count(),1);assert.equal(await page.locator('.be-cal-day.is-today.is-selected').count(),1);}
   const readsBeforeFallback=snapshotReads;
   await page.click('#advance-day');
   await page.waitForFunction(()=>window.beServerGameCapability?.revision===4);

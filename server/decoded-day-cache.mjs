@@ -1,6 +1,7 @@
-// One short-lived committed world, bound to authenticated owner and DB digest.
-// take() consumes it before execution. The caller JSON-clones its state to match
-// persistence semantics and never lets a failed simulation modify this baseline.
+// One short-lived committed entry, bound to authenticated owner and DB digest.
+// Native entries retain immutable serialized fields only; each take parses fresh
+// owned objects. Legacy entries retain decoded state and clone it before use.
+// take() consumes the entry, so failed operations cannot poison a later request.
 export function createDecodedDayCache({ttlMs=300000,maxReuse=12,now=Date.now}={}){
  let entry=null,timer=null;
  const uses=new WeakMap();
@@ -13,10 +14,10 @@ export function createDecodedDayCache({ttlMs=300000,maxReuse=12,now=Date.now}={}
    const value=entry;clear();
    return value.rev===rev&&typeof digest==='string'&&value.digest===digest?value:null;
   },
-  put({user,slot,rev,digest,state,wire,codec,fieldHashes}){
+  put({user,slot,rev,digest,state,wire,codec,fieldHashes,serializedFields}){
    clear();if(typeof digest!=='string'||!codec)return;
-   const count=(uses.get(codec)||0)+1;uses.set(codec,count);if(count>maxReuse)return;
-   entry={user,slot,rev,digest,state,wire,codec,fieldHashes,expires:now()+ttlMs};
+   const count=(uses.get(codec)||0)+1;uses.set(codec,count);if(!serializedFields&&count>maxReuse)return;
+   entry={user,slot,rev,digest,state,wire,codec,fieldHashes,serializedFields,expires:now()+ttlMs};
    timer=setTimeout(clear,ttlMs);timer.unref?.();
   },
   clear

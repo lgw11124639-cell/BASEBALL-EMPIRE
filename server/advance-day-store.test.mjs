@@ -96,3 +96,32 @@ test('native format migrates atomically, detects changes with pre-mutation hashe
  assert.equal((await advance({userId:1,expectedRev:1,requestId:'native-migration1',nativeWire:true})).replayed,true);
  db.close();
 });
+
+test('native days parse immutable cached JSON without SQL reads or world clones and rewrite only changed parts',async()=>{
+ const {DatabaseSync}=await import('node:sqlite'),{createSaveWireCodec}=await import('./save-wire-codec.mjs');
+ const {createAdvanceDayStore}=await import('./advance-day-store.mjs'),{createAdvanceDayService}=await import('./advance-day-service.mjs'),{createDecodedDayCache}=await import('./decoded-day-cache.mjs');
+ const db=new DatabaseSync(':memory:');
+ db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,updated_at TEXT,digest TEXT,compressed_bytes INTEGER,PRIMARY KEY(user_id,slot));CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field))');
+ const shards=createTestShards(db),store=createAdvanceDayStore(db,shards),legacy=createSaveWireCodec(),cache=createDecodedDayCache();
+ const initial={year:2046,day:100,players:[{id:1,name:'A',games:1}],teams:[],gameResults:[],history:{seasons:Object.fromEntries(Array.from({length:20},(_,i)=>[2025+i,{complete:true,players:Array.from({length:200},(_,id)=>({id,hits:100}))}]))}};
+ shards.put(1,'main',0,await legacy.pack(initial));
+ let failed=false,reads=0,failNext=false;const load=store.load;store.load=(...args)=>{reads++;return load(...args)};
+ const advance=createAdvanceDayService({store,restoreSave:s=>legacy.restore(s),codecFactory:createSaveWireCodec,ownsRestoredState:true,stateCache:cache,includeDelta:true,runDay:async s=>{
+  assert.equal(s.players[0].nonFinite,undefined,'failed changes never escape into a later operation');
+  if(s.players[0].games>1){assert.equal(s.players[0].jsonNaN,null);assert.equal(Object.hasOwn(s.players[0],'omitted'),false)}
+  if(failNext){failNext=false;failed=true;s.players[0].nonFinite=NaN;s.history.seasons[2025].players[0].hits=999;throw Error('native failure')}
+  s.day++;s.players[0].games++;s.players[0].jsonNaN=NaN;s.players[0].omitted=undefined;return {state:s,result:{}};
+ }});
+ const first=await advance({userId:1,expectedRev:1,requestId:'native-owned-first',nativeWire:true});
+ assert.equal(first.day.timing.nativeMigration,true);
+ const second=await advance({userId:1,expectedRev:2,requestId:'native-owned-next1',nativeWire:true});
+ assert.equal(second.day.timing.nativeMigration,false);assert.equal(second.day.timing.inputFormat,'server-json-v1');
+ assert.equal(second.day.timing.cacheHit,true);assert.equal(second.day.timing.cacheMode,'native-json-bytes');assert.equal(reads,1);
+ assert.ok(second.day.timing.changedFields<5,'stable history parts are never rewritten on ordinary days');
+ assert.ok(!Object.keys(second.wireDelta.set).some(k=>k.startsWith('beServerPart_history')));
+ failNext=true;assert.equal((await advance({userId:1,expectedRev:3,requestId:'native-owned-fail1',nativeWire:true})).status,500);assert.ok(failed);
+ assert.equal((await legacy.restore(shards.get(1,'main').save)).history.seasons[2025].players[0].hits,100);
+ const retry=await advance({userId:1,expectedRev:3,requestId:'native-owned-fail1',nativeWire:true});assert.equal(retry.status,200);
+ assert.equal((await legacy.restore(shards.get(1,'main').save)).players[0].games,4);
+ cache.clear();db.close();
+});
