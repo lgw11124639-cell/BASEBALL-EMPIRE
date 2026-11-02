@@ -38,7 +38,8 @@ try{
  log({stage:'all-fields-roundtrip',success:true});
  db=new DatabaseSync(':memory:');
  db.exec(`CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,updated_at TEXT,digest TEXT,compressed_bytes INTEGER,PRIMARY KEY(user_id,slot));
- CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field));`);
+ CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field));
+ CREATE TABLE be_user_saves(user_id INTEGER NOT NULL,slot TEXT NOT NULL,rev INTEGER NOT NULL,updated_at TEXT NOT NULL,digest TEXT NOT NULL,content BLOB NOT NULL,PRIMARY KEY(user_id,slot));`);
  const {createShardStore}=await import(pathToFileURL(resolve(stage,'shard-store.mjs')).href);
  const shards=createShardStore(db);
  assert.equal(shards.put(1,'main',0,wire).status,200);wire=null;
