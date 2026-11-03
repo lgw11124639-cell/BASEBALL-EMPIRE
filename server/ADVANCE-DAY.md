@@ -724,3 +724,19 @@ node server/benchmark-zone-runtime.mjs
 ```sh
 node --experimental-sqlite --max-old-space-size=2496 server/benchmark-owned-day.mjs --database /opt/baseball-empire-api/data/saves.sqlite --days 2 --profile
 ```
+
+### 2026-11-03 서버 저장 압축 비동기화
+
+일반 하루 진행은 계산·변경 비교가 끝난 실제 JSON 델타만 `prepareSerializedDelta()`에서 최대 두 조각씩 비동기 gzip(level 1) 압축합니다. SQLite 쓰기 거래는 이 작업이 끝난 뒤에만 엽니다. 준비 토큰은 저장소의 비공개 WeakMap에 보관하고 사용자·슬롯·입력 리비전·동일한 원본 JSON 바이트·삭제 목록에 묶습니다. 커밋 시 일회성으로 소비하며, 리비전/중복 요청 영수증은 기존처럼 DB 거래 안에서 재검사합니다. 사전 미래 경기 계산과는 무관하며 저장 형식·다이제스트·압축 레벨은 바꾸지 않습니다.
+
+압축 실패 시 실행 중인 최대 두 작업이 종료될 때까지 기다린 뒤 나머지 큐를 중단합니다. 실패한 요청은 저장·영수증을 기록하지 않고, 재시도는 권위 있는 기존 저장에서 다시 시작합니다. 압축 준비 후 다른 저장이 먼저 커밋되면 409로 거부합니다. 영수증 기록 실패 시 조각·메타데이터를 함께 롤백합니다. 압축 결과 Buffer는 커밋 후 영수증이나 다음 상태 캐시에 남기지 않습니다.
+
+`timing.compressionMs`는 압축 준비 구간입니다. 기존 `writeMs`에는 이 준비 시간도 합산해, 압축을 DB 거래 밖으로 옮긴 것만으로 화면상 DB 저장 시간이 줄어든 것처럼 보이지 않게 합니다. 전체 `serviceMs` 역시 준비 시간을 포함합니다.
+
+재현 명령(합성 데이터·인메모리 SQLite만 사용, 생산 저장 접근 없음):
+
+```sh
+node --experimental-sqlite server/benchmark-native-compression.mjs
+```
+
+16MiB JSON 시험에서 압축·저장 합계 약 614ms → 423ms, DB 거래 유지 시간 614ms → 24ms였으며 다이제스트와 압축 용량은 동일했습니다. 비동기 압축 중 이벤트 루프 콜백 실행도 확인했습니다. 단일 구간의 로컬 시험이며 운영 서버의 전체 하루 진행 속도는 설치 후 별도 측정해야 합니다. 두 작업으로 동시 압축을 제한하지만, 조각 전체를 기록할 때까지 압축 결과 Buffer를 일시 보유하는 메모리 비용은 있습니다.

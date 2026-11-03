@@ -94,12 +94,15 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
     playerSnapshots.clear();
     if(compact)timing.responseDelta=compact.metrics;
     mark('wireMs');
+    failurePhase='compression';
+    const compressionToken=native&&store.prepareSerializedDelta?await store.prepareSerializedDelta({user:userId,slot,expectedRev,set:delta.serializedSet,unset:delta.unset}):null;
+    mark('compressionMs');
     const memory=process.memoryUsage();timing.memory={rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576)};
-    failurePhase='commit';const commitStarted=performance.now();const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,serializedDelta:delta.serializedSet,result:{...outcome.result,requestFingerprint,timing}}));
+    failurePhase='commit';const commitStarted=performance.now();const response=verifyReceipt(store.commit({user:userId,slot,requestId,expectedRev,state:wire,delta,serializedDelta:delta.serializedSet,compressionToken,result:{...outcome.result,requestFingerprint,timing}}));
     if(response.status===200&&!response.replayed){
      // The durable receipt is written before COMMIT finishes. Report the full
      // request's commit/flush time only in this response, without another write.
-     if(response.day?.timing)response.day={...response.day,timing:{...response.day.timing,writeMs:Math.round(performance.now()-commitStarted),serviceMs:Math.round(performance.now()-started)}};
+     if(response.day?.timing)response.day={...response.day,timing:{...response.day.timing,writeMs:timing.compressionMs+Math.round(performance.now()-commitStarted),serviceMs:Math.round(performance.now()-started)}};
      if(precompute){stateCache?.clear();try{precompute.invalidate(userId,slot);precompute.ensure(userId,slot,response.rev,response.digest)}catch{}}
      else if(preparedCache)stateCache.put({user:userId,slot,rev:response.rev,digest:response.digest,...preparedCache});
      else stateCache?.put({user:userId,slot,rev:response.rev,digest:response.digest,state:native?undefined:outcome.state,wire:native?Object.fromEntries(Object.keys(wire).map(key=>[key,null])):wire,codec,fieldHashes:delta.fieldHashes,serializedFields:delta.serializedFields});
