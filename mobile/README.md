@@ -1,0 +1,62 @@
+# BASEBALL EMPIRE · 모바일 오프라인 시험판
+
+가상의 프로야구 리그 출범부터 세대 교체까지 관전하는 **유료 다운로드형 싱글플레이 게임**을 목표로 합니다. 경기 지시·직접 조작을 추가하지 않고 기존 화면과 게임 엔진을 재사용합니다.
+
+## 현재 구현 범위
+
+- 별도 Android 프로젝트와 앱 내부에 포함되는 게임 코드/스타일. 원격 사이트를 여는 설정은 없습니다.
+- 로그인·회원가입·클라우드 클라이언트·웹 자동 업데이트를 모바일 번들에서 제외합니다. 기존 웹 서비스와 서버는 그대로 보존합니다.
+- 기기 내부 IndexedDB 저장. 선수 64명, 경기 결과 8경기 단위와 나머지 최상위 필드를 분리하고, 직전 직렬화 결과와 비교해 변경 조각만 씁니다. 매일 전체 저장을 다시 읽지 않습니다.
+- 변경 조각과 저장 포인터를 한 트랜잭션으로 커밋합니다. 현재/이전 두 세대만 유지하며, 실패 시 이전 커밋이 남습니다. 최신 조각이 손상되면 이전 세대 복구를 알리고, 모두 손상됐으면 덮어쓰지 않고 중단합니다.
+- Android 백업은 시스템 공유 창으로 앱 외부에 내보냅니다. 기존 JSON 백업 파일 가져오기를 유지합니다. Google/Apple 계정 연동과 자동 원격 백업은 없습니다.
+- Android 앱은 인터넷 권한이 없으며, 웹 에셋은 외부 통신을 CSP로 제한합니다. 앱 삭제 시 내부 저장은 사라지므로 외부 백업이 필요합니다.
+
+이는 **출시 후보가 아닌 개발 시험판**입니다. 앱 식별자 `com.baseballempire.game`는 임시이며 Play 등록 전에 소유 가능한 최종 식별자로 확정합니다. 기본 Android 아이콘은 임시입니다. 출시 서명 키·결제·스토어 등록은 포함하지 않습니다.
+
+## Windows에서 실행
+
+Node.js 22 이상과 Android Studio(기본 SDK, JDK 21 이상)를 설치합니다.
+
+```powershell
+npm ci
+npm run mobile:android
+npm run mobile:open
+```
+
+Android Studio에서 Device Manager로 API 36 가상 기기를 만들고 Run을 누릅니다. 첫 빌드에는 SDK/Gradle 다운로드를 위한 인터넷이 필요하지만, 빌드된 게임의 실행·계산·저장은 오프라인입니다.
+
+개발 APK는 Android Studio의 Build APK(s)로 생성합니다. 명령행에서는 SDK 경로를 `android/local.properties`에 설정한 뒤 실행합니다.
+
+```powershell
+cd android
+.\gradlew.bat assembleDebug
+```
+
+출력: `android/app/build/outputs/apk/debug/app-debug.apk`. 개발 APK는 유료 배포용 서명 릴리스가 아닙니다. 유료 출시에는 별도 보관하는 서명 키와 release AAB가 필요합니다. 키와 비밀번호는 저장소에 넣지 않습니다.
+
+## 폰 없이 PC에서 흐름 검증
+
+```powershell
+npm run mobile:build
+npm run mobile:preview
+```
+
+`http://127.0.0.1:4173`에서 새 리그 생성, 하루 진행, 새로고침 후 이어하기, JSON 백업과 복원을 확인합니다. 브라우저 저장은 Android 앱 저장과 별개입니다. 브라우저에서 외부 네트워크를 끊어도 진행됩니다. Android WebView의 속도·플러그인·강제 종료 내구성을 검증한 것으로 간주하지 않습니다.
+
+```powershell
+npm run mobile:test
+npx playwright install chromium
+npx playwright test --config mobile/playwright.config.mjs
+```
+
+## 다음 출시 단계
+
+1. 실제 Android 에뮬레이터에서 파일 공유·파일 선택, 뒤로가기·백그라운드 복귀, 저장 중 강제 종료/저장 공간 부족을 확인합니다.
+2. 현재 엔진은 여전히 UI 스레드에서 실행되고 하루 진행의 롤백 복사가 남아 있습니다. 별도 작업 스레드의 엔진, 장기 기록 지연 로딩, 묶음 진행을 측정 기반으로 전환해야 합니다. 속도 향상 수치를 미리 약속하지 않습니다.
+3. 동일 시드로 1년·10년·100년 진행을 재현하고 진행 시간·DB 크기·최대 메모리·실기기 발열을 측정합니다. 과거 기록은 동의 없이 삭제/축약하지 않습니다.
+4. 복수 저장 슬롯, 저장 형식 마이그레이션, 초기 화면 백업 가져오기, 완성된 앱 아이콘과 개인정보/지원 문서를 준비합니다.
+5. 최소/중급 실기기 테스트, 비공개 배포, 유료 정책·가격·연령 등급·서명 키 관리 후 스토어에 제출합니다.
+
+기존 서버는 사용자가 명시적으로 종료를 요청하고 저장 이전 검증을 마친 뒤 별도 작업으로 종료합니다.
+
+GitHub Actions의 **Build offline Android trial → Run workflow**에서도 동일한 검사를 거쳐 개발 APK를 만들 수 있습니다. 성공한 실행의 `baseball-empire-offline-trial-apk` 아티팩트를 내려받습니다. 이는 시험용 다운로드이며 스토어에 게시하지 않습니다.

@@ -1,0 +1,7 @@
+{
+  "appId": "com.baseballempire.game",
+  "appName": "BASEBALL EMPIRE",
+  "webDir": "dist-mobile",
+  "android": {"allowMixedContent": false},
+  "plugins": {"CapacitorHttp": {"enabled": false}}
+}

@@ -1,0 +1,25 @@
+{
+  "name": "baseball-empire-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline Android packaging for BASEBALL EMPIRE",
+  "scripts": {
+    "mobile:build": "node scripts/build-mobile.mjs",
+    "mobile:android": "npm run mobile:build && cap sync android",
+    "mobile:open": "cap open android",
+    "mobile:test": "node --test mobile/*.test.mjs",
+    "mobile:preview": "node scripts/preview-mobile.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/share": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0",
+    "esbuild": "0.28.2",
+    "fake-indexeddb": "6.2.7",
+    "@playwright/test": "1.58.2"
+  }
+}
