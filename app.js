@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261103-practice-pitcher-fix39';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261103-retirement40';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -1704,8 +1704,10 @@ function reviewUnsignedFaMarket(){
   if(record.signedYear||Number(record.year)>=Number(state.year)&&(!awardsFinished()||!state.postseasons?.[state.year]?.finished))continue;
   const p=state.players.find(x=>String(x.id)===String(record.playerId));
   if(p?.level!=='FA대기'||p.retired||p.foreignPlayer)continue;
+  if(reviewClosedFaRetirement(p,record))continue;
   if(!record.nextReviewDate){queueFaNegotiation(p,record);continue;}
   if(seasonDate(state.day).toISOString().slice(0,10)>=record.nextReviewDate)negotiateFaContract(p,record);
+  reviewClosedFaRetirement(p,record);
  }
 }
 function clubCompetitivePlan(teamId){
@@ -2723,9 +2725,9 @@ function retireUnsignedReleasedPlayers(){
  if(date.getMonth()!==11||date.getDate()!==31)return;
  state.retiredPlayers=state.retiredPlayers||[];
  for(const p of state.players){
-  if(p.retired||p.foreignPlayer||!['방출','계약종료','FA대기'].includes(p.level))continue;
+  if(p.retired||p.foreignPlayer&&Number(p.age)<38||!['방출','계약종료','FA대기'].includes(p.level))continue;
   const activity=typeof playerRecentActivity==='function'?playerRecentActivity(p):{inactiveSeasons:0,minorGames:0,minorWork:0};
-  const since=p.level==='FA대기'?Number(p.faMarketSince):Number(p.releaseYear);
+  const since=p.level==='FA대기'?Number(p.faMarketSince):Number(p.releaseYear??p.foreignReleaseYear??(p.foreignPlayer?p.foreignContractYear:undefined));
   if(!Number.isFinite(since)||since<=0||state.year-since<((Number(p.age)||0)>=35&&activity.inactiveSeasons>=3?0:(Number(p.age)||0)>=38?1:2))continue;
   // A long spell without a club increases retirement risk, but is not an automatic retirement.
   const age=Number(p.age)||0,yearsUnsigned=state.year-since;
@@ -2739,7 +2741,9 @@ function retireUnsignedReleasedPlayers(){
   const faMarketRecord=p.level==='FA대기'?(state.faMarket||[]).find(x=>String(x.playerId)===String(p.id)&&!x.signedYear):null;
   const finalWithdrawal=Number(faMarketRecord?.marketClosedYear)>=state.year-1;
   const finalWithdrawalRisk=finalWithdrawal&&age>=38?.18:finalWithdrawal&&age>=35?.08:0;
-  const risk=age<30&&yearsUnsigned<5?0:Math.min(.90,Math.max(0,(age>=42?.52:age>=40?.35:age>=38?.22:age>=35?.16:age>=30?.045:0)+Math.max(0,yearsUnsigned-2)*.09+Math.min(.3,activity.inactiveSeasons*.07)+finalWithdrawalRisk+(appearances<50?.08:0)-(productive?.08:0)+(competitive?-.24:inactive?.16:0)));
+  const riskBase=age<30&&yearsUnsigned<5?0:Math.min(.90,Math.max(0,(age>=42?.52:age>=40?.35:age>=38?.22:age>=35?.16:age>=30?.045:0)+Math.max(0,yearsUnsigned-2)*.09+Math.min(.3,activity.inactiveSeasons*.07)+finalWithdrawalRisk+(appearances<50?.08:0)-(productive?.08:0)+(competitive?-.24:inactive?.16:0)));
+  const ageFloor=age>=46?.95:age>=44?.85:age>=42?.65:age>=40?.40:0;
+  const risk=Math.max(riskBase,ageFloor);
   // Stable per-player annual draw, independent of external simulation helpers.
   const seed=((Number(p.id)||1)*7919+state.year*104729)>>>0;
   const draw=((Math.imul(seed^seed>>>16,2246822507)>>>0)%1000000)/1000000;
@@ -3165,17 +3169,16 @@ function reviewInactiveRoster(){
  }
 }
 function playerRetirementProbability(p){
- const age=Number(p.age)||0;
+ const age=Number(p.age)||0,profile=ensureProfile(p),injury=profile.injury||{},injured=Boolean(p.injured||p.injury?.active||p.injury?.status==='부상'||Number(injury.days)>0||injury.status==='부상');
  if(age<35){
   // Young players retire mainly when professional opportunities disappear.
   // Do not force promising prospects or productive starters out solely by age.
-  const skills=ensureProfile(p).skills||{};
+  const skills=profile.skills||{};
   const roleSkills=p.position==='P'?['stuff','control']:['contact','eye'];
   const competitive=roleSkills.some(k=>(Number(skills[k])||0)>=70);
   const struggling=roleSkills.every(k=>(Number(skills[k])||0)<50);
   const games=Number(p.games)||0,atBats=Number(p.atBats)||0,innings=Number(p.inningsPitched)||0;
   const productive=p.position==='P'?innings>=60:atBats>=180;
-  const injured=Boolean(p.injured||p.injury?.active||p.injury?.status==='부상');
   const released=p.level==='방출'||p.level==='FA대기'||p.level==='웨이버 대기';
   if(age<23)return released&&struggling?.012:0;
   let risk=released?.035:age>=29?.004:.001;
@@ -3186,7 +3189,7 @@ function playerRetirementProbability(p){
   if(competitive||productive)risk*=.12;
   return Math.min(.12,Math.max(0,risk));
  }
- const skills=ensureProfile(p).skills||{};
+ const skills=profile.skills||{};
  const roleSkills=p.position==='P'?['stuff','control']:['contact','eye'];
  const competitive=roleSkills.some(k=>(Number(skills[k])||0)>=75);
  const struggling=roleSkills.every(k=>(Number(skills[k])||0)<55);
@@ -3198,24 +3201,43 @@ function playerRetirementProbability(p){
  const earnedRuns=Number(p.earnedRuns)||0;
  const homeRuns=Number(p.homeRuns)||0;
  const walks=Number(p.walks)||0;
- const baseline=age<37?.008+(age-35)*.008:age<40?.025+(age-37)*.035:age<44?.14+(age-40)*.075:.50+(age-44)*.065;
+ const baseline=age<37?.03+(age-35)*.02:age<40?.08+(age-37)*.07:age<44?.32+(age-40)*.12:Math.min(.97,.80+(age-44)*.07);
+ const ageFloor=age<37?.01:age<40?.025+(age-37)*.025:age<44?.12+(age-40)*.11:Math.min(.97,.60+(age-44)*.12);
  let adjustment=0;
- if(competitive)adjustment-=.10;
+ if(competitive)adjustment-=.07;
  else if(struggling)adjustment+=.10;
  if(isPitcher){
-  if(innings>=130){const era=earnedRuns*9/innings;adjustment+=era<=3.5?-.17:era>=6?.09:-.04}
+  if(innings>=130){const era=earnedRuns*9/innings;adjustment+=era<=3.5?-.12:era>=6?.09:-.04}
   else if(innings>=45){const era=earnedRuns*9/innings;adjustment+=era<=3.5?-.07:era>=6?.07:0}
   else if(games<12)adjustment+=.07;
  }else{
-  if(atBats>=250){const avg=hits/atBats;adjustment+=avg>=.3?-.15:avg>=.27?-.08:avg<.2?.11:0;if(homeRuns>=25)adjustment-=.07}
+  if(atBats>=250){const avg=hits/atBats;adjustment+=avg>=.3?-.10:avg>=.27?-.05:avg<.2?.11:0;if(homeRuns>=25)adjustment-=.04}
   else if(atBats<80)adjustment+=.08;
   if(walks>=60&&atBats>=250)adjustment-=.03;
  }
- if(p.injured||p.injury?.active||p.injury?.status==='부상')adjustment+=.07;
+ if(injured)adjustment+=Number(injury.days)>=60?.12:.07;
  const activity=typeof playerRecentActivity==='function'?playerRecentActivity(p):null;
  if(activity?.inactiveSeasons>=2)adjustment+=Math.min(.30,activity.inactiveSeasons*.07);
  if(activity&&(activity.minorGames>=60||activity.minorWork>=(isPitcher?60:200)))adjustment-=.06;
- return Math.max(0,Math.min(.97,baseline+adjustment));
+ return Math.max(ageFloor,Math.min(.97,baseline+adjustment));
+}
+function rememberRetirementDecision(p,stage,probability,retire,reason){
+ p.retirementDecisions=p.retirementDecisions||[];
+ const prior=p.retirementDecisions.find(x=>Number(x.year)===Number(state.year)&&x.stage===stage);if(prior)return prior;
+ const decision={year:state.year,day:state.day,age:Number(p.age)||0,stage,probability:Number(probability.toFixed(4)),decision:retire?'선수 본인 은퇴':'현역 계속',reason};
+ p.retirementDecisions.push(decision);p.retirementDecision={...decision};return decision;
+}
+function reviewClosedFaRetirement(p,record){
+ if(!p||p.retired||p.draftPending||p.foreignPlayer||p.level!=='FA대기'||Number(p.age)<35||record.signedYear||record.retiredYear||String(record.playerId)!==String(p.id)||Number(record.marketClosedYear)!==Number(state.year)||record.lastOutcome==='정산 보류')return false;
+ if(Number(record.retirementReview?.year)===Number(state.year))return false;
+ const age=Number(p.age),base=playerRetirementProbability(p),floor=age>=46?.97:age>=44?.90:age>=42?.70:age>=40?.45:0,probability=Math.max(floor,Math.min(.97,base+(age>=40?.15:.08)));
+ const seed=((Number(p.id)||1)*7919+Number(state.year)*104729+Number(record.year||state.year)*97+28411)>>>0,draw=((Math.imul(seed^seed>>>16,2246822507)>>>0)%1000000)/1000000;
+ const retiring=draw<probability,reason='FA 구단별 최종 협상 종료 후 나이·최근 활약·건강과 현역 지속 의사를 검토';
+ record.retirementReview={year:state.year,age,probability,decision:retiring?'은퇴':'현역 재도전'};rememberRetirementDecision(p,'FA 협상 종료',probability,retiring,reason);
+ if(!retiring){clubNotice('FA 협상',p.name+' FA 협상 종료 · 현역 재도전',age+'세 '+p.name+' 선수가 미계약 상태와 최근 활약을 검토한 뒤 현역 지속을 선택했다. 이번 구단별 협상은 종료됐으며 다음 기회를 준비한다.',[record.previousTeamId??p.teamId],[p.id]);return false}
+ p.retired=true;p.level='은퇴';record.retiredYear=state.year;record.lastOutcome='현역 은퇴';record.lastReason='FA 협상 종료 후 선수 본인의 은퇴 결정';delete record.nextReviewDate;
+ state.retiredPlayers=state.retiredPlayers||[];if(!state.retiredPlayers.some(x=>String(x.id)===String(p.id)))state.retiredPlayers.push({id:p.id,name:p.name,year:state.year,age,teamId:record.previousTeamId??p.teamId,jerseyNumber:p.jerseyNumber,reason:record.lastReason});
+ clubNotice('은퇴',p.name+' FA 협상 종료 후 현역 은퇴',age+'세 '+p.name+' 선수가 최종 협상 종료 후 나이·최근 활약·건강 및 현역 지속 의사를 검토해 스스로 은퇴를 결정했다. 기존 통산·시즌 기록과 수상 이력은 보존한다.',[record.previousTeamId??p.teamId],[p.id]);return true;
 }
 function faPlayerPreferences(p){
  const r=rng(((Number(p.id)||1)*7919+2039)>>>0),saved=p.faPreferences||{};
@@ -3479,7 +3501,7 @@ function negotiateFaContract(p,record){
   scheduleFaReview(p,record,35);
   return false;
  }
- if(Number(record.marketClosedYear)<state.year){
+ if(Number(record.marketClosedYear)>=1900&&Number(record.marketClosedYear)<state.year){
   record.clubWithdrawals={};record.marketClosedYear=null;
   record.negotiationRounds=0;
  }
@@ -3542,6 +3564,11 @@ function negotiateFaContract(p,record){
    const repeats=(record.negotiationHistory||[]).slice(-4).filter(h=>(h.offers||[]).some(x=>String(x.teamId)===key&&!x.accepted&&x.years===o.years&&x.annualSalary===o.annualSalary&&x.signingBonus===o.signingBonus));
    if(!o.accepted&&repeats.length>=3)record.clubWithdrawals[key]={untilYear:state.year,reason:'최종 제안 거절 및 협상 철수',round:record.negotiationRounds};
   }
+ }
+ // A veteran who receives no offer in six consecutive actual reviews has
+ // completed this campaign; do not leave that player waiting indefinitely.
+ if(Number(p.age)>=35&&!offers.length&&Number(record.negotiationRounds)>=6&&record.negotiationHistory.slice(-6).length===6&&record.negotiationHistory.slice(-6).every(h=>!(h.offers||[]).length)){
+  for(const team of state.teams)record.clubWithdrawals[String(team.id)]={untilYear:state.year,reason:'6회 연속 실제 검토에서 제안 없음',round:record.negotiationRounds};
  }
  if(!accepted.length&&state.teams.length&&state.teams.every(t=>Number(record.clubWithdrawals?.[String(t.id)]?.untilYear)>=state.year)){
   record.marketClosedYear=state.year;
@@ -3608,7 +3635,7 @@ function playerContractStatus(p,seasonYear){
   label:type==='fa'?'FA '+term+'년 계약':type==='foreign'?(p.asianQuota?'아시아쿼터 1년 계약':'외국인 1년 계약'):
    type==='pending'?'FA 미계약':type==='inactive'?'현재 계약 없음':type==='unsigned'?(p.draftPending?'입단 예정':'미계약'):'일반 연봉계약'};
 }
-function runOffseasonContracts(){state.offseasonContractsDone=state.offseasonContractsDone||{};if(state.offseasonContractsDone[state.year]||!awardsFinished()||!state.postseasons?.[state.year]?.finished)return;state.offseasonContractsDone[state.year]=true;snapshotOverseasInterest(state.year);processOverseasPosting(state.year);resolveOverseasNegotiations(state.year);saveSeasonSnapshot();renewStaffContracts();hireRetiredCoaches();reviewInactiveRoster();const oldYear=state.year,rr=rng((oldYear*77891+state.players.length*13)>>>0);state.freeAgents=state.freeAgents||[];state.retiredPlayers=state.retiredPlayers||[];for(const p of state.players){if(p.retired||p.draftPending||p.contractSigned===false||['방출','계약종료','은퇴','웨이버 대기','FA대기'].includes(p.level))continue;if(p.foreignPlayer)continue;const profile=ensureProfile(p);creditFaSeason(p,oldYear);const existingContract=playerContractStatus(p,oldYear);profile.contractYears=existingContract.type==='fa'?Math.max(0,existingContract.remainingYears-(existingContract.startYear>oldYear?0:1)):0;if(rr()<playerRetirementProbability(p)){p.retired=true;p.level='은퇴';state.retiredPlayers.push({id:p.id,name:p.name,year:oldYear,age:p.age,teamId:p.teamId,jerseyNumber:p.jerseyNumber});clubNotice('은퇴',p.name+' 선수 은퇴',p.age+'세 · '+oldYear+' 시즌 종료 후 현역 은퇴',[p.teamId],[p.id]);continue}if(profile.contractYears===0){const previous=p.teamId;const fa=faServiceStatus(p);const eligible=fa.eligible&&!p.foreignPlayer;const grade=faCompensationGrade(p,previous);const previousSalary=Number(p.salary)||33000000;const faApply=eligible&&(p.faApplicationDecisions?.[oldYear]??(()=>{
+function runOffseasonContracts(){state.offseasonContractsDone=state.offseasonContractsDone||{};if(state.offseasonContractsDone[state.year]||!awardsFinished()||!state.postseasons?.[state.year]?.finished)return;state.offseasonContractsDone[state.year]=true;snapshotOverseasInterest(state.year);processOverseasPosting(state.year);resolveOverseasNegotiations(state.year);saveSeasonSnapshot();renewStaffContracts();hireRetiredCoaches();reviewInactiveRoster();const oldYear=state.year,rr=rng((oldYear*77891+state.players.length*13)>>>0);state.freeAgents=state.freeAgents||[];state.retiredPlayers=state.retiredPlayers||[];for(const p of state.players){if(p.retired||p.draftPending||p.contractSigned===false||['방출','계약종료','은퇴','웨이버 대기','FA대기'].includes(p.level))continue;const profile=ensureProfile(p);if(!p.foreignPlayer){creditFaSeason(p,oldYear);const existingContract=playerContractStatus(p,oldYear);profile.contractYears=existingContract.type==='fa'?Math.max(0,existingContract.remainingYears-(existingContract.startYear>oldYear?0:1)):0;}const retirementChance=playerRetirementProbability(p),retiring=rr()<retirementChance;rememberRetirementDecision(p,'시즌 종료',retirementChance,retiring,'나이·최근 활약·출전 기회·부상을 고려한 선수 본인의 현역 지속 판단');if(retiring){p.retired=true;p.level='은퇴';state.retiredPlayers.push({id:p.id,name:p.name,year:oldYear,age:p.age,teamId:p.teamId,jerseyNumber:p.jerseyNumber});clubNotice('은퇴',p.name+' 선수 은퇴',p.age+'세 · '+oldYear+' 시즌 종료 후 선수 본인이 나이·최근 활약·출전 기회·건강을 고려해 현역 은퇴를 결정했습니다.',[p.teamId],[p.id]);continue}if(p.foreignPlayer)continue;if(profile.contractYears===0){const previous=p.teamId;const fa=faServiceStatus(p);const eligible=fa.eligible&&!p.foreignPlayer;const grade=faCompensationGrade(p,previous);const previousSalary=Number(p.salary)||33000000;const faApply=eligible&&(p.faApplicationDecisions?.[oldYear]??(()=>{
  const projection=faPlayerProjection(p);
  const age=Number(p.age)||30,annual=projection.fairAnnual;
  const appearances=p.position==='P'?(Number(p.inningsPitched)||0):(Number(p.plateAppearances)||Number(p.atBats)||0);

@@ -1,1 +1,1 @@
-{"version":"2.3.12","build":"20261103-practice-pitcher-fix39","notes":"연습경기 투수 소진 HTTP 500 수정, 영구결번 독립 심사 및 팬투표 하단 배치"}
+{"version":"2.3.13","build":"20261103-retirement40","notes":"고령 선수 자율 은퇴·부상 반영, FA 협상 종료 후 은퇴·현역 재도전 판단"}

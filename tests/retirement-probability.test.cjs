@@ -20,3 +20,6 @@ assert.ok(chance(hitter(43))>chance(hitter(37)),'age still matters');
 assert.ok(chance(hitter(45,{overall:90,hits:150,homeRuns:35}))<chance(hitter(45,{overall:40,hits:40})),'elite 45-year-old can continue');
 for(let age=18;age<=55;age++)for(const p of [hitter(age),pitcher(age)]){const c=chance(p);assert.ok(Number.isFinite(c)&&c>=0&&c<=.97,'valid probability')}
 console.log('Performance-based retirement: hitters, pitchers, injuries, aging, elite veterans PASS');
+assert.ok(chance(hitter(40,{overall:90,hits:150,homeRuns:35}))>=.12,'productive forty-year-old cannot have zero annual retirement chance');
+assert.ok(chance(hitter(44,{overall:95,hits:180,homeRuns:40}))>=.60,'elite 44-year-old still has substantial age-related retirement chance');
+assert.ok(chance(pitcher(46,{overall:95,earnedRuns:20}))>=.84,'late-forties pitcher is not made immortal by strong stats');
