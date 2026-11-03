@@ -57,10 +57,7 @@ function Invoke-Adb([string[]]$Arguments,[string]$OutputFile,[string]$InputFile)
 }
 function Require-OK($result,[string]$message) { if ($result.Code -ne 0) { throw ($message + "`n" + $result.Out + $result.Err) } }
 function Restore-AppData([string]$archive) {
-    $remote = '/data/local/tmp/baseball-empire-migration.tar'
-    Require-OK (Invoke-Adb -Arguments @('push',$archive,$remote)) 'Could not transfer the saved data.'
-    Require-OK (Invoke-Adb -Arguments @('shell','run-as',$package,'tar','-xf',$remote)) 'Could not restore app data. Keep the PC backup and original APK.'
-    [void](Invoke-Adb -Arguments @('shell','rm',$remote))
+    Require-OK (Invoke-Adb -Arguments @('shell','-T','run-as',$package,'tar','-xf','-') -InputFile $archive) 'Could not restore app data. Keep the PC backup and original APK.'
 }
 try {
     if (!$DeviceSerial) {
@@ -73,7 +70,7 @@ try {
     $archive = $null
     if ($installed.Out -match 'package:') {
         Require-OK (Invoke-Adb -Arguments @('shell','am','force-stop',$package)) 'Could not stop the game.'
-        $folder = Join-Path $env:LOCALAPPDATA ('BaseballEmpire\Backups\' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+        $folder = Join-Path $env:LOCALAPPDATA ('BaseballEmpire\Backups\' + ((Get-Date -Format 'yyyyMMdd-HHmmss')+'-'+[Guid]::NewGuid().ToString('N').Substring(0,8)))
         [void](New-Item -ItemType Directory -Path $folder -Force)
         $archive = Join-Path $folder 'app-data.tar'
         $directories = Invoke-Adb -Arguments @('shell','run-as',$package,'ls')

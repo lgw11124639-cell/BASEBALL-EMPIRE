@@ -72,8 +72,8 @@ try{
  assert.equal(exported.day,committed);assert.equal(exported.teams.length,10);assert.ok(exported.players.length>=700);
  await tapWeb('#advance-day');for(let i=0;i<60&&(await evaluate(savedDay))!==committed+1;i++)await pause(500);await until(`!document.querySelector('#advance-day').disabled`);assert.equal(await evaluate(savedDay),committed+1);
  await evaluate(`document.querySelector('#restore-backup').click()`);await pause(1000);
- if(!await tapNative(new RegExp(filename.replaceAll('.','\\.')),false)){
-  await tapNative(/show roots|show navigation drawer/i);await tapNative(/^downloads$/i);await tapNative(new RegExp(filename.replaceAll('.','\\.')));
+ if(!await tapNative(new RegExp('^'+filename.replaceAll('.','\\.')+'$'),false)){
+  await tapNative(/show roots|show navigation drawer/i);await tapNative(/^downloads$/i);await tapNative(new RegExp('^'+filename.replaceAll('.','\\.')+'$'));
  }
  await tapNative(/^OK$|^확인$/i);
  for(let i=0;i<60&&(await evaluate(savedDay))!==committed;i++)await pause(500);
@@ -90,11 +90,10 @@ try{
  const archivePath=out+'/migration-data.tar';
  await writeFile(archivePath,execFileSync('adb',['exec-out','run-as',id,'tar','-cf','-','app_webview'],{maxBuffer:512*1024*1024}));
  adb('uninstall',id);adb('install','android/app/build/outputs/apk/debug/app-debug.apk');
- adb('push',archivePath,'/data/local/tmp/be-migration-data.tar');
- adb('shell','run-as',id,'tar','-xf','/data/local/tmp/be-migration-data.tar');
+ execFileSync('adb',['shell','-T','run-as',id,'tar','-xf','-'],{input:await(await import('node:fs/promises')).readFile(archivePath),maxBuffer:4*1024*1024});
  await attach();await until(`!!document.querySelector('#entry-load')&&!document.querySelector('#entry-load').disabled`);
  assert.equal(await evaluate(savedDay),committed,'legacy archive migration restores the committed world');
- await (await import('node:fs/promises')).unlink(archivePath);adb('shell','rm','/data/local/tmp/be-migration-data.tar');
+ await (await import('node:fs/promises')).unlink(archivePath);
  await writeFile(out+'/report.json',JSON.stringify({platform:'Android emulator API 35',initialDay:initial,committedDay:committed,worker:true,forceStopRecovery:true,updateInPlace:true,legacyArchiveMigration:true,nativeBackupExport:true,nativeBackupRestore:true,storage,timing,longTasks,samples},null,2));
  console.log('Android WebView: worker progression, stop and force-stop recovery PASS, committed day '+committed);
 }catch(error){
