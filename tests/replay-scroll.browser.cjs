@@ -71,7 +71,7 @@ const root=path.resolve(__dirname,'..');const reports=[];
   assert.ok(controls.y+controls.height<=viewport.height+1,'playback controls stay visible');
   await page.locator('#be-replay-overlay').evaluate(el=>el.scrollTop=el.scrollHeight);
   await page.screenshot({path:'/tmp/baseball-replay-'+viewport.width+'.png'});
-  await page.evaluate(()=>window.beCloseGameReplay());assert.equal(await page.locator('#be-replay-overlay').count(),0);assert.equal(await page.evaluate(()=>document.body.style.overflow),'');reports.push({width:viewport.width,height:viewport.height,scoreboardContainsScoreAndCrests:true,commentaryHeight:dimensions.logHeight,newestFirst:true,readingPositionPreserved:true,autoPlayback:true,controlsVisible:true,pageScrollRestored:true});await page.close();console.log('PASS replay scroll and redesigned match centre',viewport.width);
+  await page.evaluate(()=>window.beCloseGameReplay());assert.equal(await page.evaluate(()=>window.beBroadcastStop),null,'close releases global replay closure');assert.equal(await page.locator('#be-replay-overlay').count(),0);assert.equal(await page.evaluate(()=>document.body.style.overflow),'');reports.push({width:viewport.width,height:viewport.height,scoreboardContainsScoreAndCrests:true,commentaryHeight:dimensions.logHeight,newestFirst:true,readingPositionPreserved:true,autoPlayback:true,controlsVisible:true,pageScrollRestored:true});await page.close();console.log('PASS replay scroll and redesigned match centre',viewport.width);
  }
  if(process.env.REPLAY_BROWSER_REPORT)fs.writeFileSync(process.env.REPLAY_BROWSER_REPORT,JSON.stringify(reports,null,2)+'\n');
  }finally{await browser.close()}

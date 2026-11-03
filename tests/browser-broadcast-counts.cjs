@@ -14,7 +14,7 @@ const game={day:1,away:0,home:1,awayRuns:2,homeRuns:0,awayInnings:[0,2],homeInni
  event(2,'away',105,['인플레이'],0,0,'안타',[],[105,null,null]),
  {...event(2,'away',105,[],0,0,'도루 성공',[105,null,null],[null,105,null]),eventType:'baserunning',runner:'주자105',runnerId:105,fromBase:1,toBase:2},
  {...event(2,'away',106,['볼','인플레이'],0,0,'홈런',[null,105,null],[]),score:2,runs:2,hitDelta:1},
- {...event(2,'away',107,['인플레이'],0,0,'실책',[],[107,null,null]),score:2,errorDelta:1}
+ {...event(2,'away',107,['인플레이'],0,0,'타격 완료',[],[107,null,null]),score:2,errorDelta:1}
 ]};window.fixture={open(){beOpenGameReplay(1,0,game)},snapshot(){return JSON.stringify(game)}};`;
 (async()=>{
  const server=http.createServer((req,res)=>{const name=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';if(name==='app.js'){res.setHeader('Content-Type','text/javascript');return res.end(harness)}if(name==='update.js')return res.end('');const file=path.resolve(name);if(!file.startsWith(process.cwd()+path.sep)){res.writeHead(404);return res.end()}try{res.setHeader('Content-Type',name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':name.endsWith('.html')?'text/html':'application/json');res.end(fs.readFileSync(file))}catch{res.writeHead(404);res.end()}});

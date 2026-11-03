@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261103-zone-lines36';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261103-replay-performance37';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -1231,7 +1231,7 @@ let beZoneCache={revision:-1,year:null,profiles:new Map()};
 function batterZoneProfile(p){
  const games=window.beEngineReadArchive?.(state?.gameResults)||state?.gameResults||[],revision=games.length,year=state?.year;
  // Retain the indexed games and only process newly appended results.
- if(beZoneCache.world!==state||beZoneCache.year!==year||revision<(beZoneCache.indexedCount||0)||!beZoneCache.index)beZoneCache={world:state,revision,year,profiles:new Map(),index:new Map(),indexedCount:0};
+ if(beZoneCache.worldRef?.deref()!==state||beZoneCache.year!==year||revision<(beZoneCache.indexedCount||0)||!beZoneCache.index)beZoneCache={worldRef:new WeakRef(state),revision,year,profiles:new Map(),index:new Map(),indexedCount:0};
  else if(beZoneCache.revision!==revision){beZoneCache.revision=revision;beZoneCache.profiles=new Map()}
  const key=p?.id!=null?String(p.id):'name:'+String(p?.name)+'|'+String(p?.teamId);if(beZoneCache.profiles.has(key))return beZoneCache.profiles.get(key);
  const zones=Array.from({length:9},()=>({ab:0,h:0,pa:0,k:0}));
@@ -1280,14 +1280,12 @@ function batterZoneFactor(p,pitch){
  return Math.max(.94,Math.min(1.06,1+(z.values[i]-overall)*.2));
 }
 function batterZoneTemperatures(profile){
- // Compare every eligible zone with this batter's season average, using the
- // same shrinkage as the batting model. Never force a hottest/coldest cell.
- return profile.zones.map((zone,i)=>zone.ab<20||profile.values[i]==null?'neutral':profile.values[i]-profile.overall>=.04?'hot':profile.values[i]-profile.overall<=-.04?'cold':'neutral');
+ return profile.zones.map(zone=>!zone.ab?'neutral':zone.h/zone.ab>=.3?'hot':zone.h/zone.ab<.2?'cold':'neutral');
 }
 function batterZonePanel(p){
  const z=batterZoneProfile(p);
  const temperatures=batterZoneTemperatures(z);
- return '<section class="pitch-chart-card batter-zone-card"><div class="pitch-chart-heading"><span>타격 핫존 · 콜드존</span><strong>실제 경기 기록 · 9분할</strong></div><p class="pitch-chart-caption">현재 시즌 정규경기 기록 · 구역별 20타수 이상에서 보정 타율이 개인 평균보다 4푼 이상 높으면 HOT, 낮으면 COLD입니다. 여러 구역이 해당될 수 있습니다.</p><div class="batter-zone-grid">'+z.zones.map((n,i)=>'<div class="'+temperatures[i]+'"><b>'+(temperatures[i]==='hot'?'HOT':temperatures[i]==='cold'?'COLD':'')+'</b><span>'+(n.ab>=8?(n.h/n.ab).toFixed(3).replace(/^0/,''):'—')+'</span><small>'+n.ab+'타수</small></div>').join('')+'</div><p class="pitch-chart-caption">숫자는 구역별 실제 타율 · 8타수 미만은 — · 20타수 미만은 색상 판정 보류</p></section>';
+ return '<section class="pitch-chart-card batter-zone-card"><div class="pitch-chart-heading"><span>타격 핫존 · 콜드존</span><strong>실제 경기 기록 · 9분할</strong></div><p class="pitch-chart-caption">현재 시즌 정규경기 기록 · 타수 제한 없이 실제 구역별 타율 .300 이상은 빨강, .200~.299는 무색, .200 미만은 파랑으로 표시합니다.</p><div class="batter-zone-grid">'+z.zones.map((n,i)=>'<div class="'+temperatures[i]+'"><b>'+(temperatures[i]==='hot'?'HOT':temperatures[i]==='cold'?'COLD':'')+'</b><span>'+(n.ab>0?(n.h/n.ab).toFixed(3).replace(/^0/,''):'—')+'</span><small>'+n.ab+'타수</small></div>').join('')+'</div><p class="pitch-chart-caption">숫자는 구역별 실제 타율 · 타수가 없는 구역만 —로 표시합니다.</p></section>';
 }
 function bePitchStyle(arsenal){
  const pitches=arsenal?.pitches||[],fast=pitches.filter(x=>/직구|투심|커터|싱커/.test(x.name)),breaking=pitches.filter(x=>/슬라이더|커브|너클커브|스위퍼|슬러브|포크볼|스플리터/.test(x.name));
@@ -4496,6 +4494,20 @@ function beAppendReplayLine(out,html){
 }
 // Saved after-counts are authoritative. Older called-pitch records may omit
 // them; recover only the count implied by those saved calls, without mutating events.
+function beReplayNextBatterIndex(frames){
+ // Index each following plate appearance once, instead of copying and scanning
+ // the remaining replay on every pitch. Only integer offsets are retained.
+ const result=new Int32Array(frames.length+1);result.fill(-1);
+ let next=-1;
+ for(let end=frames.length;end>0;){
+  let start=end-1;const event=frames[start].eventIndex;
+  while(start>0&&frames[start-1].eventIndex===event)start--;
+  for(let i=start+1;i<=end;i++)result[i]=next;
+  for(let i=end-1;i>=start;i--)if(frames[i].kind==='pitch'||frames[i].kind==='result')next=i;
+  end=start;
+ }
+ result[0]=next;return result;
+}
 function beReplayPitchCounts(pitches){
  let balls=0,strikes=0;
  return pitches.map(p=>{const call=String(p.call||'');let nextBalls=balls,nextStrikes=strikes;
@@ -4509,6 +4521,17 @@ function beReplayPitchCounts(pitches){
  });
 }
 let beReplayDialogContext=null;
+function beReplayEventOutcome(event){
+ const text=String(event?.outcome||'');
+ if(text&&!['타격 완료','타격완료','타석 종료'].includes(text))return text;
+ if(Number(event?.errorDelta)>0)return '실책 출루';
+ if(Number(event?.hitDelta)>0)return '안타';
+ if(Number(event?.walkDelta)>0)return '볼넷';
+ const last=event?.pitchSequence?.at(-1)?.call||'';
+ if(/삼진|볼넷|사구/.test(last))return last;
+ if(Number(event?.outsAfter)>Number(event?.outsBefore))return '아웃';
+ return '타석 결과 미기록';
+}
 function beReplayOutcomePresentation(outcome,outMade=false){
  const text=String(outcome||'');
  if(/삼진/.test(text))return {tone:'strikeout',label:'삼진'};
@@ -4573,11 +4596,11 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   zoneGrid.setAttribute('aria-label',e.batter+' 현재 시즌 타격 핫존·콜드존');
   zoneGrid.querySelectorAll('span').forEach((cell,i)=>{
    const z=profile.zones[i],label=colors[i]==='hot'?'HOT':colors[i]==='cold'?'COLD':'';
-   cell.className='be-zone-'+colors[i];cell.textContent=z.ab>=8?(z.h/z.ab).toFixed(3).replace(/^0/,''):'—';
-   cell.title=e.batter+' · '+z.ab+'타수 '+z.h+'안타'+(z.ab>=20?' · '+(label||'중립'):' · 표본 부족');
-   cell.setAttribute('aria-label',cell.title+(z.ab>=8?' · 타율 '+(z.h/z.ab).toFixed(3):' · 타율 표본 부족'));
+   cell.className='be-zone-'+colors[i];cell.textContent=z.ab>0?(z.h/z.ab).toFixed(3).replace(/^0/,''):'—';
+   cell.title=e.batter+' · '+z.ab+'타수 '+z.h+'안타'+(z.ab>0?' · '+(label||'중립'):' · 타수 없음');
+   cell.setAttribute('aria-label',cell.title+(z.ab>0?' · 타율 '+(z.h/z.ab).toFixed(3):' · 타수 없음'));
   });
-  if(zoneLegend)zoneLegend.textContent=e.batter+' · 빨강 강점 / 파랑 약점 · 현재 시즌 정규경기'+(profile.zones.some(z=>z.ab>=20)?'':' · 표본 부족');
+  if(zoneLegend)zoneLegend.textContent=e.batter+' · 빨강 강점 / 파랑 약점 · 현재 시즌 정규경기'+(profile.zones.some(z=>z.ab>0)?'':' · 타수 없음');
  };
  const markPitch= pitch=>{if(!zoneGrid)return;zoneGrid.parentElement.querySelectorAll('.be-zone-marker').forEach(el=>el.remove());if(!Number.isFinite(pitch?.zoneX)||!Number.isFinite(pitch?.zoneY))return;const marker=document.createElement('i');marker.className='be-zone-marker';const x=Math.max(-18,Math.min(118,pitch.zoneX)),y=Math.max(-18,Math.min(118,pitch.zoneY));const rect=zoneGrid.getBoundingClientRect();const width=rect.width||76,height=rect.height||76;const field=zoneGrid.parentElement;marker.style.left=(zoneGrid.offsetLeft+width*x/100)+'px';marker.style.top=(zoneGrid.offsetTop+height*y/100)+'px';marker.classList.toggle('be-zone-marker-ball',pitch.call==='볼'||pitch.call==='볼넷');marker.title='투구 위치';field.appendChild(marker)};
  const lamps=document.querySelector('#be-count-lamps');
@@ -4585,10 +4608,11 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const replayPitches=e=>{const seq=Array.isArray(e.pitchSequence)?e.pitchSequence:[];if(!seq.length)return [];const place=(p,i)=>{const call=p.call||'',ball=call==='볼'||call==='볼넷',calledStrike=call==='루킹 스트라이크'||call==='루킹 삼진'||call==='스트라이크';if(!ball&&!calledStrike)return p;let x=Number(p.zoneX),y=Number(p.zoneY);const inside=Number.isFinite(x)&&Number.isFinite(y)&&x>=12&&x<=88&&y>=12&&y<=88;const outside=Number.isFinite(x)&&Number.isFinite(y)&&(x<=-10||x>=110||y<=-10||y>=110);if((ball&&outside)||(calledStrike&&inside))return p;const seed=((Number(e.inning)||1)*7919+(Number(e.eventIndex)||0)*65537+(i+1)*1009+String(e.batter||'').split('').reduce((n,c)=>n+c.charCodeAt(0),0))>>>0;const rand=rng(seed);if(ball){const edge=Math.floor(rand()*4),distance=13+Math.floor(rand()*21),along=5+Math.floor(rand()*90);x=edge===0?-distance:edge===1?100+distance:along;y=edge===2?-distance:edge===3?100+distance:along}else{x=20+Math.floor(rand()*61);y=20+Math.floor(rand()*61)}return {...p,zoneX:x,zoneY:y};};if(seq.some(p=>p.call))return beReplayPitchCounts(seq).map(place);const terminal=e.outcome==='볼넷'?'볼넷':e.outcome==='삼진'?'삼진':e.outcome==='사구'?'사구':'인플레이';let balls=0,strikes=0;return seq.map((p,i)=>{const last=i===seq.length-1,remaining=seq.length-i;let call;if(last)call=terminal==='삼진'?'헛스윙 삼진':terminal;else if(terminal==='볼넷'&&remaining<=4-balls)call='볼';else if(terminal==='삼진'&&remaining<=3-strikes)call='루킹 스트라이크';else if(balls>=3||strikes>=2)call='파울';else call=i%3===1?'볼':'루킹 스트라이크';if(call==='볼'||call==='볼넷')balls++;if(call==='루킹 스트라이크'||call==='헛스윙'||call==='헛스윙 삼진'||call==='루킹 삼진')strikes++;if(call==='파울'&&strikes<2)strikes++;return place({...p,call,ballsAfter:balls,strikesAfter:strikes},i);});};
  const pitcherByFieldingSide={away:null,home:null};const announcedBatterChanges=new Set();const batterChangesBySide={away:new Map(),home:new Map()};for(const side of ['away','home']){const batters=Array.isArray(g[side+'Batters'])?g[side+'Batters']:[];const byId=new Map(batters.filter(p=>p.id!=null).map(p=>[String(p.id),p]));for(const p of batters){if(!p.subIn)continue;const previous=byId.get(String(p.subIn.from));const change={from:previous?.name||'기존 타자',to:p.name,reason:p.subIn.reason||'선수 교체',inning:p.subIn.inning};batterChangesBySide[side].set(String(p.id),change);batterChangesBySide[side].set(String(p.name),change)}}
  const frames=detailed?events.flatMap((e,eventIndex)=>{if(e.eventType==='baserunning')return [{kind:'baserunning',e,eventIndex}];const defending=e.side==='away'?'home':'away';const previous=pitcherByFieldingSide[defending];const rawChange=e.pitcherChange;const changed=previous&&e.pitcher&&String(previous)!==String(e.pitcher);const change=changed?{from:previous,to:e.pitcher}:(rawChange&&rawChange.from&&rawChange.to&&String(rawChange.from)!==String(rawChange.to)?rawChange:null);if(e.pitcher)pitcherByFieldingSide[defending]=e.pitcher;const batterChange=batterChangesBySide[e.side]?.get(String(e.batterId??''))||batterChangesBySide[e.side]?.get(String(e.batter||''));const changeKey=e.side+':'+String(e.batterId||e.batter);const announce=!!batterChange&&!announcedBatterChanges.has(changeKey)&&(!Number.isFinite(Number(batterChange.inning))||Number(e.inning)>=Number(batterChange.inning));if(announce)announcedBatterChanges.add(changeKey);return [...(announce?[{kind:'batter-change',e,eventIndex,change:batterChange}]:[]),...(change?[{kind:'pitcher-change',e,eventIndex,change}]:[]),...replayPitches(e).map((pitch,pitchIndex)=>({kind:'pitch',e,eventIndex,pitch,pitchIndex})),{kind:'result',e,eventIndex}] }):[];
+ const nextBatterIndex=beReplayNextBatterIndex(frames);
  const total=detailed?frames.length:n;
  const nextBatter=document.createElement('div');nextBatter.className='be-next-batter';const livePanel=document.querySelector('.be-replay-dialog .be-replay-live');livePanel?.appendChild(nextBatter);
  const seenReplayPitches=new Map();
- const callLabel=(pitch,e)=>pitch.call==='인플레이'?(e.outcome||'타격'):pitch.call==='헛스윙'?'헛스윙 스트라이크':pitch.call||'판정 미기록';
+ const callLabel=(pitch,e)=>pitch.call==='인플레이'?beReplayEventOutcome(e):pitch.call==='헛스윙'?'헛스윙 스트라이크':pitch.call||'판정 미기록';
  const updatePlateCard=(frame,headline,detail,presentation)=>{
   const e=frame.e,key=String(frame.eventIndex),previousTop=out.scrollTop,previousHeight=out.scrollHeight,followLatest=previousTop<=32;
   let card=out.querySelector('[data-event-index="'+key+'"]');const inserted=!card,above=card&&card.getBoundingClientRect().bottom<=out.getBoundingClientRect().top+1;
@@ -4597,18 +4621,18 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   const meta=card.querySelector('.be-replay-event-meta');meta.querySelector('span').textContent=e.inning+'회 '+(e.side==='away'?'초':'말')+' · '+(e.side==='away'?a.name:h.name)+' 공격 · 투수 '+e.pitcher;
   let badge=meta.querySelector('.be-replay-event-badge');if(presentation){card.dataset.tone=presentation.tone;if(!badge){badge=document.createElement('b');badge.className='be-replay-event-badge';meta.appendChild(badge)}badge.textContent=presentation.label;}else{delete card.dataset.tone;badge?.remove();}
   card.querySelector('.be-replay-plate-headline').textContent=headline;card.querySelector('.be-replay-plate-summary').textContent=detail;
-  const history=card.querySelector('.be-replay-pitch-history'),rows=card.querySelector('.be-replay-pitch-rows');let seen=seenReplayPitches.get(key);if(!seen){seen=[];seenReplayPitches.set(key,seen)}
-  if(frame.kind==='pitch'&&!rows.querySelector('[data-pitch-index="'+frame.pitchIndex+'"]')){const pitch=frame.pitch;seen.push(pitch);const row=document.createElement('li');row.dataset.pitchIndex=String(frame.pitchIndex);row.innerHTML='<span class="be-replay-pitch-number"></span><div><b></b><span></span></div>';row.querySelector('.be-replay-pitch-number').textContent=(pitch.number||frame.pitchIndex+1)+'구';row.querySelector('b').textContent=(pitch.type||'구종 미기록')+(pitch.velocity!=null&&Number.isFinite(Number(pitch.velocity))?' · '+Math.round(Number(pitch.velocity))+'km/h':'');row.querySelector('div > span').textContent=callLabel(pitch,e)+' · '+pitch.ballsAfter+'B '+pitch.strikesAfter+'S';rows.appendChild(row);}
-  history.hidden=!seen.length;history.querySelector('summary').textContent='투구 과정 · '+seen.length+'구';
+  const history=card.querySelector('.be-replay-pitch-history'),rows=card.querySelector('.be-replay-pitch-rows');let seen=seenReplayPitches.get(key)||0;
+  if(frame.kind==='pitch'&&!rows.querySelector('[data-pitch-index="'+frame.pitchIndex+'"]')){const pitch=frame.pitch;seen++;seenReplayPitches.set(key,seen);const row=document.createElement('li');row.dataset.pitchIndex=String(frame.pitchIndex);row.innerHTML='<span class="be-replay-pitch-number"></span><div><b></b><span></span></div>';row.querySelector('.be-replay-pitch-number').textContent=(pitch.number||frame.pitchIndex+1)+'구';row.querySelector('b').textContent=(pitch.type||'구종 미기록')+(pitch.velocity!=null&&Number.isFinite(Number(pitch.velocity))?' · '+Math.round(Number(pitch.velocity))+'km/h':'');row.querySelector('div > span').textContent=callLabel(pitch,e)+' · '+pitch.ballsAfter+'B '+pitch.strikesAfter+'S';rows.appendChild(row);}
+  history.hidden=!seen;history.querySelector('summary').textContent='투구 과정 · '+seen+'구';
   out.scrollTop=followLatest?0:inserted||above?previousTop+out.scrollHeight-previousHeight:previousTop;
  };
- const updateNextBatter=(nextIndex)=>{const current=nextIndex>0?frames[nextIndex-1]?.eventIndex:null,next=frames.slice(nextIndex).find(f=>(f.kind==='pitch'||f.kind==='result')&&(current==null||f.eventIndex!==current));nextBatter.textContent=next?'다음 타석 · '+(next.e.side==='away'?a.name:h.name)+' '+next.e.batter+' / '+(next.e.side==='away'?h.name:a.name)+' 투수 '+next.e.pitcher:nextIndex>=frames.length?'경기 종료':'현재 타석 진행 중';};
+ const updateNextBatter=(nextIndex)=>{const next=frames[nextBatterIndex[nextIndex]];nextBatter.textContent=next?'다음 타석 · '+(next.e.side==='away'?a.name:h.name)+' '+next.e.batter+' / '+(next.e.side==='away'?h.name:a.name)+' 투수 '+next.e.pitcher:nextIndex>=frames.length?'경기 종료':'현재 타석 진행 중';};
  updateNextBatter(0);
  if(detailed)updateBatterZones(events.find(e=>e.eventType!=='baserunning'));
  const step=()=>{
   if(index>=total)return;
   if(detailed){
-   const frame=frames[index],e=frame.e,name=e.side==='away'?a.name:h.name;
+   const frame=frames[index],e=frame.e,outcome=beReplayEventOutcome(e),name=e.side==='away'?a.name:h.name;
    updateBatterZones(e);
    // Display only the current half-inning; retain all saved broadcast events.
    const halfKey=e.inning+':'+e.side;
@@ -4623,7 +4647,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
     batter.textContent=name+' 타자 '+e.batter+' · '+(e.side==='away'?h.name:a.name)+' 투수 '+e.pitcher;
     pitchLabel.textContent=frame.pitch.number+'구 · '+frame.pitch.type+(frame.pitch.velocity!=null&&Number.isFinite(Number(frame.pitch.velocity))?' · '+Math.round(Number(frame.pitch.velocity))+'km/h':' · 구속 미기록');pitchCall.textContent=callLabel(frame.pitch,e);markPitch(frame.pitch);
     pitchCount.textContent='투수 '+e.pitcher+' · 오늘 '+cumulativePitches+'구';
-    const presentation=beReplayOutcomePresentation(frame.pitch.call==='인플레이'?e.outcome:frame.pitch.call,frame.pitch.call==='인플레이'&&e.outsAfter>e.outsBefore);
+    const presentation=beReplayOutcomePresentation(frame.pitch.call==='인플레이'?outcome:frame.pitch.call,frame.pitch.call==='인플레이'&&e.outsAfter>e.outsBefore);
     updatePlateCard(frame,e.batter+' · '+callLabel(frame.pitch,e),frame.pitch.number+'구 · '+frame.pitch.type+(frame.pitch.velocity!=null&&Number.isFinite(Number(frame.pitch.velocity))?' · '+Math.round(Number(frame.pitch.velocity))+'km/h':''),presentation);
     index++;status.textContent='경기 중계 중';updateNextBatter(index);
     btn.textContent=frames[index]?.kind==='result'&&frames[index].eventIndex===frame.eventIndex?'▶ 타석 결과':'▶ 다음 투구';
@@ -4637,9 +4661,9 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
    drawInningBoard();
    inningLabel.textContent=e.inning+'회 '+(e.side==='away'?'초':'말');count.textContent=(e.outsAfter||0)+'아웃';updateCountLamps(0,0,e.outsAfter);updateDiamond(frame.kind==='pitch'?e.bases:e.afterBases);batter.textContent='타자 '+e.batter+' · 투수 '+e.pitcher+' | 1루 '+runnerName(e.afterBases?.[0])+' · 2루 '+runnerName(e.afterBases?.[1])+' · 3루 '+runnerName(e.afterBases?.[2]);
    if(frame.kind==='baserunning')batter.textContent='주자 '+e.runner+' · 투수 '+e.pitcher;
-   const presentation=beReplayOutcomePresentation(e.outcome,e.outsAfter>e.outsBefore);
-   pitchLabel.textContent=frame.kind==='baserunning'?'주루 플레이':'타석 종료';pitchCall.textContent=e.outcome||'결과 확인';pitchCount.textContent=frame.kind==='baserunning'?'투구 없이 주루 결과 반영':'이번 타석 '+(seenReplayPitches.get(String(frame.eventIndex))?.length||e.pitches||0)+'구';
-   updatePlateCard(frame,(frame.kind==='baserunning'?e.runner:e.batter)+' · '+(e.outcome||'타격 완료')+(e.runs?' · '+e.runs+'점 득점':''),(Number(e.outsAfter)||0)+'아웃 · 현재 '+ar+' : '+hr,presentation);
+   const presentation=beReplayOutcomePresentation(outcome,e.outsAfter>e.outsBefore);
+   pitchLabel.textContent=frame.kind==='baserunning'?'주루 플레이':'타석 종료';pitchCall.textContent=outcome;pitchCount.textContent=frame.kind==='baserunning'?'투구 없이 주루 결과 반영':'이번 타석 '+(seenReplayPitches.get(String(frame.eventIndex))||e.pitches||0)+'구';
+   updatePlateCard(frame,(frame.kind==='baserunning'?e.runner:e.batter)+' · '+outcome+(e.runs?' · '+e.runs+'점 득점':''),(Number(e.outsAfter)||0)+'아웃 · 현재 '+ar+' : '+hr,presentation);
   }else{
    const x=Number(ai[index])||0,y=Number(hi[index])||0;ar+=x;hr+=y;
    inningProgress.away[index]=x;inningProgress.home[index]=y;drawInningBoard();
@@ -4650,9 +4674,9 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   
  };
  btn.onclick=step;autoBtn.onclick=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=null;autoBtn.textContent='▶ 자동중계';return}autoBtn.textContent='Ⅱ 일시정지';autoTimer=setInterval(step,Number(speedSelect.value)||1400)};speedSelect.onchange=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=setInterval(step,Number(speedSelect.value)||1400)}};skip.onclick=()=>{while(index<total)step();finish.scrollIntoView({block:'nearest'})};
- document.querySelector('#be-replay-overlay').addEventListener('click',e=>{if(e.target.id==='be-replay-overlay')beCloseGameReplay()});window.beBroadcastStop=()=>{if(autoTimer)clearInterval(autoTimer)};
+ document.querySelector('#be-replay-overlay').addEventListener('click',e=>{if(e.target.id==='be-replay-overlay')beCloseGameReplay()});window.beBroadcastStop=()=>{if(autoTimer)clearInterval(autoTimer);autoTimer=null};
 }
-function beCloseGameReplay(){window.beBroadcastStop?.();document.querySelector('#be-replay-overlay')?.remove();if(beReplayDialogContext){const context=beReplayDialogContext;beReplayDialogContext=null;document.body.style.overflow=context.overflow;if(context.focus?.isConnected)context.focus.focus({preventScroll:true})}}
+function beCloseGameReplay(){const stop=window.beBroadcastStop;window.beBroadcastStop=null;stop?.();document.querySelector('#be-replay-overlay')?.remove();if(beReplayDialogContext){const context=beReplayDialogContext;beReplayDialogContext=null;document.body.style.overflow=context.overflow;if(context.focus?.isConnected)context.focus.focus({preventScroll:true})}}
 window.beOpenGameReplay=beOpenGameReplay;window.beCloseGameReplay=beCloseGameReplay;
 // Shared presentation only: the views retain their existing controls and event handlers.
 function beShellIcon(name){

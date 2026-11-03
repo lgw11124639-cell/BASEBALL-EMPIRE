@@ -8,10 +8,11 @@ assert.deepEqual(Array.from(run('batterZoneTemperatures(batterZoneProfile({id:12
 assert.equal((run('batterZonePanel({id:123})').match(/class="hot"/g)||[]).length,2);
 assert.equal((run('batterZonePanel({id:123})').match(/class="cold"/g)||[]).length,2);
 assert.deepEqual(Array.from(run('batterZoneTemperatures(batterZoneProfile({id:999}))')),Array(9).fill('neutral'));
-assert.deepEqual(Array.from(run('batterZoneTemperatures({overall:.25,zones:Array.from({length:9},()=>({ab:19})),values:Array(9).fill(.8)})')),Array(9).fill('neutral'));
-assert.deepEqual(Array.from(run('batterZoneTemperatures({overall:.25,zones:Array.from({length:9},()=>({ab:40})),values:Array(9).fill(.25)})')),Array(9).fill('neutral'));
+assert.deepEqual(Array.from(run('batterZoneTemperatures({overall:.25,zones:Array.from({length:9},()=>({ab:1,h:1})),values:Array(9).fill(null)})')),Array(9).fill('hot'));
+assert.deepEqual(Array.from(run('batterZoneTemperatures({overall:.25,zones:Array.from({length:9},()=>({ab:40,h:10})),values:Array(9).fill(.25)})')),Array(9).fill('neutral'));
 const before=run('JSON.stringify(state.gameResults)');
 run('batterZoneProfile({id:123})');assert.equal(run('JSON.stringify(state.gameResults)'),before,'display leaves saved outcomes unchanged');
 run('state={year:2046,gameResults:[]};');
 assert.deepEqual(Array.from(run('batterZoneTemperatures(batterZoneProfile({id:123}))')),Array(9).fill('neutral'),'another save does not inherit previous heatmap');
-console.log('Multiple hot/cold zones, neutral ties and insufficient samples PASS');
+assert.deepEqual(Array.from(run('batterZoneTemperatures({zones:[{ab:10,h:3},{ab:10,h:2},{ab:10,h:1},{ab:1,h:0},{ab:0,h:0},{ab:1,h:1}]})')),['hot','neutral','cold','cold','neutral','hot']);
+console.log('Multiple hot/cold zones, raw average thresholds, single-at-bat colors and empty zones PASS');
