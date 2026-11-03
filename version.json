@@ -1,1 +1,1 @@
-{"version":"2.3.11","build":"20261103-server-read-honors38","notes":"영구결번 신규 심사 강화, 서버 첫 읽기 비동기 처리 및 비시즌 상세 측정"}
+{"version":"2.3.12","build":"20261103-practice-pitcher-fix39","notes":"연습경기 투수 소진 HTTP 500 수정, 영구결번 독립 심사 및 팬투표 하단 배치"}
