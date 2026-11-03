@@ -7,7 +7,7 @@ async function beAdvanceMobileDay(source){
  try{
   const reply=await runMobileDay(state);
   const saveStarted=performance.now();await cloudSave(reply.world);
-  state=reply.world;lastRenderPreparedState=state;
+  state=reply.world;lastRenderPreparedState=state;playerConductClockCache=null;beInningLookupCache=null;tradeReviewContext=null;awardCandidatesCache=null;
   if(state.gameResults?.length)window.beNewsDay=state.gameResults.at(-1).day;
   window.beLastStepTiming={backup:0,simulation:reply.engineMs,save:performance.now()-saveStarted,total:performance.now()-started,worker:true};
   if(source==='auto'&&(autoSeasonRunning||document.querySelector('#game-news-overlay, #player-overlay'))){beRefreshAutoCalendar();beRefreshAutoProgress();}
