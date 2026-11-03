@@ -55,6 +55,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 3072 -cores 2
           script: node scripts/test-android-emulator.mjs
       - uses: actions/upload-artifact@v4
         if: always()

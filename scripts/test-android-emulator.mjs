@@ -25,6 +25,11 @@ function dumpUI(){try{adb('shell','rm','-f','/sdcard/be-window.xml');adb('shell'
 async function tapNative(pattern,required=true){
  for(let attempt=0;attempt<12;attempt++){
   const xml=dumpUI();
+  if(/text="Pixel Launcher[^"]*responding/.test(xml)){
+   const close=(xml.match(/<node\b[^>]*>/g)||[]).find(node=>node.includes('resource-id="android:id/aerr_close"'));
+   const bounds=close?.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+   if(bounds){adb('shell','input','tap',String(Math.round((+bounds[1]+ +bounds[3])/2)),String(Math.round((+bounds[2]+ +bounds[4])/2)));console.log('Dismissed unrelated emulator Pixel Launcher startup ANR');await pause(500);continue;}
+  }
   for(const node of xml.match(/<node\b[^>]*>/g)||[]){
    if(!node.includes('enabled="true"'))continue;
    const text=(node.match(/text="([^"]*)"/)||[])[1]||'',description=(node.match(/content-desc="([^"]*)"/)||[])[1]||'';

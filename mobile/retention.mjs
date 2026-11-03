@@ -10,7 +10,15 @@ export function retainRecentArticles(world){
  let removedArticles=0,compactedTransactions=0,removedTrainingReports=0;
  // Preserve undated legacy notices rather than guessing when they occurred.
  for(const field of ['clubNotices','events'])if(Array.isArray(world[field])){
-  const kept=world[field].filter(row=>{const when=dateOf(row);return when===null||when>=cutoff;});
+  const kept=world[field].flatMap(row=>{
+   const when=dateOf(row);if(when===null||when>=cutoff)return [row];
+   // Old saves can use these notices as the only source for draft/medical/
+   // milestone reconstruction. Preserve their structured event metadata.
+   if(field==='clubNotices'&&/드래프트|대기록|은퇴|명예의 전당|영구결번|시즌 시상|부상/.test(String(row.kind||''))){
+    if(row.articleExpired)return [row];const summary={...row,articleExpired:true,body:String(row.title||row.kind||'')};delete summary.reportHtml;return [summary];
+   }
+   return [];
+  });
   removedArticles+=world[field].length-kept.length;if(kept.length!==world[field].length)world[field]=kept;
  }
  // Transactions are permanent history. Keep the structured identity/terms and a
