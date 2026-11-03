@@ -20389,3 +20389,10 @@ main.game-shell .record-room { padding: 26px !important; }
 #game-news-overlay.front-report-overlay .profile-facts > div { background:#f4f8f7 !important; border-color:#cddcd7 !important; }
 #game-news-overlay.front-report-overlay .profile-facts > div small { color:#526d70 !important; opacity:1 !important; }
 #game-news-overlay.front-report-overlay .profile-facts > div strong { color:#173f43 !important; opacity:1 !important; font-size:18px !important; }
+/* Enlarge only the inner strike zone, retaining its card and field dimensions. */
+#be-replay-overlay .be-zone-field > .be-broadcast-zone-grid { width:110px !important; height:110px !important; left:20px !important; top:18px !important; }
+#be-replay-overlay .be-broadcast-zone-grid > span { font-size:11px !important; font-variant-numeric:tabular-nums; color:#294e63; }
+@media(max-width:600px) {
+ #be-replay-overlay .be-zone-field > .be-broadcast-zone-grid { width:96px !important; height:96px !important; left:18px !important; top:15px !important; }
+ #be-replay-overlay .be-broadcast-zone-grid > span { font-size:10px !important; }
+}

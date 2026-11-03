@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261102-exhibition-home34';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261103-zone-averages35';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -4573,11 +4573,11 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   zoneGrid.setAttribute('aria-label',e.batter+' 현재 시즌 타격 핫존·콜드존');
   zoneGrid.querySelectorAll('span').forEach((cell,i)=>{
    const z=profile.zones[i],label=colors[i]==='hot'?'HOT':colors[i]==='cold'?'COLD':'';
-   cell.className='be-zone-'+colors[i];cell.textContent=label;
+   cell.className='be-zone-'+colors[i];cell.textContent=z.ab>=8?(z.h/z.ab).toFixed(3).replace(/^0/,''):'—';
    cell.title=e.batter+' · '+z.ab+'타수 '+z.h+'안타'+(z.ab>=20?' · '+(label||'중립'):' · 표본 부족');
-   cell.setAttribute('aria-label',cell.title);
+   cell.setAttribute('aria-label',cell.title+(z.ab>=8?' · 타율 '+(z.h/z.ab).toFixed(3):' · 타율 표본 부족'));
   });
-  if(zoneLegend)zoneLegend.textContent=e.batter+' · 빨강 HOT / 파랑 COLD · 현재 시즌 정규경기'+(profile.zones.some(z=>z.ab>=20)?'':' · 표본 부족');
+  if(zoneLegend)zoneLegend.textContent=e.batter+' · 빨강 강점 / 파랑 약점 · 현재 시즌 정규경기'+(profile.zones.some(z=>z.ab>=20)?'':' · 표본 부족');
  };
  const markPitch= pitch=>{if(!zoneGrid)return;zoneGrid.parentElement.querySelectorAll('.be-zone-marker').forEach(el=>el.remove());if(!Number.isFinite(pitch?.zoneX)||!Number.isFinite(pitch?.zoneY))return;const marker=document.createElement('i');marker.className='be-zone-marker';const x=Math.max(-18,Math.min(118,pitch.zoneX)),y=Math.max(-18,Math.min(118,pitch.zoneY));const rect=zoneGrid.getBoundingClientRect();const width=rect.width||76,height=rect.height||76;const field=zoneGrid.parentElement;marker.style.left=(zoneGrid.offsetLeft+width*x/100)+'px';marker.style.top=(zoneGrid.offsetTop+height*y/100)+'px';marker.classList.toggle('be-zone-marker-ball',pitch.call==='볼'||pitch.call==='볼넷');marker.title='투구 위치';field.appendChild(marker)};
  const lamps=document.querySelector('#be-count-lamps');
