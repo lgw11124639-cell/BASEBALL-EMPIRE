@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
 
+def maintainedKey = System.getenv('BE_ANDROID_KEYSTORE')
+def ephemeralFixture = project.hasProperty('beEphemeralFixture')
+if (!maintainedKey && !ephemeralFixture) {
+    throw new GradleException('Maintained signing key required. Configure BE_ANDROID_KEYSTORE, BE_ANDROID_KEY_PASSWORD and BE_ANDROID_KEY_ALIAS. Refusing a randomly signed APK.')
+}
 android {
     namespace = "com.baseballempire.game"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +12,8 @@ android {
         applicationId "com.baseballempire.game"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "0.2.0"
+        versionCode = (project.findProperty('beVersionCode') ?: '3').toString().toInteger()
+        versionName = (project.findProperty('beVersionName') ?: '0.3.0').toString()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,7 +21,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        maintained {
+            if (maintainedKey) {
+                storeFile file(maintainedKey)
+                storePassword System.getenv('BE_ANDROID_KEY_PASSWORD')
+                keyAlias System.getenv('BE_ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('BE_ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
+        debug {
+            if (maintainedKey) signingConfig signingConfigs.maintained
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

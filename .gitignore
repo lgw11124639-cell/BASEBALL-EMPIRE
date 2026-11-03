@@ -13,3 +13,9 @@ android/capacitor-cordova-android-plugins/
 *.keystore
 playwright-report/
 test-results/
+*.p12
+*.pfx
+/android/signing.properties
+/test-baseline.apk
+/test-legacy.apk
+/signing.local.json

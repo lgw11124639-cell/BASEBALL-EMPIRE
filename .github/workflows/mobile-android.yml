@@ -1,6 +1,11 @@
 name: Build offline Android trial
 on:
   workflow_dispatch:
+    inputs:
+      verify_only:
+        description: Verify with an ephemeral fixture certificate; never publish this APK
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -26,7 +31,19 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config mobile/playwright.config.mjs
       - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
-      - run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - name: Prepare maintained signing
+        env:
+          BE_VERIFY_ONLY: ${{ inputs.verify_only }}
+          ANDROID_SIGNING_KEYSTORE: ${{ secrets.ANDROID_SIGNING_KEYSTORE }}
+          ANDROID_SIGNING_PASSWORD: ${{ secrets.ANDROID_SIGNING_PASSWORD }}
+          ANDROID_SIGNING_ALIAS: ${{ secrets.ANDROID_SIGNING_ALIAS }}
+        run: node scripts/prepare-ci-signing.mjs
+      - name: Build previous-version upgrade fixture
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -PbeVersionCode=2 -PbeVersionName=upgrade-baseline
+          cp app/build/outputs/apk/debug/app-debug.apk ../test-baseline.apk
+          ./gradlew assembleDebug --no-daemon
         working-directory: android
       - name: Enable KVM
         run: sudo chmod 666 /dev/kvm
@@ -47,6 +64,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - uses: actions/upload-artifact@v4
+        if: ${{ !inputs.verify_only }}
         with:
           name: baseball-empire-offline-trial-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk

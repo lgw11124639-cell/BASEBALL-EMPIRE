@@ -1,0 +1,20 @@
+name: Validate Windows Android updater
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['scripts/Update-Android-Trial.ps1', '.github/workflows/mobile-windows-helper.yml']
+permissions:
+  contents: read
+jobs:
+  parse:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $pwd 'scripts/Update-Android-Trial.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) { $errors | Format-List; exit 1 }
+          Write-Host 'Windows PowerShell updater syntax PASS'

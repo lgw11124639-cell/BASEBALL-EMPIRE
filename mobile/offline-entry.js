@@ -1,13 +1,17 @@
-import {createOfflineStore} from './offline-store.mjs';
-import {Capacitor} from '@capacitor/core';
-import {Filesystem,Directory,Encoding} from '@capacitor/filesystem';
-import {Share} from '@capacitor/share';
+import {createOfflineStore,validateWorld} from './offline-store.mjs';
+import {retainRecentArticles} from './retention.mjs';
+import {exportChunks,importChunks} from './backup-transfer.mjs';
+import {Capacitor,registerPlugin} from '@capacitor/core';
+const LocalBackup=registerPlugin('LocalBackup');
 const store=createOfflineStore();
 window.beServerGameMode=false;
 window.beOfflineMobile=true;
+window.beOfflineNative=Capacitor.isNativePlatform();
 window.beBatchDayPreparation=false;
 export async function cloudSave(state){
+ const maintenance=retainRecentArticles(state);
  const timing=await store.save(state);
+ window.beOfflineMaintenance=maintenance;
  window.beOfflineSaveTiming=timing;
  return timing;
 }
@@ -20,11 +24,24 @@ export async function cloudGate(onReady){
 window.beExportOfflineBackup=async function(state){
  const filename='baseball-empire-backup-'+state.year+'-'+state.day+'.json',data=JSON.stringify(state);
  if(Capacitor.isNativePlatform()){
-  const file=await Filesystem.writeFile({path:'backups/'+filename,data,directory:Directory.Cache,encoding:Encoding.UTF8,recursive:true});
-  // Cache is temporary: use the share sheet to keep a copy outside the app.
-  await Share.share({title:'BASEBALL EMPIRE 백업',url:file.uri,dialogTitle:'백업 파일을 저장할 위치 선택'});
+  const chosen=await LocalBackup.chooseExport({filename});
+  if(chosen.cancelled)return false;
+  await exportChunks(LocalBackup,chosen.token,data);return true;
  }else{
   const url=URL.createObjectURL(new Blob([data],{type:'application/json'})),a=document.createElement('a');
-  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);return true;
  }
 };
+
+window.beImportOfflineBackup=async function(){
+ const selected=await LocalBackup.chooseImport();if(selected.cancelled)return null;
+ return validateWorld(await importChunks(LocalBackup,selected.token));
+};
+window.beValidateOfflineWorld=validateWorld;
+
+window.beOfflineStorageInfo=async()=>{
+ if(window.beOfflineNative)return LocalBackup.storageInfo();
+ const estimate=await navigator.storage?.estimate?.();return {appBytes:estimate?.usage??null,availableBytes:estimate?.quota!=null?Math.max(0,estimate.quota-(estimate.usage||0)):null,estimated:true};
+};
+
+window.beClearOfflineTemporaryBackups=async()=>window.beOfflineNative?LocalBackup.clearTemporaryBackups():{removedBytes:0};

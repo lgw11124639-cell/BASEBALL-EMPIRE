@@ -1,0 +1,50 @@
+async function beRestoreOfflineWorld(data){
+ if(seasonStepBusy||autoSeasonRunning){alert('자동 진행을 정지하고 현재 하루 계산이 끝난 뒤 복원해 주세요.');return false;}
+ window.beValidateOfflineWorld(data);
+ if(!confirm('현재 저장 데이터를 백업 파일로 교체할까요?'))return false;
+ // Commit the replacement before exposing it. Any failed import keeps the
+ // previous world, title menu and committed save intact.
+ await cloudSave(data);state=data;lastRenderPreparedState=null;entryMode='game';tab='home';render();return true;
+}
+function beBindOfflineBackupControls(){
+ const saveArea=document.querySelector('.save-section details');
+ if(saveArea&&!document.querySelector('#offline-storage-info')){
+  const info=document.createElement('p');info.id='offline-storage-info';info.className='support-text';info.textContent='일반 기사는 최근 1년만 보관합니다. 선수 통산·수상·우승·이적 이력은 유지됩니다.';saveArea.appendChild(info);
+  const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='저장 공간 확인';saveArea.appendChild(button);
+  const clean=document.createElement('button');clean.type='button';clean.className='secondary';clean.textContent='오래된 임시 백업 정리';saveArea.appendChild(clean);
+  clean.onclick=async()=>{clean.disabled=true;try{const result=await window.beClearOfflineTemporaryBackups();info.textContent=(result.removedBytes/1048576).toFixed(1)+'MB 정리 · 7일이 지난 앱 내부 임시 백업만 삭제했습니다. 게임 기록과 외부 백업은 유지됩니다.';}catch(error){info.textContent=error.message;}finally{clean.disabled=false;}};
+  button.onclick=async()=>{button.disabled=true;try{const value=await window.beOfflineStorageInfo(),size=n=>n==null?'확인 불가':(n/1048576).toFixed(1)+'MB';info.textContent='앱 데이터 '+size(value.appBytes)+' · 사용 가능 '+size(value.availableBytes)+(value.estimated?' (브라우저 추정)':'')+' · 일반 기사 최근 1년 보관';}catch(error){info.textContent=error.message;}finally{button.disabled=false;}};
+ }
+ const backup=document.querySelector('#backup');
+ if(backup)backup.onclick=async()=>{
+  if(seasonStepBusy){alert('현재 하루 계산이 끝난 뒤 백업해 주세요.');return;}
+  stopAutoSeason();beRefreshAutoProgress();backup.disabled=true;const label=backup.textContent;backup.textContent='백업 준비 중…';
+  try{const written=await window.beExportOfflineBackup(state);if(written)alert('백업 파일을 저장했습니다. 앱 삭제·기기 변경 전에 이 파일을 보관해 주세요.');}
+  catch(error){alert('백업 저장 실패: '+error.message);}
+  finally{backup.disabled=false;backup.textContent=label;}
+ };
+ const file=document.querySelector('#restore');
+ if(file){file.onchange=async event=>{try{if(!event.target.files.length)return;await beRestoreOfflineWorld(JSON.parse(await event.target.files[0].text()));}catch(error){alert('복원 실패: '+error.message);}finally{event.target.value='';}};}
+ const restore=document.querySelector('#restore-backup');
+ if(restore)restore.onclick=async()=>{
+  if(seasonStepBusy||autoSeasonRunning){alert('자동 진행을 정지하고 현재 하루 계산이 끝난 뒤 복원해 주세요.');return;}
+  if(!window.beOfflineNative){file.click();return;}
+  restore.disabled=true;
+  try{const data=await window.beImportOfflineBackup();if(data)await beRestoreOfflineWorld(data);}
+  catch(error){alert('복원 실패: '+error.message);}
+  finally{restore.disabled=false;}
+ };
+ const saveButton=document.querySelector('#save');
+ if(saveButton)saveButton.onclick=async()=>{
+  if(seasonStepBusy||autoSeasonRunning){alert('자동 진행을 정지하고 현재 하루 계산이 끝난 뒤 저장해 주세요.');return;}
+  saveButton.disabled=true;saveButton.textContent='저장 중…';
+  try{await save();saveButton.textContent='저장 완료';const label=document.querySelector('.save-date');if(label)label.textContent='마지막 저장 · '+new Date(state.lastSaved).toLocaleString('ko-KR');}
+  catch(error){saveButton.textContent='다시 저장';alert('저장 실패: '+error.message);}
+  finally{saveButton.disabled=false;}
+ };
+}
+function beTitleOfflineBackupControls(){
+ const area=document.createElement('div');area.className='start-buttons';
+ area.innerHTML=(state?'<button type="button" id="backup" class="secondary">백업 파일 저장</button>':'')+'<button type="button" id="restore-backup" class="secondary">백업 불러오기</button><input id="restore" type="file" accept="application/json,.json" hidden>';
+ document.querySelector('.start-card').appendChild(area);beBindOfflineBackupControls();
+}

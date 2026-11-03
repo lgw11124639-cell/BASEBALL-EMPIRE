@@ -2,6 +2,7 @@ import {readFile,writeFile,mkdir,rm,copyFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {build} from 'esbuild';
+const backupUi=await readFile(new URL('../mobile/backup-ui.txt',import.meta.url),'utf8');
 const dayUi=await readFile(new URL('../mobile/day-ui.txt',import.meta.url),'utf8');
 const root=fileURLToPath(new URL('../',import.meta.url)),out=path.join(root,'dist-mobile');
 export function mobileSource(source){
@@ -15,21 +16,20 @@ export function mobileSource(source){
  replaceOnce('운영할 구단을 선택하세요.','관전할 구단을 선택하세요.');
  // Existing imported saves and simulation remain untouched; hide developer timing UI.
  replaceOnce('(window.beLastStepTiming?\'<details','(false?\'<details');
- const before="document.querySelector('#backup').onclick=()=>{try{";
- const begin=source.indexOf(before),end=source.indexOf(";document.querySelector('#restore').onchange",begin);
- if(begin<0||end<begin)throw Error('Backup UI boundary changed');
- source=source.slice(0,begin)+"document.querySelector('#backup').onclick=async()=>{try{await window.beExportOfflineBackup(state)}catch(e){alert('백업 생성 실패: '+e.message)}}"+source.slice(end);
- replaceOnce("catch(err){state=old;throw err}}}catch(err){alert('복원 실패:","catch(err){state=old;throw err}render()}}catch(err){alert('복원 실패:");
- replaceOnce("document.querySelector('#restore').onchange=async e=>{try{", "document.querySelector('#restore').onchange=async e=>{if(seasonStepBusy||autoSeasonRunning){e.target.value='';alert('자동 진행을 정지하고 현재 하루 계산이 끝난 뒤 복원해 주세요.');return}try{");
+ const saveStart=source.indexOf("document.querySelector('#save').onclick=");
+ const appBoot=source.lastIndexOf('(async()=>{try{app.innerHTML=');
+ if(saveStart<0||appBoot<saveStart||!source.slice(saveStart,appBoot).endsWith('}}}}\n'))throw Error('Mobile save UI boundary changed');
+ source=source.slice(0,saveStart)+"beBindOfflineBackupControls();}}\n"+source.slice(appBoot);
+ replaceOnce("document.querySelector('#entry-reset-save').remove();", "document.querySelector('#entry-reset-save').remove();beTitleOfflineBackupControls();");
+ replaceOnce('<label class="restore-label">백업 파일 불러오기 <input id="restore" type="file" accept="application/json,.json"></label>', '<button type="button" id="restore-backup" class="secondary">백업 불러오기</button><input id="restore" type="file" accept="application/json,.json" hidden>');
  replaceOnce("document.querySelector('#entry-new').onclick=()=>{", "document.querySelector('#entry-new').onclick=()=>{if(seasonStepBusy){alert('현재 하루 계산이 끝난 뒤 새 게임을 시작해 주세요.');return}");
- replaceOnce("else save().catch(e=>alert('저장 실패: '+e.message))", "else if(seasonStepBusy||autoSeasonRunning)alert('현재 하루 진행이 끝난 뒤 저장해 주세요.');else save().catch(e=>alert('저장 실패: '+e.message))");
  // Observe a loaded world through the existing title menu rather than auto-entering.
  replaceOnce("await cloudGate(async data=>{state=data;if(data){entryMode='game';tab='home';render()}else{entryMode='title';render()}})","await cloudGate(async data=>{state=data;entryMode='title';tab='home';render()})");
  replaceOnce("async function advanceSeason(holdGameDay=false,source='manual'){", "async function advanceSeason(holdGameDay=false,source='manual'){if(window.beOfflineMobile&&!holdGameDay)return beAdvanceMobileDay(source);");
  replaceOnce("function toggleAutoSeason(){if(autoSeasonRunning){stopAutoSeason();beRefreshAutoProgress();return}","function toggleAutoSeason(){if(autoSeasonRunning){stopAutoSeason();if(!seasonStepBusy&&!document.querySelector('#game-news-overlay, #player-overlay'))render();beRefreshAutoProgress();return}");
  const boot=source.lastIndexOf('(async()=>{try{app.innerHTML=');
  if(boot<0)throw Error('Mobile bootstrap missing');
- return source.slice(0,boot)+dayUi+'\n'+source.slice(boot);
+ return source.slice(0,boot)+dayUi+'\n'+backupUi+'\n'+source.slice(boot);
 }
 await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
 const source=mobileSource(await readFile(path.join(root,'app.js'),'utf8'));
@@ -46,5 +46,5 @@ const workerTail=`\nself.onmessage=({data})=>{const started=performance.now();tr
 await build({stdin:{contents:workerPrelude+engineSource+workerTail,resolveDir:root,sourcefile:'offline-engine-worker.js',loader:'js'},bundle:true,format:'esm',target:'chrome120',outfile:path.join(out,'engine-worker.js'),legalComments:'none'});
 await copyFile(path.join(root,'ui.css'),path.join(out,'ui.css'));
 await writeFile(path.join(out,'index.html'),`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#eef2f5"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>BASEBALL EMPIRE</title><link rel="stylesheet" href="ui.css"><style>body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}.start-foot{line-height:1.7}</style></head><body><div id="app"><main class="app-loading">야구 세계를 불러오는 중…</main></div><script type="module" src="app.js"></script></body></html>`);
-await writeFile(path.join(out,'build.json'),JSON.stringify({edition:'offline-mobile',version:'0.2.0',engine:JSON.parse(await readFile(path.join(root,'version.json'),'utf8')).build})+'\n');
+await writeFile(path.join(out,'build.json'),JSON.stringify({edition:'offline-mobile',version:'0.3.0',engine:JSON.parse(await readFile(path.join(root,'version.json'),'utf8')).build})+'\n');
 console.log('Offline mobile assets built: dist-mobile (no login, cloud client, external game assets or updater)');
