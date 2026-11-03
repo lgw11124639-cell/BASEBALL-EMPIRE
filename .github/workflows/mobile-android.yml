@@ -18,6 +18,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - run: npm ci --no-audit --no-fund
       - run: npm run mobile:test
       - run: npm run mobile:android
