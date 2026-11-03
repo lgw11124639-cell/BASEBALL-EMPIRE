@@ -1,4 +1,4 @@
-import {isNativeSave,restoreNativeSave} from '../native-save.js';
+import {isNativeSave,restoreNativeSave,NATIVE_SAVE_MANIFEST} from '../native-save.js';
 import {createNativeSaveCodec,nativeWireDelta,nativeDeltaDigest,normalizeNativeWire} from './native-save-codec.mjs';
 import {buildWireDelta} from './wire-delta.mjs';
 import {runOriginalEngineDay} from './original-engine-day.mjs';
@@ -85,7 +85,8 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
      // the DB untouched. Only computed parts are parsed; archives stay shared.
      const normalized=normalizeNativeWire(snapshot.save,wire,delta,appendStarts);
      const normalizedState=restoreNativeSave(normalized,{previousWire:wire,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
-     codec.release();outcome.runtime?.park(normalizedState);preparedCache={state:normalizedState,wire:normalized,codec,fieldHashes:delta.fieldHashes,runtime:outcome.runtime};
+     const zoneCacheProof={previousCount:snapshot.save[NATIVE_SAVE_MANIFEST]?.fields?.gameResults?.length,unchangedParts:codec.reusedFields()};
+     codec.release();outcome.runtime?.park(normalizedState,{zoneCacheProof});preparedCache={state:normalizedState,wire:normalized,codec,fieldHashes:delta.fieldHashes,runtime:outcome.runtime};
     }
     mark('cacheMs');
     failurePhase='response-delta';

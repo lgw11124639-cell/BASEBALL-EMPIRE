@@ -43,8 +43,8 @@ export function createAdvanceDayStore(db,shards){
   compressedSnapshot(user,slot){
    db.exec('SAVEPOINT be_mobile_read');try{
     const m=metadata.get(user,slot);if(!m){db.exec('RELEASE be_mobile_read');return null}
-    const rows=fieldRows.all(user,slot);if(!rows.some(row=>row.field==='beServerNativeManifest')){db.exec('RELEASE be_mobile_read');return null}
-    const save={};for(const row of rows){if(['__proto__','constructor','prototype'].includes(row.field))throw Error('Invalid native field');save[row.field]=row.field.startsWith('beServerPart_')?Buffer.from(row.content).toString('base64'):JSON.parse(gunzipSync(row.content).toString())}
+    if(!fieldContent.get(user,slot,'beServerNativeManifest')){db.exec('RELEASE be_mobile_read');return null}
+    const save={};for(const row of fieldRows.iterate(user,slot)){if(['__proto__','constructor','prototype'].includes(row.field))throw Error('Invalid native field');save[row.field]=row.field.startsWith('beServerPart_')?Buffer.from(row.content).toString('base64'):JSON.parse(gunzipSync(row.content).toString())}
     db.exec('RELEASE be_mobile_read');return {...m,save,compressedNative:true};
    }catch(error){db.exec('ROLLBACK TO be_mobile_read');db.exec('RELEASE be_mobile_read');throw error}
   },
@@ -53,7 +53,7 @@ export function createAdvanceDayStore(db,shards){
    try{
     const m=metadata.get(user,slot);if(!m){db.exec('RELEASE be_day_read');return null}
     const save=Object.create(null),fieldHashes=new Map();
-    for(const row of fieldRows.all(user,slot)){const raw=gunzipSync(row.content);fieldHashes.set(row.field,createHash('sha256').update(raw).digest('hex'));Object.defineProperty(save,row.field,{value:JSON.parse(raw.toString('utf8')),enumerable:true,writable:true,configurable:true})}
+    for(const row of fieldRows.iterate(user,slot)){const raw=gunzipSync(row.content);fieldHashes.set(row.field,createHash('sha256').update(raw).digest('hex'));Object.defineProperty(save,row.field,{value:JSON.parse(raw.toString('utf8')),enumerable:true,writable:true,configurable:true})}
     db.exec('RELEASE be_day_read');return {...m,slot,save,fieldHashes};
    }
    catch(error){db.exec('ROLLBACK TO be_day_read');db.exec('RELEASE be_day_read');throw error}

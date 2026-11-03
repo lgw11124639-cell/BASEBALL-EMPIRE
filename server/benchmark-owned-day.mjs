@@ -27,7 +27,7 @@ try{
   }
  }
 
- for(const row of db.prepare('SELECT field,content FROM be_save_shards WHERE user_id=? AND slot=?').all(source.user_id,'main')){
+ for(const row of db.prepare('SELECT field,content FROM be_save_shards WHERE user_id=? AND slot=?').iterate(source.user_id,'main')){
   const bytes=gunzipSync(row.content);hashes.set(row.field,createHash('sha256').update(bytes).digest('hex'));Object.defineProperty(wire,row.field,{value:JSON.parse(bytes.toString()),enumerable:true,writable:true,configurable:true});
  }
  db.exec('ROLLBACK');
@@ -49,7 +49,8 @@ for(let index=0;index<days;index++){
  const packed=await codec.pack(outcome.state),packedAt=performance.now(),delta=nativeWireDelta(wire,packed,hashes,codec.reusedFields()),comparedAt=performance.now();
  const normalized=normalizeNativeWire(wire,packed,delta,codec.appendStarts());
  state=restoreNativeSave(normalized,{previousWire:packed,previousState:outcome.state,changedKeys:[...delta.serializedFields.keys()]});
- codec.release();runtime=outcome.runtime;runtime?.park(state);wire=normalized;hashes=delta.fieldHashes;
+ const zoneCacheProof={previousCount:wire.beServerNativeManifest?.fields?.gameResults?.length,unchangedParts:codec.reusedFields()};
+ codec.release();runtime=outcome.runtime;runtime?.park(state,{zoneCacheProof});wire=normalized;hashes=delta.fieldHashes;
  const memory=process.memoryUsage();
  console.log(JSON.stringify({stage:'detached-day-benchmark',day:index+1,processedDate:outcome.result.from?.date,productionWrites:false,totalMs:Math.round(performance.now()-t),assembleMs:Math.round(assembled-t),engineMs:Math.round(engineDone-assembled),engineReused:index>0,engineCpuMs:Math.round(engineCpuMs),cpuToWall:+(engineCpuMs/(engineDone-assembled)).toFixed(2),packMs:Math.round(packedAt-engineDone),compareMs:Math.round(comparedAt-packedAt),normalizeMs:Math.round(performance.now()-comparedAt),changedFields:Object.keys(delta.set).length,reusedFields:hashes.size-delta.serializedFields.size,rssMiB:Math.round(memory.rss/1048576),heapUsedMiB:Math.round(memory.heapUsed/1048576),peakRssMiB:Math.round(process.resourceUsage().maxRSS/1024),enginePhases:outcome.result.enginePhases}));
 }
