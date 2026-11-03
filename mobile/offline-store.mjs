@@ -74,7 +74,7 @@ export function createOfflineStore({indexedDB=globalThis.indexedDB,name='basebal
    const current={entries,stamp},nextHead={format:'be-mobile-local-v1',revision:nextRevision,current,previous:head?.current||null};
    const retained=new Set([...entries,...(nextHead.previous?.entries||[])].map(e=>e.key));
    const obsolete=(head?.previous?.entries||[]).filter(e=>!retained.has(e.key));
-   const db=await database(),tx=db.transaction('records','readwrite'),done=transactionDone(tx),store=tx.objectStore('records');
+   const db=await database(),tx=db.transaction('records','readwrite',{durability:'strict'}),done=transactionDone(tx),store=tx.objectStore('records');
    let conflict=false;
    const check=store.get('head');check.onsuccess=()=>{
     if((check.result?.revision||0)!==revision){conflict=true;tx.abort();return;}

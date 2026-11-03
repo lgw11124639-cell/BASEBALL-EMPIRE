@@ -1,8 +1,7 @@
 apply plugin: 'com.android.application'
 
 def maintainedKey = System.getenv('BE_ANDROID_KEYSTORE')
-def ephemeralFixture = project.hasProperty('beEphemeralFixture')
-if (!maintainedKey && !ephemeralFixture) {
+if (!maintainedKey) {
     throw new GradleException('Maintained signing key required. Configure BE_ANDROID_KEYSTORE, BE_ANDROID_KEY_PASSWORD and BE_ANDROID_KEY_ALIAS. Refusing a randomly signed APK.')
 }
 android {
