@@ -1,9 +1,14 @@
 import {readFile} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 const configPath=process.argv[2];if(!configPath)throw Error('Usage: node scripts/build-signed-android.mjs /private/signing.json');
 const config=JSON.parse(await readFile(configPath,'utf8'));
+const keyFile=path.isAbsolute(config.keystore)?config.keystore:path.resolve(path.dirname(configPath),config.keystore);
+const expected=JSON.parse(await readFile(new URL('../mobile/signing-certificate.json',import.meta.url),'utf8'));
+const publicCertificate=spawnSync('keytool',['-exportcert','-keystore',keyFile,'-alias',config.alias,'-storepass:env','BE_CERT_PASSWORD'],{env:{...process.env,BE_CERT_PASSWORD:config.password}});
+if(publicCertificate.status!==0||createHash('sha256').update(publicCertificate.stdout).digest('hex')!==expected.certificateSha256)throw Error('Signing identity mismatch. Restore the maintained key instead of generating a new one.');
 const proxy=process.env.HTTPS_PROXY||process.env.HTTP_PROXY;
 const proxyOptions=proxy?(()=>{const url=new URL(proxy);return ['-Dhttps.proxyHost='+url.hostname,'-Dhttps.proxyPort='+(url.port||80),'-Dhttp.proxyHost='+url.hostname,'-Dhttp.proxyPort='+(url.port||80)].join(' ');})():'';
-const result=spawnSync(process.platform==='win32'?'gradlew.bat':'./gradlew',['assembleDebug','--no-daemon',...process.argv.slice(3)],{cwd:new URL('../android/',import.meta.url),env:{...process.env,JAVA_TOOL_OPTIONS:[process.env.JAVA_TOOL_OPTIONS,proxyOptions].filter(Boolean).join(' '),BE_ANDROID_KEYSTORE:path.isAbsolute(config.keystore)?config.keystore:path.resolve(path.dirname(configPath),config.keystore),BE_ANDROID_KEY_PASSWORD:config.password,BE_ANDROID_KEY_ALIAS:config.alias},stdio:'inherit'});
+const result=spawnSync(process.platform==='win32'?'gradlew.bat':'./gradlew',['assembleDebug','--no-daemon',...process.argv.slice(3)],{cwd:new URL('../android/',import.meta.url),env:{...process.env,JAVA_TOOL_OPTIONS:[process.env.JAVA_TOOL_OPTIONS,proxyOptions].filter(Boolean).join(' '),BE_ANDROID_KEYSTORE:keyFile,BE_ANDROID_KEY_PASSWORD:config.password,BE_ANDROID_KEY_ALIAS:config.alias},stdio:'inherit'});
 if(result.status!==0)process.exit(result.status||1);

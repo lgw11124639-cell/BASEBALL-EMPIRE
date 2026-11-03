@@ -3,6 +3,7 @@ import {mkdir,writeFile,access} from 'node:fs/promises';
 import {randomBytes} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import path from 'node:path';
+try{await access(new URL('../mobile/signing-certificate.json',import.meta.url));if(!process.argv.includes('--new-app-identity'))throw Error('This app already has a maintained signing identity. Restore its private key; do not create a replacement.');}catch(error){if(error.code!=='ENOENT')throw error;}
 const directory=path.resolve(process.argv[2]||'../baseball-empire-private-signing');
 await mkdir(directory,{recursive:true,mode:0o700});const configFile=path.join(directory,'signing.json'),keyFile=path.join(directory,'baseball-empire.p12');
 try{await access(keyFile);throw Error('Signing key already exists. Refusing to replace it.');}catch(error){if(error.code!=='ENOENT')throw error;}

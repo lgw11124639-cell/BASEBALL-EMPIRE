@@ -51,3 +51,18 @@ test('worker failure keeps the saved date and stops automatic progression',async
  await expect.poll(()=>message).toContain('하루 진행 실패');
  await page.reload();await expect(page.locator('.start-save')).toContainText('1일 차');
 });
+test('manual save reports completion, title backup restore works and corrupt import preserves the world',async({page})=>{
+ let dialog='';page.on('dialog',async d=>{dialog=d.message();await d.accept();});
+ await page.goto('/');await page.locator('#entry-new').click();await page.locator('#start').click();await expect(page.locator('#advance-day')).toBeVisible();
+ await page.locator('.save-section summary').click();await page.locator('#save').click();await expect(page.locator('#save')).toHaveText('저장 완료');
+ await page.getByRole('button',{name:'저장 공간 확인',exact:true}).click();await expect(page.locator('#offline-storage-info')).toContainText('사용 가능');
+ const pending=page.waitForEvent('download');await page.locator('#backup').click();const file=await(await pending).path();
+ await page.reload();await expect(page.locator('#restore-backup')).toBeVisible();await page.locator('#restore').setInputFiles(file);await expect(page.locator('#advance-day')).toBeVisible();
+ await page.reload();await page.locator('#restore').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{broken')});await expect.poll(()=>dialog).toContain('복원 실패');await expect(page.locator('.start-save')).toContainText('1일 차');await expect(page.locator('#entry-load')).toBeEnabled();
+});
+test('failed manual save leaves the committed date available after reopening',async({page})=>{
+ let message='';page.on('dialog',async d=>{message=d.message();await d.accept();});
+ await page.goto('/');await page.locator('#entry-new').click();await page.locator('#start').click();await expect(page.locator('#advance-day')).toBeVisible();await page.locator('.save-section summary').click();
+ await page.evaluate(()=>{const original=IDBDatabase.prototype.transaction;IDBDatabase.prototype.transaction=function(...args){const tx=original.apply(this,args);if(args[1]==='readwrite')queueMicrotask(()=>tx.abort());return tx;};});
+ await page.locator('#save').click();await expect(page.locator('#save')).toHaveText('다시 저장');await expect.poll(()=>message).toContain('이전 자동 저장은 유지');await page.reload();await expect(page.locator('.start-save')).toContainText('1일 차');await expect(page.locator('#entry-load')).toBeEnabled();
+});

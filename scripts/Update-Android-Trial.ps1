@@ -8,10 +8,20 @@ if (!$ApkPath) {
     $picker = New-Object System.Windows.Forms.OpenFileDialog
     $picker.Filter = 'Android APK (*.apk)|*.apk'
     $picker.Title = 'Choose the new BASEBALL EMPIRE APK'
+    $picker.InitialDirectory = $PSScriptRoot
     if ($picker.ShowDialog() -ne 'OK') { exit }
     $ApkPath = $picker.FileName
 }
 $ApkPath = (Resolve-Path $ApkPath).Path
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zip = [IO.Compression.ZipFile]::OpenRead($ApkPath)
+try {
+    $entry = $zip.GetEntry('assets/public/build.json')
+    if (!$entry) { throw 'Not a BASEBALL EMPIRE offline update APK. No device data was touched.' }
+    $reader = New-Object IO.StreamReader($entry.Open())
+    try { $build = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+    if ($build.edition -ne 'offline-mobile' -or $build.package -ne $package) { throw 'The APK belongs to a different app. No device data was touched.' }
+} finally { $zip.Dispose() }
 function Quote-Arg([string]$value) {
     if ($value -notmatch '[\s"]') { return $value }
     return '"' + ([regex]::Replace($value, '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"'
@@ -69,6 +79,8 @@ try {
         $directories = Invoke-Adb -Arguments @('shell','run-as',$package,'ls')
         Require-OK $directories 'The installed app does not allow private data export. It was not removed.'
         $names = @($directories.Out -split "`r?`n" | Where-Object { $_ -in @('app_webview','files','shared_prefs','databases') })
+        $legacyBackups = Invoke-Adb -Arguments @('shell','run-as',$package,'ls','-d','cache/backups')
+        if ($legacyBackups.Code -eq 0) { $names += 'cache/backups' }
         if ($names -notcontains 'app_webview') { throw 'WebView save directory missing. Existing app was not removed.' }
         Require-OK (Invoke-Adb -Arguments (@('exec-out','run-as',$package,'tar','-cf','-') + $names) -OutputFile $archive) 'Data backup failed. Existing app was not removed.'
         $listing = & tar.exe -tf $archive 2>&1
@@ -94,7 +106,13 @@ try {
             Restore-AppData $archive
             throw 'New APK could not be installed. Original app and saved data were restored.'
         }
-        Restore-AppData $archive
+        try { Restore-AppData $archive }
+        catch {
+            [void](Invoke-Adb -Arguments @('uninstall',$package))
+            Require-OK (Invoke-Adb -Arguments @('install',$oldApk)) 'Could not return to the original app. Keep the verified PC backup.'
+            Restore-AppData $archive
+            throw 'New app could not restore the data. Original app and saved data were restored.'
+        }
     } else { Require-OK $result 'APK installation failed. Existing app was not removed.' }
     Require-OK (Invoke-Adb -Arguments @('shell','am','start','-n',($package+'/.MainActivity'))) 'Could not open the game.'
     Write-Host 'Update complete. Check Continue and the saved date. Keep the PC backup until verified.'

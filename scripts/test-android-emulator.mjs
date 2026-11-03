@@ -15,7 +15,7 @@ async function attach(){
  }
  if(!target)throw Error('Android WebView debugger did not become ready');
  socket=new WebSocket(target.webSocketDebuggerUrl);await new Promise((ok,no)=>{socket.onopen=ok;socket.onerror=no;});
- socket.onmessage=({data})=>{const response=JSON.parse(data);if(response.method==='Page.javascriptDialogOpening')command('Page.handleJavaScriptDialog',{accept:true}).catch(()=>{});const task=pending.get(response.id);if(task){pending.delete(response.id);clearTimeout(task.timer);if(response.error)task.reject(Error(JSON.stringify(response.error)));else task.resolve(response.result);}};
+ socket.onmessage=({data})=>{const response=JSON.parse(data);if(response.method==='Page.javascriptDialogOpening'){console.log('Android dialog:',response.params?.message);command('Page.handleJavaScriptDialog',{accept:true}).catch(()=>{});}const task=pending.get(response.id);if(task){pending.delete(response.id);clearTimeout(task.timer);if(response.error)task.reject(Error(JSON.stringify(response.error)));else task.resolve(response.result);}};
  await command('Page.enable');
 }
 function command(method,params={}){return new Promise((resolve,reject)=>{const n=++serial,timer=setTimeout(()=>{pending.delete(n);reject(Error('CDP timeout: '+method));},120000);pending.set(n,{resolve,reject,timer});socket.send(JSON.stringify({id:n,method,params}));});}
@@ -39,7 +39,7 @@ async function tapNative(pattern,required=true){
 const savedDay=`(async()=>{const db=await new Promise((ok,no)=>{const r=indexedDB.open('baseball-empire-mobile-v1',1);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});return new Promise((ok,no)=>{const tx=db.transaction('records'),s=tx.objectStore('records'),r=s.get('head');r.onsuccess=()=>{const entry=r.result?.current.entries.find(e=>e.field==='day');if(!entry){ok(null);return}const q=s.get(entry.key);q.onsuccess=()=>ok(JSON.parse(q.result));q.onerror=()=>no(q.error)};tx.oncomplete=()=>db.close()})})()`;
 try{
  await attach();await until(`!!document.querySelector('#entry-new')`);
- assert.equal(await evaluate('window.beOfflineMobile'),true);
+ assert.equal(await evaluate('window.beOfflineMobile'),true);assert.equal(await evaluate('window.beOfflineNative'),true,'native plugin bridge is available');
  await evaluate(`document.querySelector('#entry-new').click();document.querySelector('#start').click()`);
  await until(`!!document.querySelector('#advance-day')&&!document.querySelector('#advance-day').disabled`);
  const initial=await evaluate(savedDay);assert.equal(initial,1);
@@ -76,4 +76,7 @@ try{
  await writeFile(out+'/reopened.png',execFileSync('adb',['exec-out','screencap','-p']));
  await writeFile(out+'/report.json',JSON.stringify({platform:'Android emulator API 35',initialDay:initial,committedDay:committed,worker:true,forceStopRecovery:true,updateInPlace:true,nativeBackupExport:true,nativeBackupRestore:true,storage,timing,longTasks,samples},null,2));
  console.log('Android WebView: worker progression, stop and force-stop recovery PASS, committed day '+committed);
+}catch(error){
+ try{await writeFile(out+'/failure.xml',dumpUI());await writeFile(out+'/failure.png',execFileSync('adb',['exec-out','screencap','-p']));console.log('Android UI at failure:',dumpUI().slice(0,6000));await writeFile(out+'/logcat.txt',adb('logcat','-d','-t','500'));}catch{}
+ throw error;
 }finally{socket?.close();adb('forward','--remove','tcp:9223');}

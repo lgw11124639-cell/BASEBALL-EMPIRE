@@ -30,7 +30,7 @@ jobs:
       - run: npm run mobile:android
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config mobile/playwright.config.mjs
-      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "build-tools;35.0.0"
       - name: Prepare maintained signing
         env:
           BE_VERIFY_ONLY: ${{ inputs.verify_only }}
