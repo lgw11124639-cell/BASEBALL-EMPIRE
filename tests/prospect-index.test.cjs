@@ -1,0 +1,8 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);state.year=2048;state.players=Array.from({length:300},(_,id)=>({id:id+1,name:'후보'+id,teamId:id%10,age:20,position:id%2?'CF':'P',level:'2군',profile:{skills:{contact:50,power:50,eye:50,speed:50,fielding:50,arm:50,stuff:50,control:50,stamina:50}}}));let archiveReads=0;state.history.seasons={};for(let y=2027;y<2048;y++){const lines=state.players.map(p=>({id:p.id,atBats:2,inningsPitched:1}));Object.defineProperty(state.history.seasons,y,{enumerable:true,value:{get players(){archiveReads++;return lines}}});}state.careerRecords={1:[{year:2047,inningsPitched:65}],2:{2047:{year:2047,plateAppearances:500}}};const ranked=prospectRankingRows('pro');`);
+assert.equal(run('archiveReads'),21,'each archived season is read exactly once across all candidates');assert.equal(run('ranked.length'),10);assert.ok(run('ranked.every(row=>![1,2].includes(row.p.id))'),'career overrides snapshots; mapped legacy careers remain eligible for checks');
+run(`state.players=state.players.map(p=>({...p,retired:true}));archiveReads=0;prospectRankingRows('pro');`);assert.equal(run('archiveReads'),0,'no candidate means no archive read');
+console.log('PASS prospect archive reads bounded per season, legacy records, precedence and empty candidate fast path');
+
+run(`state.players=[{id:1,name:'선수',teamId:0,age:20,level:'2군',position:'CF'}];state.history.seasons={2047:{get players(){throw Error('unreadable old archive')}}};`);
+assert.match(run('leaguePane="prospects";league()'),/role="alert"/,'unreadable archive leaves league navigation available');assert.match(run('league()'),/data-league-pane="standings"/);

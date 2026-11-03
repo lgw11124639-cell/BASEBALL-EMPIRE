@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261103-physical-aging41';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261103-prospect-index42';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -5576,13 +5576,25 @@ function prospectPlateAppearances(p){return Number(p.plateAppearances)||((Number
 function prospectRankingRows(kind){
  const rows=[];
  if(kind==='pro'){
-  for(const p of state.players||[]){
-   if(p.retired||p.foreignPlayer||p.draftPending||p.contractSigned===false||!['1군','2군','육성'].includes(p.level)||!(Number(p.age)<=25))continue;
-   const team=state.teams.find(t=>String(t.id)===String(p.teamId));if(!team)continue;
-   // Established regulars are no longer prospects, even if they are young.
-   const seasons=new Map();
-   for(const [year,season] of Object.entries(state.history?.seasons||{}))if(Number(year)<Number(state.year)){const line=season.players?.find(x=>String(x.id)===String(p.id));if(line)seasons.set(Number(year),line);}
-   for(const line of state.careerRecords?.[p.id]||[])if(Number(line.year)<Number(state.year))seasons.set(Number(line.year),line);
+  const teams=new Map((state.teams||[]).map(t=>[String(t.id),t]));
+  const candidates=(state.players||[]).filter(p=>!p.retired&&!p.foreignPlayer&&!p.draftPending&&p.contractSigned!==false&&['1군','2군','육성'].includes(p.level)&&Number(p.age)<=25&&teams.has(String(p.teamId)));
+  const ids=new Set(candidates.map(p=>String(p.id))),historyByPlayer=new Map();
+  // An archived season can be lazily decoded. Read it once for all candidates,
+  // rather than re-reading every archived roster for each young player.
+  if(ids.size){
+   const archived=window.beEngineReadArchive?.(state.history?.seasons)||state.history?.seasons||{};
+   for(const [year,season] of Object.entries(archived)){
+    if(!(Number(year)<Number(state.year)))continue;
+    const lines=season?.players;if(!Array.isArray(lines))continue;
+    const seen=new Set();
+    for(const line of lines){const id=String(line.id);if(!ids.has(id)||seen.has(id))continue;seen.add(id);let seasons=historyByPlayer.get(id);if(!seasons){seasons=new Map();historyByPlayer.set(id,seasons);}seasons.set(Number(year),line);}
+   }
+  }
+  for(const p of candidates){
+   const team=teams.get(String(p.teamId)),seasons=new Map(historyByPlayer.get(String(p.id))||[]);
+   const stored=state.careerRecords?.[p.id];
+   const career=Array.isArray(stored)?stored:stored&&typeof stored==='object'?Object.values(stored):[];
+   for(const line of career)if(line&&Number(line.year)<Number(state.year))seasons.set(Number(line.year),line);
    const prior=[...seasons.values()];
    const pa=prospectPlateAppearances(p)+prior.reduce((n,x)=>n+prospectPlateAppearances(x),0);
    const ip=(Number(p.inningsPitched)||0)+prior.reduce((n,x)=>n+(Number(x.inningsPitched)||0),0);
@@ -5600,12 +5612,15 @@ function prospectRankingRows(kind){
    }
   }
  }
- const unique=new Set();
+ const scores=new Map(rows.map(row=>[row,prospectRankingScore(row.p)])),unique=new Set();
  return rows.filter(x=>{const key=x.p.careerId||x.kind+':'+x.p.id;if(unique.has(key))return false;unique.add(key);return true;})
-  .sort((a,b)=>prospectRankingScore(b.p)-prospectRankingScore(a.p)||Number(a.p.age)-Number(b.p.age)||String(a.kind).localeCompare(String(b.kind))||Number(a.p.id)-Number(b.p.id)).slice(0,10);
+  .sort((a,b)=>scores.get(b)-scores.get(a)||Number(a.p.age)-Number(b.p.age)||String(a.kind).localeCompare(String(b.kind))||Number(a.p.id)-Number(b.p.id)).slice(0,10);
 }
 function prospectsPanel(){
- const pro=prospectPane!=='amateur',rows=prospectRankingRows(pro?'pro':'amateur');
+ const pro=prospectPane!=='amateur';let rows;
+ try{rows=prospectRankingRows(pro?'pro':'amateur');}
+ catch(error){console.error('유망주 목록 조회 실패',error);return '<section class="dashboard-section prospect-surface"><h2>유망주</h2><p role="alert">유망주 목록을 불러오지 못했습니다. 다른 화면으로 이동한 뒤 다시 시도해 주세요.</p></section>';}
+
  return '<section class="dashboard-intro"><span class="section-kicker">PROSPECT WATCH</span><h2>유망주</h2><p>성장 여력·현재 기량·출전 경험을 종합한 스카우팅 순위입니다. 향후 활약을 보장하지 않습니다.</p></section><section class="dashboard-section prospect-surface"><div class="prospect-tabs" role="tablist" aria-label="유망주 분류">'+[['pro','프로'],['amateur','아마추어']].map(([key,label])=>'<button type="button" role="tab" aria-selected="'+(prospectPane===key)+'" data-prospect-pane="'+key+'" class="'+(prospectPane===key?'active':'')+'">'+label+'</button>').join('')+'</div><h3>'+(pro?'프로':'아마추어')+' 유망주 TOP 10</h3><p class="support-text">'+(pro?'25세 이하 국내 프로 선수 중 1군 통산 300타석·60이닝 이하 선수':'25세 이하 고교·대학·독립야구 미계약 선수 통합')+' · 최대 10명</p><div class="prospect-list">'+(rows.length?rows.map((x,i)=>{
   const p=x.p,record=x.record,played=(Number(record.games)||Number(record.atBats)||Number(record.inningsPitched??record.innings)||0)>0;
   const attrs=x.kind==='pro'?'data-prospect-player="'+Number(p.id)+'"':'data-amateur-player="'+Number(p.id)+'" data-amateur-kind="'+x.kind+'"';

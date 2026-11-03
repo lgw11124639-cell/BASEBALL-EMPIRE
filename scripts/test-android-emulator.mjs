@@ -27,7 +27,7 @@ async function tapWeb(selector){
 }
 async function until(expression){for(let i=0;i<120;i++){if(await evaluate(expression))return;await pause(500);}throw Error('Android condition not reached: '+expression);}
 function dumpUI(){try{adb('shell','rm','-f','/sdcard/be-window.xml');adb('shell','uiautomator','dump','/sdcard/be-window.xml');return adb('shell','cat','/sdcard/be-window.xml');}catch{return '';}}
-async function tapNative(pattern,required=true){
+async function tapNative(pattern,required=true,alternate=null){
  for(let attempt=0;attempt<12;attempt++){
   const xml=dumpUI();
   if(/text="Pixel Launcher[^"]*responding/.test(xml)){
@@ -41,6 +41,11 @@ async function tapNative(pattern,required=true){
    if(!pattern.test(text)&&!pattern.test(description))continue;
    const bounds=node.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);if(!bounds)continue;
    adb('shell','input','tap',String(Math.round((+bounds[1]+ +bounds[3])/2)),String(Math.round((+bounds[2]+ +bounds[4])/2)));return true;
+  }
+  if(alternate){
+   const node=(xml.match(/<node\b[^>]*>/g)||[]).find(node=>node.includes('enabled="true"')&&alternate.test((node.match(/text="([^"]*)"/)||[])[1]||''));
+   const bounds=node?.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+   if(bounds)adb('shell','input','tap',String(Math.round((+bounds[1]+ +bounds[3])/2)),String(Math.round((+bounds[2]+ +bounds[4])/2)));
   }
   if(!required)return false;await pause(500);
  }
@@ -60,12 +65,16 @@ try{
  await until(`!document.querySelector('#advance-day').disabled`);
  const committed=await evaluate(savedDay),timing=await evaluate('window.beLastStepTiming'),longTasks=await evaluate('window.__longTasks');
  assert.ok(committed>=3,'multiple actual daily calculations completed');assert.equal(timing.worker,true);
+ await tapWeb('[data-tab="league"]');await until(`!!document.querySelector('[data-league-pane="prospects"]')`);
+ await tapWeb('[data-league-pane="prospects"]');await until(`!!document.querySelector('.prospect-surface')`);
+ await tapWeb('[data-prospect-pane="amateur"]');await until(`!!document.querySelector('.prospect-surface')`);
+ await tapWeb('[data-tab="home"]');await until(`!!document.querySelector('#advance-day')`);
  // Actual ACTION_CREATE_DOCUMENT export, then ACTION_OPEN_DOCUMENT restore.
  const filename='baseball-empire-backup-2027-'+committed+'.json';
  await evaluate(`document.querySelector('#backup').click()`);
  await pause(1000);
  await tapNative(/^save$/i);
- await tapNative(/^OK$|^확인$/i);
+ await tapNative(/^OK$|^확인$/i,true,/^save$/i);
  await until(`!document.querySelector('#backup').disabled`);
  adb('pull','/sdcard/Download/'+filename,out+'/exported-backup.json');
  const exported=JSON.parse(await (await import('node:fs/promises')).readFile(out+'/exported-backup.json','utf8'));
@@ -75,7 +84,7 @@ try{
  if(!await tapNative(new RegExp('^'+filename.replaceAll('.','\\.')+'$'),false)){
   await tapNative(/show roots|show navigation drawer/i);await tapNative(/^downloads$/i);await tapNative(new RegExp('^'+filename.replaceAll('.','\\.')+'$'));
  }
- await tapNative(/^OK$|^확인$/i);
+ await tapNative(/^OK$|^확인$/i,true,new RegExp('^'+filename.replaceAll('.','\\.')+'$'));
  for(let i=0;i<60&&(await evaluate(savedDay))!==committed;i++)await pause(500);
  assert.equal(await evaluate(savedDay),committed,'native backup restore returns the exact exported date');
  const storage=await evaluate('window.beOfflineStorageInfo()');assert.ok(storage.appBytes>0);assert.ok(storage.availableBytes>0);

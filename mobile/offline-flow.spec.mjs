@@ -66,3 +66,8 @@ test('failed manual save leaves the committed date available after reopening',as
  await page.evaluate(()=>{const original=IDBDatabase.prototype.transaction;IDBDatabase.prototype.transaction=function(...args){const tx=original.apply(this,args);if(args[1]==='readwrite')queueMicrotask(()=>tx.abort());return tx;};});
  await page.locator('#save').click();await expect(page.locator('#save')).toHaveText('다시 저장');await expect.poll(()=>message).toContain('이전 자동 저장은 유지');await page.reload();await expect(page.locator('.start-save')).toContainText('1일 차');await expect(page.locator('#entry-load')).toBeEnabled();
 });
+test('professional and amateur prospect tabs open without blocking navigation',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
+ await page.goto('/');await page.locator('#entry-new').click();await page.locator('#start').click();await expect(page.locator('#advance-day')).toBeVisible();await page.locator('#advance-day').click();await expect(page.locator('#advance-day')).toBeEnabled();
+ await page.locator('[data-tab="league"]').click();await page.locator('[data-league-pane="prospects"]').click();await expect(page.locator('.prospect-surface')).toBeVisible();await page.locator('[data-prospect-pane="amateur"]').click();await expect(page.locator('.prospect-surface')).toBeVisible();await page.locator('[data-tab="home"]').click();await expect(page.locator('#advance-day')).toBeVisible();expect(errors).toEqual([]);
+});
