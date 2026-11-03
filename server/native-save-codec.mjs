@@ -99,8 +99,8 @@ export function normalizeNativeWire(previous,wire,delta,appendStarts=new Map()){
 // their historical arrays. Primitive strings/numbers need no serialization.
 export function snapshotPlayerPart(rows){
  function capture(value,depth){
-  if(value===null||typeof value!=='object')return {primitive:true,value};
-  if(!Array.isArray(value)&&depth<2)return {fields:new Map(Object.keys(value).map(key=>[key,capture(value[key],depth+1)]))};
+  if(value===null||typeof value!=='object')return value;
+  if(!Array.isArray(value)&&depth<2){const fields=new Map();for(const key of Object.keys(value))fields.set(key,capture(value[key],depth+1));return fields;}
   return {json:JSON.stringify(value)};
  }return rows.map(row=>capture(row,0));
 }
@@ -109,11 +109,11 @@ export function diffPlayerPart(before,rows){
  function add(op){if(ops.length>=4096){overflow=true;return}ops.push(op)}
  function walk(old,value,path){
   if(overflow)return;
-  if(old.primitive){if(!Object.is(old.value,value))add(['set',path,value]);return}
-  if(!old.fields){if(old.json!==JSON.stringify(value))add(['set',path,value]);return}
+  if(old===null||typeof old!=='object'){if(!Object.is(old,value))add(['set',path,value]);return}
+  if(!(old instanceof Map)){if(old.json!==JSON.stringify(value))add(['set',path,value]);return}
   if(!value||typeof value!=='object'||Array.isArray(value)){add(['set',path,value]);return}
-  for(const key of old.fields.keys())if(!Object.hasOwn(value,key))add(['delete',[...path,key]]);
-  for(const key of Object.keys(value)){const next=[...path,key];if(old.fields.has(key))walk(old.fields.get(key),value[key],next);else add(['set',next,value[key]])}
+  for(const key of old.keys())if(!Object.hasOwn(value,key))add(['delete',[...path,key]]);
+  for(const key of Object.keys(value)){const child=value[key];if(old.has(key)){const prior=old.get(key);if((prior===null||typeof prior!=='object')&&Object.is(prior,child))continue;walk(prior,child,[...path,key])}else add(['set',[...path,key],child])}
  }
  for(let i=0;i<rows.length&&!overflow;i++){if(i<before.length)walk(before[i],rows[i],[i]);else add(['set',[i],rows[i]])}
  if(rows.length<before.length)add(['length',[],rows.length]);return overflow?null:ops;
