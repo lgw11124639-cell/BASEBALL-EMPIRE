@@ -13,3 +13,22 @@ assert.equal(run('JSON.stringify(restedProfile)'),run('restedBefore'),'zero-fati
 run(`const restedClub={teamId:0,gameDay:200};recordPlayerExperience(restedBatter,'batting',4,restedClub);const sameDayWorkFatigue=restedProfile.fatigue;recoverBatterFatigue(restedBatter);`);
 assert.equal(run('restedProfile.fatigue'),run('sameDayWorkFatigue'),'zero-fatigue recovery pass cannot run again after same-day work');
 console.log('PASS real batting/defensive workload, catcher burden, daily/full rest, historical isolation and qualified fatigue rotation');
+// Training consumes the same fatigue pool as games, once per actual calendar day.
+run(`state=world(0);state.day=140;const trainingBatter=state.players.find(p=>p.position==='CF');trainingBatter.age=27;const tb=playerBaseball(trainingBatter);tb.fatigue=0;const normalTraining=recordBatterTrainingFatigue(trainingBatter,1.8),trainingAdded=tb.fatigue;recordBatterTrainingFatigue(trainingBatter,1.8);`);
+assert.ok(run('trainingAdded')>2,'full offseason training consumes physical energy');
+assert.equal(run('tb.fatigue'),run('trainingAdded'),'repeat training evaluation cannot charge fatigue twice');
+run(`state.day++;tb.fatigue=65;const reducedTraining=recordBatterTrainingFatigue(trainingBatter,1.8);`);
+assert.ok(run('reducedTraining<normalTraining*.5'),'fatigued hitters automatically reduce actual training load');
+run(`state.day++;trainingBatter.profile.injury={days:10};const rehabFatigue=tb.fatigue;const rehabTraining=recordBatterTrainingFatigue(trainingBatter,1.8);`);
+assert.equal(run('rehabTraining'),0,'injured hitters do not perform ordinary physical training');
+assert.equal(run('tb.fatigue'),run('rehabFatigue'),'rehabilitation is not charged ordinary training fatigue');
+// Equal qualified players must rotate after actual game workload, before extreme exhaustion.
+run(`state=world(0);state.day=160;const rotationStarter=state.players.find(p=>p.teamId===0&&p.position==='C'),rotationReserve=state.players.find(p=>p.teamId===0&&p.position==='C'&&p.id!==rotationStarter.id);
+for(const p of [rotationStarter,rotationReserve]){p.age=27;playerBaseball(p).fatigue=0;for(const key of ['contact','power','eye','speed','fielding','arm'])ensureProfile(p).skills[key]=65;}
+const rotationClub={teamId:0,gameDay:160,plan:{lineupPositions:new Map([[rotationStarter.id,'C']])}};
+for(let day=160;day<164;day++){state.day=day;rotationClub.gameDay=day;recoverBatterFatigue(rotationStarter);recordBatterTrainingFatigue(rotationStarter,.65);recordBatterFatigue(rotationStarter,'batting',4,rotationClub);recordBatterFatigue(rotationStarter,'defense',27,rotationClub);}
+const rotationPool=state.players.filter(p=>p.teamId===0&&p.position!=='P'&&!p.retired&&!p.draftPending);const rotated=chooseBattingNine(rotationPool,'우투',p=>p.id===rotationStarter.id||p.id===rotationReserve.id?90:60);`);
+assert.equal(run('rotated.length'),9,'rotation uses a complete nine-player lineup');
+assert.equal(run("rotated.assignedPositions.get(rotationReserve.id)"),'C','four consecutive full catching games trigger qualified reserve selection');
+assert.ok(run('playerBaseball(rotationStarter).fatigue')<85,'rotation starts before extreme exhaustion');
+console.log('PASS training workload, daily idempotency, managed training, rehab isolation and workload-driven rotation');

@@ -8,9 +8,9 @@ const source = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
 const start = source.indexOf('function finishPitchers(');
 const end = source.indexOf('function localTodayISO(', start);
 assert(start >= 0 && end > start, 'pitcher settlement function missing');
-const finishPitchers = new Function('state', 'addPitchingLine', 'playerBaseball',
+const finishPitchers = new Function('state', 'addPitchingLine', 'playerBaseball', 'playerPhysicalAging',
   source.slice(start, end) + ';return finishPitchers;')(
-  { day: 1 }, () => {}, () => ({ fatigue: 0 })
+  { day: 1 }, () => {}, () => ({ fatigue: 0 }), () => ({endurance:1})
 );
 function settle({ outs, won, entryLeads = [], exitLeads = [], goAhead = null, lossId = null, opponentRuns = won ? 1 : 4, requiredOuts = 27 }) {
   const usage = outs.map((n, i) => ({

@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../app.js'),'utf8');
 function extract(name,next){const start=source.indexOf('function '+name+'(');assert(start>=0,name+' missing');const end=source.indexOf(next,start);assert(end>start,name+' end missing');return source.slice(start,end)}
 const code=extract('pitchMatchup','function sharedHitBases(')+extract('pitcherSpeedBonus','function playerPhysical(');
-const context={playerConductEffects:()=>({contact:0,power:0,speed:0,eye:0,control:0,arm:0,healthFatigue:0,fixing:false}),pitchingArsenal:p=>({velocity:p.velocity,control:60,stamina:60,pitches:[{name:'직구',grade:60}]}),playerBaseball:p=>({fatigue:0,throwHand:'우투',batHand:'우타'})};
+const context={bePlayerEndurance:()=>60,playerConductEffects:()=>({contact:0,power:0,speed:0,eye:0,control:0,arm:0,healthFatigue:0,fixing:false}),pitchingArsenal:p=>({velocity:p.velocity,control:60,stamina:60,pitches:[{name:'직구',grade:60}]}),playerBaseball:p=>({fatigue:0,throwHand:'우투',batHand:'우타'})};
 vm.createContext(context);vm.runInContext(code,context);
 const batter={};
 const match=v=>context.pitchMatchup({velocity:v},batter,1);
