@@ -20390,9 +20390,14 @@ main.game-shell .record-room { padding: 26px !important; }
 #game-news-overlay.front-report-overlay .profile-facts > div small { color:#526d70 !important; opacity:1 !important; }
 #game-news-overlay.front-report-overlay .profile-facts > div strong { color:#173f43 !important; opacity:1 !important; font-size:18px !important; }
 /* Enlarge only the inner strike zone, retaining its card and field dimensions. */
-#be-replay-overlay .be-zone-field > .be-broadcast-zone-grid { width:110px !important; height:110px !important; left:20px !important; top:18px !important; }
+#be-replay-overlay .be-zone-field > .be-broadcast-zone-grid { width:110px !important; height:110px !important; left:22px !important; top:20px !important; }
 #be-replay-overlay .be-broadcast-zone-grid > span { font-size:11px !important; font-variant-numeric:tabular-nums; color:#294e63; }
 @media(max-width:600px) {
- #be-replay-overlay .be-zone-field > .be-broadcast-zone-grid { width:96px !important; height:96px !important; left:18px !important; top:15px !important; }
+ #be-replay-overlay .be-zone-field > .be-broadcast-zone-grid { width:96px !important; height:96px !important; left:20px !important; top:18px !important; }
  #be-replay-overlay .be-broadcast-zone-grid > span { font-size:10px !important; }
 }
+
+/* Keep outside pitches visible and define all nine cells over heat colors. */
+#be-replay-overlay .be-zone-field { overflow:visible !important; }
+#be-replay-overlay .be-broadcast-zone-grid { border:2px solid #426f91 !important; }
+#be-replay-overlay .be-broadcast-zone-grid > span { box-sizing:border-box; border:1px solid #829caf !important; }
