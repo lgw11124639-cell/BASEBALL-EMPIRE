@@ -1,13 +1,13 @@
 {
   "name": "baseball-empire-mobile",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Offline Android packaging for BASEBALL EMPIRE",
   "scripts": {
     "mobile:build": "node scripts/build-mobile.mjs",
     "mobile:android": "npm run mobile:build && cap sync android",
     "mobile:open": "cap open android",
-    "mobile:test": "node --test mobile/*.test.mjs",
+    "mobile:test": "npm run mobile:build && node --test mobile/*.test.mjs",
     "mobile:preview": "node scripts/preview-mobile.mjs"
   },
   "dependencies": {

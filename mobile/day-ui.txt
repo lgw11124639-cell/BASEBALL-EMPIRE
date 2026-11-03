@@ -1,0 +1,20 @@
+async function beAdvanceMobileDay(source){
+ if(source!=='auto'&&autoSeasonRunning)stopAutoSeason();
+ if(seasonStepBusy)return false;
+ seasonStepBusy=true;beRefreshAutoProgress();
+ const started=performance.now(),button=document.querySelector('#advance-day');
+ if(button)button.textContent='하루 계산 중…';
+ try{
+  const reply=await runMobileDay(state);
+  const saveStarted=performance.now();await cloudSave(reply.world);
+  state=reply.world;lastRenderPreparedState=state;
+  if(state.gameResults?.length)window.beNewsDay=state.gameResults.at(-1).day;
+  window.beLastStepTiming={backup:0,simulation:reply.engineMs,save:performance.now()-saveStarted,total:performance.now()-started,worker:true};
+  if(source==='auto'&&(autoSeasonRunning||document.querySelector('#game-news-overlay, #player-overlay'))){beRefreshAutoCalendar();beRefreshAutoProgress();}
+  else render();
+  // A paint and a fresh timer task precede the next date, even at maximum speed.
+  await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
+  return true;
+ }catch(error){stopAutoSeason();alert('하루 진행 실패: '+error.message);return false;}
+ finally{seasonStepBusy=false;const next=document.querySelector('#advance-day');if(next)next.textContent='하루 진행';beRefreshAutoProgress();}
+}

@@ -27,3 +27,27 @@ test('local game creation, real day, reload, backup and offline continuation wit
  await page.screenshot({path:'test-results/mobile-offline-home.png',fullPage:true});
  expect(external).toEqual([]);expect(errors).toEqual([]);
 });
+test('slow engine leaves UI responsive, stop waits for the current day and never queues catch-up days',async({page})=>{
+ await page.route('**/engine-worker.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace('const started = performance.now();','const started = performance.now(); while(performance.now()-started<700){};')});});
+ page.on('dialog',d=>d.accept());await page.goto('/');await page.locator('#entry-new').click();await page.locator('#start').click();await expect(page.locator('#advance-day')).toBeVisible();
+ await page.evaluate(()=>{window.__beats=0;window.__beatTimer=setInterval(()=>window.__beats++,20);});
+ await page.locator('#auto-season-speed').selectOption('0');await page.locator('#auto-season').click();
+ await expect(page.locator('#advance-day')).toHaveText('하루 계산 중…');
+ const before=await page.evaluate(()=>window.__beats);
+ await page.locator('#auto-season').click();
+ expect(await page.evaluate(()=>window.__beats)).toBeGreaterThanOrEqual(before);
+ await expect(page.locator('#advance-day')).toBeEnabled();
+ expect(await page.evaluate(()=>window.__beats)).toBeGreaterThan(8);
+ await expect(page.locator('.game-header')).toContainText('2027년 1월 2일');
+ await page.waitForTimeout(1000);
+ await expect(page.locator('.game-header')).toContainText('2027년 1월 2일');
+ expect(await page.evaluate(()=>window.beLastStepTiming.worker)).toBe(true);
+});
+test('worker failure keeps the saved date and stops automatic progression',async({page})=>{
+ await page.route('**/engine-worker.js',route=>route.fulfill({contentType:'text/javascript',body:'throw Error("intentional engine failure")'}));
+ let message='';page.on('dialog',async d=>{message=d.message();await d.accept();});
+ await page.goto('/');await page.locator('#entry-new').click();await page.locator('#start').click();await expect(page.locator('#advance-day')).toBeVisible();
+ await page.locator('#advance-day').click();await expect(page.locator('#advance-day')).toBeEnabled();
+ await expect.poll(()=>message).toContain('하루 진행 실패');
+ await page.reload();await expect(page.locator('.start-save')).toContainText('1일 차');
+});
