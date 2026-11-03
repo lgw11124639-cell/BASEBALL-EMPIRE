@@ -15,7 +15,7 @@ async function attach(){
  }
  if(!target)throw Error('Android WebView debugger did not become ready');
  socket=new WebSocket(target.webSocketDebuggerUrl);await new Promise((ok,no)=>{socket.onopen=ok;socket.onerror=no;});
- socket.onmessage=({data})=>{const response=JSON.parse(data);if(response.method==='Page.javascriptDialogOpening'){console.log('Android dialog:',response.params?.message);command('Page.handleJavaScriptDialog',{accept:true}).catch(()=>{});}const task=pending.get(response.id);if(task){pending.delete(response.id);clearTimeout(task.timer);if(response.error)task.reject(Error(JSON.stringify(response.error)));else task.resolve(response.result);}};
+ socket.onmessage=({data})=>{const response=JSON.parse(data);if(response.method==='Page.javascriptDialogOpening')console.log('Android dialog:',response.params?.message);const task=pending.get(response.id);if(task){pending.delete(response.id);clearTimeout(task.timer);if(response.error)task.reject(Error(JSON.stringify(response.error)));else task.resolve(response.result);}};
  await command('Page.enable');
 }
 function command(method,params={}){return new Promise((resolve,reject)=>{const n=++serial,timer=setTimeout(()=>{pending.delete(n);reject(Error('CDP timeout: '+method));},120000);pending.set(n,{resolve,reject,timer});socket.send(JSON.stringify({id:n,method,params}));});}
@@ -60,6 +60,7 @@ try{
  await evaluate(`document.querySelector('#backup').click()`);
  await pause(1000);
  await tapNative(/^save$/i);
+ await tapNative(/^OK$|^확인$/i);
  await until(`!document.querySelector('#backup').disabled`);
  adb('pull','/sdcard/Download/'+filename,out+'/exported-backup.json');
  const exported=JSON.parse(await (await import('node:fs/promises')).readFile(out+'/exported-backup.json','utf8'));
@@ -69,6 +70,7 @@ try{
  if(!await tapNative(new RegExp(filename.replaceAll('.','\\.')),false)){
   await tapNative(/show roots|show navigation drawer/i);await tapNative(/^downloads$/i);await tapNative(new RegExp(filename.replaceAll('.','\\.')));
  }
+ await tapNative(/^OK$|^확인$/i);
  for(let i=0;i<60&&(await evaluate(savedDay))!==committed;i++)await pause(500);
  assert.equal(await evaluate(savedDay),committed,'native backup restore returns the exact exported date');
  const storage=await evaluate('window.beOfflineStorageInfo()');assert.ok(storage.appBytes>0);assert.ok(storage.availableBytes>0);
