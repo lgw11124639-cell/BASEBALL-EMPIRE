@@ -28,7 +28,7 @@ test('local game creation, real day, reload, backup and offline continuation wit
  expect(external).toEqual([]);expect(errors).toEqual([]);
 });
 test('slow engine leaves UI responsive, stop waits for the current day and never queues catch-up days',async({page})=>{
- await page.route('**/engine-worker.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace('const started = performance.now();','const started = performance.now(); while(performance.now()-started<700){};')});});
+ await page.route('**/engine-worker.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text())+'\nconst actualHandler=self.onmessage;self.onmessage=event=>{const began=performance.now();while(performance.now()-began<700){};actualHandler(event)};'});});
  page.on('dialog',d=>d.accept());await page.goto('/');await page.locator('#entry-new').click();await page.locator('#start').click();await expect(page.locator('#advance-day')).toBeVisible();
  await page.evaluate(()=>{window.__beats=0;window.__beatTimer=setInterval(()=>window.__beats++,20);});
  await page.locator('#auto-season-speed').selectOption('0');await page.locator('#auto-season').click();

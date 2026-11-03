@@ -13,10 +13,14 @@ test('actual worker matches the canonical production engine for offseason and re
  for(const day of [1,100]){
   const input=JSON.parse(vm.runInContext('JSON.stringify(state)',c));input.day=day;
   const runtime=createOwnedEngineRuntime(source,structuredClone(input));runtime.context.Math=Object.assign(Object.create(Math),{random:random()});runtime.context.Date=FixedDate;
-  const expected=runOriginalEngineDay(structuredClone(input),{appSource:source},{takeOwnership:true,runtime}).state;
+  
   let reply;const context=vm.createContext({console,performance,structuredClone,setTimeout,clearTimeout,TextEncoder,TextDecoder,Date:FixedDate,Math:Object.assign(Object.create(Math),{random:random()}),self:{postMessage:v=>{reply=v;}}});
   vm.runInContext(readFileSync(new URL('../dist-mobile/engine-worker.js',import.meta.url),'utf8'),context);
-  context.self.onmessage({data:{id:1,world:structuredClone(input)}});
-  assert.equal(reply.error,undefined);assert.equal(reply.world.day,day+1);assert.deepEqual(JSON.parse(JSON.stringify(reply.world)),JSON.parse(JSON.stringify(expected)));
+  let current=input;
+  for(let step=0;step<2;step++){
+   const expected=runOriginalEngineDay(structuredClone(current),{appSource:source},{takeOwnership:true,runtime}).state;
+   context.self.onmessage({data:{id:step+1,world:structuredClone(current)}});
+   assert.equal(reply.error,undefined);assert.equal(reply.world.day,day+step+1);assert.deepEqual(JSON.parse(JSON.stringify(reply.world)),JSON.parse(JSON.stringify(expected)));current=structuredClone(reply.world);
+  }
  }
 });
