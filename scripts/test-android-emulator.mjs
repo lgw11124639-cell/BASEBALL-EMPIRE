@@ -72,7 +72,18 @@ try{
  assert.equal(await evaluate(savedDay),committed,'force-stop preserves exactly the committed date');
  await evaluate(`document.querySelector('#entry-load').click()`);await until(`!!document.querySelector('#advance-day')`);
  await writeFile(out+'/reopened.png',execFileSync('adb',['exec-out','screencap','-p']));
- await writeFile(out+'/report.json',JSON.stringify({platform:'Android emulator API 35',initialDay:initial,committedDay:committed,worker:true,forceStopRecovery:true,updateInPlace:true,nativeBackupExport:true,nativeBackupRestore:true,storage,timing,longTasks,samples},null,2));
+ // The legacy-signature updater uses this same run-as archive transfer. Check
+ // it against a fresh install with a newly allocated app data directory.
+ socket.close();adb('shell','am','force-stop',id);
+ const archivePath=out+'/migration-data.tar';
+ await writeFile(archivePath,execFileSync('adb',['exec-out','run-as',id,'tar','-cf','-','app_webview'],{maxBuffer:512*1024*1024}));
+ adb('uninstall',id);adb('install','android/app/build/outputs/apk/debug/app-debug.apk');
+ adb('push',archivePath,'/data/local/tmp/be-migration-data.tar');
+ adb('shell','run-as',id,'tar','-xf','/data/local/tmp/be-migration-data.tar');
+ await attach();await until(`!!document.querySelector('#entry-load')&&!document.querySelector('#entry-load').disabled`);
+ assert.equal(await evaluate(savedDay),committed,'legacy archive migration restores the committed world');
+ await (await import('node:fs/promises')).unlink(archivePath);adb('shell','rm','/data/local/tmp/be-migration-data.tar');
+ await writeFile(out+'/report.json',JSON.stringify({platform:'Android emulator API 35',initialDay:initial,committedDay:committed,worker:true,forceStopRecovery:true,updateInPlace:true,legacyArchiveMigration:true,nativeBackupExport:true,nativeBackupRestore:true,storage,timing,longTasks,samples},null,2));
  console.log('Android WebView: worker progression, stop and force-stop recovery PASS, committed day '+committed);
 }catch(error){
  try{await writeFile(out+'/failure.xml',dumpUI());await writeFile(out+'/failure.png',execFileSync('adb',['exec-out','screencap','-p']));console.log('Android UI at failure:',dumpUI().slice(0,6000));await writeFile(out+'/logcat.txt',adb('logcat','-d','-t','500'));}catch{}

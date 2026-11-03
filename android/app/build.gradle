@@ -35,6 +35,7 @@ android {
             if (maintainedKey) signingConfig signingConfigs.maintained
         }
         release {
+            signingConfig signingConfigs.maintained
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
