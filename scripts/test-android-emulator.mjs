@@ -20,6 +20,11 @@ async function attach(){
 }
 function command(method,params={}){return new Promise((resolve,reject)=>{const n=++serial,timer=setTimeout(()=>{pending.delete(n);reject(Error('CDP timeout: '+method));},120000);pending.set(n,{resolve,reject,timer});socket.send(JSON.stringify({id:n,method,params}));});}
 async function evaluate(expression){const r=await command('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result?.value;}
+async function tapWeb(selector){
+ const point=await evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});el.scrollIntoView({block:'center'});const r=el.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+ await command('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
+ await command('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+}
 async function until(expression){for(let i=0;i<120;i++){if(await evaluate(expression))return;await pause(500);}throw Error('Android condition not reached: '+expression);}
 function dumpUI(){try{adb('shell','rm','-f','/sdcard/be-window.xml');adb('shell','uiautomator','dump','/sdcard/be-window.xml');return adb('shell','cat','/sdcard/be-window.xml');}catch{return '';}}
 async function tapNative(pattern,required=true){
@@ -65,7 +70,7 @@ try{
  adb('pull','/sdcard/Download/'+filename,out+'/exported-backup.json');
  const exported=JSON.parse(await (await import('node:fs/promises')).readFile(out+'/exported-backup.json','utf8'));
  assert.equal(exported.day,committed);assert.equal(exported.teams.length,10);assert.ok(exported.players.length>=700);
- await evaluate(`document.querySelector('#advance-day').click()`);await until(`!document.querySelector('#advance-day').disabled`);assert.equal(await evaluate(savedDay),committed+1);
+ await tapWeb('#advance-day');for(let i=0;i<60&&(await evaluate(savedDay))!==committed+1;i++)await pause(500);await until(`!document.querySelector('#advance-day').disabled`);assert.equal(await evaluate(savedDay),committed+1);
  await evaluate(`document.querySelector('#restore-backup').click()`);await pause(1000);
  if(!await tapNative(new RegExp(filename.replaceAll('.','\\.')),false)){
   await tapNative(/show roots|show navigation drawer/i);await tapNative(/^downloads$/i);await tapNative(new RegExp(filename.replaceAll('.','\\.')));
