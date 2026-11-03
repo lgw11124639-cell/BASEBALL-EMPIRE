@@ -54,7 +54,7 @@ export function createAdvanceDayService({store,restoreSave,encodeSave=async s=>s
      }
     }
     const cached=meta?.rev===expectedRev?stateCache?.take(userId,slot,meta.rev,meta.digest):null;
-    const snapshot=cached?{...meta,save:cached.wire,fieldHashes:cached.fieldHashes}:store.load(userId,slot);mark('loadMs');
+    const snapshot=cached?{...meta,save:cached.wire,fieldHashes:cached.fieldHashes}:await(store.loadAsync?store.loadAsync(userId,slot):store.load(userId,slot));mark('loadMs');
     if(!snapshot)return {status:404,error:'save not found'};
     if(snapshot.rev!==expectedRev)return {status:409,error:'revision conflict',current_rev:snapshot.rev};
     const inputNative=isNativeSave(snapshot.save),native=nativeWire||inputNative;

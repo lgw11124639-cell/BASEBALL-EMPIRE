@@ -1,15 +1,25 @@
-import {gzip,gzipSync,gunzipSync} from 'node:zlib';
+import {gzip,gunzip,gzipSync,gunzipSync} from 'node:zlib';
 import {promisify} from 'node:util';
 import {compactNativeDelta} from './compact-native-delta.mjs';
 import {createHash} from 'node:crypto';
 import {nativeDeltaDigest} from './native-save-codec.mjs';
-const gzipAsync=promisify(gzip);
+const gzipAsync=promisify(gzip),gunzipAsync=promisify(gunzip);
 // Compress only the already calculated JSON delta. Two jobs bound temporary
 // buffers and leave the event loop free; no SQLite transaction is held here.
 export async function compressSerializedFields(set,{compress=raw=>gzipAsync(raw,{level:1})}={}){
  const entries=[...set],compressed=new Map();let next=0,failure=null;
  async function worker(){while(next<entries.length&&!failure){const [key,raw]=entries[next++];try{if(typeof raw!=='string')throw Error('Invalid serialized field');compressed.set(key,await compress(raw))}catch(error){failure=error}}}
  await Promise.all(Array.from({length:Math.min(2,entries.length)},worker));if(failure)throw failure;return compressed;
+}
+// Decode a consistent compressed snapshot outside its read transaction. Keep
+// insertion order identical to SQLite and drop compressed rows as they finish.
+export async function decodeSerializedRows(rows){
+ const decoded=new Array(rows.length);let next=0,failure=null;
+ async function worker(){while(next<rows.length&&!failure){const i=next++,row=rows[i];try{const raw=await gunzipAsync(row.content);decoded[i]=[row.field,JSON.parse(raw.toString('utf8')),createHash('sha256').update(raw).digest('hex')]}catch(error){failure=error}finally{rows[i]=null}}}
+ await Promise.all(Array.from({length:Math.min(2,rows.length)},worker));if(failure)throw failure;
+ const save=Object.create(null),fieldHashes=new Map();
+ for(const [key,value,hash] of decoded){Object.defineProperty(save,key,{value,enumerable:true,writable:true,configurable:true});fieldHashes.set(key,hash)}
+ return {save,fieldHashes};
 }
 // Requires a SAVEPOINT-compatible shard store on the same SQLite connection.
 // No simulation or asynchronous work may run inside commit().
@@ -61,6 +71,13 @@ export function createAdvanceDayStore(db,shards){
     const save={};for(const row of fieldRows.iterate(user,slot)){if(['__proto__','constructor','prototype'].includes(row.field))throw Error('Invalid native field');save[row.field]=row.field.startsWith('beServerPart_')?Buffer.from(row.content).toString('base64'):JSON.parse(gunzipSync(row.content).toString())}
     db.exec('RELEASE be_mobile_read');return {...m,save,compressedNative:true};
    }catch(error){db.exec('ROLLBACK TO be_mobile_read');db.exec('RELEASE be_mobile_read');throw error}
+  },
+  async loadAsync(user,slot){
+   // Never yield while this shared SQLite connection has a read savepoint.
+   let m,rows;db.exec('SAVEPOINT be_day_read');
+   try{m=metadata.get(user,slot);if(m)rows=fieldRows.all(user,slot);db.exec('RELEASE be_day_read')}
+   catch(error){db.exec('ROLLBACK TO be_day_read');db.exec('RELEASE be_day_read');throw error}
+   if(!m)return null;return {...m,slot,...await decodeSerializedRows(rows)};
   },
   load(user,slot){
    db.exec('SAVEPOINT be_day_read');

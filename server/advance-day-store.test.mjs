@@ -50,7 +50,7 @@ test('warm decoded state avoids reads and gzip restore but preserves DB authorit
  const seed={year:2027,day:1,players:[{id:1,name:'Original'}],teams:[],extension:{value:1},history:{seasons:{2026:{complete:true}}}};
  shards.put(1,'main',0,await createSaveWireCodec().pack(seed));
  let reads=0,restores=0,runs=0,fail=false;
- const originalLoad=store.load;store.load=(...args)=>{reads++;return originalLoad(...args)};
+ const originalLoad=store.loadAsync;store.loadAsync=(...args)=>{reads++;return originalLoad(...args)};
  const codecFactory=()=>{const codec=createSaveWireCodec();return {pack:s=>codec.pack(s),restore:s=>{restores++;return codec.restore(s)}}};
  const advance=createAdvanceDayService({store,stateCache:cache,codecFactory,restoreSave:s=>s,runDay:async state=>{runs++;if(fail){fail=false;state.players[0].name='Uncommitted';throw Error('deliberate failure')}state.day++;state.extension.value++;state.players[0].jsonOnly=undefined;state.nonFinite=NaN;return {state,result:{}}}});
  const first=await advance({userId:1,expectedRev:1,requestId:'warm-cache-first1'});assert.equal(first.status,200);assert.equal(first.day.timing.cacheHit,false);
@@ -105,7 +105,7 @@ test('native owned archive cache avoids SQL, world copies and unchanged archive 
  const shards=createTestShards(db),store=createAdvanceDayStore(db,shards),legacy=createSaveWireCodec(),cache=createDecodedDayCache();
  const initial={year:2046,day:100,players:[{id:1,name:'A',games:1}],teams:[],gameResults:[],history:{seasons:Object.fromEntries(Array.from({length:20},(_,i)=>[2025+i,{complete:true,players:Array.from({length:200},(_,id)=>({id,hits:100}))}]))}};
  shards.put(1,'main',0,await legacy.pack(initial));
- let failed=false,reads=0,failNext=false;const load=store.load;store.load=(...args)=>{reads++;return load(...args)};
+ let failed=false,reads=0,failNext=false;const load=store.loadAsync;store.loadAsync=(...args)=>{reads++;return load(...args)};
  const advance=createAdvanceDayService({store,restoreSave:s=>legacy.restore(s),codecFactory:createSaveWireCodec,ownsRestoredState:true,stateCache:cache,includeDelta:true,runDay:async s=>{
   assert.equal(s.players[0].nonFinite,undefined,'failed changes never escape into a later operation');
   if(s.players[0].games>1){assert.equal(s.players[0].jsonNaN,null);assert.equal(Object.hasOwn(s.players[0],'omitted'),false)}

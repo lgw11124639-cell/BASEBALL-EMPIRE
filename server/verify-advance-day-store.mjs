@@ -28,10 +28,10 @@ export async function verifyAdvanceStore(createShardStore){
  assert.equal((await restarted({...request,expectedRev:2})).status,409);
  assert.equal((await advance({...request,requestId:'atomic-request-0002'})).status,409);assert.equal(runs,1);
  // A legacy writer wins while asynchronous decoding runs: discard computed result.
- let release;
- const delayed=createAdvanceDayService({store,restoreSave:s=>new Promise(r=>{release=()=>r(s)}),runDay});
+ let release,entered;const ready=new Promise(resolve=>{entered=resolve});
+ const delayed=createAdvanceDayService({store,restoreSave:s=>new Promise(r=>{release=()=>r(s);entered()}),runDay});
  const work=delayed({...request,requestId:'atomic-request-race',expectedRev:2});
- await Promise.resolve();assert.equal((await delayed({...request,requestId:'atomic-request-busy',expectedRev:2})).status,409);
+ await ready;assert.equal((await delayed({...request,requestId:'atomic-request-busy',expectedRev:2})).status,409);
  shards.put(1,'main',2,{...initial,day:70});release();
  assert.equal((await work).status,409);assert.equal(store.load(1,'main').save.day,70);
  // A failure writing the receipt must roll back the already-written shard data.

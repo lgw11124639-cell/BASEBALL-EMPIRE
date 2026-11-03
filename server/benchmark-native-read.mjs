@@ -1,0 +1,9 @@
+// Synthetic in-memory SQLite cold-read comparison. No production save access.
+import {DatabaseSync} from 'node:sqlite';import {gzipSync} from 'node:zlib';import {randomBytes} from 'node:crypto';import {performance} from 'node:perf_hooks';import {createAdvanceDayStore} from './advance-day-store.mjs';
+const db=new DatabaseSync(':memory:');try{
+ db.exec('CREATE TABLE be_save_shard_meta(user_id INTEGER,slot TEXT,rev INTEGER,updated_at TEXT,digest TEXT,compressed_bytes INTEGER,PRIMARY KEY(user_id,slot));CREATE TABLE be_save_shards(user_id INTEGER,slot TEXT,field TEXT,content BLOB,PRIMARY KEY(user_id,slot,field))');db.prepare("INSERT INTO be_save_shard_meta VALUES(1,'main',1,'now','baseline',0)").run();
+ const insert=db.prepare("INSERT INTO be_save_shards VALUES(1,'main',?,?)");let jsonBytes=0;for(let i=0;i<32;i++){const raw=JSON.stringify({id:i,image:randomBytes(262144).toString('hex')});jsonBytes+=Buffer.byteLength(raw);insert.run('field'+i,gzipSync(raw,{level:1}))}
+ const store=createAdvanceDayStore(db,{}),results=[];let priorHashes;
+ for(const asynchronous of [false,true]){let responsive=false;const tick=new Promise(resolve=>setImmediate(()=>{responsive=true;resolve()})),start=performance.now();const snapshot=asynchronous?await store.loadAsync(1,'main'):store.load(1,'main'),ms=performance.now()-start;const hashes=JSON.stringify([...snapshot.fieldHashes]);if(priorHashes&&priorHashes!==hashes)throw Error('Decoded field order or bytes changed');priorHashes=hashes;results.push({mode:asynchronous?'two-async-gunzip-jobs':'prior-sync-gunzip',totalMs:+ms.toFixed(2),eventLoopResponsive:responsive,fields:Object.keys(snapshot.save).length});await tick}
+ console.log(JSON.stringify({stage:'native-cold-read-benchmark',productionWrites:false,syntheticJsonMiB:+(jsonBytes/1048576).toFixed(2),results}));
+}finally{db.close()}
