@@ -62,3 +62,11 @@ npx playwright test --config mobile/playwright.config.mjs
 GitHub Actions의 **Build offline Android trial → Run workflow**에서도 동일한 검사를 거쳐 개발 APK를 만들 수 있습니다. 성공한 실행의 `baseball-empire-offline-trial-apk` 아티팩트를 내려받습니다. 이는 시험용 다운로드이며 스토어에 게시하지 않습니다.
 
 0.2.0 검증에는 비시즌/정규경기의 Worker 대 원본 엔진 결과 일치, 지연된 계산 중 화면 반응·정지·추가 진행 방지, Worker 오류 시 저장 보존이 포함됩니다. Android 빌드 작업은 API 35 에뮬레이터에서 실제 WebView 자동 진행·정지·강제 종료 후 동일 날짜 복원도 검사하고 `android-emulator-evidence`에 측정 JSON과 스크린샷을 남깁니다.
+
+### 0.2.0 확인 결과
+
+로컬 검사 8개와 브라우저 흐름 3개를 통과했습니다. Android API 35 실제 에뮬레이터 WebView에서 1일 차 → 16일 차 진행, 현재 하루 종료 후 자동 진행 정지, 강제 종료/재실행 후 정확히 같은 저장 날짜 복원을 확인했습니다. 실제 휴대폰의 장기 진행 속도·발열 검증을 대신하지 않습니다.
+
+빌드/실행 증거: https://github.com/lgw11124639-cell/BASEBALL-EMPIRE/actions/runs/41587483104
+
+CI에서 만드는 개발 APK는 실행마다 디버그 서명이 달라 기존 시험판에 덮어 설치되지 않을 수 있습니다. 서명 충돌을 해결하려고 기존 앱부터 삭제하지 마세요. 앱 외부에 백업을 확보하고 데이터 이전을 확인한 뒤 교체해야 합니다. 정식 출시에는 일관된 별도 릴리스 서명과 업데이트 검증이 필요합니다.
