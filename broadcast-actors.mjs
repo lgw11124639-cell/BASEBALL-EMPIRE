@@ -94,10 +94,10 @@ export const FRAME_ANCHORS = [
   ],
 ];
 export const RELEASE_PIXELS = [
-  [184, 11],
-  [214, 42],
-  [221, 73],
-  [225, 139],
+  [184, 23],
+  [195, 50],
+  [216, 76],
+  [217, 131],
 ];
 export function pitchFrame(phase) {
   return phase < 0.5
@@ -132,7 +132,7 @@ async function sourceSheet() {
   if (!sheetPromise)
     sheetPromise = (async () => {
       const image = new Image();
-      image.src = PITCH_SHEET + "?v=20261107-pose-frames64";
+      image.src = PITCH_SHEET + "?v=20261107-pose-frames65";
       await image.decode();
       const canvas = document.createElement("canvas");
       canvas.width = image.width;
