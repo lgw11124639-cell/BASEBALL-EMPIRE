@@ -32,7 +32,7 @@ function runScenario(name,events,expected,{walkoff=false,homeRuns=0}={}){
  assert.ok(limitStart>=0&&limitEnd>limitStart,'actual starter limit dependency found');
  const positionStart=source.indexOf('function recordPlayerExperience('),positionEnd=source.indexOf('function catcherGameCalling(',positionStart);
  const fatigueStart=source.indexOf('function recordBatterFatigue(');
- vm.runInContext(source.slice(fatigueStart,positionStart)+source.slice(positionStart,positionEnd)+source.slice(limitStart,limitEnd)+source.slice(start,end),context);
+ vm.runInContext(source.slice(source.indexOf('function beManagerDefensePlan('),source.indexOf('function beDefenseRangeAdjustment('))+source.slice(fatigueStart,positionStart)+source.slice(positionStart,positionEnd)+source.slice(limitStart,limitEnd)+source.slice(start,end),context);
  const half=vm.runInContext('playHalf',context);
  const scored=half(batting,fielding,9,()=>0.99,walkoff);
  const sum=k=>batters.reduce((n,p)=>n+(p[k]||0),0);

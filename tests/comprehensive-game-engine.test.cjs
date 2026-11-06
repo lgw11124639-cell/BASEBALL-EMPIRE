@@ -24,7 +24,7 @@ const context=vm.createContext({state,Math,Number,playerConductEffects:()=>({con
  ri:(r,a,b)=>a+Math.floor(r()*(b-a+1)),
  markBlownSave:()=>{},
 });
-vm.runInContext(src.slice(src.indexOf('const LEAGUE_BALLS='),src.indexOf('function leagueOfficeSeason('))+extract('leagueOfficeSeason')+extract('leagueBallFactors')+extract('sharedHitAdvance')+extract('sharedPlateOutcome')+extract('extraBaseHitBases')+extract('recordBatterFatigue')+extract('recordPlayerExperience')+extract('assignedFieldingPosition')+extract('fieldingPositionPenalty')+extract('resolveBattedBall')+extract('starterPitchLimit')+extract('beAttemptPickoff')+extract('playHalf'),context);
+vm.runInContext(src.slice(src.indexOf('const LEAGUE_BALLS='),src.indexOf('function leagueOfficeSeason('))+extract('leagueOfficeSeason')+extract('leagueBallFactors')+extract('sharedHitAdvance')+extract('sharedPlateOutcome')+extract('extraBaseHitBases')+extract('recordBatterFatigue')+extract('recordPlayerExperience')+extract('assignedFieldingPosition')+extract('fieldingPositionPenalty')+extract('beManagerDefensePlan')+extract('beDefenseRangeAdjustment')+extract('beBroadcastFieldPoints')+extract('resolveBattedBall')+extract('starterPitchLimit')+extract('beAttemptPickoff')+extract('playHalf'),context);
 const batter={id:1,position:'OF'},pitcher={id:99,position:'P',overall:60};
 const outcome=vm.runInContext('sharedPlateOutcome',context);
 const advance=vm.runInContext('sharedHitAdvance',context);

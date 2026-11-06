@@ -11,6 +11,7 @@ run(`state=world(0);state.day=100;state.gameResults=[];
 assert.equal(run('countersAfter'),run('countersBefore'),'national matches never inflate domestic counters');
 for(const g of run('ntTestGames')){
  assert.ok(g&&g.recordVersion===2);
+ for(const side of ['home','away']){assert.equal(Object.keys(g[side+'Positions']).length,9);for(const id of Object.keys(g[side+'Positions']))assert.ok(g[side+'Batters'].some(p=>String(p.id)===id&&p.name&&p.position));}
  const all=[...g.homePitchers,...g.awayPitchers],winning=g.homeRuns>g.awayRuns?g.homePitchers:g.awayPitchers,losing=g.homeRuns>g.awayRuns?g.awayPitchers:g.homePitchers;
  assert.equal(all.filter(p=>p.win).length,1,'one winning pitcher');
  assert.equal(all.filter(p=>p.loss).length,1,'one losing pitcher');
