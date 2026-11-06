@@ -26,3 +26,11 @@ for(const pos of ['1B','2B','3B','SS','P','C','LF','CF','RF'])for(const outcome 
 assert.equal(run('beBroadcastRunnerMoves({batterId:9,bases:[1,null,null],afterBases:[],outcome:"병살",outsBefore:0,outsAfter:2}).filter(x=>x.out).length'),2);
 assert.notEqual(run('beBroadcastPitchPath({type:"직구"},400,330,360,260)'),run('beBroadcastPitchPath({type:"슬라이더"},400,330,360,260)'));
 console.log('PASS named defense positions, first-base tags and pitcher coverage, double-play receivers, cutoff returns and type-specific pitch movement');
+for(const delivery of ['오버핸드','쓰리쿼터','사이드암','언더핸드'])for(const type of ['직구','투심','싱커','커터','슬라이더','스위퍼','커브','너클커브','체인지업','포크볼','스플리터']){
+ const right=run('beBroadcastPitchPath('+JSON.stringify({type,delivery,throwHand:'우투'})+',360,280,360,200)').match(/-?\d+(?:\.\d+)?/g).map(Number),left=run('beBroadcastPitchPath('+JSON.stringify({type,delivery,throwHand:'좌투'})+',360,280,360,200)').match(/-?\d+(?:\.\d+)?/g).map(Number);
+ assert.deepEqual(right.slice(-2),[360,280]);assert.deepEqual(left.slice(-2),[360,280]);for(let i=0;i<right.length;i++)assert.ok(Math.abs(i%2?right[i]-left[i]:right[i]+left[i]-720)<.01,delivery+' '+type+' mirrors pitching arm while retaining the recorded endpoint');
+}
+assert.equal(run('beReplayHighlight({outcome:"홈런",runs:1})'),true);assert.equal(run('beReplayHighlight({eventType:"baserunning",runAction:"pickoff"})'),true);assert.equal(run('beReplayHighlight({outcome:"볼넷",outsBefore:0,outsAfter:0})'),false);
+console.log('PASS arm-mirrored release and pitch movement with exact endpoints, and recorded highlight selection');
+assert.equal(run('beBroadcastBatterSwings({call:"인플레이"})'),true);assert.equal(run('beBroadcastBatterSwings({call:"파울"})'),true);assert.equal(run('beBroadcastBatterSwings({call:"헛스윙 삼진"})'),true);assert.equal(run('beBroadcastBatterSwings({call:"루킹 스트라이크"})'),false);assert.equal(run('beBroadcastBatterSwings({call:"볼"})'),false);
+console.log('PASS saved swing calls control the batter; called strikes and balls stay looking');
