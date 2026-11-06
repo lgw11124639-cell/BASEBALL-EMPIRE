@@ -20511,3 +20511,56 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-stadium .be-diamond-second{left:22px;top:3px}
 #be-replay-overlay .be-stadium .be-diamond-third{left:1px;top:24px}
 #be-replay-overlay .be-stadium .be-diamond-plate{left:24px;top:43px}
+
+/* Cinematic replay surface and one moving baseball, with no permanent animation loop. */
+#be-replay-overlay .be-stadium{border-color:#385b68;box-shadow:0 12px 30px #102d4124,inset 0 0 0 1px #ffffff16;background:#071d31}
+#be-replay-overlay .be-stadium:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 57%,transparent 35%,#05152870 100%),linear-gradient(transparent 70%,#071d352b)}
+#be-replay-overlay .be-stadium-art{filter:saturate(.84) contrast(1.08)}
+#be-replay-overlay .be-stadium-top{background:linear-gradient(180deg,#061a30fa,#071d35c9 70%,transparent);padding-bottom:25px}
+#be-replay-overlay #be-stadium-velocity{font-variant-numeric:tabular-nums;letter-spacing:-1px;text-shadow:0 2px 9px #0004}
+#be-replay-overlay #be-stadium-view{background:#173e50ed!important;color:#f1e4c2!important;border:1px solid #e2cd9b70!important;box-shadow:inset 0 1px #ffffff16,0 3px 10px #06192c55}
+#be-replay-overlay .be-stadium-hud{background:linear-gradient(135deg,#15374bf2,#0b2338ed);border-color:#c0d8de35;box-shadow:0 6px 18px #031a3159,inset 0 1px #fff1}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-pitcher,#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-mound{transform:translateY(-100px)}
+#be-replay-overlay .be-stadium-strike-slot{top:66%}
+#be-replay-overlay .be-stadium .be-broadcast-zone-grid{width:132px!important;height:132px!important;border:1.5px solid #e4f0eb!important;background:#c2d4d199!important;box-shadow:0 0 0 3px #071f3833,0 5px 15px #041c3655}
+#be-replay-overlay #be-stadium-pitches>path{opacity:.17;stroke-width:1}
+#be-replay-overlay .be-stadium[data-flight=pitch] #be-stadium-pitches>.be-pitch-new,#be-replay-overlay .be-stadium[data-flight=pitch] .be-zone-marker{visibility:hidden}
+#be-replay-overlay .be-stadium[data-flight=pitch] #be-stadium-pitches>path:nth-last-child(2){opacity:0}
+#be-replay-overlay #be-stadium-motion{pointer-events:none}
+#be-replay-overlay .be-flight-trail{fill:none;stroke:#fff0bd;stroke-width:2.5;stroke-linecap:round;opacity:.6}
+#be-replay-overlay .be-flying-ball{filter:drop-shadow(0 2px 3px #00152680)}
+#be-replay-overlay .be-flying-ball circle{fill:#fffdf4;stroke:#d1cbb5;stroke-width:.7}
+#be-replay-overlay .be-flying-ball path{fill:none;stroke:#c86658;stroke-width:1}
+#be-replay-overlay .be-flying-ball ellipse{fill:#fff;opacity:.9}
+#be-replay-overlay #be-stadium-trajectory path{animation:none;stroke-dasharray:none;stroke-width:2;opacity:.4}
+#be-replay-overlay .be-stadium[data-flight=batted] #be-stadium-trajectory{visibility:hidden}
+#be-replay-overlay .be-stadium-result{border-color:#d7e5df45;border-radius:6px;background:linear-gradient(135deg,#163c4ef5,#0a273cee);box-shadow:0 4px 15px #031c3555;letter-spacing:-.4px;transition:opacity .18s,translate .18s}
+#be-replay-overlay .be-stadium[data-flight] .be-stadium-result{opacity:0;translate:0 5px}
+#be-replay-overlay .be-stadium-caption{background:#071e32e8;color:#c3d6dc;letter-spacing:.15px}
+#be-replay-overlay .be-broadcast-duel>section{background:linear-gradient(145deg,#fffdf9,#f7f1eb);box-shadow:0 3px 10px #26485408;border-top-width:2px}
+#be-replay-overlay .be-broadcast-duel>section.be-duel-batter{background:linear-gradient(145deg,#faffff,#edf4f6)}
+#be-replay-overlay .be-broadcast-duel b{font-variant-numeric:tabular-nums}
+@media(max-width:360px){#be-replay-overlay .be-stadium-strike-slot{left:44%}#be-replay-overlay .be-stadium .be-broadcast-zone-grid{width:112px!important;height:112px!important}}
+@media(prefers-reduced-motion:reduce){#be-replay-overlay .be-stadium-result{transition:none}}
+#be-replay-overlay .be-stadium[data-view=field] .be-stadium-hud{display:none}
+#be-replay-overlay .be-stadium[data-view=field] .be-stadium-top{background:linear-gradient(#061a30ed,transparent)}
+#be-replay-overlay .be-stadium-fielders text{font-size:14px;stroke:#123b32;stroke-width:4px}
+#be-replay-overlay .be-stadium-fielders circle{r:9;fill:#eaf1ef;stroke:#1a4b5b;stroke-width:3}
+#be-replay-overlay .be-stadium-fielders .be-fielder-body>circle{filter:drop-shadow(0 2px 2px #001b3460)}
+#be-replay-overlay .be-stadium-fielders .be-fielder-gathered circle{fill:#f3cb7d;stroke:#fff5ce}
+#be-replay-overlay #be-stadium-runners{pointer-events:none}
+#be-replay-overlay .be-runner-shadow{fill:#072a3866}
+#be-replay-overlay .be-runner-body circle{fill:#f2d9b9;stroke:#263f4b;stroke-width:1}
+#be-replay-overlay .be-runner-body path{fill:#f6ce79;stroke:#7c532c;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#be-replay-overlay #be-stadium-runners text{fill:#fff4cf;stroke:#173b36;stroke-width:4;paint-order:stroke;font-family:system-ui,sans-serif;font-size:14px;font-weight:800}
+#be-replay-overlay .be-runner-moving .be-runner-body{animation:be-running-stride .2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes be-running-stride{from{transform:translateY(0) rotate(-7deg)}to{transform:translateY(-3px) rotate(7deg)}}
+@media(prefers-reduced-motion:reduce){#be-replay-overlay .be-runner-moving .be-runner-body{animation:none}}
+#be-replay-overlay .be-stadium-fielders .be-fielder-shadow{fill:#062d3b55;stroke:none;filter:none}
+#be-replay-overlay .be-stadium-fielders .be-fielder-body>circle{r:5;fill:#e6c7a8;stroke:#15394d;stroke-width:1}
+#be-replay-overlay .be-fielder-uniform{fill:#dce8ee;stroke:#244e67;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#be-replay-overlay .be-fielder-glove{fill:#bd8854;stroke:#76502e;stroke-width:1.5}
+#be-replay-overlay .be-fielder-gathered .be-fielder-glove{animation:be-fielding-follow-through .42s ease-in-out both;transform-box:fill-box;transform-origin:center}
+#be-replay-overlay .be-throw-trail{fill:none;stroke:#dceff4;stroke-width:2;opacity:.65;stroke-linecap:round}
+@keyframes be-fielding-follow-through{0%{transform:translate(-4px,7px) rotate(-25deg)}45%{transform:translate(-10px,-4px) rotate(-80deg)}100%{transform:translate(2px,-5px) rotate(30deg)}}
+@media(max-width:600px){#be-replay-overlay .be-stadium-fielders text,#be-replay-overlay #be-stadium-runners text{font-size:20px;stroke-width:3px}}

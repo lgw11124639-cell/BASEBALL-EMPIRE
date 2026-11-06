@@ -11,8 +11,8 @@ android {
         applicationId "com.baseballempire.game"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode = (project.findProperty('beVersionCode') ?: '4').toString().toInteger()
-        versionName = (project.findProperty('beVersionName') ?: '0.4.0').toString()
+        versionCode = (project.findProperty('beVersionCode') ?: '5').toString().toInteger()
+        versionName = (project.findProperty('beVersionName') ?: '0.4.1').toString()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

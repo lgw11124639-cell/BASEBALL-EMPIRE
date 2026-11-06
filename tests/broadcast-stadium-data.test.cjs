@@ -3,3 +3,11 @@ run(`const event={pitchSequence:[{number:1,zoneX:0,zoneY:100,call:'볼'},{number
 assert.equal(run('beBroadcastPitchPoints(event,1).length'),1);assert.equal(run('beBroadcastPitchPoints(event,1)[0].x'),0);assert.equal(run('beBroadcastPitchPoints(event,2).length'),1);assert.equal(run('beBroadcastPitchPoints(event,3).length'),2);
 assert.equal(run('beBroadcastBallPath({})'),null);assert.equal(run('beBroadcastBallPath({sprayAngle:null})'),null);assert.ok(run('beBroadcastBallPath({sprayAngle:-30,launchAngle:20}).x<360'));assert.ok(run('beBroadcastBallPath({sprayAngle:30,launchAngle:20}).x>360'));
 console.log('PASS saved-only pitch positions, seen pitch bounds, explicit missing data and recorded spray direction');
+assert.equal(run('JSON.stringify(beBroadcastRunnerMoves({batterId:9,bases:[1,null,null],afterBases:[9,null,1],outcome:"안타"}))'),JSON.stringify([{id:9,from:0,to:1},{id:1,from:1,to:3}]));
+assert.equal(run('JSON.stringify(beBroadcastRunnerMoves({batterId:9,bases:[null,null,1],afterBases:[null,null,null],outcome:"희생플라이",runs:1,outsBefore:0,outsAfter:1}))'),JSON.stringify([{id:1,from:3,to:4}]));
+assert.equal(run('beBroadcastRunnerMoves({bases:[1,2,null],afterBases:[null,null,null],runs:1,outsBefore:1,outsAfter:2}).length'),0);
+assert.equal(run('beBroadcastRunnerMoves({batterId:9,bases:[1,null,null],afterBases:[],outcome:"홈런",runs:2}).length'),2);
+assert.equal(run('JSON.stringify(beBroadcastDefense({battedBall:{defenderPosition:"SS"},outcome:"땅볼 아웃",outsBefore:0,outsAfter:1}).throwBases)'), '[1]');
+assert.equal(run('JSON.stringify(beBroadcastDefense({battedBall:{defenderPosition:"SS"},outcome:"병살",outsBefore:0,outsAfter:2}).throwBases)'), '[2,1]');
+assert.equal(run('beBroadcastDefense({battedBall:{defenderPosition:"RF"},outcome:"홈런"})'),null);
+console.log('PASS recorded runner identity and base progression, unambiguous scoring, groundout and double-play fielding sequences');
