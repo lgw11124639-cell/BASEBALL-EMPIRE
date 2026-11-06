@@ -20601,7 +20601,7 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-broadcast-duel b{display:inline;margin-left:4px;font-size:10px}
 #be-replay-overlay .be-duel-pitcher section>div span:nth-child(1){display:none}
 #be-replay-overlay .be-duel-pitcher>div span:nth-child(-n+2){display:none}
-#be-replay-overlay .be-duel-batter>div span:last-child{display:none}
+#be-replay-overlay #be-duel-seen{display:none}
 #be-replay-overlay .be-replay-note{font-size:11px;margin:10px 0;color:#6c8390}
 #be-replay-overlay .be-replay-history{margin:0 0 14px;border:1px solid #d6e2e7;border-radius:10px;background:#fff;overflow:hidden}
 #be-replay-overlay .be-replay-history>summary{padding:12px 14px;cursor:pointer;font-size:12px;font-weight:700;color:#456576}
@@ -20738,7 +20738,7 @@ main.game-shell .record-room { padding: 26px !important; }
  #be-replay-overlay .be-replay-dialog>header{min-height:46px!important;padding:5px 0!important;margin-bottom:6px!important}
  #be-replay-overlay .be-replay-dialog>header small{display:none!important}
  #be-replay-overlay .be-replay-scoreboard{min-height:50px!important;padding:6px 10px!important}
- #be-replay-overlay .be-stadium-scene{height:260px}
+ #be-replay-overlay .be-stadium-scene{height:225px}
  #be-replay-overlay .be-stadium .be-zone-field,#be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid{width:68px!important;height:68px!important}
  #be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid>span{font-size:8.5px!important}
 }
@@ -20770,7 +20770,7 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-error-mark{fill:#ffda68;stroke:#562819;stroke-width:3;paint-order:stroke;font-size:29px;font-weight:900}
 #be-replay-overlay .be-broadcast-duel section>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 6px}
 #be-replay-overlay .be-duel-batter>div span:nth-child(3){display:none}
-#be-replay-overlay .be-duel-batter>div span:last-child{grid-column:1/-1}
+#be-replay-overlay .be-duel-batter>div .be-duel-today{display:block;grid-column:1/-1}
 @media(prefers-reduced-motion:reduce){#be-replay-overlay .be-stadium[data-celebration=homer],#be-replay-overlay .be-stadium[data-celebration=homer]::after{animation:none}}
 
 /* A short, pausable break between completed half innings. */
@@ -20780,3 +20780,15 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-half-change-overlay>strong{font-size:clamp(26px,5vw,40px);letter-spacing:.08em;color:#ffdd91}
 #be-replay-overlay .be-half-change-overlay>b{font-size:20px}
 #be-replay-overlay .be-half-change-overlay>p{margin:0;font-size:13px;line-height:1.6;color:#d5e5e8}
+
+#be-replay-overlay .be-duel-style{margin:0 0 6px;font-size:10px;line-height:1.4;color:#526e7b}
+#be-replay-overlay .be-duel-batter>div span:last-child{display:block}
+
+#be-replay-overlay .be-game-end-overlay{gap:7px;padding:14px;background:linear-gradient(145deg,#071b30fa,#18424afa)}
+#be-replay-overlay .be-game-end-overlay>strong{font-size:clamp(20px,4vw,30px);letter-spacing:0}
+#be-replay-overlay .be-game-end-score{font-size:clamp(13px,2.5vw,18px);line-height:1.4}
+#be-replay-overlay .be-game-end-records{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:500px}
+#be-replay-overlay .be-game-end-records p{display:flex;flex-direction:column;gap:3px;margin:0;padding:8px 4px;border:1px solid #b6d6dd33;border-radius:8px;background:#ffffff08;line-height:1.4;min-width:0}
+#be-replay-overlay .be-game-end-records small{font-size:9px;color:#b4ced5}
+#be-replay-overlay .be-game-end-records b{font-size:13px;color:#fff}
+#be-replay-overlay .be-game-end-records span{font-size:10px;color:#d5e5e8;overflow-wrap:anywhere}

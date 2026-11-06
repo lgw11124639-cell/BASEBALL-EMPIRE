@@ -56,3 +56,5 @@ assert.equal(run('replayIntl.awayBatters[0].position'),'CF');assert.equal(run('r
 console.log('PASS fence-clearing home runs, velocity-dependent faster pitches and immutable legacy international position recovery');
 assert.equal(run("beBroadcastFieldNames(replayIntl,'away',1,'Saved pitcher').CF"),'Saved name');
 assert.equal(run("(beBroadcastBallPath({sprayAngle:0,launchAngle:3},'안타').path.match(/Q/g)||[]).length"),3,'ground hit has diminishing low hops before retrieval');
+
+for(const angle of [-35,-20,0,20,35]){const single=run("beBroadcastBallPath({sprayAngle:"+angle+",launchAngle:18},'안타')"),triple=run("beBroadcastBallPath({sprayAngle:"+angle+",launchAngle:18},'3루타')");assert.ok(triple.y<single.y-40,'triple reaches deep outfield at recorded direction');assert.ok(triple.y>118,'triple stays inside the fence');}
