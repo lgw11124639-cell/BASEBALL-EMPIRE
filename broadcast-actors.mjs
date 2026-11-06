@@ -1,7 +1,3 @@
-import * as T from "./vendor/three/three.module.js";
-import { GLTFLoader } from "./vendor/three/GLTFLoader.js";
-import { clone } from "./vendor/three/SkeletonUtils.js";
-import { PitchRig, moundHeight, RUBBER_Y } from "./broadcast-pose.mjs";
 export const kits = [
   ["#eee8da", "#eee8da", "#1b3763"],
   ["#087e80", "#eee9db", "#07474d"],
@@ -14,7 +10,6 @@ export const kits = [
   ["#ecebea", "#e2e5e7", "#17648f"],
   ["#1c2428", "#e4e6e7", "#19232b"],
 ];
-let template;
 const atlases = new Map();
 export async function uniformAtlas(id) {
   id = kits[id] ? id : 0;
@@ -61,266 +56,296 @@ export async function uniformAtlas(id) {
   atlases.set(id, task);
   return task;
 }
-export async function createPitcher(canvas) {
-  template ||= new GLTFLoader().loadAsync(
-    "assets/broadcast/pitcher3d/pitcher.glb?v=20261107-rig-pitch63",
-  );
-  const source = await template,
-    model = clone(source.scene),
-    rig = new PitchRig(model),
-    scene = new T.Scene(),
-    camera = new T.PerspectiveCamera(2.5, 1, 0.1, 150),
-    renderer = new T.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      powerPreference: "low-power",
-    });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setClearColor(0, 0);
-  renderer.outputColorSpace = T.SRGBColorSpace;
-  scene.add(rig.mirror);
-  scene.add(new T.HemisphereLight(0xcce6ff, 0x473520, 2.1));
-  const light = new T.DirectionalLight(0xffe8ce, 2.2);
-  light.position.set(-5, 8, -8);
-  scene.add(light);
-  model.traverse((o) => {
-    if (o.isMesh) {
-      o.material = Array.isArray(o.material)
-        ? o.material.map((m) => m.clone())
-        : o.material.clone();
-    }
-  });
-  const attach = (bone, mesh, position) => {
-    const world = new T.Matrix4().compose(
-      new T.Vector3(...position),
-      new T.Quaternion(),
-      mesh.scale.clone(),
-    );
-    bone.updateWorldMatrix(true, false);
-    mesh.matrix.copy(bone.matrixWorld.clone().invert().multiply(world));
-    mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
-    bone.add(mesh);
-    return mesh;
+
+// Whole rendered poses from the user's selected sheet. No mesh, joint posing or body-part cuts.
+export const PITCH_SHEET = "assets/broadcast/motion/pitcher-complete.png";
+export const FRAME_ANCHORS = [
+  [
+    [156, 247],
+    [139, 247],
+    [104, 244],
+    [166, 233],
+    [129, 238],
+    [132, 238],
+  ],
+  [
+    [156, 247],
+    [141, 247],
+    [104, 247],
+    [173, 244],
+    [129, 241],
+    [132, 243],
+  ],
+  [
+    [156, 247],
+    [139, 247],
+    [105, 248],
+    [173, 239],
+    [129, 241],
+    [132, 243],
+  ],
+  [
+    [156, 247],
+    [139, 247],
+    [105, 248],
+    [174, 244],
+    [129, 241],
+    [132, 243],
+  ],
+];
+export const RELEASE_PIXELS = [
+  [184, 11],
+  [214, 42],
+  [221, 73],
+  [225, 139],
+];
+export function pitchFrame(phase) {
+  return phase < 0.5
+    ? 0
+    : phase < 1.5
+      ? 1
+      : phase < 3
+        ? 2
+        : phase < 3.45
+          ? 3
+          : phase < 3.9
+            ? 4
+            : 5;
+}
+export function framePlacement(frame, row, hand = "right", bat = "right") {
+  const shared = hand !== bat,
+    x = shared ? 108 : 173,
+    y = 500,
+    scale = 1.4,
+    anchor = FRAME_ANCHORS[row][frame],
+    plant = frame >= 3;
+  return {
+    x: x + (plant ? 81 * scale : 0) - anchor[0] * scale,
+    y: y - (plant ? 12 * scale : 0) - anchor[1] * scale,
+    scale,
+    pivot: [x, y],
+    mirror: hand === "left",
   };
-  const head = rig.point("head"),
-    capMat = new T.MeshStandardMaterial({ color: 0x183e65, roughness: 0.75 });
-  const cap = new T.Mesh(
-    new T.SphereGeometry(0.104, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2),
-    capMat,
-  );
-  cap.scale.set(1, 1, 1.12);
-  attach(rig.bones.head, cap, [head.x, head.y + 0.125, head.z]);
-  const visor = new T.Mesh(new T.BoxGeometry(0.16, 0.013, 0.12), capMat);
-  attach(rig.bones.head, visor, [head.x, head.y + 0.126, head.z + 0.1]);
-  const glove = new T.Mesh(
-    new T.SphereGeometry(0.105, 20, 14),
-    new T.MeshStandardMaterial({ color: 0x9a652d, roughness: 1 }),
-  );
-  glove.scale.set(0.8, 1, 0.55);
-  attach(rig.bones["wrist.L"], glove, rig.point("wrist.L").toArray());
-  const held = new T.Mesh(
-    new T.SphereGeometry(0.037, 12, 8),
-    new T.MeshStandardMaterial({ color: 0xfffaf0 }),
-  );
-  attach(rig.bones["wrist.R"], held, rig.point("wrist.R").toArray());
-  const geometry = new T.CircleGeometry(2.75, 64);
-  geometry.rotateX(-Math.PI / 2);
-  const pos = geometry.attributes.position;
-  for (let i = 0; i < pos.count; i++)
-    pos.setY(i, moundHeight(pos.getX(i), pos.getZ(i)));
-  geometry.computeVertexNormals();
-  const mound = new T.Mesh(
-    geometry,
-    new T.MeshStandardMaterial({ color: 0x936c50, roughness: 1 }),
-  );
-  scene.add(mound);
-  const ground = new T.Mesh(
-    new T.PlaneGeometry(30, 40),
-    new T.MeshStandardMaterial({ color: 0x32775a, roughness: 1 }),
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.set(0, -0.005, -10);
-  scene.add(ground);
-  const rubber = new T.Mesh(
-    new T.BoxGeometry(0.61, 0.03, 0.152),
-    new T.MeshStandardMaterial({ color: 0xf2eee0, roughness: 1 }),
-  );
-  rubber.position.set(0, RUBBER_Y - 0.015, 0);
-  scene.add(rubber);
-  let width = 0,
-    height = 0,
+}
+let sheetPromise;
+async function sourceSheet() {
+  if (!sheetPromise)
+    sheetPromise = (async () => {
+      const image = new Image();
+      image.src = PITCH_SHEET + "?v=20261107-pose-frames64";
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(image, 0, 0);
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height),
+        d = pixels.data;
+      // The selected export has a partly transparent checkerboard. Keep its opaque athlete pixels.
+      for (let i = 3; i < d.length; i += 4)
+        d[i] = Math.max(0, Math.min(255, ((d[i] - 232) * 255) / 16));
+      ctx.putImageData(pixels, 0, 0);
+      return canvas;
+    })();
+  return sheetPromise;
+}
+function clubSheet(source, id) {
+  const canvas = document.createElement("canvas");
+  canvas.width = source.width;
+  canvas.height = source.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(source, 0, 0);
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height),
+    d = pixels.data,
+    kit = kits[id] || kits[0],
+    rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)),
+    jersey = rgb(kit[0]),
+    cap = rgb(kit[2]);
+  const heads = [
+    [137, 19],
+    [143, 17],
+    [145, 46],
+    [124, 58],
+    [140, 75],
+    [143, 56],
+  ];
+  for (let i = 0; i < d.length; i += 4) {
+    if (!d[i + 3]) continue;
+    const px = i / 4,
+      x = px % canvas.width,
+      y = Math.floor(px / canvas.width),
+      col = Math.floor(x / 256),
+      localX = x % 256,
+      localY = y % 256,
+      r = d[i],
+      g = d[i + 1],
+      b = d[i + 2];
+    if (
+      localY < 185 &&
+      b > r * 1.03 &&
+      b >= g * 0.98 &&
+      Math.max(r, g, b) < 145
+    ) {
+      const head = heads[col],
+        hat =
+          Math.abs(localX - head[0]) < 25 && Math.abs(localY - head[1]) < 21,
+        color = hat ? cap : jersey,
+        shade = Math.min(1.3, Math.max(0.18, Math.max(r, g, b) / 85 + 0.15));
+      for (let c = 0; c < 3; c++) d[i + c] = Math.min(255, color[c] * shade);
+    }
+  }
+  ctx.putImageData(pixels, 0, 0);
+  return canvas;
+}
+const pitchKits = new Map();
+async function preparedKit(id) {
+  id = kits[id] ? id : 0;
+  if (pitchKits.has(id)) return pitchKits.get(id).promise;
+  const entry = { frames: null };
+  entry.promise = (async () => {
+    const colored = clubSheet(await sourceSheet(), id),
+      reader = colored.getContext("2d", { willReadFrequently: true }),
+      images = [];
+    for (let row = 0; row < 4; row++)
+      for (let col = 0; col < 6; col++) {
+        const tile = document.createElement("canvas");
+        tile.width = tile.height = 256;
+        tile
+          .getContext("2d")
+          .putImageData(
+            reader.getImageData(col * 256, row * 256, 256, 256),
+            0,
+            0,
+          );
+        const image = new Image();
+        image.src = tile.toDataURL("image/png");
+        images.push(image);
+      }
+    await Promise.all(images.map((image) => image.decode()));
+    entry.frames = images;
+    return images;
+  })();
+  pitchKits.set(id, entry);
+  return entry.promise;
+}
+export async function preparePitcherKits(ids) {
+  await Promise.all(ids.map(preparedKit));
+}
+export async function createPitcher(canvas) {
+  let images = await preparedKit(0);
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  let width = 720,
+    height = 520,
     hand = "right",
+    bat = "right",
     row = 0,
     phase = 0,
+    frame = 0,
+    kit = 0,
     released = false,
-    disposed = false,
-    activeKit = 0,
-    batHand = "right",
-    lastKitKey = "";
-  const view = () => {
-    camera.position.set(
-      (hand === "left" ? 1 : -1) *
-        ((hand === "left" && batHand === "right") ||
-        (hand === "right" && batHand === "left")
-          ? 6
-          : 4),
-      3.5,
-      -70,
+    disposed = false;
+  const draw = () => {
+    if (disposed) return;
+    canvas.width = 720;
+    canvas.height = 520;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.fillStyle = "#347d60";
+    ctx.fillRect(0, 485, 720, 35);
+    const p = framePlacement(frame, row, hand, bat);
+    ctx.save();
+    if (p.mirror) {
+      ctx.translate(720, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.fillStyle = "#906f54";
+    ctx.beginPath();
+    ctx.ellipse(p.pivot[0], 503, 70, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#eee9df";
+    ctx.fillRect(p.pivot[0] - 25, 499, 66, 5);
+    ctx.drawImage(
+      images[row * 6 + frame],
+      p.x,
+      p.y,
+      256 * p.scale,
+      256 * p.scale,
     );
-    camera.lookAt(0, 1.25, 18.44);
-    camera.updateMatrixWorld();
+    ctx.restore();
+    canvas.dataset.frame = String(frame);
+    canvas.dataset.delivery = String(row);
   };
-  const render = () => {
-    if (!disposed) renderer.render(scene, camera);
-  };
-  const shirt = document.createElement("canvas");
-  shirt.width = shirt.height = 512;
-  const shirtTexture = new T.CanvasTexture(shirt);
-  shirtTexture.colorSpace = T.SRGBColorSpace;
-  shirtTexture.flipY = false;
-  shirtTexture.wrapS = T.RepeatWrapping;
-  const fabric = document.createElement("canvas");
-  fabric.width = fabric.height = 64;
-  const weave = fabric.getContext("2d");
-  weave.fillStyle = "#888";
-  weave.fillRect(0, 0, 64, 64);
-  weave.strokeStyle = "#999";
-  weave.lineWidth = 1;
-  for (let x = 0; x < 64; x += 2) {
-    weave.beginPath();
-    weave.moveTo(x, 0);
-    weave.lineTo(x, 64);
-    weave.stroke();
-  }
-  const fabricTexture = new T.CanvasTexture(fabric);
-  fabricTexture.wrapS = fabricTexture.wrapT = T.RepeatWrapping;
-  fabricTexture.repeat.set(10, 10);
   const api = {
     setBatterHand(value) {
-      batHand = value;
-      view();
+      if (bat !== value) {
+        bat = value;
+        draw();
+      }
     },
     resize(w, h) {
-      if (w === width && h === height) return;
-      width = w;
-      height = h;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
-      view();
-      render();
+      if (width !== w || height !== h) {
+        width = w;
+        height = h;
+        draw();
+      }
     },
-    setKit(id, number = "") {
-      const key = String(id) + ":" + number;
-      if (key === lastKitKey) return;
-      lastKitKey = key;
-      activeKit = kits[id] ? id : 0;
-      const kit = kits[activeKit],
-        ctx = shirt.getContext("2d");
-      ctx.fillStyle = kit[0];
-      ctx.fillRect(0, 0, 512, 512);
-      ctx.fillStyle =
-        activeKit === 1 || activeKit === 5 || activeKit === 7 || activeKit === 9
-          ? "#f0ece0"
-          : kit[2];
-      ctx.textAlign = "center";
-      ctx.font = "bold 14px sans-serif";
-      ctx.fillText(
-        [
-          "ROYALS",
-          "MARINERS",
-          "WAVES",
-          "TITANS",
-          "PHOENIX",
-          "EAGLES",
-          "KNIGHTS",
-          "STORM",
-          "SHARKS",
-          "BLAZE",
-        ][activeKit],
-        384,
-        113,
-      );
-      ctx.font = "bold 47px sans-serif";
-      ctx.fillText(String(number ?? ""), 384, 163);
-      shirtTexture.needsUpdate = true;
-      capMat.color.set(kit[2]);
-      model.traverse((o) => {
-        if (o.isMesh)
-          for (const m of Array.isArray(o.material)
-            ? o.material
-            : [o.material]) {
-            if (m.name === "Jersey") {
-              m.color.set("#ffffff");
-              m.map = shirtTexture;
-              m.bumpMap = fabricTexture;
-              m.bumpScale = 0.001;
-              m.needsUpdate = true;
-            }
-            if (m.name === "Pants") {
-              m.color.set(kit[1]);
-              m.bumpMap = fabricTexture;
-              m.bumpScale = 0.001;
-            }
-            if (m.name === "Shoes") m.color.set("#14202a");
-          }
-      });
-      render();
+    async setKit(id) {
+      id = kits[id] ? id : 0;
+      if (id === kit) return;
+      kit = id;
+      const loaded = pitchKits.get(id)?.frames || (await preparedKit(id));
+      if (kit === id && !disposed) {
+        images = loaded;
+        draw();
+      }
     },
-    pose(p, r = 0, h = "right", ballReleased = false) {
-      phase = p;
-      row = r;
-      hand = h;
+    pose(value, delivery = 0, throwHand = "right", ballReleased = false) {
+      const next = pitchFrame(value),
+        changed =
+          next !== frame ||
+          delivery !== row ||
+          throwHand !== hand ||
+          released !== ballReleased;
+      phase = value;
+      row = delivery;
+      hand = throwHand;
       released = ballReleased;
-      shirtTexture.repeat.x = h === "left" ? -1 : 1;
-      shirtTexture.offset.x = h === "left" ? 1.5 : 0;
-      rig.pose(p, r, h);
-      held.visible = !ballReleased;
-      view();
-      render();
+      frame = next;
+      if (changed) draw();
     },
-    releasePoint(r, h) {
-      const previousHand = hand;
-      rig.pose(3, r, h);
-      hand = h;
-      view();
-      const point = held.getWorldPosition(new T.Vector3()).project(camera);
-      hand = previousHand;
-      rig.pose(phase, row, hand);
-      view();
-      return [(point.x + 1) * 360, (1 - point.y) * 260];
+    releasePoint(delivery, throwHand) {
+      const p = framePlacement(3, delivery, throwHand, bat),
+        point = RELEASE_PIXELS[delivery],
+        x = p.x + point[0] * p.scale;
+      return [throwHand === "left" ? 720 - x : x, p.y + point[1] * p.scale];
     },
     inspect() {
-      const head=rig.point('head').project(camera);
+      const p = framePlacement(frame, row, hand, bat);
       return {
-        headOnScreen:[(head.x+1)*width/2,(1-head.y)*height/2],
-        ...rig.inspect(),
+        renderer: "complete-frame-sequence",
+        source: PITCH_SHEET,
         phase,
+        frame,
         row,
-        rubber: [0, RUBBER_Y, 0],
-        kit: activeKit,
-        jersey: kits[activeKit][0],
-        throwingHand: held.getWorldPosition(new T.Vector3()).toArray(),
-        gloveHand: glove.getWorldPosition(new T.Vector3()).toArray(),
+        hand,
+        bat,
+        kit,
+        released,
+        wholeFrame: true,
+        registration: p,
+        pivotOnScreen: [
+          ((p.mirror ? 720 - p.pivot[0] : p.pivot[0]) * width) / 720,
+          (p.pivot[1] * height) / 520,
+        ],
       };
     },
     dispose() {
       disposed = true;
-      shirtTexture.dispose();
-      fabricTexture.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss();
-      scene.traverse((o) => {
-        if (o.isMesh) {
-          o.geometry.dispose();
-          for (const m of Array.isArray(o.material) ? o.material : [o.material])
-            m.dispose();
-        }
-      });
+      canvas.width = canvas.height = 1;
+      images = null;
     },
   };
-  api.pose(0);
-  api.resize(canvas.clientWidth || 720, canvas.clientHeight || 520);
+  draw();
   return api;
 }

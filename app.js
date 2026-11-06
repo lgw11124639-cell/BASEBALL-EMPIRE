@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261107-rig-pitch63';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261107-pose-frames64';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -5157,9 +5157,10 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   stadium.querySelectorAll('[data-field-base]').forEach(el=>el.dataset.occupied=String(ids?.[Number(el.dataset.fieldBase)-1]!=null));
   const batHand=e.batterHand||batterHands.get(String(e.batterId))||'우타',batterRender=stadium.querySelector('.be-batter-render');stadium.dataset.batHand=batHand;
   const rect=stadium.querySelector('.be-stadium-guides').getBoundingClientRect(),zone=zoneGrid.getBoundingClientRect(),points=beBroadcastPitchPoints(e,seen),colors=['#f3bd62','#83d6c2','#8bbcf8','#e2a1dd','#c4db8a','#edb699'];
+  stadium.style.setProperty('--be-scene-scale',String(rect.width/720));
   const mitt=stadium.querySelector('#be-catcher-mitt'),leadTarget=beBroadcastLeadPlan(e,seen,batHand);
-  const batterRoom=batHand==='좌타'?zone.left-rect.left+8:rect.right-zone.right+8,batterHeight=Math.min(zone.height*(rect.width<600?2.25:2.5),Math.max(1,batterRoom)*1.5),batterWidth=batterHeight*2/3,feet=rect.height*.84;
-  batterRender.style.height=batterHeight+'px';batterRender.style.width=batterWidth+'px';batterRender.style.top=(feet-batterHeight)+'px';batterRender.style.left=(batHand==='좌타'?zone.left-rect.left-batterWidth+8:zone.right-rect.left-8)+'px';
+  const batterGap=rect.width/720*16,batterRoom=batHand==='좌타'?zone.left-rect.left+batterGap:rect.right-zone.right+batterGap,batterHeight=Math.min(zone.height*2.25,Math.max(1,batterRoom)*1.5),batterWidth=batterHeight*2/3,feet=rect.height*.84;
+  batterRender.style.height=batterHeight+'px';batterRender.style.width=batterWidth+'px';batterRender.style.top=(feet-batterHeight)+'px';batterRender.style.left=(batHand==='좌타'?zone.left-rect.left-batterWidth+batterGap:zone.right-rect.left-batterGap)+'px';
 
   const pitcherRender=stadium.querySelector('.be-pitcher-render'),throwLeft=pitchMotion.throwHand==='좌투';
   stadium.dataset.pitchHand=throwLeft?'left':'right';stadium.querySelector('.be-power-contact').style.left=batHand==='좌타'?'30%':'70%';stadium.querySelector('.be-power-contact').style.top='23%';
@@ -5198,6 +5199,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   else panel.style.removeProperty('height');
  };
  const stadiumResize=typeof ResizeObserver==='function'?new ResizeObserver(()=>{if(visibleFrame)drawStadium(visibleFrame);}):null;stadiumResize?.observe(stadium);
+ const replayControls=stadium.closest('#be-replay-overlay').querySelector('.be-replay-controls'),reserveControls=()=>stadium.closest('#be-replay-overlay')?.style.setProperty('--be-replay-control-space',replayControls.getBoundingClientRect().height+'px'),controlsResize=typeof ResizeObserver==='function'?new ResizeObserver(reserveControls):null;reserveControls();controlsResize?.observe(replayControls);
  const total=detailed?frames.length:n;
  const seenReplayPitches=new Map();
  const callLabel=(pitch,e)=>pitch.call==='인플레이'?'타격':pitch.call==='헛스윙'?'헛스윙 스트라이크':pitch.call||'판정 미기록';
@@ -5290,9 +5292,9 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  btn.onclick=()=>{if(autoTimer)return;replayAudio.unlock();replayPaused=false;btn.disabled=true;autoBtn.disabled=false;status.textContent='중계 중';if(stadium.dataset.flight)resumeFlight?.();else advance();if(index<total)autoTimer=setInterval(advance,frameInterval());};
  autoBtn.onclick=pauseReplay;
  speedSelect.onchange=()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=setInterval(advance,frameInterval());}};
- document.querySelector('#be-replay-overlay').addEventListener('click',e=>{if(e.target.id==='be-replay-overlay')beCloseGameReplay()});window.beBroadcastStop=()=>{replayAudio.destroy();stopFlight();stadiumResize?.disconnect();if(autoTimer)clearInterval(autoTimer);autoTimer=null;stadium.querySelector('.be-motion-pitcher')._actor?.dispose()};
+ document.querySelector('#be-replay-overlay').addEventListener('click',e=>{if(e.target.id==='be-replay-overlay')beCloseGameReplay()});window.beBroadcastStop=()=>{replayAudio.destroy();stopFlight();stadiumResize?.disconnect();controlsResize?.disconnect();if(autoTimer)clearInterval(autoTimer);autoTimer=null;stadium.querySelector('.be-motion-pitcher')._actor?.dispose()};
  const actorNode=stadium.querySelector('.be-motion-pitcher');btn.disabled=true;status.textContent='중계 화면 준비 중';
- import('./broadcast-actors.mjs?v=20261107-rig-pitch63').then(async module=>{window.beBroadcastActors=module;const actor=await module.createPitcher(actorNode.querySelector('canvas'));if(!actorNode.isConnected){actor.dispose();return;}actorNode._actor=actor;actorNode.querySelector('canvas').dataset.ready='true';await Promise.all([module.uniformAtlas(Number(g.away)),module.uniformAtlas(Number(g.home))]);btn.disabled=false;status.textContent='중계 준비';if(visibleFrame)drawStadium(visibleFrame);else{const rect=stadium.querySelector('.be-stadium-scene').getBoundingClientRect();actor.resize(rect.width,rect.height);actor.setKit(Number(g.home));actor.pose(0);}}).catch(error=>{console.error('중계 모델 준비 실패',error);status.textContent='투수 화면을 불러오지 못했습니다';btn.disabled=false;});
+ import('./broadcast-actors.mjs?v=20261107-pose-frames64').then(async module=>{window.beBroadcastActors=module;const actor=await module.createPitcher(actorNode.querySelector('canvas'));if(!actorNode.isConnected){actor.dispose();return;}actorNode._actor=actor;actorNode.querySelector('canvas').dataset.ready='true';await Promise.all([module.uniformAtlas(Number(g.away)),module.uniformAtlas(Number(g.home)),module.preparePitcherKits([Number(g.away),Number(g.home)])]);btn.disabled=false;status.textContent='중계 준비';if(visibleFrame)drawStadium(visibleFrame);else{const rect=stadium.querySelector('.be-stadium-scene').getBoundingClientRect();actor.resize(rect.width,rect.height);actor.setKit(Number(g.home));actor.pose(0);}}).catch(error=>{console.error('중계 모델 준비 실패',error);status.textContent='투수 화면을 불러오지 못했습니다';btn.disabled=false;});
 }
 function beCloseGameReplay(){const stop=window.beBroadcastStop;window.beBroadcastStop=null;stop?.();document.querySelector('#be-replay-overlay')?.remove();if(beReplayDialogContext){const context=beReplayDialogContext;beReplayDialogContext=null;document.body.style.overflow=context.overflow;if(context.focus?.isConnected)context.focus.focus({preventScroll:true})}}
 window.beOpenGameReplay=beOpenGameReplay;window.beCloseGameReplay=beCloseGameReplay;

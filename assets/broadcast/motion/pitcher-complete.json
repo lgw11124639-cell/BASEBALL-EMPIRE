@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "file": "pitcher-complete.png",
+  "sha256": "78113594a5f672cad6ab10df03b827476c54aa8bc83c06f4b375fbd032fdbfb8",
+  "columns": 6,
+  "rows": 4,
+  "tile": 256,
+  "frames": [
+    "ready",
+    "lift",
+    "stride",
+    "release",
+    "follow-through",
+    "recover"
+  ],
+  "deliveries": [
+    "오버핸드",
+    "쓰리쿼터",
+    "사이드암",
+    "언더핸드"
+  ],
+  "rendering": "whole-frame sequence; no joint deformation or body-part compositing",
+  "source": "first generated sheet explicitly selected by user"
+}
