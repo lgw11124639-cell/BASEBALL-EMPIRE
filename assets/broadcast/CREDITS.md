@@ -1,3 +1,5 @@
-Original BASEBALL EMPIRE 3D renders. No third-party models or textures.
-Rebuild: blender --background --threads 2 --python scripts/render-broadcast-assets.py
-Runtime uses only three small WebP images; the baseball simulation and named dots remain separate.
+Original BASEBALL EMPIRE broadcast assets.
+
+Stadiums: procedural Blender renders, no third-party models or textures. Rebuild with scripts/render-broadcast-assets.py.
+Batter v2: original generated illustration with a batting ready pose, gaze towards the mound camera, navy helmet and ivory uniform; not a photograph or a named player. Replaces the procedural front-facing toy pose.
+Only compact alpha-preserving WebP assets are used at runtime. No 3D engine is packaged.

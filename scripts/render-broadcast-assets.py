@@ -97,31 +97,8 @@ def stadium(pitch=False):
     if random.random()<.8:box('Backstop crowd',(x,y,z+.4),(.28,.25,.5),random.choice(people),.05)
   box('Backstop padding',(0,-9,.65),(45,.7,1.3),navy,.1)
  s.render.filepath=os.path.join(OUT,'stadium-pitch.png' if pitch else 'stadium-field.png');bpy.ops.render.render(write_still=True)
-def batter():
- s=reset();s.render.resolution_x=560;s.render.resolution_y=840;s.render.film_transparent=True
- white=material('Ivory uniform',(.73,.77,.76));navy=material('Navy helmet and trim',(.025,.075,.13),.3,.3);skin=material('Skin',(.53,.31,.17),0,.5);black=material('Cleats',(.018,.025,.035),.1);wood=material('Maple bat',(.56,.34,.14),0,.35);glove=material('Batting gloves',(.86,.88,.85));belt=material('Belt',(.08,.12,.15))
- # Balanced batting stance: flexed knees, two planted cleats, hands together.
- hips=[(-.22,0,.89),(.22,.08,.89)];knees=[(-.32,-.09,.49),(.38,-.04,.49)];ankles=[(-.43,.03,.12),(.48,.07,.12)]
- for hip,knee,ankle in zip(hips,knees,ankles):
-  rod('Trouser thigh',hip,knee,.135,white,.11);ellipsoid('Trouser knee',knee,(.12,.13,.12),white);rod('Trouser shin',knee,ankle,.10,white,.08);ellipsoid('Cleat',(ankle[0],ankle[1]-.08,.075),(.12,.22,.075),black)
- ellipsoid('Jersey torso',(0,.04,1.14),(.29,.17,.35),white);ellipsoid('Belt',(0,.04,.92),(.275,.17,.045),belt)
- rod('Neck',(0,.04,1.4),(.015,.035,1.52),.075,skin)
- ellipsoid('Head',(.025,.015,1.61),(.13,.125,.17),skin);ellipsoid('Helmet',(.015,.025,1.7),(.15,.145,.115),navy);box('Helmet brim',(.12,-.045,1.67),(.27,.22,.035),navy,.03);ellipsoid('Ear guard',(-.11,.005,1.61),(.055,.04,.1),navy)
- # One subtle face profile, no oversized cartoon eyes.
- ellipsoid('Nose',(.15,-.005,1.615),(.035,.035,.04),skin)
- hands=(-.28,-.1,1.43)
- for shoulder,elbow in [((-.22,.025,1.36),(-.43,-.11,1.16)),((.22,.025,1.36),(.12,-.23,1.23))]:
-  rod('Jersey sleeve',shoulder,tuple(Vector(shoulder).lerp(Vector(elbow),.5)),.12,white,.10);rod('Arm',tuple(Vector(shoulder).lerp(Vector(elbow),.48)),elbow,.075,skin,.06);ellipsoid('Elbow',elbow,(.065,.065,.065),skin);rod('Forearm',elbow,hands,.065,skin,.05)
- ellipsoid('Two batting gloves',hands,(.10,.075,.09),glove)
- rod('Bat handle',(-.26,-.1,1.34),(-.55,.02,1.92),.025,wood,.03);rod('Maple barrel',(-.55,.02,1.92),(-.74,.1,2.27),.055,wood,.065);ellipsoid('Bat end',(-.74,.1,2.27),(.065,.065,.055),wood)
- # Stitching/trim follows the uniform rather than a floating label.
- rod('Jersey placket',(.01,-.13,.99),(.01,-.13,1.37),.008,navy)
- for z in [1.05,1.14,1.23]:ellipsoid('Button',(.01,-.145,z),(.009,.008,.009),navy)
- light((-3,-4,6),500,5,(.82,.9,1));light((3,2,4),650,3,(1,.83,.63));camera((.35,-7,2.5),(0,0,1.14),2.6)
- s.render.filepath=os.path.join(OUT,'batter-ready.png');bpy.ops.render.render(write_still=True)
-stadium(False);stadium(True);batter()
-
-# Ship only compact alpha-preserving WebP, never intermediate PNG or a 3D runtime.
-for name in ['stadium-field','stadium-pitch','batter-ready']:
+stadium(False);stadium(True)
+# Batter v2 is an original generated sprite, not the old procedural pose.
+for name in ['stadium-field','stadium-pitch']:
  src=os.path.join(OUT,name+'.png');dst=os.path.join(OUT,name+'.webp')
  subprocess.run(['ffmpeg','-y','-loglevel','error','-i',src,'-c:v','libwebp','-quality','86',dst],check=True);os.unlink(src)
