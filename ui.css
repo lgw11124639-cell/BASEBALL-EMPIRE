@@ -20772,3 +20772,11 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-duel-batter>div span:nth-child(3){display:none}
 #be-replay-overlay .be-duel-batter>div span:last-child{grid-column:1/-1}
 @media(prefers-reduced-motion:reduce){#be-replay-overlay .be-stadium[data-celebration=homer],#be-replay-overlay .be-stadium[data-celebration=homer]::after{animation:none}}
+
+/* A short, pausable break between completed half innings. */
+#be-replay-overlay .be-half-change-overlay{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;color:#fff;background:linear-gradient(145deg,#061a2ef2,#173e4af5);border-radius:inherit;pointer-events:none}
+#be-replay-overlay .be-half-change-overlay[hidden]{display:none}
+#be-replay-overlay .be-half-change-overlay>span{font-size:13px;color:#c7d9dd}
+#be-replay-overlay .be-half-change-overlay>strong{font-size:clamp(26px,5vw,40px);letter-spacing:.08em;color:#ffdd91}
+#be-replay-overlay .be-half-change-overlay>b{font-size:20px}
+#be-replay-overlay .be-half-change-overlay>p{margin:0;font-size:13px;line-height:1.6;color:#d5e5e8}

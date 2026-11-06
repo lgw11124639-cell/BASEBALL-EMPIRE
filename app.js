@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261106-real-play59';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261106-half-tempo60';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -4832,7 +4832,7 @@ function beBroadcastPlayTiming(event,moves,speeds=new Map()){
  const pickup=running||homer?null:beBroadcastPickup(event);if(pickup)fieldDuration=Math.max(fieldDuration,Math.hypot(pickup.ball.x-pickup.origins[pickup.position][0],pickup.ball.y-pickup.origins[pickup.position][1])/48*1000/.44);
  if(nativeTiming)fieldDuration=nativeTiming.end*1000;
  runners.forEach((row,i)=>{const move=moves[i];if(running){row.start=(move.runStart||0)*fieldDuration;row.end=(move.runEnd||.8)*fieldDuration;}else if(move.out&&!nativeTiming){row.end=fieldDuration*((move.from===0||event?.runnerOuts?.some(out=>String(out.id)===String(move.id))) ? .97 : .73);}else if(move.contactOnly||move.stopOnThirdOut){row.stopAt=nativeTiming?Math.max(...event.groundPlay.throwBases.flatMap((base,index)=>event.runnerOuts?.some(out=>out.to===base)?[nativeTiming.receives[index]*1000]:[])):fieldDuration*(caught?.44:.9);}else if(caught){row.start=fieldDuration*.46;row.end+=row.start;}});
- fieldDuration*=.9;for(const row of runners){row.start*=.9;row.end*=.9;if(row.stopAt!=null)row.stopAt*=.9;}
+ fieldDuration*=.72;for(const row of runners){row.start*=.72;row.end*=.72;if(row.stopAt!=null)row.stopAt*=.72;}
  return {fieldDuration,runners,duration:Math.max(fieldDuration,...runners.map(row=>row.stopAt??row.end))};
 }
 function beBroadcastPosition(value){
@@ -4921,7 +4921,7 @@ function beBroadcastDefense(event,speeds=new Map()){
  const advancing=beBroadcastRunnerMoves(event).filter(move=>move.to!==move.from||move.lead),timing=beBroadcastPlayTiming(event,advancing,speeds),homePlay=advancing.some((move,i)=>move.to===4&&timing.runners[i].end>=timing.fieldDuration*.72);
  const field=[ball.x,ball.y],outcome=String(event.outcome||''),outs=Number(event.outsAfter)-Number(event.outsBefore),moves=[],transfers=[];
  const move=(pos,to,end=.38)=>{const existing=moves.find(x=>x.position===pos);if(existing)return existing;const row={position:pos,points:[origins[pos],to],times:[0,end]};moves.push(row);return row;};
- const nativeTiming=event.groundPlay?.timing,seconds=timing.fieldDuration/900,fieldAt=nativeTiming?.pickup?nativeTiming.pickup/seconds:.44;const primary=move(position,field,fieldAt);
+ const nativeTiming=event.groundPlay?.timing,seconds=timing.fieldDuration/720,fieldAt=nativeTiming?.pickup?nativeTiming.pickup/seconds:.44;const primary=move(position,field,fieldAt);
  const transfer=(receiver,to,start,end,kind='throw')=>{move(receiver,to,start-.08);const from=transfers.length?transfers[transfers.length-1].to:field;transfers.push({receiver,to,from,start,end,kind});};
  const carry=(to,start=.5,end=.9)=>{primary.points.push(field,to);primary.times.push(start,end);transfers.push({receiver:position,from:field,to,start,end,kind:'carry'});};
  if(event?.groundPlay?.version===2){const throws=event.groundPlay.throwBases||[1];throws.forEach((base,i)=>{const receiver=base===1?(position==='1B'&&i>0?'P':'1B'):base===2?(['2B','1B','P','C'].includes(position)?'SS':'2B'):base===3?'3B':'C',start=nativeTiming?(i===0?nativeTiming.pickup+.15:nativeTiming.receives[i-1]+.4)/seconds:(i===0?.55:.78),end=nativeTiming?nativeTiming.receives[i]/seconds:throws.length>1?(i===0?.7:event.groundPlay.batterOut ? .94 : .99):.9;if(i===0&&receiver===position)carry(beBroadcastBasePoint(base),start,end);else transfer(receiver,beBroadcastBasePoint(base),start,end);});}
@@ -5051,7 +5051,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const frames=detailed?events.flatMap((e,eventIndex)=>{if(e.eventType==='baserunning')return [{kind:'baserunning',e,eventIndex}];const defending=e.side==='away'?'home':'away';const previous=pitcherByFieldingSide[defending];const rawChange=e.pitcherChange;const changed=previous&&e.pitcher&&String(previous)!==String(e.pitcher);const change=changed?{from:previous,to:e.pitcher}:(rawChange&&rawChange.from&&rawChange.to&&String(rawChange.from)!==String(rawChange.to)?rawChange:null);if(e.pitcher)pitcherByFieldingSide[defending]=e.pitcher;const plan=e.defensivePlan?.version===1?e.defensivePlan:null,previousPlan=replayDefensePlans[defending],adjusted=plan&&(plan.key||plan.id)!==(previousPlan?.key||previousPlan?.id||'normal');if(plan)replayDefensePlans[defending]=plan;const batterChange=batterChangesBySide[e.side]?.get(String(e.batterId??''))||batterChangesBySide[e.side]?.get(String(e.batter||''));const changeKey=e.side+':'+String(e.batterId||e.batter);const announce=!!batterChange&&!announcedBatterChanges.has(changeKey)&&(!Number.isFinite(Number(batterChange.inning))||Number(e.inning)>=Number(batterChange.inning));if(announce)announcedBatterChanges.add(changeKey);return [...(adjusted?[{kind:'defense-change',e,eventIndex,previousPlan}]:[]),...(announce?[{kind:'batter-change',e,eventIndex,change:batterChange}]:[]),...(change?[{kind:'pitcher-change',e,eventIndex,change}]:[]),...replayPitches(e).map((pitch,pitchIndex)=>({kind:'pitch',e,eventIndex,pitch,pitchIndex})),{kind:'result',e,eventIndex}] }):[];
  let fastForward=false,visibleFrame=null,animatedFrame=null,flightRaf=null,replayPaused=true,resumeFlight=null,retargetFlight=null;
  const replayAudio=beCreateReplayAudio();document.querySelector('#be-replay-sound').onchange=event=>replayAudio.setEnabled(event.target.checked);
- const playbackRate=()=>Math.max(1,Math.min(3,Number(speedSelect.value)||1)),frameInterval=()=>1600/playbackRate();
+ const playbackRate=()=>Math.max(1,Math.min(3,Number(speedSelect.value)||1)),frameInterval=()=>1100/playbackRate();
  const eventProgress=new Map(),pitcherLive=new Map(),batterLive=new Map(),runnerOwners=new Map();
  const pitcherKey=e=>{const side=e.side==='away'?'home':'away',row=(g[side+'Pitchers']||[]).find(p=>p.name===e.pitcher);return side+':'+String(e.pitcherId??row?.id??e.pitcher??'unknown');};
  const pitcherRow=key=>{if(!pitcherLive.has(key))pitcherLive.set(key,{outs:0,k:0,runs:0,hits:0});return pitcherLive.get(key);};
@@ -5231,9 +5231,19 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const highlights=document.querySelector('#be-replay-highlights'),highlightEvents=new Set(events.flatMap((e,i)=>beReplayHighlight(e)?[i]:[]));
  if(!highlightEvents.size&&events.length)highlightEvents.add(events.length-1);
  const highlightFrame=frame=>frame&&highlightEvents.has(frame.eventIndex)&&(frame.kind==='defense-change'||frame.kind==='result'||frame.kind==='baserunning'||frame.kind==='pitch'&&frame.pitchIndex===(frame.e.pitchSequence||[]).length-1);
+ const completedHalfChanges=new Set();
+ const halfChange=document.createElement('div');halfChange.className='be-half-change-overlay';halfChange.hidden=true;halfChange.setAttribute('role','status');halfChange.setAttribute('aria-live','polite');stadium.appendChild(halfChange);
+ const needsHalfChange=()=>detailed&&index>0&&index<total&&(frames[index-1].e.inning!==frames[index].e.inning||frames[index-1].e.side!==frames[index].e.side)&&!completedHalfChanges.has(index);
+ const showHalfChange=()=>{
+  const e=frames[index].e,previous=frames[index-1].e;completedHalfChanges.add(index);stopFlight();
+  halfChange.innerHTML='<span>'+esc(previous.inning+'회 '+(previous.side==='away'?'초':'말')+' 종료')+'</span><strong>공수 교대</strong><b>'+esc(e.inning+'회 '+(e.side==='away'?'초':'말'))+'</b><p>'+esc((e.side==='away'?a:h).name+' 공격 · '+(e.side==='away'?h:a).name+' 수비')+'</p>';halfChange.hidden=false;stadium.dataset.flight='half-change';status.textContent='공수 교대';
+  let elapsed=0,lastTime=performance.now();const tick=now=>{if(replayPaused){flightRaf=null;return;}elapsed+=(now-lastTime)*playbackRate();lastTime=now;if(elapsed<1000){flightRaf=requestAnimationFrame(tick);return;}halfChange.hidden=true;delete stadium.dataset.flight;flightRaf=null;resumeFlight=null;if(autoTimer)advance();};resumeFlight=()=>{lastTime=performance.now();flightRaf=requestAnimationFrame(tick);};tick(lastTime);
+ };
  const advance=()=>{
   if(stadium.dataset.flight)return;
-  if(highlights.checked&&detailed){fastForward=true;try{while(index<total&&!highlightFrame(frames[index]))step();}finally{fastForward=false;}}
+  if(needsHalfChange()){showHalfChange();return;}
+  if(highlights.checked&&detailed){fastForward=true;try{while(index<total&&!highlightFrame(frames[index])&&!needsHalfChange())step();}finally{fastForward=false;}}
+  if(needsHalfChange()){showHalfChange();return;}
   if(index<total)step();
  };
  const pauseReplay=()=>{if(autoTimer)clearInterval(autoTimer);autoTimer=null;replayPaused=true;replayAudio.stop();if(flightRaf!=null)cancelAnimationFrame(flightRaf);flightRaf=null;autoBtn.disabled=true;btn.disabled=index>=total&&!stadium.dataset.flight;status.textContent=btn.disabled?'경기 종료':'중계 정지';};
