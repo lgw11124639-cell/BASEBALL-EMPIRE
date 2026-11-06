@@ -13,7 +13,7 @@ function runScenario(name,events,expected,{walkoff=false,homeRuns=0}={}){
  const fielding={teamId:1,league:'major',batters:[{id:200,position:'SS'}],runs:homeRuns,usage:[appearance],used:new Set(),inheritedRunners:0};
  const state={players:[...batters,pitcher],day:1};
  let next=0;
- const context=vm.createContext({state,Math,Number,bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
+ const context=vm.createContext({state,Math,Number,beAttemptPickoff:()=>null,bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
   selectPitcher:()=>pitcher,recordPitch:()=>appearance,
   pitchingArsenal:()=>({stamina:65,usage:[]}),
   catcherGameCalling:()=>({preference:'바깥쪽',skill:50}),

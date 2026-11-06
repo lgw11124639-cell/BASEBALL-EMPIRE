@@ -41,7 +41,7 @@ jobs:
       - name: Build previous-version upgrade fixture
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon -PbeVersionCode=4 -PbeVersionName=upgrade-baseline
+          ./gradlew assembleDebug --no-daemon -PbeVersionCode=5 -PbeVersionName=upgrade-baseline
           cp app/build/outputs/apk/debug/app-debug.apk ../test-baseline.apk
           ./gradlew assembleDebug --no-daemon
         working-directory: android

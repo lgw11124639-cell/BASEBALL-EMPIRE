@@ -13,7 +13,7 @@ for(let seed=1;seed<=70;seed++){
    assert.equal(e.outsBefore,outs,`no missing outs before ${e.outcome} in ${seed}/${inning}/${side}`);
    assert.ok(e.outsAfter>=outs&&e.outsAfter<=3,'out count never regresses or exceeds three');eventOuts[side]+=e.outsAfter-outs;outs=e.outsAfter;
    if(e.eventType==='baserunning'){
-    assert.equal(e.pitchSequence.length,0,'running play invents no pitch');assert.equal(e.pitches,0);assert.equal(e.bases[0],e.runnerId);assert.equal(e.afterBases[0],null);
+    assert.equal(e.pitchSequence.length,0,'running play invents no pitch');assert.equal(e.pitches,0);if(e.runAction==='pickoff'||e.runAction==='rundown'){const base=Number(e.fromBase)-1;assert.equal(e.bases[base],e.runnerId);assert.equal(e.afterBases[base],e.outsAfter>e.outsBefore?null:e.runnerId);continue;}assert.equal(e.bases[0],e.runnerId);assert.equal(e.afterBases[0],null);
     if(e.outcome==='도루 실패'){caught++;assert.equal(e.outsAfter,e.outsBefore+1);assert.equal(e.afterBases[1],null);if(e.outsAfter===3)thirdOutSteals++;}
     else{steals++;assert.equal(e.outsAfter,e.outsBefore);assert.equal(e.afterBases[1],e.runnerId);}
     continue;

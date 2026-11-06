@@ -7,7 +7,22 @@ assert.equal(run('JSON.stringify(beBroadcastRunnerMoves({batterId:9,bases:[1,nul
 assert.equal(run('JSON.stringify(beBroadcastRunnerMoves({batterId:9,bases:[null,null,1],afterBases:[null,null,null],outcome:"희생플라이",runs:1,outsBefore:0,outsAfter:1}))'),JSON.stringify([{id:1,from:3,to:4}]));
 assert.equal(run('beBroadcastRunnerMoves({bases:[1,2,null],afterBases:[null,null,null],runs:1,outsBefore:1,outsAfter:2}).length'),0);
 assert.equal(run('beBroadcastRunnerMoves({batterId:9,bases:[1,null,null],afterBases:[],outcome:"홈런",runs:2}).length'),2);
-assert.equal(run('JSON.stringify(beBroadcastDefense({battedBall:{defenderPosition:"SS"},outcome:"땅볼 아웃",outsBefore:0,outsAfter:1}).throwBases)'), '[1]');
-assert.equal(run('JSON.stringify(beBroadcastDefense({battedBall:{defenderPosition:"SS"},outcome:"병살",outsBefore:0,outsAfter:2}).throwBases)'), '[2,1]');
-assert.equal(run('beBroadcastDefense({battedBall:{defenderPosition:"RF"},outcome:"홈런"})'),null);
-console.log('PASS recorded runner identity and base progression, unambiguous scoring, groundout and double-play fielding sequences');
+assert.equal(run('beBroadcastDefense({battedBall:{defenderPosition:"RF",sprayAngle:25,launchAngle:25},outcome:"홈런"})'),null);
+assert.equal(run('beBroadcastPosition("유격수")'),'SS');assert.equal(run('beBroadcastPosition("중견수")'),'CF');
+assert.equal(run('JSON.stringify(beBroadcastFieldNames({homePositions:{1:"CF"},homeBatters:[{id:1,name:"김중견",position:"좌익수"},{id:2,name:"박유격",position:"유격수"}]},"home",1,"최투수"))'),JSON.stringify({P:'최투수',CF:'김중견',SS:'박유격'}));
+run(`const play=(pos,angle=30,outcome='땅볼 아웃',outs=1)=>({battedBall:{defenderPosition:pos,sprayAngle:angle,launchAngle:2},outcome,outsBefore:0,outsAfter:outs});`);
+assert.equal(run('beBroadcastDefense(play("1B")).transfers[0].kind'),'carry');
+assert.equal(run('beBroadcastDefense(play("1B")).transfers[0].receiver'),'1B');
+assert.equal(run('beBroadcastDefense(play("1B",-55)).transfers[0].receiver'),'P');
+assert.equal(run('beBroadcastDefense(play("SS",-20)).transfers[0].receiver'),'1B');
+assert.equal(run('JSON.stringify(beBroadcastDefense(play("2B",20,"병살",2)).transfers.map(x=>x.receiver))'),'["SS","1B"]');
+assert.equal(run('JSON.stringify(beBroadcastDefense(play("1B",20,"병살",2)).transfers.map(x=>x.receiver))'),'["SS","P"]');
+assert.equal(run('beBroadcastDefense(play("RF",30,"뜬공 아웃")).transfers.length'),0);
+assert.equal(run('beBroadcastDefense(play("LF",-30,"안타",0)).transfers[0].receiver'),'SS');
+for(const pos of ['1B','2B','3B','SS','P','C','LF','CF','RF'])for(const outcome of ['땅볼 아웃','병살','안타']){
+ run(`var plan=beBroadcastDefense(play(${JSON.stringify(pos)},${pos==='LF'?-30:30},${JSON.stringify(outcome)},${outcome==='병살'?2:outcome==='안타'?0:1}));`);
+ assert.equal(run('plan.transfers.every(leg=>{const actor=plan.moves.find(move=>move.position===leg.receiver),point=beBroadcastActorPoint(actor,leg.kind==="carry"?leg.end:leg.start);return Math.hypot(point[0]-leg.to[0],point[1]-leg.to[1])<.001})'),true,pos+' '+outcome+' receiver must cover destination before throw');
+}
+assert.equal(run('beBroadcastRunnerMoves({batterId:9,bases:[1,null,null],afterBases:[],outcome:"병살",outsBefore:0,outsAfter:2}).filter(x=>x.out).length'),2);
+assert.notEqual(run('beBroadcastPitchPath({type:"직구"},400,330,360,260)'),run('beBroadcastPitchPath({type:"슬라이더"},400,330,360,260)'));
+console.log('PASS named defense positions, first-base tags and pitcher coverage, double-play receivers, cutoff returns and type-specific pitch movement');

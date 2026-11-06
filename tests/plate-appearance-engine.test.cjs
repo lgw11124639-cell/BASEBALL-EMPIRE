@@ -12,7 +12,7 @@ const appearance={p:pitcher,outs:0,er:0,pitchCount:0,battersFaced:0,hits:0,walks
 const batting={teamId:0,league:'major',batters,index:0,runs:0};
 const fielding={teamId:1,league:'major',batters:[{id:200,position:'SS'}],runs:0,usage:[appearance],used:new Set(),inheritedRunners:0};
 const state={players:[...batters,pitcher],day:1};
-const context=vm.createContext({state,Math,Number,bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
+const context=vm.createContext({state,Math,Number,beAttemptPickoff:()=>null,bePlayerEndurance:()=>60,playerBaseball:p=>{p.profile=p.profile||{};return p.profile.baseball||(p.profile.baseball={fatigue:0,recovery:12})},
  selectPitcher:()=>pitcher,recordPitch:()=>appearance,
  pitchingArsenal:()=>({stamina:65,usage:[]}),
  catcherGameCalling:()=>({preference:'바깥쪽',skill:50}),

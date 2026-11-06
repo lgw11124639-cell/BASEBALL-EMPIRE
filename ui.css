@@ -20550,17 +20550,23 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-stadium-fielders .be-fielder-gathered circle{fill:#f3cb7d;stroke:#fff5ce}
 #be-replay-overlay #be-stadium-runners{pointer-events:none}
 #be-replay-overlay .be-runner-shadow{fill:#072a3866}
-#be-replay-overlay .be-runner-body circle{fill:#f2d9b9;stroke:#263f4b;stroke-width:1}
-#be-replay-overlay .be-runner-body path{fill:#f6ce79;stroke:#7c532c;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 #be-replay-overlay #be-stadium-runners text{fill:#fff4cf;stroke:#173b36;stroke-width:4;paint-order:stroke;font-family:system-ui,sans-serif;font-size:14px;font-weight:800}
-#be-replay-overlay .be-runner-moving .be-runner-body{animation:be-running-stride .2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
-@keyframes be-running-stride{from{transform:translateY(0) rotate(-7deg)}to{transform:translateY(-3px) rotate(7deg)}}
-@media(prefers-reduced-motion:reduce){#be-replay-overlay .be-runner-moving .be-runner-body{animation:none}}
 #be-replay-overlay .be-stadium-fielders .be-fielder-shadow{fill:#062d3b55;stroke:none;filter:none}
 #be-replay-overlay .be-stadium-fielders .be-fielder-body>circle{r:5;fill:#e6c7a8;stroke:#15394d;stroke-width:1}
-#be-replay-overlay .be-fielder-uniform{fill:#dce8ee;stroke:#244e67;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-#be-replay-overlay .be-fielder-glove{fill:#bd8854;stroke:#76502e;stroke-width:1.5}
-#be-replay-overlay .be-fielder-gathered .be-fielder-glove{animation:be-fielding-follow-through .42s ease-in-out both;transform-box:fill-box;transform-origin:center}
 #be-replay-overlay .be-throw-trail{fill:none;stroke:#dceff4;stroke-width:2;opacity:.65;stroke-linecap:round}
-@keyframes be-fielding-follow-through{0%{transform:translate(-4px,7px) rotate(-25deg)}45%{transform:translate(-10px,-4px) rotate(-80deg)}100%{transform:translate(2px,-5px) rotate(30deg)}}
 @media(max-width:600px){#be-replay-overlay .be-stadium-fielders text,#be-replay-overlay #be-stadium-runners text{font-size:20px;stroke-width:3px}}
+/* Dot-only players. Pitch view shows the zone and ball movement, without a pitcher animation. */
+#be-replay-overlay .be-stadium-pitcher{display:none!important}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-mound{transform:none}
+#be-replay-overlay .be-stadium-strike-slot{top:57%}
+#be-replay-overlay .be-stadium[data-view=pitch] #be-stadium-runners{visibility:hidden}
+#be-replay-overlay .be-stadium-fielders .be-fielder-body>.be-fielder-dot{r:8;fill:#133d50;stroke:#e2eee8;stroke-width:2}
+#be-replay-overlay .be-stadium-fielders .be-fielder-gathered .be-fielder-dot{fill:#f0cb82;stroke:#fff3cb}
+#be-replay-overlay #be-stadium-runners .be-runner-dot{fill:#f4cd79;stroke:#634c2d;stroke-width:2}
+#be-replay-overlay .be-fielder-body,#be-replay-overlay .be-runner-moving{animation:none!important}
+#be-replay-overlay .be-pitch-camera-art{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-art{visibility:hidden}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-pitch-camera-art{display:block}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-strike-slot{top:53%}
+#be-replay-overlay .be-stadium[data-view=field] .be-stadium-result{top:64px;bottom:auto;font-size:15px;padding:5px 12px;max-width:55%;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){#be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid{width:96px!important;height:96px!important}#be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid>span{font-size:10px!important}}
