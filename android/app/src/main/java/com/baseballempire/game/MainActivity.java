@@ -6,6 +6,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override public void onCreate(Bundle savedInstanceState) {
         registerPlugin(LocalBackupPlugin.class);
+        registerPlugin(ReplayVoicePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

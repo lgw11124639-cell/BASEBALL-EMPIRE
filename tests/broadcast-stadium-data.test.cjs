@@ -32,5 +32,8 @@ for(const delivery of ['오버핸드','쓰리쿼터','사이드암','언더핸�
 }
 assert.equal(run('beReplayHighlight({outcome:"홈런",runs:1})'),true);assert.equal(run('beReplayHighlight({eventType:"baserunning",runAction:"pickoff"})'),true);assert.equal(run('beReplayHighlight({outcome:"볼넷",outsBefore:0,outsAfter:0})'),false);
 console.log('PASS arm-mirrored release and pitch movement with exact endpoints, and recorded highlight selection');
-assert.equal(run('beBroadcastBatterSwings({call:"인플레이"})'),true);assert.equal(run('beBroadcastBatterSwings({call:"파울"})'),true);assert.equal(run('beBroadcastBatterSwings({call:"헛스윙 삼진"})'),true);assert.equal(run('beBroadcastBatterSwings({call:"루킹 스트라이크"})'),false);assert.equal(run('beBroadcastBatterSwings({call:"볼"})'),false);
-console.log('PASS saved swing calls control the batter; called strikes and balls stay looking');
+assert.equal(run('JSON.stringify(beBroadcastLeadTarget({leadTargetX:30,leadTargetY:64},"우타"))'),'{"x":30,"y":64}');
+assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"좌타").x'),36);assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"우타").x'),64);assert.equal(run('beBroadcastLeadTarget({},"우타")'),null);
+for(const [call,cue] of [['볼','ball'],['루킹 스트라이크','strike'],['헛스윙 삼진','strike'],['인플레이','contact'],['파울','contact']])assert.equal(run('beReplayAudioCue({kind:"pitch",pitch:{call:'+JSON.stringify(call)+'}})'),cue);
+assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"홈런",outsBefore:0,outsAfter:0}})'),'homer');assert.equal(run('beReplayAudioCue({kind:"baserunning",e:{outcome:"런다운 아웃",outsBefore:0,outsAfter:1}})'),'out');
+console.log('PASS fixed recorded glove lead and recorded strike/ball/contact/out/homer sound cues');

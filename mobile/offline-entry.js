@@ -3,6 +3,7 @@ import {retainRecentArticles} from './retention.mjs';
 import {exportChunks,importChunks} from './backup-transfer.mjs';
 import {Capacitor,registerPlugin} from '@capacitor/core';
 const LocalBackup=registerPlugin('LocalBackup');
+if(Capacitor.isNativePlatform())window.beReplayVoice=registerPlugin('ReplayVoice');
 const store=createOfflineStore();
 window.beServerGameMode=false;
 window.beOfflineMobile=true;
