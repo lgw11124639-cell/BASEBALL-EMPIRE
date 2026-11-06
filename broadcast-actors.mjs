@@ -113,8 +113,9 @@ export function pitchFrame(phase) {
             : 5;
 }
 export function framePlacement(frame, row, hand = "right", bat = "right") {
-  const shared = hand !== bat,
-    x = shared ? 108 : 173,
+  // Batting box selects the camera side; pitching hand only mirrors the whole pose.
+  const screenX = bat === "left" ? 500 : 220,
+    x = hand === "left" ? 720 - screenX : screenX,
     y = 500,
     scale = 1.4,
     anchor = FRAME_ANCHORS[row][frame],
@@ -132,7 +133,7 @@ async function sourceSheet() {
   if (!sheetPromise)
     sheetPromise = (async () => {
       const image = new Image();
-      image.src = PITCH_SHEET + "?v=20261107-pose-frames65";
+      image.src = PITCH_SHEET + "?v=20261107-batter-side66";
       await image.decode();
       const canvas = document.createElement("canvas");
       canvas.width = image.width;

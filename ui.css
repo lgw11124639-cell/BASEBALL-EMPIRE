@@ -20845,8 +20845,18 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay #be-stadium-pitch-type{font-size:calc(22px * var(--be-scene-scale,.5))!important}
 #be-replay-overlay .be-stadium-top{padding:calc(24px * var(--be-scene-scale,.5))}
 @media(min-width:601px){#be-replay-overlay .be-stadium{max-width:640px}}
-/* The fixed action bar gets its own viewport space instead of covering the play. */
-#be-replay-overlay.be-replay-overlay{inset:0 0 var(--be-replay-control-space,100px)!important}
 #be-replay-overlay #be-pitch-records strong{font-size:clamp(9px,1.4vw,13px)}
 #be-replay-overlay #be-pitch-records small{font-size:clamp(8px,1.2vw,11px)}
 #be-replay-overlay #be-catcher-lead{font-size:clamp(8px,1.3vw,12px)}
+
+/* One full-screen dialog: only its content scrolls; controls occupy a real bottom row. */
+#be-replay-overlay.be-replay-overlay{inset:0!important;height:100vh!important;height:100dvh!important;display:grid!important;grid-template-rows:minmax(0,1fr) auto;overflow:hidden!important}
+#be-replay-overlay>.be-replay-dialog{grid-row:1;min-height:0!important;height:100%!important;max-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;padding-bottom:18px!important}
+#be-replay-overlay>.be-replay-controls{grid-row:2;position:relative!important;inset:auto!important;width:100%!important;max-height:none!important;padding:10px max(14px,calc((100vw - 1108px)/2)) calc(10px + env(safe-area-inset-bottom))!important;z-index:30!important}
+#be-replay-overlay .be-stadium[data-pitcher-side=right] .be-stadium-hud{left:calc(18px * var(--be-scene-scale,.5))!important;right:auto!important;transform-origin:top left}
+#be-replay-overlay .be-stadium[data-pitcher-side=left] .be-stadium-hud{right:calc(18px * var(--be-scene-scale,.5))!important;left:auto!important;transform-origin:top right}
+#be-replay-overlay.be-replay-overlay{grid-template-columns:minmax(0,1fr);align-items:stretch;justify-items:stretch}
+#be-replay-overlay>.be-replay-dialog{scrollbar-gutter:stable}
+#be-replay-overlay .be-replay-options{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
+#be-replay-overlay .be-replay-options label{width:auto!important;min-width:0;max-width:100%}
+#be-replay-overlay .be-replay-options select{box-sizing:border-box!important;width:66px!important;min-width:0!important;max-width:66px!important;flex:0 0 66px;color:#294d63!important;background:#f7fafb!important}
