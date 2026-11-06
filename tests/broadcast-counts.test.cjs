@@ -19,7 +19,7 @@ for(let seed=1;seed<=70;seed++){
     continue;
    }
    let balls=0,strikes=0;
-   for(const p of e.pitchSequence){pitches++;if(p.call==='볼'||p.call==='볼넷')balls++;if(['루킹 스트라이크','스트라이크','헛스윙','루킹 삼진','헛스윙 삼진','삼진'].includes(p.call))strikes++;if(p.call==='파울'&&strikes<2)strikes++;
+   for(const p of e.pitchSequence){pitches++;if(p.call==='볼'||p.call==='볼넷')balls++;if(['루킹 스트라이크','스트라이크','헛스윙','루킹 삼진','헛스윙 삼진','삼진','번트 파울 삼진'].includes(p.call))strikes++;if(p.call==='파울'&&strikes<2)strikes++;
     assert.equal(p.ballsAfter,balls,'recorded ball count follows saved calls');assert.equal(p.strikesAfter,strikes,'recorded strike count follows saved calls');assert.ok(balls<=4&&strikes<=3,'valid terminal count');
    }
    if(e.outcome==='볼넷')assert.equal(balls,4);if(e.outcome==='삼진')assert.equal(strikes,3);
