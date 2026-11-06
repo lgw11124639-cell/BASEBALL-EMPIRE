@@ -50,7 +50,7 @@ console.log('PASS display-only zone cache maps the same raw coordinate as marker
 assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"타격 완료",outsBefore:0,outsAfter:1,pitchSequence:[{call:"헛스윙 삼진"}]}})'),null);assert.equal(run('beReplayCallText("strikeout")'),'스트라이크 아웃');assert.equal(run('beReplayCallText("foul")'),'파울');assert.equal(run('beReplayCallText("walk")'),'볼넷');
 for(const angle of [-42,0,42])assert.ok(run(`(()=>{const b=beBroadcastBallPath({sprayAngle:${angle}},'홈런');return b.y<193.5+76.5*((b.x-360)/342)**2})()`),'home run lands beyond the wall');
 assert.ok(run('beBroadcastPitchDuration(160)<beBroadcastPitchDuration(130)'));
-assert.ok(run('beBroadcastPitchDuration(145)<420'));
+assert.ok(Math.abs(run('beBroadcastPitchDuration(145)')-18.44/(145/3.6)*1000)<.001,'flight time follows velocity over the pitching distance');
 run(`const oldIntl={opponent:'JP',awayBatters:[{id:-(2027*100000000+(74*128+80)*100+19),name:'Saved name'}]};const oldIntlBefore=JSON.stringify(oldIntl);const replayIntl=beBroadcastInternationalGame(oldIntl,2027,[]);`);
 assert.equal(run('replayIntl.awayBatters[0].position'),'CF');assert.equal(run('replayIntl.awayBatters[0].name'),'Saved name');assert.equal(run('JSON.stringify(oldIntl)'),run('oldIntlBefore'));
 console.log('PASS fence-clearing home runs, velocity-dependent faster pitches and immutable legacy international position recovery');

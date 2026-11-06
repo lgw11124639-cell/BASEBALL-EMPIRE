@@ -33,7 +33,7 @@ export function mobileSource(source){
 }
 await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
 const source=mobileSource(await readFile(path.join(root,'app.js'),'utf8'));
-await build({stdin:{contents:source,resolveDir:root,sourcefile:'mobile-app.js',loader:'js'},bundle:true,format:'esm',target:'chrome120',outfile:path.join(out,'app.js'),legalComments:'none'});
+await build({stdin:{contents:source,resolveDir:root,sourcefile:'mobile-app.js',loader:'js'},bundle:true,external:['./broadcast-actors.mjs*'],format:'esm',target:'chrome120',outfile:path.join(out,'app.js'),legalComments:'none'});
 const original=await readFile(path.join(root,'app.js'),'utf8');
 const boot=original.lastIndexOf('(async()=>{try{app.innerHTML=');
 const engineSource=original.slice(0,boot).replace(/^import .*;\s*$/gm,'');
@@ -43,7 +43,9 @@ if(start<marker.length||end<start)throw Error('Canonical daily engine boundary c
 const day=orchestration.slice(start,end);
 const workerPrelude="import {selectUnannouncedTests,investigationCalendar} from './kpbl-investigation-policy.js';\nconst window=globalThis;const document={querySelector(){return null},getElementById(){return null},addEventListener(){},removeEventListener(){}};\n";
 const workerTail=`\nself.onmessage=({data})=>{const started=performance.now();try{state=data.world;playerConductClockCache=null;beInningLookupCache=null;tradeReviewContext=null;awardCandidatesCache=null;beZoneCache.profiles=new Map();const result=${day};self.postMessage({id:data.id,world:state,result,engineMs:performance.now()-started});}catch(error){self.postMessage({id:data.id,error:String(error?.message||error)});}};`;
-await build({stdin:{contents:workerPrelude+engineSource+workerTail,resolveDir:root,sourcefile:'offline-engine-worker.js',loader:'js'},bundle:true,format:'esm',target:'chrome120',outfile:path.join(out,'engine-worker.js'),legalComments:'none'});
+await build({stdin:{contents:workerPrelude+engineSource+workerTail,resolveDir:root,sourcefile:'offline-engine-worker.js',loader:'js'},bundle:true,external:['./broadcast-actors.mjs*'],format:'esm',target:'chrome120',outfile:path.join(out,'engine-worker.js'),legalComments:'none'});
+for(const module of ['broadcast-actors.mjs','broadcast-pose.mjs'])await copyFile(path.join(root,module),path.join(out,module));
+await cp(path.join(root,'vendor/three'),path.join(out,'vendor/three'),{recursive:true});
 await cp(path.join(root,'audio'),path.join(out,'audio'),{recursive:true});
 await cp(path.join(root,'assets'),path.join(out,'assets'),{recursive:true});
 await copyFile(path.join(root,'ui.css'),path.join(out,'ui.css'));
