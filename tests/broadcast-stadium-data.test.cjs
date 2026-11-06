@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),vm=require('node:vm'),c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
 run(`const event={pitchSequence:[{number:1,zoneX:0,zoneY:100,call:'볼'},{number:2,zoneX:null,zoneY:40},{number:3,zoneX:30,zoneY:45}]};`);
-assert.equal(run('beBroadcastPitchPoints(event,1).length'),1);assert.equal(run('beBroadcastPitchPoints(event,1)[0].x'),0);assert.equal(run('beBroadcastPitchPoints(event,2).length'),1);assert.equal(run('beBroadcastPitchPoints(event,3).length'),2);
+assert.equal(run('beBroadcastPitchPoints(event,1).length'),1);assert.equal(run('beBroadcastPitchPoints(event,1)[0].x'),-28.125);assert.equal(run('beBroadcastPitchPoints(event,2).length'),1);assert.equal(run('beBroadcastPitchPoints(event,3).length'),2);
 assert.equal(run('beBroadcastBallPath({})'),null);assert.equal(run('beBroadcastBallPath({sprayAngle:null})'),null);assert.ok(run('beBroadcastBallPath({sprayAngle:-30,launchAngle:20}).x<360'));assert.ok(run('beBroadcastBallPath({sprayAngle:30,launchAngle:20}).x>360'));
 console.log('PASS saved-only pitch positions, seen pitch bounds, explicit missing data and recorded spray direction');
 assert.equal(run('JSON.stringify(beBroadcastRunnerMoves({batterId:9,bases:[1,null,null],afterBases:[9,null,1],outcome:"안타"}))'),JSON.stringify([{id:9,from:0,to:1},{id:1,from:1,to:3}]));
@@ -34,6 +34,17 @@ assert.equal(run('beReplayHighlight({outcome:"홈런",runs:1})'),true);assert.eq
 console.log('PASS arm-mirrored release and pitch movement with exact endpoints, and recorded highlight selection');
 assert.equal(run('JSON.stringify(beBroadcastLeadTarget({leadTargetX:30,leadTargetY:64},"우타"))'),'{"x":30,"y":64}');
 assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"좌타").x'),36);assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"우타").x'),64);assert.equal(run('beBroadcastLeadTarget({},"우타")'),null);
-for(const [call,cue] of [['볼','ball'],['루킹 스트라이크','strike'],['헛스윙 삼진','strike'],['인플레이','contact'],['파울','contact']])assert.equal(run('beReplayAudioCue({kind:"pitch",pitch:{call:'+JSON.stringify(call)+'}})'),cue);
+for(const [call,cue] of [['볼','ball'],['루킹 스트라이크','strike'],['헛스윙 삼진','strikeout'],['인플레이','contact'],['파울','foul']])assert.equal(run('beReplayAudioCue({kind:"pitch",pitch:{call:'+JSON.stringify(call)+'}})'),cue);
 assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"홈런",outsBefore:0,outsAfter:0}})'),'homer');assert.equal(run('beReplayAudioCue({kind:"baserunning",e:{outcome:"런다운 아웃",outsBefore:0,outsAfter:1}})'),'out');
 console.log('PASS fixed recorded glove lead and recorded strike/ball/contact/out/homer sound cues');
+
+assert.equal(run('beReplayAudioCue({kind:"pitch",pitch:{call:"볼넷"}})'),'walk');assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"삼진",outsBefore:0,outsAfter:1,pitchSequence:[{call:"루킹 삼진"}]}})'),null);assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"희생번트",outsBefore:0,outsAfter:1}})'),'sacbunt');assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"2루타"}})'),'double');assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"3루타"}})'),'triple');
+for(const [raw,percent] of [[18,0],[50,50],[82,100],[64,71.875],[36,28.125]])assert.equal(run('beReplayZonePercent('+raw+')'),percent);
+assert.equal(run('beReplayLeadLabel({x:50,y:50},"우타")'),'가운데');assert.equal(run('beReplayLeadLabel({x:64,y:50},"우타")'),'바깥쪽');assert.equal(run('beReplayLeadLabel({x:64,y:50},"좌타")'),'몸쪽');assert.equal(run('beReplayLeadLabel({x:36,y:50},"좌타")'),'바깥쪽');
+console.log('PASS regulation-zone projection, handed lead labels, terminal strikeout/walk and distinct foul/bunt/hit/extra-base cues');
+
+run(`state=world(0);state.gameResults=[{year:state.year,away:0,home:1,broadcastEvents:[{batterId:7,batter:'테스트',side:'away',outcome:'안타',pitchSequence:[{zoneX:64,zoneY:50}]}]}];var worldBefore=JSON.stringify(state);`);
+assert.equal(run('beReplayZoneProfile({id:7}).zones[5].h'),1);assert.equal(run('batterZoneProfile({id:7}).zones[4].h'),1,'simulation zone cache remains unchanged');assert.equal(run('JSON.stringify(state)'),run('worldBefore'));
+console.log('PASS display-only zone cache maps the same raw coordinate as marker and glove without changing simulation records');
+
+assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"타격 완료",outsBefore:0,outsAfter:1,pitchSequence:[{call:"헛스윙 삼진"}]}})'),null);assert.equal(run('beReplayCallText("strikeout")'),'스트라이크 아웃');assert.equal(run('beReplayCallText("foul")'),'파울');assert.equal(run('beReplayCallText("walk")'),'볼넷');

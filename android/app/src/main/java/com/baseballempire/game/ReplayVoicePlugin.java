@@ -1,6 +1,7 @@
 package com.baseballempire.game;
 
 import android.speech.tts.TextToSpeech;
+import android.os.Bundle;
 import android.speech.tts.Voice;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -23,7 +24,7 @@ public class ReplayVoicePlugin extends Plugin {
                                 && (selected == null || voice.getQuality() > selected.getQuality())) selected = voice;
                     }
                     if (selected != null) ready = engine.setVoice(selected) == TextToSpeech.SUCCESS;
-                    engine.setPitch(.95f);
+                    engine.setPitch(.82f);
                 }
                 JSObject result = new JSObject(); result.put("available", ready); call.resolve(result);
             });
@@ -31,13 +32,14 @@ public class ReplayVoicePlugin extends Plugin {
     }
     @PluginMethod public void speak(PluginCall call) {
         final String text = call.getString("text", "");
-        if (!text.matches("스트라이크|볼|아웃|홈런")) { call.reject("Unsupported replay call"); return; }
+        if (!text.matches("스트라이크|스트라이크 아웃|볼|볼넷|파울|아웃|희생번트|안타|2루타|3루타|홈런|몸에 맞는 공")) { call.reject("Unsupported replay call"); return; }
         final double rate = call.getDouble("rate", 1.0);
         getActivity().runOnUiThread(() -> {
             JSObject result = new JSObject();
             if (!ready || engine == null) { result.put("spoken", false); call.resolve(result); return; }
             engine.setSpeechRate((float)Math.max(.8, Math.min(1.5, rate)));
-            result.put("spoken", engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "baseball-replay") == TextToSpeech.SUCCESS);
+            Bundle params = new Bundle(); params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, .65f);
+            result.put("spoken", engine.speak(text, TextToSpeech.QUEUE_FLUSH, params, "baseball-replay") == TextToSpeech.SUCCESS);
             call.resolve(result);
         });
     }

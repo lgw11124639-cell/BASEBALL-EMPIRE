@@ -20631,3 +20631,6 @@ main.game-shell .record-room { padding: 26px !important; }
 @keyframes be-homer-title{0%{scale:.85;opacity:.2}45%{scale:1.08;opacity:1}100%{scale:1;opacity:1}}
 @media(prefers-reduced-motion:reduce){#be-replay-overlay .be-stadium[data-celebration=homer],#be-replay-overlay .be-stadium[data-celebration=homer] .be-stadium-result,#be-replay-overlay .be-contact-ring,#be-replay-overlay .be-contact-spark{animation:none}#be-replay-overlay #be-contact-effect{display:none}}
 #be-replay-overlay .be-stadium[data-legacy=true] .be-pitch-record-panel{display:none}
+#be-replay-overlay .be-audio-credits{margin:0 12px 8px;font-size:10px;color:#657c88;line-height:1.6}
+#be-replay-overlay .be-audio-credits summary{font-size:10px;cursor:pointer}
+#be-replay-overlay .be-audio-credits p{font-size:10px;margin:5px 0}

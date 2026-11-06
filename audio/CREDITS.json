@@ -1,0 +1,82 @@
+[
+  {
+    "file": "bat-bunt.mp3",
+    "author": "martinimeniscus",
+    "license": "CC0-1.0",
+    "source": "https://freesound.org/people/martinimeniscus/sounds/162867/",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "c42b33dc0bb4e037d4bcf15a2226de72642f100825bd6648104106bb51cd30cc"
+  },
+  {
+    "file": "bat-drive.mp3",
+    "author": "martinimeniscus",
+    "license": "CC0-1.0",
+    "source": "https://freesound.org/people/martinimeniscus/sounds/162867/",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "3066cf2ed822a93c31aad4caae1c9b99de83f0ad98989125a96fe60832d048e2"
+  },
+  {
+    "file": "bat-foul.mp3",
+    "author": "martinimeniscus",
+    "license": "CC0-1.0",
+    "source": "https://freesound.org/people/martinimeniscus/sounds/162867/",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "85c143af41e0ff5139647404be4c36c8d211d6b44f2a500a4c3850a2bebc994f"
+  },
+  {
+    "file": "bat-hit.mp3",
+    "author": "martinimeniscus",
+    "license": "CC0-1.0",
+    "source": "https://freesound.org/people/martinimeniscus/sounds/162867/",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "2cf6fd1041f097e1bf1665fd555903b7debcd9911ccefd00732191eaedd339ce"
+  },
+  {
+    "file": "call-ball.mp3",
+    "author": "Mike Koenig",
+    "license": "CC-BY-3.0",
+    "source": "https://soundbible.com/505-Umpire-Saying-Ball.html",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "d4106a3b5e69ffbeaeb15bf09a3757283dfa274a54e83881412f46e49f6b407c"
+  },
+  {
+    "file": "call-out.mp3",
+    "author": "Mike Koenig",
+    "license": "CC-BY-3.0",
+    "source": "https://soundbible.com/506-Umpire-Saying-Youre-Out.html",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "59ef9ad5f8aae9dae3d2df10b63a8041f100a45a3a19921943a93303533a5b73"
+  },
+  {
+    "file": "call-strike.mp3",
+    "author": "Mike Koenig",
+    "license": "CC-BY-3.0",
+    "source": "https://soundbible.com/504-Baseball-Game-Strike.html",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "7d13612272688d516af531a2dc4e92bbbfb0482712b618c9969d1ca6013b8187"
+  },
+  {
+    "file": "call-strikeout.mp3",
+    "author": "Mike Koenig",
+    "license": "CC-BY-3.0",
+    "source": "https://soundbible.com/504-Baseball-Game-Strike.html + https://soundbible.com/506-Umpire-Saying-Youre-Out.html",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "509a642d6dcb23561bd15c32ec4fe9638df517d33caf4ecd4647341220edcce0"
+  },
+  {
+    "file": "crowd.mp3",
+    "author": "FoolBoyMedia",
+    "license": "CC0-1.0",
+    "source": "https://freesound.org/people/FoolBoyMedia/sounds/397434/",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "c337a8f15bd363f817ee68fdf25e9ea725cf4ec6df41da873fbf9e101fbe4449"
+  },
+  {
+    "file": "mitt.mp3",
+    "author": "martinimeniscus",
+    "license": "CC0-1.0",
+    "source": "https://freesound.org/people/martinimeniscus/sounds/164525/",
+    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
+    "sha256": "b1e1c3de80d79df6869d7693e9e4e343ff6e922b1ba0872d0aeb111ff3394f66"
+  }
+]

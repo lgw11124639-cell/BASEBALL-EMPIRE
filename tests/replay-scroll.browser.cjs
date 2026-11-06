@@ -19,7 +19,7 @@ const root=path.resolve(__dirname,'..');const reports=[];
    if(name==='app.js'){
     let source=body.toString();source=source.slice(0,source.lastIndexOf('(async()=>')).replace(/^import .*;\s*$/m,'');
     source+=`\nstate=world(0);state.gameResults=[];
-     for(let z=0;z<9;z++)for(let n=0;n<40;n++)state.gameResults.push({year:state.year,away:0,home:1,broadcastEvents:[{batterId:999001,batter:'타자 0',side:'away',outcome:n<([20,20,0,0,8,8,8,8,8][z])?'안타':'땅볼',pitchSequence:[{zoneX:16+z%3*33,zoneY:16+Math.floor(z/3)*33}]}]});
+     for(let z=0;z<9;z++)for(let n=0;n<40;n++)state.gameResults.push({year:state.year,away:0,home:1,broadcastEvents:[{batterId:999001,batter:'타자 0',side:'away',outcome:n<([20,20,0,0,8,8,8,8,8][z])?'안타':'땅볼',pitchSequence:[{zoneX:18+(z%3+.5)*64/3,zoneY:18+(Math.floor(z/3)+.5)*64/3}]}]});
      window.testOpen=()=>{
      const events=Array.from({length:30},(_,i)=>({inning:1,side:'away',batterId:i===0?999001:999002,batter:'타자 '+i,pitcher:'투수',outcome:'안타',score:i,
       outsBefore:0,outsAfter:0,bases:[null,null,null],afterBases:[null,null,null],pitches:1,

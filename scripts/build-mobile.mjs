@@ -1,4 +1,4 @@
-import {readFile,writeFile,mkdir,rm,copyFile} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,rm,copyFile,cp} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {build} from 'esbuild';
@@ -44,7 +44,8 @@ const day=orchestration.slice(start,end);
 const workerPrelude="import {selectUnannouncedTests,investigationCalendar} from './kpbl-investigation-policy.js';\nconst window=globalThis;const document={querySelector(){return null},getElementById(){return null},addEventListener(){},removeEventListener(){}};\n";
 const workerTail=`\nself.onmessage=({data})=>{const started=performance.now();try{state=data.world;playerConductClockCache=null;beInningLookupCache=null;tradeReviewContext=null;awardCandidatesCache=null;beZoneCache.profiles=new Map();const result=${day};self.postMessage({id:data.id,world:state,result,engineMs:performance.now()-started});}catch(error){self.postMessage({id:data.id,error:String(error?.message||error)});}};`;
 await build({stdin:{contents:workerPrelude+engineSource+workerTail,resolveDir:root,sourcefile:'offline-engine-worker.js',loader:'js'},bundle:true,format:'esm',target:'chrome120',outfile:path.join(out,'engine-worker.js'),legalComments:'none'});
+await cp(path.join(root,'audio'),path.join(out,'audio'),{recursive:true});
 await copyFile(path.join(root,'ui.css'),path.join(out,'ui.css'));
 await writeFile(path.join(out,'index.html'),`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#eef2f5"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>BASEBALL EMPIRE</title><link rel="stylesheet" href="ui.css"><style>body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}.start-foot{line-height:1.7}</style></head><body><div id="app"><main class="app-loading">야구 세계를 불러오는 중…</main></div><script type="module" src="app.js"></script></body></html>`);
-await writeFile(path.join(out,'build.json'),JSON.stringify({edition:'offline-mobile',package:'com.baseballempire.game',version:'0.4.4',engine:JSON.parse(await readFile(path.join(root,'version.json'),'utf8')).build})+'\n');
+await writeFile(path.join(out,'build.json'),JSON.stringify({edition:'offline-mobile',package:'com.baseballempire.game',version:'0.4.5',engine:JSON.parse(await readFile(path.join(root,'version.json'),'utf8')).build})+'\n');
 console.log('Offline mobile assets built: dist-mobile (no login, cloud client, external game assets or updater)');

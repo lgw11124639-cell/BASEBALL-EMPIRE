@@ -1,4 +1,4 @@
-import { cloudGate, cloudSave } from './cloud-only.js?v=20261106-glove-sound47';
+import { cloudGate, cloudSave } from './cloud-only.js?v=20261106-zone-recorded48';
 import { selectUnannouncedTests, investigationCalendar } from './kpbl-investigation-policy.js';
 const TEAMS=[['서울','로열스','#3978d4'],['부산','마리너스','#1e9f9c'],['인천','웨이브스','#4495ce'],['대구','타이탄즈','#d86a54'],['광주','피닉스','#dc9a4c'],['대전','이글스','#9b83dd'],['수원','나이츠','#79899e'],['창원','스톰','#5eaf83'],['울산','샤크스','#318fbd'],['청주','블레이즈','#c57852']];
 const BALLPARKS=['서울 로열스 파크','부산 마리너스 파크','인천 웨이브스 필드','대구 타이탄즈 파크','광주 피닉스 파크','대전 이글스 파크','수원 나이츠 파크','창원 스톰 파크','울산 샤크스 파크','청주 블레이즈 파크'];
@@ -1283,7 +1283,7 @@ function batterZoneTemperatures(profile){
  return profile.zones.map(zone=>!zone.ab?'neutral':zone.h/zone.ab>=.3?'hot':zone.h/zone.ab<.2?'cold':'neutral');
 }
 function batterZonePanel(p){
- const z=batterZoneProfile(p);
+ const z=beReplayZoneProfile(p);
  const temperatures=batterZoneTemperatures(z);
  return '<section class="pitch-chart-card batter-zone-card"><div class="pitch-chart-heading"><span>타격 핫존 · 콜드존</span><strong>실제 경기 기록 · 9분할</strong></div><p class="pitch-chart-caption">현재 시즌 정규경기 기록 · 타수 제한 없이 실제 구역별 타율 .300 이상은 빨강, .200~.299는 무색, .200 미만은 파랑으로 표시합니다.</p><div class="batter-zone-grid">'+z.zones.map((n,i)=>'<div class="'+temperatures[i]+'"><b>'+(temperatures[i]==='hot'?'HOT':temperatures[i]==='cold'?'COLD':'')+'</b><span>'+(n.ab>0?(n.h/n.ab).toFixed(3).replace(/^0/,''):'—')+'</span><small>'+n.ab+'타수</small></div>').join('')+'</div><p class="pitch-chart-caption">숫자는 구역별 실제 타율 · 타수가 없는 구역만 —로 표시합니다.</p></section>';
 }
@@ -4604,31 +4604,111 @@ function beReplayOutcomePresentation(outcome,outMade=false){
  if(/실책/.test(text))return {tone:'error',label:'실책'};
  return null;
 }
-function beReplayAudioCue(frame){
- if(frame?.kind==='pitch'){const call=String(frame.pitch?.call||'');return /인플레이|파울/.test(call)?'contact':/삼진|스트라이크|헛스윙/.test(call)?'strike':/볼/.test(call)?'ball':null;}
- if(frame?.kind==='result'||frame?.kind==='baserunning'){if(/홈런/.test(frame.e?.outcome||''))return 'homer';if(Number(frame.e?.outsAfter)>Number(frame.e?.outsBefore))return 'out';}return null;
+// The simulation tests the regulation zone at 18..82 in its wider pitch chart.
+function beReplayZonePercent(value){return (Number(value)-18)*100/64;}
+function beReplayLeadLabel(target,batHand){
+ if(!target)return '';
+ const x=beReplayZonePercent(target.x),y=beReplayZonePercent(target.y),left=batHand==='좌타';
+ const horizontal=x<100/3?(left?'바깥쪽':'몸쪽'):x>200/3?(left?'몸쪽':'바깥쪽'):'가운데';
+ return horizontal+(y<100/3?' 높게':y>200/3?' 낮게':'');
 }
+let beReplayZoneCache={revision:-1,year:null,profiles:new Map()};
+function beReplayZoneProfile(p){
+ const games=window.beEngineReadArchive?.(state?.gameResults)||state?.gameResults||[],revision=games.length,year=state?.year;
+ // Retain the indexed games and only process newly appended results.
+ if(beReplayZoneCache.worldRef?.deref()!==state||beReplayZoneCache.year!==year||revision<(beReplayZoneCache.indexedCount||0)||!beReplayZoneCache.index)beReplayZoneCache={worldRef:new WeakRef(state),revision,year,profiles:new Map(),index:new Map(),indexedCount:0};
+ else if(beReplayZoneCache.revision!==revision){beReplayZoneCache.revision=revision;beReplayZoneCache.profiles=new Map()}
+ const key=p?.id!=null?String(p.id):'name:'+String(p?.name)+'|'+String(p?.teamId);if(beReplayZoneCache.profiles.has(key))return beReplayZoneCache.profiles.get(key);
+ const zones=Array.from({length:9},()=>({ab:0,h:0,pa:0,k:0}));
+ // Incremental append-only index: do not rescan earlier games.
+ if(beReplayZoneCache.indexedCount<revision){
+  const index=beReplayZoneCache.index;
+  for(let gameIndex=beReplayZoneCache.indexedCount;gameIndex<revision;gameIndex++){
+   const g=games[gameIndex];
+   if(g.year!=null&&Number(g.year)!==Number(year))continue;
+   for(const e of g.broadcastEvents||[]){
+    const pitch=e.pitchSequence?.[e.pitchSequence.length-1];
+    if(!pitch||pitch.zoneX==null||pitch.zoneY==null||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))continue;
+    const x=beReplayZonePercent(pitch.zoneX),y=beReplayZonePercent(pitch.zoneY);
+    if(x<0||x>=100||y<0||y>=100)continue;
+    const outcome=String(e.outcome||'');
+    if(!outcome||outcome==='주루 상황')continue;
+    const zone=Math.min(2,Math.floor(y/33.3334))*3+Math.min(2,Math.floor(x/33.3334));
+    const ids=e.batterId??e.playerId??e.id;
+    const key=ids!=null?'id:'+String(ids):'name:'+String(e.batter)+'|'+String(e.side==='away'?g.away:g.home);
+    let bucket=index.get(key);if(!bucket){bucket=Array.from({length:9},()=>({ab:0,h:0,pa:0,k:0}));index.set(key,bucket)}
+    const z=bucket[zone];z.pa++;
+    if(!/볼넷|사구|희생/.test(outcome)){z.ab++;if(/안타|홈런|2루타|3루타/.test(outcome))z.h++}
+    if(/삼진/.test(outcome))z.k++;
+   }
+  }
+  beReplayZoneCache.indexedCount=revision;
+ }
+ const indexed=beReplayZoneCache.index.get('id:'+key)||beReplayZoneCache.index.get('name:'+String(p?.name)+'|'+String(p?.teamId));
+ if(indexed)for(let i=0;i<9;i++)Object.assign(zones[i],indexed[i]);
+ const total=zones.reduce((n,z)=>n+z.ab,0);
+ const leagueNeutral=total>0?zones.reduce((n,z)=>n+z.h,0)/total:.25;
+ const values=zones.map(z=>z.ab>=8?(z.h+leagueNeutral*24)/(z.ab+24):null);
+ const eligible=values.map((v,i)=>v==null?null:i).filter(v=>v!=null);
+ const best=eligible.length?eligible.reduce((a,b)=>values[a]>=values[b]?a:b):-1;
+ const worst=eligible.length?eligible.reduce((a,b)=>values[a]<=values[b]?a:b):-1;
+ const overall=total>0?zones.reduce((n,z)=>n+z.h,0)/total:0;
+ const result={zones,values,best,worst,total,overall};
+ beReplayZoneCache.profiles.set(key,result);return result;
+}
+function beReplayAudioCue(frame){
+ if(frame?.kind==='pitch'){
+  const call=String(frame.pitch?.call||'');
+  if(/삼진/.test(call))return 'strikeout';if(call==='볼넷')return 'walk';if(call==='사구')return 'hbp';if(call==='파울')return 'foul';
+  if(call==='인플레이')return /번트/.test(frame.e?.outcome||'')?'buntcontact':Number(frame.e?.battedBall?.exitVelocity)>=100?'drivecontact':'contact';
+  return /스트라이크|헛스윙/.test(call)?'strike':call==='볼'?'ball':null;
+ }
+ if(frame?.kind==='result'||frame?.kind==='baserunning'){
+  const e=frame.e||{},outcome=beReplayEventOutcome(e),last=e.pitchSequence?.at(-1)?.call||'';
+  if(/홈런/.test(outcome))return 'homer';if(/삼진/.test(outcome))return /삼진/.test(last)?null:'strikeout';
+  if(/볼넷/.test(outcome))return last==='볼넷'?null:'walk';if(/사구/.test(outcome))return last==='사구'?null:'hbp';
+  if(/희생.*번트/.test(outcome))return 'sacbunt';if(/3루타/.test(outcome))return 'triple';if(/2루타/.test(outcome))return 'double';if(/안타/.test(outcome)||Number(e.hitDelta)>0)return 'hit';
+  if(Number(e.outsAfter)>Number(e.outsBefore))return 'out';
+ }return null;
+}
+function beReplayCallText(kind){return ({strike:'스트라이크',strikeout:'스트라이크 아웃',ball:'볼',walk:'볼넷',foul:'파울',out:'아웃',sacbunt:'희생번트',hit:'안타',double:'2루타',triple:'3루타',homer:'홈런',hbp:'몸에 맞는 공'})[kind]||null;}
 function beCreateReplayAudio(){
- let context=null,master=null,enabled=true,unlocked=false,nativeReady=null,voiceSequence=0;const sources=new Set();
- const stop=()=>{voiceSequence++;for(const node of sources){try{node.stop();}catch{}}sources.clear();try{window.speechSynthesis?.cancel();window.beReplayVoice?.stop().catch(()=>{});}catch{}};
- const unlock=()=>{unlocked=true;if(!enabled)return;if(window.beReplayVoice?.prepare&&!nativeReady)nativeReady=window.beReplayVoice.prepare().catch(()=>null);try{window.speechSynthesis?.getVoices();}catch{}try{const Audio=window.AudioContext||window.webkitAudioContext;if(Audio&&!context){context=new Audio();master=context.createGain();master.gain.value=.15;master.connect(context.destination);}context?.resume().catch(()=>{});}catch{}};
- const tone=(frequency,at,duration,volume=.4)=>{if(!context||!master)return;const oscillator=context.createOscillator(),gain=context.createGain();oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(volume,at+.008);gain.gain.exponentialRampToValueAtTime(.001,at+duration);oscillator.connect(gain);gain.connect(master);sources.add(oscillator);oscillator.onended=()=>{sources.delete(oscillator);oscillator.disconnect();gain.disconnect();};oscillator.start(at);oscillator.stop(at+duration+.01);};
- const play=(kind,rate=1)=>{if(!enabled||!unlocked||!kind)return;try{const at=context?.currentTime||0;if(kind==='contact'&&context){const buffer=context.createBuffer(1,Math.ceil(context.sampleRate*.065),context.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.exp(-i/(context.sampleRate*.009));const source=context.createBufferSource(),filter=context.createBiquadFilter();source.buffer=buffer;filter.type='bandpass';filter.frequency.value=1850;source.connect(filter);filter.connect(master);sources.add(source);source.onended=()=>{sources.delete(source);source.disconnect();filter.disconnect();};source.start();tone(125,at,.09,.8);}else if(kind==='homer'){[523.25,659.25,783.99].forEach((note,i)=>tone(note,at+i*.09,.25,.35));}else if(kind==='out'){tone(392,at,.1);tone(196,at+.08,.16);}else tone(kind==='strike'?720:330,at,.07,.2);
-  const text=({strike:'스트라이크',ball:'볼',out:'아웃',homer:'홈런'})[kind];if(!text)return;
-  const speechRate=1+Math.max(0,Math.min(2,rate-1))*.18;
-  if(window.beReplayVoice){const sequence=++voiceSequence;Promise.resolve(nativeReady).then(()=>{if(enabled&&sequence===voiceSequence)return window.beReplayVoice.speak({text,rate:speechRate});}).catch(()=>{});}
-  else if(window.speechSynthesis&&window.SpeechSynthesisUtterance){const voice=window.speechSynthesis.getVoices().find(voice=>voice.lang.startsWith('ko')&&voice.localService);if(voice){const utterance=new window.SpeechSynthesisUtterance(text);utterance.lang='ko-KR';utterance.voice=voice;utterance.rate=speechRate;window.speechSynthesis.cancel();window.speechSynthesis.speak(utterance);}}
+ let context=null,master=null,enabled=true,unlocked=false,nativeReady=null,voiceSequence=0,epoch=0,voiceSource=null;
+ const sources=new Set(),buffers=new Map(),voiceFiles={strike:'call-strike.mp3',ball:'call-ball.mp3',out:'call-out.mp3',strikeout:'call-strikeout.mp3'};
+ const files=[...Object.values(voiceFiles),'bat-hit.mp3','bat-drive.mp3','bat-bunt.mp3','bat-foul.mp3','mitt.mp3','crowd.mp3'];
+ const stop=()=>{epoch++;voiceSequence++;for(const node of sources){try{node.stop();}catch{}}sources.clear();voiceSource=null;try{window.speechSynthesis?.cancel();window.beReplayVoice?.stop().catch(()=>{});}catch{}};
+ const load=file=>{if(!context||typeof fetch!=='function')return Promise.resolve(null);if(!buffers.has(file)){const ctx=context;buffers.set(file,fetch(new URL('audio/'+file,document.baseURI)).then(response=>{if(!response.ok)throw Error('Audio unavailable');return response.arrayBuffer();}).then(bytes=>ctx.decodeAudioData(bytes)).catch(()=>null));}return buffers.get(file);};
+ const unlock=()=>{unlocked=true;if(!enabled)return;if(window.beReplayVoice?.prepare&&!nativeReady)nativeReady=window.beReplayVoice.prepare().catch(()=>null);try{window.speechSynthesis?.getVoices();}catch{}try{const Audio=window.AudioContext||window.webkitAudioContext;if(Audio&&!context){context=new Audio();master=context.createGain();master.gain.value=.65;master.connect(context.destination);files.forEach(load);}context?.resume().catch(()=>{});}catch{}};
+ const sample=(file,volume=1,options={})=>{const capturedEpoch=epoch;return load(file).then(buffer=>{
+  if(!buffer||!context||!master||!enabled||capturedEpoch!==epoch||options.voice&&options.sequence!==voiceSequence)return false;
+  if(options.voice&&voiceSource){try{voiceSource.stop();}catch{}}
+  const source=context.createBufferSource(),gain=context.createGain();source.buffer=buffer;source.playbackRate.value=options.rate||1;gain.gain.value=volume;source.connect(gain);gain.connect(master);sources.add(source);if(options.voice)voiceSource=source;
+  const duration=Math.min(buffer.duration,options.duration||buffer.duration);if(options.duration){gain.gain.setValueAtTime(volume,context.currentTime);gain.gain.setValueAtTime(volume,context.currentTime+duration*.65);gain.gain.linearRampToValueAtTime(0,context.currentTime+duration);}
+  source.onended=()=>{sources.delete(source);if(voiceSource===source)voiceSource=null;source.disconnect();gain.disconnect();};source.start(0,0,duration);return true;
+ });};
+ const speak=(kind,rate)=>{const text=beReplayCallText(kind);if(!text)return;const sequence=++voiceSequence;
+  const fallback=()=>{if(!enabled||sequence!==voiceSequence)return;const speechRate=.98+Math.max(0,Math.min(2,rate-1))*.12;
+   if(window.beReplayVoice)Promise.resolve(nativeReady).then(()=>{if(enabled&&sequence===voiceSequence)return window.beReplayVoice.speak({text,rate:speechRate});}).catch(()=>{});
+   else if(window.speechSynthesis&&window.SpeechSynthesisUtterance){const voice=window.speechSynthesis.getVoices().find(voice=>voice.lang.startsWith('ko')&&voice.localService);if(voice){const utterance=new window.SpeechSynthesisUtterance(text);utterance.lang='ko-KR';utterance.voice=voice;utterance.rate=speechRate;utterance.pitch=.82;window.speechSynthesis.cancel();window.speechSynthesis.speak(utterance);}}
+  };
+  if(voiceFiles[kind]){try{window.speechSynthesis?.cancel();window.beReplayVoice?.stop().catch(()=>{});}catch{}sample(voiceFiles[kind],.9,{voice:true,sequence,rate:Math.min(1.12,1+(rate-1)*.05)}).then(ok=>{if(!ok)fallback();});}else{if(voiceSource){try{voiceSource.stop();}catch{}}fallback();}
+ };
+ const play=(kind,rate=1)=>{if(!enabled||!unlocked||!kind)return;try{
+  const impacts={contact:['bat-hit.mp3',.85],drivecontact:['bat-drive.mp3',.95],buntcontact:['bat-bunt.mp3',.8],foul:['bat-foul.mp3',.75]};
+  if(impacts[kind])sample(...impacts[kind]);else if(['strike','strikeout','ball','walk'].includes(kind))sample('mitt.mp3',.28);
+  if(kind==='hit'||kind==='sacbunt')sample('crowd.mp3',.12,{duration:.75});if(kind==='double')sample('crowd.mp3',.25,{duration:1.4});if(kind==='triple')sample('crowd.mp3',.3,{duration:1.8});if(kind==='homer')sample('crowd.mp3',.42,{duration:2.8});
+  speak(kind,rate);
  }catch{}};
- return {unlock,play,stop,setEnabled:value=>{enabled=!!value;if(!enabled)stop();else unlock();},destroy:()=>{stop();context?.close().catch(()=>{});context=null;master=null;}};
+ return {unlock,play,stop,setEnabled:value=>{enabled=!!value;if(!enabled)stop();else unlock();},destroy:()=>{stop();buffers.clear();context?.close().catch(()=>{});context=null;master=null;}};
 }
 function beReplayHighlight(event){
  const text=String(event?.outcome||'');
- return event?.eventType==='baserunning'||Number(event?.runs)>0||Number(event?.hitDelta)>0||Number(event?.errorDelta)>0||/안타|2루타|3루타|홈런|실책|병살|삼중살/.test(text)||Number(event?.outsAfter)>=3&&(/삼진/.test(text)||(event?.bases||[]).some(id=>id!=null));
+ return event?.eventType==='baserunning'||Number(event?.runs)>0||Number(event?.hitDelta)>0||Number(event?.errorDelta)>0||/안타|2루타|3루타|홈런|실책|병살|삼중살|희생.*번트|희생플라이/.test(text)||Number(event?.outsAfter)>=3&&(/삼진/.test(text)||(event?.bases||[]).some(id=>id!=null));
 }
 function beBroadcastPitchPoints(event,seen){
  return (Array.isArray(event?.pitchSequence)?event.pitchSequence:[]).slice(0,Math.max(0,seen)).flatMap((pitch,index)=>{
   if(pitch.zoneX==null||pitch.zoneY==null||!Number.isFinite(Number(pitch.zoneX))||!Number.isFinite(Number(pitch.zoneY)))return [];
-  return [{number:pitch.number||index+1,x:Math.max(-20,Math.min(120,Number(pitch.zoneX))),y:Math.max(-20,Math.min(120,Number(pitch.zoneY))),call:String(pitch.call||'')}];
+  return [{number:pitch.number||index+1,x:Math.max(-30,Math.min(130,beReplayZonePercent(pitch.zoneX))),y:Math.max(-30,Math.min(130,beReplayZonePercent(pitch.zoneY))),call:String(pitch.call||'')}];
  });
 }
 function beBroadcastBallPath(ball){
@@ -4755,7 +4835,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
  const lineup=side=>(g[side+'Batters']||[]).filter(p=>!p.subIn).sort((u,v)=>(u.battingOrder||99)-(v.battingOrder||99)).slice(0,9).map(p=>'<li><b>'+(p.battingOrder||'–')+'</b> '+esc(p.name)+' <small>'+esc(p.position||'')+'</small></li>').join('');
  const scores=all.map(x=>'<div class="be-replay-score-row"><span>'+esc(teams[x.away]?.name||'원정')+'</span><strong>'+x.awayRuns+' : '+x.homeRuns+'</strong><span>'+esc(teams[x.home]?.name||'홈')+'</span></div>').join('');
  document.querySelector('#be-replay-overlay')?.remove();
- document.body.insertAdjacentHTML('beforeend','<div id="be-replay-overlay" class="be-replay-overlay"><section class="be-replay-dialog" role="dialog" aria-modal="true" aria-label="경기 관전"><header><div><small>BASEBALL EMPIRE · 경기 문자중계</small><h2>'+esc(a.city+' '+a.name)+' vs '+esc(h.city+' '+h.name)+'</h2></div><button type="button" onclick="beCloseGameReplay()">✕ 닫기</button></header><div class="be-replay-scoreboard"><div class="be-replay-team">'+teamBadge(a)+'<div><small>AWAY · 원정</small><span>'+esc(a.name)+'</span></div></div><div class="be-replay-score"><span>MATCH REPLAY</span><strong id="be-replay-current-score">0 : 0</strong></div><div class="be-replay-team be-replay-team--home">'+teamBadge(h)+'<div><small>HOME · 홈</small><span>'+esc(h.name)+'</span></div></div></div><div class="be-replay-innings" id="be-replay-innings"></div><div class="be-replay-stage"><div class="be-replay-live"><div><b id="be-replay-inning">경기 전</b><span id="be-replay-count">0아웃</span><div class="be-count-lamps" id="be-count-lamps" aria-label="볼 스트라이크 아웃"><span>B <i></i><i></i><i></i></span><span>S <i></i><i></i></span><span>O <i></i><i></i></span></div></div><div id="be-replay-bases" class="be-replay-bases"><span class="be-diamond-base be-diamond-second" id="be-base-2"></span><span class="be-diamond-base be-diamond-third" id="be-base-3"></span><span class="be-diamond-base be-diamond-first" id="be-base-1"></span><span class="be-diamond-plate">◆</span></div></div><div class="be-zone-field"><div class="be-broadcast-zone-grid">'+Array(9).fill('<span></span>').join('')+'</div></div></div><p id="be-replay-status" class="be-replay-note">'+(detailed?'중계 대기':'투구 기록 없음 · 이닝별 재생')+'</p><details class="be-replay-history"><summary>중계 기록</summary><div id="be-replay-lines" class="be-replay-lines" tabindex="0" aria-label="경기 중계 기록"></div></details><div id="be-replay-finish" hidden>'+beReplayFinalRecordCard(g)+kpblGameIncidentPanel(g)+'<h3>경기 종료 · 당일 전체 경기 최종 점수</h3>'+scores+'</div><div class="be-replay-controls"><div class="be-replay-options"><label><input type="checkbox" id="be-replay-highlights"> 하이라이트만</label><label><input type="checkbox" id="be-replay-sound" checked> 소리</label><label>속도 <select id="be-replay-speed" aria-label="중계 속도"><option value="1">1배</option><option value="2">2배</option><option value="3">3배</option></select></label></div><button type="button" id="be-replay-next" class="be-replay-next">▶ 중계 진행</button><button type="button" id="be-replay-auto" class="be-replay-next be-replay-skip" disabled>■ 정지</button></div></section></div>');
+ document.body.insertAdjacentHTML('beforeend','<div id="be-replay-overlay" class="be-replay-overlay"><section class="be-replay-dialog" role="dialog" aria-modal="true" aria-label="경기 관전"><header><div><small>BASEBALL EMPIRE · 경기 문자중계</small><h2>'+esc(a.city+' '+a.name)+' vs '+esc(h.city+' '+h.name)+'</h2></div><button type="button" onclick="beCloseGameReplay()">✕ 닫기</button></header><div class="be-replay-scoreboard"><div class="be-replay-team">'+teamBadge(a)+'<div><small>AWAY · 원정</small><span>'+esc(a.name)+'</span></div></div><div class="be-replay-score"><span>MATCH REPLAY</span><strong id="be-replay-current-score">0 : 0</strong></div><div class="be-replay-team be-replay-team--home">'+teamBadge(h)+'<div><small>HOME · 홈</small><span>'+esc(h.name)+'</span></div></div></div><div class="be-replay-innings" id="be-replay-innings"></div><div class="be-replay-stage"><div class="be-replay-live"><div><b id="be-replay-inning">경기 전</b><span id="be-replay-count">0아웃</span><div class="be-count-lamps" id="be-count-lamps" aria-label="볼 스트라이크 아웃"><span>B <i></i><i></i><i></i></span><span>S <i></i><i></i></span><span>O <i></i><i></i></span></div></div><div id="be-replay-bases" class="be-replay-bases"><span class="be-diamond-base be-diamond-second" id="be-base-2"></span><span class="be-diamond-base be-diamond-third" id="be-base-3"></span><span class="be-diamond-base be-diamond-first" id="be-base-1"></span><span class="be-diamond-plate">◆</span></div></div><div class="be-zone-field"><div class="be-broadcast-zone-grid">'+Array(9).fill('<span></span>').join('')+'</div></div></div><p id="be-replay-status" class="be-replay-note">'+(detailed?'중계 대기':'투구 기록 없음 · 이닝별 재생')+'</p><details class="be-replay-history"><summary>중계 기록</summary><details class="be-audio-credits"><summary>음원 출처</summary><p>심판 콜: Mike Koenig · SoundBible · CC BY 3.0. 무음 제거·EQ·음량 조정. <a href="https://soundbible.com/504-Baseball-Game-Strike.html" target="_blank" rel="noopener">Strike</a> · <a href="https://soundbible.com/505-Umpire-Saying-Ball.html" target="_blank" rel="noopener">Ball</a> · <a href="https://soundbible.com/506-Umpire-Saying-Youre-Out.html" target="_blank" rel="noopener">Out</a> · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">라이선스</a></p><p>타격·포구: martinimeniscus / Freesound 162867, 164525 · CC0. 환호: FoolBoyMedia / Freesound 397434 · CC0. 자르기·음색·음량 조정.</p></details><div id="be-replay-lines" class="be-replay-lines" tabindex="0" aria-label="경기 중계 기록"></div></details><div id="be-replay-finish" hidden>'+beReplayFinalRecordCard(g)+kpblGameIncidentPanel(g)+'<h3>경기 종료 · 당일 전체 경기 최종 점수</h3>'+scores+'</div><div class="be-replay-controls"><div class="be-replay-options"><label><input type="checkbox" id="be-replay-highlights"> 하이라이트만</label><label><input type="checkbox" id="be-replay-sound" checked> 소리</label><label>속도 <select id="be-replay-speed" aria-label="중계 속도"><option value="1">1배</option><option value="2">2배</option><option value="3">3배</option></select></label></div><button type="button" id="be-replay-next" class="be-replay-next">▶ 중계 진행</button><button type="button" id="be-replay-auto" class="be-replay-next be-replay-skip" disabled>■ 정지</button></div></section></div>');
  const stage=document.querySelector('.be-replay-stage');
  stage.insertAdjacentHTML('afterbegin',beBroadcastStadiumMarkup());
  const stadium=stage.querySelector('.be-stadium'),live=stage.querySelector('.be-replay-live');
@@ -4795,7 +4875,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   const row=(g[side+'Batters']||[]).find(p=>id!=null?String(p.id)===String(id):p.name===e.batter);
   const playerId=id??row?.id,key=side+':'+String(playerId??e.batter);
   if(key===zoneBatterKey)return;zoneBatterKey=key;
-  const profile=batterZoneProfile({id:playerId,name:e.batter,teamId:g[side]}),colors=batterZoneTemperatures(profile);
+  const profile=beReplayZoneProfile({id:playerId,name:e.batter,teamId:g[side]}),colors=batterZoneTemperatures(profile);
   zoneGrid.setAttribute('aria-label',e.batter+' 현재 시즌 타격 핫존·콜드존');
   zoneGrid.querySelectorAll('span').forEach((cell,i)=>{
    const z=profile.zones[i],label=colors[i]==='hot'?'HOT':colors[i]==='cold'?'COLD':'';
@@ -4870,7 +4950,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   stadium.querySelectorAll('[data-field-base]').forEach(el=>el.dataset.occupied=String(ids?.[Number(el.dataset.fieldBase)-1]!=null));
   const rect=stadium.querySelector('.be-stadium-guides').getBoundingClientRect(),zone=zoneGrid.getBoundingClientRect(),points=beBroadcastPitchPoints(e,seen),colors=['#f3bd62','#83d6c2','#8bbcf8','#e2a1dd','#c4db8a','#edb699'];
   const mitt=stadium.querySelector('#be-catcher-mitt'),leadTarget=beBroadcastLeadTarget(pitch,e.batterHand||batterHands.get(String(e.batterId)));
-  if(leadTarget){const x=(zone.left-rect.left+zone.width*leadTarget.x/100)/(rect.width||1)*720,y=(zone.top-rect.top+zone.height*leadTarget.y/100)/(rect.height||1)*520;mitt.style.display='';mitt.setAttribute('transform','translate('+x.toFixed(2)+' '+y.toFixed(2)+')');mitt.setAttribute('aria-label','포수 리드 위치');}else mitt.style.display='none';
+  if(leadTarget){const x=(zone.left-rect.left+zone.width*beReplayZonePercent(leadTarget.x)/100)/(rect.width||1)*720,y=(zone.top-rect.top+zone.height*beReplayZonePercent(leadTarget.y)/100)/(rect.height||1)*520;mitt.style.display='';mitt.setAttribute('transform','translate('+x.toFixed(2)+' '+y.toFixed(2)+')');mitt.setAttribute('aria-label','포수 리드 위치');}else mitt.style.display='none';
   let pitchFlight=null;
   document.querySelector('#be-stadium-pitches').innerHTML=points.map((point,i)=>{
    const x=(zone.left-rect.left+zone.width*point.x/100)/(rect.width||1)*720,y=(zone.top-rect.top+zone.height*point.y/100)/(rect.height||1)*520,color=colors[i%colors.length];
@@ -4884,7 +4964,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   flyBall(frame,ball?ball.path:frame.kind==='pitch'?pitchFlight:null,isResult?'batted':'pitch',runnerMoves);
   write('be-stadium-caption',ball?'기록 기반 재현 · 타구·수비·주루 이동은 연출':points.length?'현재 타석 '+seen+'구 · 저장된 투구 위치':e.battedBall?'타구 방향 미기록 · 수비 배치 도식':'투구 위치 미기록 · 수비 배치 도식');
   const panel=document.querySelector('#be-pitch-records'),recorded=(e.pitchSequence||[]).slice(0,seen);
-  const lead=document.querySelector('#be-catcher-lead');lead.textContent=pitch?.lead?pitch.lead+' 리드':'';lead.hidden=!pitch?.lead;
+  const lead=document.querySelector('#be-catcher-lead');const leadLabel=beReplayLeadLabel(leadTarget,e.batterHand||batterHands.get(String(e.batterId)));lead.textContent=leadLabel?leadLabel+' 리드':'';lead.hidden=!leadLabel;
   panel.innerHTML=recorded.length?recorded.map((p,i)=>'<li><b style="background:'+colors[i%colors.length]+'">'+Number(p.number||i+1)+'</b><div><strong>'+esc((p.call==='인플레이'?'타격':p.call||'투구'))+'</strong><small>'+esc((p.velocity!=null?Math.round(Number(p.velocity))+'km/h · ':'')+(p.type||'구종 미기록'))+'</small></div></li>').reverse().join(''):'<li class="be-pitch-records-empty">첫 투구 대기</li>';
  };
  const stadiumResize=typeof ResizeObserver==='function'?new ResizeObserver(()=>{if(visibleFrame)drawStadium(visibleFrame);}):null;stadiumResize?.observe(stadium);

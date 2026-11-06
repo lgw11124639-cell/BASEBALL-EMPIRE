@@ -9,6 +9,7 @@ on:
       - '*.json'
       - '*.webmanifest'
       - 'vendor/**'
+      - 'audio/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 permissions:
@@ -41,6 +42,7 @@ jobs:
           mkdir -p _site
           cp app.js native-save.js kpbl-investigation-policy.js cloud-only.js cloud-save.js server-day-client.js server-save-client.js index.html server-home-preview.html server-home-original-preview.html manifest.webmanifest sw.js ui.css update.js version.json _site/
           cp -R vendor _site/vendor
+          cp -R audio _site/audio
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
