@@ -1,0 +1,9 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+const path=run("beBroadcastPitchPath({type:'슬라이더',delivery:'언더핸드',throwHand:'좌투',releaseX:581.25,releaseY:442.5},330,290,360,210)");assert.ok(path.startsWith('M581.3 442.5 C'));assert.ok(path.endsWith('330.0 290.0'));
+assert.equal(run("beReplayLeadLabel({x:32,y:50},'우타')"),'바깥쪽');assert.equal(run("beReplayLeadLabel({x:68,y:50},'좌타')"),'바깥쪽');assert.equal(run("beReplayLeadLabel({x:68,y:50},'우타')"),'몸쪽');
+assert.equal(run("(beBroadcastUniformFilters().match(/<filter id=/g)||[]).length"),10);
+console.log('PASS actual release-hand origin, center-field handed zone labels and ten local material filters');
+const set=run('beBroadcastPitcherSkeleton(0)'),lift=run('beBroadcastPitcherSkeleton(1)'),plant=run('beBroadcastPitcherSkeleton(2)');assert.deepEqual(lift.rightAnkle,set.rightAnkle,'right pivot foot stays planted while left leg lifts');assert.deepEqual(lift.rightKnee,set.rightKnee);assert.ok(lift.leftKnee[1]<lift.leftHip[1]);assert.ok(lift.leftAnkle[1]<set.leftAnkle[1]-100);for(const pose of [2,2.25,2.5,3,3.5,4])assert.deepEqual(run('beBroadcastPitcherSkeleton('+pose+').leftAnkle'),plant.leftAnkle,'same left landing foot stays anchored through release and follow-through');
+console.log('PASS anatomical right pivot, left lift and fixed left landing foot across all interpolated frames');
+
+for(let pose=0;pose<2;pose+=.125){const j=run('beBroadcastPitcherSkeleton('+pose+')');assert.ok(Math.hypot(j.leftKnee[0]-j.leftHip[0],j.leftKnee[1]-j.leftHip[1])>60,'lifting thigh does not collapse through hip');assert.ok(Math.hypot(j.leftAnkle[0]-j.leftKnee[0],j.leftAnkle[1]-j.leftKnee[1])>70,'same shin remains connected during lift and stride');if(pose<=1)assert.deepEqual(j.rightAnkle,set.rightAnkle);}

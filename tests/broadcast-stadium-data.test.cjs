@@ -33,14 +33,14 @@ for(const delivery of ['오버핸드','쓰리쿼터','사이드암','언더핸�
 assert.equal(run('beReplayHighlight({outcome:"홈런",runs:1})'),true);assert.equal(run('beReplayHighlight({eventType:"baserunning",runAction:"pickoff"})'),true);assert.equal(run('beReplayHighlight({outcome:"볼넷",outsBefore:0,outsAfter:0})'),false);
 console.log('PASS arm-mirrored release and pitch movement with exact endpoints, and recorded highlight selection');
 assert.equal(run('JSON.stringify(beBroadcastLeadTarget({leadTargetX:30,leadTargetY:64},"우타"))'),'{"x":30,"y":64}');
-assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"좌타").x'),36);assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"우타").x'),64);assert.equal(run('beBroadcastLeadTarget({},"우타")'),null);
+assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"좌타").x'),64);assert.equal(run('beBroadcastLeadTarget({lead:"바깥쪽"},"우타").x'),36);assert.equal(run('beBroadcastLeadTarget({},"우타")'),null);
 for(const [call,cue] of [['볼','ball'],['루킹 스트라이크','strike'],['헛스윙 삼진','strikeout'],['인플레이','contact'],['파울','foul']])assert.equal(run('beReplayAudioCue({kind:"pitch",pitch:{call:'+JSON.stringify(call)+'}})'),cue);
 assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"홈런",outsBefore:0,outsAfter:0}})'),'homer');assert.equal(run('beReplayAudioCue({kind:"baserunning",e:{outcome:"런다운 아웃",outsBefore:0,outsAfter:1}})'),'out');
 console.log('PASS fixed recorded glove lead and recorded strike/ball/contact/out/homer sound cues');
 
 assert.equal(run('beReplayAudioCue({kind:"pitch",pitch:{call:"볼넷"}})'),'walk');assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"삼진",outsBefore:0,outsAfter:1,pitchSequence:[{call:"루킹 삼진"}]}})'),null);assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"희생번트",outsBefore:0,outsAfter:1}})'),'sacbunt');assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"2루타"}})'),'double');assert.equal(run('beReplayAudioCue({kind:"result",e:{outcome:"3루타"}})'),'triple');
 for(const [raw,percent] of [[18,0],[50,50],[82,100],[64,71.875],[36,28.125]])assert.equal(run('beReplayZonePercent('+raw+')'),percent);
-assert.equal(run('beReplayLeadLabel({x:50,y:50},"우타")'),'가운데');assert.equal(run('beReplayLeadLabel({x:64,y:50},"우타")'),'바깥쪽');assert.equal(run('beReplayLeadLabel({x:64,y:50},"좌타")'),'몸쪽');assert.equal(run('beReplayLeadLabel({x:36,y:50},"좌타")'),'바깥쪽');
+assert.equal(run('beReplayLeadLabel({x:50,y:50},"우타")'),'가운데');assert.equal(run('beReplayLeadLabel({x:64,y:50},"우타")'),'몸쪽');assert.equal(run('beReplayLeadLabel({x:64,y:50},"좌타")'),'바깥쪽');assert.equal(run('beReplayLeadLabel({x:36,y:50},"좌타")'),'몸쪽');
 console.log('PASS regulation-zone projection, handed lead labels, terminal strikeout/walk and distinct foul/bunt/hit/extra-base cues');
 
 run(`state=world(0);state.gameResults=[{year:state.year,away:0,home:1,broadcastEvents:[{batterId:7,batter:'테스트',side:'away',outcome:'안타',pitchSequence:[{zoneX:64,zoneY:50}]}]}];var worldBefore=JSON.stringify(state);`);
