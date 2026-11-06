@@ -1,0 +1,1 @@
+BASEBALL EMPIRE offline Android 0.4.2 / versionCode 6. Same maintained signing certificate. Dot-only named fielders, mound-to-plate pitch camera, first-base tags and coverage, caught-stealing, pickoffs and rundowns from recorded results.
