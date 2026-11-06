@@ -97,8 +97,8 @@ def stadium(pitch=False):
     if random.random()<.8:box('Backstop crowd',(x,y,z+.4),(.28,.25,.5),random.choice(people),.05)
   box('Backstop padding',(0,-9,.65),(45,.7,1.3),navy,.1)
  s.render.filepath=os.path.join(OUT,'stadium-pitch.png' if pitch else 'stadium-field.png');bpy.ops.render.render(write_still=True)
-stadium(False);stadium(True)
-# Batter v2 is an original generated sprite, not the old procedural pose.
-for name in ['stadium-field','stadium-pitch']:
- src=os.path.join(OUT,name+'.png');dst=os.path.join(OUT,name+'.webp')
- subprocess.run(['ffmpeg','-y','-loglevel','error','-i',src,'-c:v','libwebp','-quality','86',dst],check=True);os.unlink(src)
+if __name__=='__main__':
+ stadium(False);stadium(True)
+ for name in ['stadium-field','stadium-pitch']:
+  src=os.path.join(OUT,name+'.png');dst=os.path.join(OUT,name+'.webp')
+  subprocess.run(['ffmpeg','-y','-loglevel','error','-i',src,'-c:v','libwebp','-quality','86',dst],check=True);os.unlink(src)

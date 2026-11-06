@@ -20678,3 +20678,5 @@ main.game-shell .record-room { padding: 26px !important; }
 
 #be-replay-overlay .be-plate-actor{visibility:hidden}
 #be-replay-overlay .be-stadium[data-plate-ready=true] .be-plate-actor{visibility:visible}
+
+#be-replay-overlay .be-stadium[data-venue]{border-color:var(--be-venue-accent,#385b68)}
