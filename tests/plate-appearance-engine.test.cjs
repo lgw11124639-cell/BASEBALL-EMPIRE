@@ -29,7 +29,7 @@ const limitStart=src.indexOf('function starterPitchLimit('),limitEnd=src.indexOf
  assert.ok(limitStart>=0&&limitEnd>limitStart,'actual starter limit dependency found');
  const positionStart=src.indexOf('function recordPlayerExperience('),positionEnd=src.indexOf('function catcherGameCalling(',positionStart);
  const fatigueStart=src.indexOf('function recordBatterFatigue(');
- vm.runInContext(src.slice(src.indexOf('function beManagerDefensePlan('),src.indexOf('function beDefenseRangeAdjustment('))+src.slice(fatigueStart,positionStart)+src.slice(positionStart,positionEnd)+src.slice(limitStart,limitEnd)+src.slice(start,end),context);
+ vm.runInContext(src.slice(src.indexOf('function resolveBuntContact('),src.indexOf('function beDefenseRangeAdjustment('))+src.slice(fatigueStart,positionStart)+src.slice(positionStart,positionEnd)+src.slice(limitStart,limitEnd)+src.slice(start,end),context);
 const half=vm.runInContext('playHalf',context);
 for(let i=0;i<1000;i++){
  const before=batters.reduce((n,p)=>n+p.atBats,0);

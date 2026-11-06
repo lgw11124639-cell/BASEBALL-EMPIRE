@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`const buntEvent={batterId:9,bases:[1,null,null],afterBases:[null,1,null],outcome:'희생번트',outsBefore:0,outsAfter:1,battedBall:{sprayAngle:20,launchAngle:3,defenderPosition:'SS'},runnerSpeeds:{9:40,1:90}};const beforeBunt=JSON.stringify(buntEvent);const buntMoves=beBroadcastRunnerMoves(buntEvent);const buntDefense=beBroadcastDefense(buntEvent);const buntTiming=beBroadcastPlayTiming(buntEvent,buntMoves);`);
+assert.equal(run('buntMoves.find(m=>m.id===9).to'),1);assert.equal(run('buntMoves.find(m=>m.id===9).out'),true);
+assert.equal(run('buntDefense.position'),'P');assert.equal(run("buntDefense.transfers[0].receiver"),'1B');assert.ok(run('beBroadcastBallPath(buntEvent.battedBall,buntEvent.outcome).y>400'));
+assert.ok(run('buntTiming.runners[buntMoves.findIndex(m=>m.id===9)].end>buntTiming.fieldDuration*buntDefense.transfers[0].end'),'bunt first baseman receives before recorded batter out');
+assert.equal(run('JSON.stringify(buntEvent)'),run('beforeBunt'));
+run(`const doubleEvent={outcome:'2루타',outsBefore:0,outsAfter:0,batterId:9,bases:[null,null,1],afterBases:[null,9,null],runs:1,runnerSpeeds:{9:90,1:40},battedBall:{sprayAngle:20,launchAngle:20,defenderPosition:'RF'}};const doubleMoves=beBroadcastRunnerMoves(doubleEvent);const timingDouble=beBroadcastPlayTiming(doubleEvent,doubleMoves);`);
+assert.ok(run('timingDouble.fieldDuration>=timingDouble.runners[0].end'),'field play does not finish before double runner');
+assert.equal(run("beBroadcastDefense(doubleEvent).transfers.at(-1).receiver"),'C','scoring play shows a receiving fielder at home');
+assert.ok(run("beBroadcastPlayTiming({outcome:'안타',runnerSpeeds:{9:90}},[{id:9,from:0,to:1}]).runners[0].end<beBroadcastPlayTiming({outcome:'안타',runnerSpeeds:{9:30}},[{id:9,from:0,to:1}]).runners[0].end"));
+assert.equal(run("(beBroadcastBallPath({sprayAngle:20,launchAngle:3},'땅볼 아웃').path.match(/Q/g)||[]).length"),3);
+console.log('PASS bunt runner and charging pickup, ground drop/hops/roll, speed-dependent running and shared defense/runner clock');

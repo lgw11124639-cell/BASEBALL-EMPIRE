@@ -55,4 +55,4 @@ run(`const oldIntl={opponent:'JP',awayBatters:[{id:-(2027*100000000+(74*128+80)*
 assert.equal(run('replayIntl.awayBatters[0].position'),'CF');assert.equal(run('replayIntl.awayBatters[0].name'),'Saved name');assert.equal(run('JSON.stringify(oldIntl)'),run('oldIntlBefore'));
 console.log('PASS fence-clearing home runs, velocity-dependent faster pitches and immutable legacy international position recovery');
 assert.equal(run("beBroadcastFieldNames(replayIntl,'away',1,'Saved pitcher').CF"),'Saved name');
-assert.equal(run("(beBroadcastBallPath({sprayAngle:0,launchAngle:3},'안타').path.match(/Q/g)||[]).length"),2,'hit bounces before retrieval');
+assert.equal(run("(beBroadcastBallPath({sprayAngle:0,launchAngle:3},'안타').path.match(/Q/g)||[]).length"),3,'ground hit has diminishing low hops before retrieval');
