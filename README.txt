@@ -1,0 +1,1 @@
+BASEBALL EMPIRE offline Android 0.4.1 (versionCode 5). Maintained signing certificate compatible with 0.3.0 and 0.4.0. Animated pitches, fielding and throws, named runners, field-view HUD hidden. Movement paths are dramatized from recorded outcomes.
