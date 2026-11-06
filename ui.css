@@ -20668,3 +20668,13 @@ main.game-shell .record-room { padding: 26px !important; }
 /* The source side-on sprite faces plate-left; mirror it for the left-side box. */
 #be-replay-overlay .be-batter-render img{transform:scaleX(-1)}
 #be-replay-overlay .be-stadium[data-bat-hand="좌타"] .be-batter-render img{transform:none}
+
+/* Plate officials sit behind the opaque data overlay and the independent lead mitt. */
+#be-replay-overlay .be-plate-actor{position:absolute;pointer-events:none;filter:drop-shadow(0 3px 2px #06131c66)}
+#be-replay-overlay .be-plate-actor img{display:block;width:100%;height:100%;object-fit:contain}
+#be-replay-overlay .be-umpire-render{z-index:0}
+#be-replay-overlay .be-catcher-render{z-index:1}
+#be-replay-overlay .be-stadium[data-view=field] .be-plate-actor,#be-replay-overlay .be-stadium[data-legacy=true] .be-plate-actor{display:none}
+
+#be-replay-overlay .be-plate-actor{visibility:hidden}
+#be-replay-overlay .be-stadium[data-plate-ready=true] .be-plate-actor{visibility:visible}
