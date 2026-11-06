@@ -20481,7 +20481,7 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-replay-stage>.be-broadcast-zone .be-broadcast-pitch{gap:4px}
 #be-replay-overlay #be-broadcast-pitch,#be-replay-overlay #be-broadcast-call{font-size:12px!important;line-height:1.5}
 #be-replay-overlay #be-broadcast-pitchcount{font-size:10px;line-height:1.5}
-#be-replay-overlay .be-replay-controls{grid-template-columns:1.2fr 1fr 100px 1fr 90px;gap:8px}
+#be-replay-overlay .be-replay-controls{grid-template-columns:1.2fr 1fr 100px 1fr 90px!important;gap:8px}
 #be-replay-overlay #be-replay-all{grid-column:auto!important}
 #be-replay-overlay #be-replay-mode{grid-column:auto}
 @keyframes be-ball-flight{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
@@ -20500,9 +20500,14 @@ main.game-shell .record-room { padding: 26px !important; }
  #be-replay-overlay .be-stadium #be-replay-inning{font-size:12px!important}
  #be-replay-overlay .be-broadcast-duel>section{padding:10px 11px}
  #be-replay-overlay .be-broadcast-duel h3{font-size:15px;margin-bottom:8px}
- #be-replay-overlay .be-replay-controls{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 82px}
+ #be-replay-overlay .be-replay-controls{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 82px!important}
  #be-replay-overlay #be-replay-all{grid-column:1 / span 2!important}
  #be-replay-overlay #be-replay-mode{grid-column:3;grid-row:2}
  #be-replay-overlay .be-replay-controls :is(button,select){font-size:12px;min-width:0}
 }
 @media(prefers-reduced-motion:reduce){#be-replay-overlay .be-stadium *{animation:none!important;transition:none!important}}
+
+#be-replay-overlay .be-stadium .be-diamond-first{left:43px;top:24px}
+#be-replay-overlay .be-stadium .be-diamond-second{left:22px;top:3px}
+#be-replay-overlay .be-stadium .be-diamond-third{left:1px;top:24px}
+#be-replay-overlay .be-stadium .be-diamond-plate{left:24px;top:43px}
