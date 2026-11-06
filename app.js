@@ -5008,8 +5008,8 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   const pitch=frame.kind==='pitch'?frame.pitch:(e.pitchSequence||[])[Math.max(0,seen-1)],hasSpeed=pitch?.velocity!=null&&Number.isFinite(Number(pitch.velocity));
   stadium.dataset.batterHand=(e.batterHand||batterHands.get(String(e.batterId)))==='좌타'?'left':'right';
   const style=pitcherStyles.get(String(e.pitcherId))||{},pitchMotion={...pitch,throwHand:pitch?.throwHand||e.pitchHand||style.throwHand,delivery:pitch?.delivery||e.pitchDelivery||style.delivery};
-  write('be-stadium-velocity',hasSpeed?Math.round(Number(pitch.velocity))+' km/h':frame.kind==='baserunning'?'주루 플레이':'경기 중계');
-  write('be-stadium-pitch-type',pitch?.type||'구종 미기록');
+  write('be-stadium-velocity',frame.kind==='defense-change'?'수비 조정':hasSpeed?Math.round(Number(pitch.velocity))+' km/h':frame.kind==='baserunning'?'주루 플레이':'경기 중계');
+  write('be-stadium-pitch-type',frame.kind==='defense-change'?(side==='away'?h:a).name:pitch?.type||'구종 미기록');
   write('be-duel-pitcher',e.pitcher||'투수 미기록');write('be-duel-type',pitch?.type||'—');write('be-duel-speed',hasSpeed?Math.round(Number(pitch.velocity))+' km/h':'—');write('be-duel-total',pitcherPitchTotals[side==='away'?'home':'away'][String(e.pitcher||'투수')]||0);
   const row=(g[side+'Batters']||[]).find(p=>e.batterId!=null?String(p.id)===String(e.batterId):p.name===e.batter);
   write('be-duel-batter-label',e.eventType==='baserunning'?'주자':'타자');write('be-duel-batter',e.batter||e.runner||'타자 미기록');write('be-duel-order',row?.battingOrder?row.battingOrder+'번':'—');write('be-duel-position',row?.position||'—');write('be-duel-seen',seen);
