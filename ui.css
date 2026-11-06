@@ -20755,3 +20755,11 @@ main.game-shell .record-room { padding: 26px !important; }
 /* Bench calls share the scene rather than pushing player cards below controls. */
 #be-replay-overlay .be-stadium-scene .be-manager-call{position:absolute;z-index:12;top:76px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 30px);box-shadow:0 3px 12px #001b2933;pointer-events:none}
 @media(max-width:600px){#be-replay-overlay .be-stadium-scene .be-manager-call{top:66px;max-width:calc(100% - 20px);padding:5px 9px}}
+/* Show the recorded out at the receiving catch, while follow-through continues. */
+#be-replay-overlay .be-stadium[data-decision=out] .be-stadium-result{opacity:1!important;visibility:visible!important}
+#be-replay-overlay .be-runner-verdict rect{fill:#1d695aeF;stroke:#a3e6d1;stroke-width:1.5}
+#be-replay-overlay .be-runner-verdict[data-verdict=out] rect{fill:#843d4beb;stroke:#f0b7bf}
+#be-replay-overlay .be-runner-verdict text{fill:white;font-size:18px;font-weight:800;paint-order:stroke;stroke:#17343a66;stroke-width:1px}
+
+#be-replay-overlay .be-stadium[data-judgement] .be-stadium-result{opacity:1!important;visibility:visible!important}
+#be-replay-overlay .be-stadium[data-judgement=out] .be-stadium-result{color:#ffd1d7}

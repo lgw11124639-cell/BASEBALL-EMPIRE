@@ -9,3 +9,5 @@ Catcher and home-plate umpire: original generated front-facing receiving and tra
 Ten club parks: original procedural Blender architecture, spectator meshes, roofs, scoreboards and materials from scripts/render-club-venues.py. Designs are fictional; field and pitching views share the same club design. Venue definitions are the BE_BROADCAST_VENUES catalog in app.js. Ground projection remains the replay's original 720x520 plane. Only the current park's two WebP views are loaded.
 
 Catcher clear variant: central baked mitt removed from the generated receiving pose so the independent per-pitch lead mitt remains the only displayed mitt through the transparent zone.
+
+Club batter uniforms: ten original generated transparent portraits of the same fictional East Asian adult athlete, with club-specific helmet, jersey, trousers, piping and sleeve emblems. No real athlete, team kit or brand is depicted. Runtime files are uniforms/club-0.webp through club-9.webp, 560×840 with alpha; the neutral batter sprite uses the same East Asian base appearance. Only the batting club's image is displayed, and all ten compressed portraits together are under 1 MiB.
