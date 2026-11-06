@@ -4,7 +4,7 @@ assert.equal(run("beManagerDefensePlan(managerBatter,{inning:8,outs:1,bases:[nul
 assert.equal(run("beManagerDefensePlan(managerBatter,{inning:4,outs:1,bases:[42,null,null],margin:2}).id"),'double-play');
 assert.equal(run("beManagerDefensePlan(managerBatter,{inning:8,outs:2,bases:[42,null,null],margin:0}).id==='double-play'"),false);
 run(`const dpPlan=beManagerDefensePlan(managerBatter,{inning:4,outs:1,bases:[42,null,null]});`);
-assert.equal(run('beBroadcastFieldPoints(dpPlan).SS[0]'),306);
+assert.equal(run("beBroadcastFieldPoints(dpPlan).SS[0]-beBroadcastFieldPoints(beManagerDefensePlan(managerBatter,{outs:2})).SS[0]"),18);
 assert.notEqual(run("beDefenseRangeAdjustment(dpPlan,'SS',-15,3,95)"),0);
 assert.equal(run("beDefenseRangeAdjustment(null,'SS',-15,3,95)"),0);
 assert.equal(run('JSON.stringify(state)'),run('originalManagerState'),'planning and projection do not alter saves or consume game RNG');

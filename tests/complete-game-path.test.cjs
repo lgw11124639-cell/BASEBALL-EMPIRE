@@ -12,11 +12,11 @@ for(const p of state.players.filter(p=>p.position==='P')){p.age=27;const a=pitch
 // Weak contact opposition exercises earned shutouts without relying on a rare
 // ordinary-offense sample; every plate appearance still uses the real engine.
 for(const p of state.players.filter(p=>p.position!=='P'))for(const key of ['contact','eye','power'])ensureProfile(p).skills[key]=35;
-for(let i=0;i<48;i++){
+for(let i=0;i<96;i++){
  state.day=150+i;for(const p of state.players){playerBaseball(p).fatigue=0;p.lastAppearance=null;}
  const away=inningClub(0,state.day,'우투'),home=inningClub(1,state.day,'우투');runBaseballInnings(away,home,rng(20271001+i*391),{league:'major',maxInnings:12});
  for(const [side,opponent] of [[away,home],[home,away]]){const required=opponent.innings.filter(x=>x!==null).length*3;finishPitchers(side,side.runs>opponent.runs,opponent.runs,required);for(const row of side.pitcherUsage){if(row.completeGame){completed++;if(row.shutout)shutouts++;if(side.usage.length!==1||row.outs!==required)throw Error('invalid CG');if(row.shutout&&opponent.runs!==0)throw Error('invalid SHO')}}}
 }`);
 assert.ok(run('completed')>0,'real common engine generates complete games with a dominant, efficient starter');
 assert.ok(run('shutouts')>0,'real common engine generates earned shutouts');
-console.log('PASS: ninth-inning continuation, workload/fatigue/score/international safeguards and 48 actual games',JSON.stringify({completeGames:run('completed'),shutouts:run('shutouts')}));
+console.log('PASS: ninth-inning continuation, workload/fatigue/score/international safeguards and 96 actual games',JSON.stringify({completeGames:run('completed'),shutouts:run('shutouts')}));

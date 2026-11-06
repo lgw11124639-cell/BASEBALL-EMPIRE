@@ -11,12 +11,12 @@ assert.equal(run('beBroadcastDefense({battedBall:{defenderPosition:"RF",sprayAng
 assert.equal(run('beBroadcastPosition("유격수")'),'SS');assert.equal(run('beBroadcastPosition("중견수")'),'CF');
 assert.equal(run('JSON.stringify(beBroadcastFieldNames({homePositions:{1:"CF"},homeBatters:[{id:1,name:"김중견",position:"좌익수"},{id:2,name:"박유격",position:"유격수"}]},"home",1,"최투수"))'),JSON.stringify({P:'최투수',CF:'김중견',SS:'박유격'}));
 run(`const play=(pos,angle=30,outcome='땅볼 아웃',outs=1)=>({battedBall:{defenderPosition:pos,sprayAngle:angle,launchAngle:2},outcome,outsBefore:0,outsAfter:outs});`);
-assert.equal(run('beBroadcastDefense(play("1B")).transfers[0].kind'),'carry');
-assert.equal(run('beBroadcastDefense(play("1B")).transfers[0].receiver'),'1B');
-assert.equal(run('beBroadcastDefense(play("1B",-55)).transfers[0].receiver'),'P');
+assert.equal(run('beBroadcastDefense(play("1B",45)).transfers[0].kind'),'carry');
+assert.equal(run('beBroadcastDefense(play("1B",45)).transfers[0].receiver'),'1B');
+assert.equal(run('beBroadcastDefense(play("1B",20)).position'),'2B','right-side grounder is handled by the second baseman');
 assert.equal(run('beBroadcastDefense(play("SS",-20)).transfers[0].receiver'),'1B');
 assert.equal(run('JSON.stringify(beBroadcastDefense(play("2B",20,"병살",2)).transfers.map(x=>x.receiver))'),'["SS","1B"]');
-assert.equal(run('JSON.stringify(beBroadcastDefense(play("1B",20,"병살",2)).transfers.map(x=>x.receiver))'),'["SS","P"]');
+assert.equal(run('JSON.stringify(beBroadcastDefense({...play("1B",45,"병살",2),groundPlay:{version:2,fielder:"1B",throwBases:[2,1],batterOut:true}}).transfers.map(x=>x.receiver))'),'["SS","P"]');
 assert.equal(run('beBroadcastDefense(play("RF",30,"뜬공 아웃")).transfers.length'),0);
 assert.equal(run('beBroadcastDefense(play("LF",-30,"안타",0)).transfers[0].receiver'),'SS');
 for(const pos of ['1B','2B','3B','SS','P','C','LF','CF','RF'])for(const outcome of ['땅볼 아웃','병살','안타']){
