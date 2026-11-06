@@ -1,0 +1,1 @@
+BASEBALL EMPIRE offline Android 0.4.3 / versionCode 7. Compatible maintained signing certificate. Opaque strike zone, exact impact markers, pitch records, play/stop, 1x/2x/3x, highlights, handed delivery and pitch movement, batter swings and catcher lead/catch/framing from recorded calls.
