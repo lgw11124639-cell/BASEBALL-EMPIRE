@@ -7,3 +7,5 @@ Only compact alpha-preserving WebP assets are used at runtime. No 3D engine is p
 Catcher and home-plate umpire: original generated front-facing receiving and tracking-ready illustrations, not real people or licensed sports identities. Transparent WebP sprites, no third-party 3D models.
 
 Ten club parks: original procedural Blender architecture, spectator meshes, roofs, scoreboards and materials from scripts/render-club-venues.py. Designs are fictional; field and pitching views share the same club design. Venue definitions are the BE_BROADCAST_VENUES catalog in app.js. Ground projection remains the replay's original 720x520 plane. Only the current park's two WebP views are loaded.
+
+Catcher clear variant: central baked mitt removed from the generated receiving pose so the independent per-pitch lead mitt remains the only displayed mitt through the transparent zone.
