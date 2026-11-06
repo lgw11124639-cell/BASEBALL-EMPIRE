@@ -20664,3 +20664,7 @@ main.game-shell .record-room { padding: 26px !important; }
  #be-replay-overlay .be-stadium[data-bat-hand="좌타"] .be-pitch-record-panel{left:auto;right:6px}
  #be-replay-overlay .be-stadium[data-bat-hand="좌타"] .be-stadium-hud{left:6px;right:auto}
 }
+
+/* The source side-on sprite faces plate-left; mirror it for the left-side box. */
+#be-replay-overlay .be-batter-render img{transform:scaleX(-1)}
+#be-replay-overlay .be-stadium[data-bat-hand="좌타"] .be-batter-render img{transform:none}
