@@ -20403,3 +20403,106 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-broadcast-zone-grid { box-sizing:border-box !important; gap:1px !important; padding:0 !important; background:#829caf !important; }
 #be-replay-overlay .be-broadcast-zone-grid > span { box-sizing:border-box; min-width:0; min-height:0; border:0 !important; }
 #be-replay-overlay .be-broadcast-zone-grid > span.be-zone-neutral { background:#fff; }
+
+/* Stadium broadcast: local vector scenery, recorded locations and bounded overlays. */
+#be-replay-overlay .be-replay-stage{display:flex!important;flex-direction:column;gap:12px!important}
+#be-replay-overlay .be-replay-scoreboard{min-height:92px;padding:18px 22px;background:linear-gradient(125deg,#102d40,#214d58);border-color:#345a67}
+#be-replay-overlay .be-replay-scoreboard :is(span,strong,small){color:#fff!important}
+#be-replay-overlay .be-replay-scoreboard small{opacity:.65}
+#be-replay-overlay .be-stadium{position:relative;isolation:isolate;width:100%;aspect-ratio:18/13;max-height:520px;overflow:hidden;border:1px solid #244e60;border-radius:16px;background:#0b2940;box-shadow:0 5px 16px #102c421c}
+#be-replay-overlay .be-stadium-art,#be-replay-overlay .be-stadium-guides{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+#be-replay-overlay .be-stadium-art{z-index:0}
+#be-replay-overlay .be-stadium-guides{z-index:3}
+#be-replay-overlay .be-stadium-top{position:absolute;z-index:5;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:16px;background:linear-gradient(#061b35c9,transparent);color:#fff;pointer-events:none}
+#be-replay-overlay .be-stadium-top>div{display:flex;flex-direction:column;gap:3px}
+#be-replay-overlay .be-stadium-top small{color:#b9d8d8;font-size:9px;font-weight:700;letter-spacing:2px}
+#be-replay-overlay #be-stadium-velocity{font-size:clamp(22px,4vw,38px);font-style:italic;line-height:1.25;color:#fff}
+#be-replay-overlay #be-stadium-pitch-type{font-size:13px;color:#e4efec}
+#be-replay-overlay #be-stadium-view{pointer-events:auto;background:#e9d18b;color:#183b4d;border:1px solid #f4e5b3;border-radius:8px;min-height:34px;padding:6px 10px;font-size:11px;font-weight:800;box-shadow:0 3px 0 #0a23363d}
+#be-replay-overlay .be-stadium-hud{position:absolute;z-index:5;right:12px;top:76px;width:90px;padding:10px;border:1px solid #ffffff42;border-radius:10px;background:#0c293de8;color:#fff;box-sizing:border-box}
+#be-replay-overlay .be-stadium-bases-slot{display:flex;justify-content:center;height:52px}
+#be-replay-overlay .be-stadium #be-replay-bases{width:58px;height:48px;margin:0;position:relative;flex:none}
+#be-replay-overlay .be-stadium .be-diamond-base{width:13px;height:13px;border-color:#a5c0cb;background:#4c6479}
+#be-replay-overlay .be-stadium .be-diamond-base.on{background:#f1c568;border-color:#fff0b8;box-shadow:0 0 8px #f6cc6450}
+#be-replay-overlay .be-stadium .be-diamond-plate{color:#e9f1ec;font-size:11px}
+#be-replay-overlay .be-stadium #be-replay-inning{display:block;font-size:13px!important;line-height:1.5;color:#fff!important}
+#be-replay-overlay .be-stadium #be-replay-count{display:block;font-size:10px!important;color:#d2e2e5;margin:0 0 5px}
+#be-replay-overlay .be-stadium .be-count-lamps{margin:0;gap:3px;font-size:10px;color:#c6dce0}
+#be-replay-overlay .be-stadium .be-count-lamps>span{gap:5px}
+#be-replay-overlay .be-stadium .be-count-lamps i{width:7px;height:7px;background:#557082;border:0}
+#be-replay-overlay .be-stadium .be-count-lamps>span:nth-child(1) i.on{background:#85d4ad}
+#be-replay-overlay .be-stadium .be-count-lamps>span:nth-child(2) i.on{background:#f0d17e}
+#be-replay-overlay .be-stadium .be-count-lamps>span:nth-child(3) i.on{background:#ed9994}
+#be-replay-overlay .be-stadium-strike-slot{position:absolute;z-index:2;left:50%;top:57%;transform:translate(-50%,-50%);pointer-events:none}
+#be-replay-overlay .be-stadium .be-zone-field{position:relative;width:156px!important;height:150px!important;padding:0!important;margin:0!important;overflow:visible!important;background:none!important}
+#be-replay-overlay .be-stadium .be-broadcast-zone-grid{border-color:#e2efe9!important;background:#c7d9d5bd!important;box-shadow:0 0 0 4px #0c29392b,0 4px 18px #041b3580}
+#be-replay-overlay .be-stadium .be-broadcast-zone-grid>span{color:#fff!important;text-shadow:0 1px 3px #051d2c;font-weight:800}
+#be-replay-overlay .be-stadium .be-broadcast-zone-grid>span.be-zone-neutral{background:#0e354768!important}
+#be-replay-overlay .be-stadium .be-broadcast-zone-grid>span.be-zone-hot{background:#c96367c9!important}
+#be-replay-overlay .be-stadium .be-broadcast-zone-grid>span.be-zone-cold{background:#4e9ab9bd!important}
+#be-replay-overlay .be-stadium .be-zone-marker{background:transparent!important;border-color:#fff!important;width:25px;height:25px;box-shadow:0 0 0 2px #12394a40;z-index:4}
+#be-replay-overlay #be-stadium-pitches>path{fill:none;stroke-width:1.6;opacity:.7}
+#be-replay-overlay #be-stadium-pitches circle{stroke:#f9fff1;stroke-width:1.5}
+#be-replay-overlay #be-stadium-pitches text{fill:#15364a;font-family:system-ui,sans-serif;font-weight:900;font-size:12px;text-anchor:middle}
+#be-replay-overlay .be-stadium-fielders{opacity:0;transition:opacity .15s}
+#be-replay-overlay .be-stadium-fielders circle{fill:#153c49;stroke:#daf0d3;stroke-width:2}
+#be-replay-overlay .be-stadium-fielders text{font-size:13px;font-family:system-ui,sans-serif;font-weight:700;fill:#fff;paint-order:stroke;stroke:#17492f;stroke-width:4px;stroke-linejoin:round}
+#be-replay-overlay .be-stadium-fielders .active circle{fill:#f5d17d;stroke:#fff;stroke-width:3}
+#be-replay-overlay .be-field-bases path{fill:#fff4df;stroke:#fff;stroke-width:2}
+#be-replay-overlay .be-field-bases path[data-occupied=true]{fill:#f5c467;stroke:#6d5128}
+#be-replay-overlay #be-stadium-trajectory path{stroke:#ffe299;stroke-width:4;fill:none;stroke-dasharray:900;animation:be-ball-flight .6s ease-out both;filter:drop-shadow(0 2px 3px #06192a)}
+#be-replay-overlay #be-stadium-trajectory circle{fill:#fff6c7;stroke:#dab770;stroke-width:2}
+#be-replay-overlay .be-stadium[data-view=pitch] #be-stadium-trajectory{display:none}
+#be-replay-overlay .be-stadium[data-view=field] .be-stadium-strike-slot,#be-replay-overlay .be-stadium[data-view=field] #be-stadium-pitches{visibility:hidden}
+#be-replay-overlay .be-stadium[data-view=field] .be-stadium-fielders{opacity:1}
+#be-replay-overlay .be-stadium-result{position:absolute;z-index:4;bottom:35px;left:50%;transform:translateX(-50%);max-width:75%;padding:7px 18px;border:1px solid #ffffff37;border-radius:9px;background:#0b2b42db;color:#fff6d4;font-size:clamp(17px,2.8vw,26px);font-weight:900;line-height:1.3;text-align:center;white-space:nowrap;box-shadow:0 3px 12px #06233233}
+#be-replay-overlay .be-stadium[data-tone=homer] .be-stadium-result{color:#ffe7a8;border-color:#f6d078;background:#3a4130e8}
+#be-replay-overlay .be-stadium[data-tone=strikeout] .be-stadium-result{color:#ffd8d2}
+#be-replay-overlay .be-stadium-caption{position:absolute;z-index:4;bottom:0;left:0;right:0;padding:5px 8px;margin:0;background:#092d49c4;color:#e1efed;font-size:10px;line-height:1.5;text-align:center}
+#be-replay-overlay .be-broadcast-duel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+#be-replay-overlay .be-broadcast-duel>section{padding:14px 15px;border:1px solid #d7e2e6;border-top:3px solid #b27971;border-radius:12px;background:#fff9f3;min-width:0}
+#be-replay-overlay .be-broadcast-duel>section.be-duel-batter{border-top-color:#65949d;background:#f1f8f8}
+#be-replay-overlay .be-broadcast-duel small{font-size:10px;letter-spacing:1px;color:#8b625e;font-weight:800}
+#be-replay-overlay .be-duel-batter small{color:#487a84}
+#be-replay-overlay .be-broadcast-duel h3{font-size:17px;line-height:1.45;color:#183e52;margin:3px 0 12px;overflow-wrap:anywhere}
+#be-replay-overlay .be-broadcast-duel section>div{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+#be-replay-overlay .be-broadcast-duel section>div span{font-size:10px;color:#75878c;min-width:0}
+#be-replay-overlay .be-broadcast-duel b{display:block;font-size:12px;color:#274d60;margin-top:3px;overflow-wrap:anywhere}
+#be-replay-overlay .be-broadcast-inning-nav{display:flex;gap:5px;overflow-x:auto;padding:8px;border:1px solid #dae5e8;border-radius:10px;background:#fff}
+#be-replay-overlay .be-broadcast-inning-nav button{flex:0 0 auto;min-width:43px;min-height:36px;padding:7px;border:0;border-radius:7px;background:transparent!important;color:#52727f!important;font-size:12px;font-weight:800}
+#be-replay-overlay .be-broadcast-inning-nav button.active{background:#286759!important;color:#fff!important}
+#be-replay-overlay .be-replay-stage>.be-replay-live{display:block!important;min-height:0!important;height:auto!important;max-height:none!important;padding:4px 3px!important;border:0!important;background:transparent!important;box-shadow:none!important}
+#be-replay-overlay .be-replay-stage>.be-replay-live #be-replay-batter{font-size:12px;line-height:1.7;margin:0}
+#be-replay-overlay .be-replay-stage>.be-replay-live .be-next-batter{font-size:11px;line-height:1.7;margin:4px 0 0;padding:0;border:0}
+#be-replay-overlay .be-replay-stage>.be-broadcast-zone{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:16px!important;padding:12px 14px!important;height:auto!important;min-height:0!important;max-height:none!important;background:#f7faf9!important}
+#be-replay-overlay .be-replay-stage>.be-broadcast-zone>div:first-child{width:auto!important;text-align:left!important}
+#be-replay-overlay .be-replay-stage>.be-broadcast-zone>div:first-child>b{font-size:12px}
+#be-replay-overlay .be-replay-stage>.be-broadcast-zone .be-zone-legend{font-size:10px;line-height:1.6;margin:3px 0 0}
+#be-replay-overlay .be-replay-stage>.be-broadcast-zone .be-broadcast-pitch{gap:4px}
+#be-replay-overlay #be-broadcast-pitch,#be-replay-overlay #be-broadcast-call{font-size:12px!important;line-height:1.5}
+#be-replay-overlay #be-broadcast-pitchcount{font-size:10px;line-height:1.5}
+#be-replay-overlay .be-replay-controls{grid-template-columns:1.2fr 1fr 100px 1fr 90px;gap:8px}
+#be-replay-overlay #be-replay-all{grid-column:auto!important}
+#be-replay-overlay #be-replay-mode{grid-column:auto}
+@keyframes be-ball-flight{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
+@media(max-width:600px){
+ #be-replay-overlay .be-replay-dialog{padding-bottom:150px!important}
+ #be-replay-overlay .be-replay-scoreboard{min-height:76px;padding:12px 15px;gap:8px}
+ #be-replay-overlay .be-replay-scoreboard .club-logo{width:34px;height:40px}
+ #be-replay-overlay .be-replay-scoreboard .be-replay-team{gap:6px}
+ #be-replay-overlay .be-replay-scoreboard .be-replay-team span{font-size:13px!important}
+ #be-replay-overlay .be-replay-scoreboard .be-replay-score>strong{font-size:30px!important}
+ #be-replay-overlay .be-stadium{min-height:265px;border-radius:13px}
+ #be-replay-overlay .be-stadium-top{padding:12px}
+ #be-replay-overlay .be-stadium-top small{font-size:8px}
+ #be-replay-overlay #be-stadium-pitch-type{font-size:11px}
+ #be-replay-overlay .be-stadium-hud{top:68px;right:9px;width:82px;padding:8px}
+ #be-replay-overlay .be-stadium #be-replay-inning{font-size:12px!important}
+ #be-replay-overlay .be-broadcast-duel>section{padding:10px 11px}
+ #be-replay-overlay .be-broadcast-duel h3{font-size:15px;margin-bottom:8px}
+ #be-replay-overlay .be-replay-controls{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) 82px}
+ #be-replay-overlay #be-replay-all{grid-column:1 / span 2!important}
+ #be-replay-overlay #be-replay-mode{grid-column:3;grid-row:2}
+ #be-replay-overlay .be-replay-controls :is(button,select){font-size:12px;min-width:0}
+}
+@media(prefers-reduced-motion:reduce){#be-replay-overlay .be-stadium *{animation:none!important;transition:none!important}}
