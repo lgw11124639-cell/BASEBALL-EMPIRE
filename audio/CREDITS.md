@@ -1,11 +1,13 @@
 # Replay sound credits
 
-Mike Koenig — “Baseball Game Strike”, “Umpire Saying Ball”, “Umpire Saying Youre Out”, SoundBible, Creative Commons Attribution 3.0.
-https://soundbible.com/504-Baseball-Game-Strike.html
-https://soundbible.com/505-Umpire-Saying-Ball.html
-https://soundbible.com/506-Umpire-Saying-Youre-Out.html
-License: https://creativecommons.org/licenses/by/3.0/
-Edits: silence trimmed, EQ, volume normalization, resampling; Strike Out is a splice of Strike and Out. No endorsement is implied. These are English recorded calls.
+All 12 call clips use one synthetic English male voice: Piper en_US-john-medium.
+Model card: https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD
+Dataset: LibriVox, public domain, as documented in that model card.
+Model publisher information: https://brycebeattie.com/files/tts/
+Generated offline at build time with Piper; no model/runtime is included in the app.
+The clips are synthetic, not a real umpire actor recording or an imitation of a named person.
+All calls use identical speed, register, EQ, compression and loudness processing.
+No live device TTS is mixed into playback; no online voice service is required.
 
 martinimeniscus — “Bat Hit 4 FF100.aif”, Freesound 162867, CC0 1.0.
 https://freesound.org/people/martinimeniscus/sounds/162867/
@@ -16,5 +18,3 @@ https://freesound.org/people/FoolBoyMedia/sounds/397434/
 CC0: https://creativecommons.org/publicdomain/zero/1.0/
 Audio acquired from the deadball project's processed copies, whose docs/CREDITS.md identifies these original sources: https://github.com/gopherbone/deadball . Only the individual CC0 sound assets listed here are included.
 Edits: trimmed, EQ/filtering, volume normalization and fades; louder hit has a short stadium-style echo.
-
-Korean calls without a bundled recording use the device's installed offline Korean text-to-speech voice; these are synthetic rather than actor recordings.

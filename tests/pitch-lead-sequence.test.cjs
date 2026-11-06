@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),c=require('./helpers/game-context.cjs')(),run=s=>vm.runInContext(s,c);
+run(`state=world(0);var batter=state.players.find(p=>p.position!=='P'),pitcher=state.players.find(p=>p.position==='P');ensureProfile(batter);ensureProfile(pitcher);var calling={skill:65,preference:'바깥쪽'},profile={best:5};var targets=[],previous;for(let i=0;i<8;i++){const target=bePitchLeadTarget(pitcher,batter,i%2?'슬라이더':'직구',calling,{balls:i%3,strikes:i%3,pitchIndex:i,previous},profile);targets.push(target);previous={leadTargetX:target.x,leadTargetY:target.y,zoneX:target.x,zoneY:target.y};}`);
+assert.ok(run('new Set(targets.map(p=>p.x+","+p.y)).size')>=3,'targets vary across the actual pitch sequence, not just the first pitch');
+run(`var threeBalls=Array.from({length:20},(_,i)=>bePitchLeadTarget(pitcher,batter,'커브',calling,{balls:3,strikes:2,pitchIndex:i},profile));`);
+assert.ok(run('threeBalls.every(p=>p.x>=41&&p.x<=59&&p.y>=41&&p.y<=59)'),'three-ball plan protects the zone');
+run(`var snapshot=JSON.stringify(state);var count={balls:1,strikes:2,pitchIndex:3,previous:{leadTargetX:68,leadTargetY:68,zoneX:70,zoneY:65}};var first=bePitchLeadTarget(pitcher,batter,'포크볼',calling,count,profile);var second=bePitchLeadTarget(pitcher,batter,'포크볼',calling,count,profile);`);
+assert.equal(run('JSON.stringify(first)'),run('JSON.stringify(second)'),'same seeded engine situation is reproducible');assert.equal(run('JSON.stringify(state)'),run('snapshot'),'planning does not mutate state or old records');
+run(`var loc=simulatePitchLocation(pitcher,batter,'직구',()=>.5,calling,{balls:1,strikes:1,pitchIndex:2},LEAGUE_BALLS.standard);`);
+assert.ok(run('Number.isFinite(loc.leadTargetX)&&Number.isFinite(loc.leadTargetY)'),'actual location records the selected target separately from command error');
+console.log('PASS per-pitch lead variation, count safety, reproducibility and recorded targets');

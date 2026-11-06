@@ -33,35 +33,99 @@
   },
   {
     "file": "call-ball.mp3",
-    "author": "Mike Koenig",
-    "license": "CC-BY-3.0",
-    "source": "https://soundbible.com/505-Umpire-Saying-Ball.html",
-    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
-    "sha256": "d4106a3b5e69ffbeaeb15bf09a3757283dfa274a54e83881412f46e49f6b407c"
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Ball! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "beb6780bc92aaefe8a2ac4759c1e1b7cb66a69f8e5d1c9aeac470035e6a0087f"
+  },
+  {
+    "file": "call-double.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Double! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "afc06196ea8e036b7afba0bd35f62694703790c29164d7b3a0f56c350258f54b"
+  },
+  {
+    "file": "call-foul.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Foul ball! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "150cd402eabddc8800fe07f3ec074dcf4798a94658adb19e72facd7ee3ff7806"
+  },
+  {
+    "file": "call-hbp.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Hit by pitch! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "3327dad07593b0ba328b903e2f9b8f70336ce85cd34c35269a9b93d40614a156"
+  },
+  {
+    "file": "call-hit.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Base hit! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "cc46c711c89147bfc9fd60b0385294aae6c7cd70be7d14a8a11fe498fb54699a"
+  },
+  {
+    "file": "call-homer.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Home run! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "8aed5604b6867808ae00cb7387556abfb3d80c78ba5838d78fb8460ac521deeb"
   },
   {
     "file": "call-out.mp3",
-    "author": "Mike Koenig",
-    "license": "CC-BY-3.0",
-    "source": "https://soundbible.com/506-Umpire-Saying-Youre-Out.html",
-    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
-    "sha256": "59ef9ad5f8aae9dae3d2df10b63a8041f100a45a3a19921943a93303533a5b73"
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Out! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "04093b33a2712257faa1e107779e10d41a4091b3a5812cf6ab5d0a99900ae91b"
+  },
+  {
+    "file": "call-sacbunt.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Sacrifice bunt! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "f2baa6f222918e5b55ab16828ea1fb935071845417e8c683d682085ff5d41fbf"
   },
   {
     "file": "call-strike.mp3",
-    "author": "Mike Koenig",
-    "license": "CC-BY-3.0",
-    "source": "https://soundbible.com/504-Baseball-Game-Strike.html",
-    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
-    "sha256": "7d13612272688d516af531a2dc4e92bbbfb0482712b618c9969d1ca6013b8187"
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Strike! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "9591f86c50f06ef5a3730c7626de44b6f311f5de1dc8da963fb8ee1dd2883297"
   },
   {
     "file": "call-strikeout.mp3",
-    "author": "Mike Koenig",
-    "license": "CC-BY-3.0",
-    "source": "https://soundbible.com/504-Baseball-Game-Strike.html + https://soundbible.com/506-Umpire-Saying-Youre-Out.html",
-    "modifications": "Trimmed, resampled, equalized and level adjusted; strikeout splices Strike and Out; effects have category-specific filtering/fades.",
-    "sha256": "509a642d6dcb23561bd15c32ec4fe9638df517d33caf4ecd4647341220edcce0"
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Strike out! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "a8321cf6a01d4044d8eeb53e92b79053302fe213b189989a983e8f87155f2f32"
+  },
+  {
+    "file": "call-triple.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Triple! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "ad17a746ea2b200ddfcce1592ac4db111042dc7463fd264d8fdfb5c2f4104380"
+  },
+  {
+    "file": "call-walk.mp3",
+    "author": "Piper john medium / LibriVox public-domain voice dataset",
+    "license": "Public-Domain",
+    "source": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/john/medium/MODEL_CARD",
+    "modifications": "Synthetic English male call: Ball four! Same voice, rate, EQ, dynamics and loudness on all calls. No actor recording or voice imitation.",
+    "sha256": "e57890c20c9c5d638712e703e8902f6dfc0b97df7bc21c1b26ce85752b6be75c"
   },
   {
     "file": "crowd.mp3",

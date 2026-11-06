@@ -1,6 +1,6 @@
 {
   "name": "baseball-empire-mobile",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "private": true,
   "description": "Offline Android packaging for BASEBALL EMPIRE",
   "scripts": {
