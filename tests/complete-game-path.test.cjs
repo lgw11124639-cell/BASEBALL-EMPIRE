@@ -5,10 +5,13 @@ run('appearance.pitchCount=125');assert.notEqual(run('selectPitcher(club,9,2).id
 run('appearance.pitchCount=88;appearance.er=4');assert.notEqual(run('selectPitcher(club,9,2).id'),run('starter.id'),'struggling starter replaced');
 run('appearance.er=0;playerBaseball(starter).fatigue=85');assert.notEqual(run('selectPitcher(club,9,2).id'),run('starter.id'),'fatigued starter replaced');
 run('playerBaseball(starter).fatigue=0;club.wbcPitchLimit=85');assert.notEqual(run('selectPitcher(club,9,2).id'),run('starter.id'),'international pitch limit preserved');
-// Real plate appearances and inning controller. The wider fixed-seed sample covers
-// rare earned shutouts after per-pitch target selection changed; outs/runs are never fabricated.
+// Real plate appearances and inning controller with dominant starters and controlled
+// opposition. Runs and outs are never fabricated; balance is tested separately.
 run(`let completed=0,shutouts=0;rng=realRng;state=world(0);state.gameResults=[];
 for(const p of state.players.filter(p=>p.position==='P')){p.age=27;const a=pitchingArsenal(p);a.stamina=95;a.control=92;ensureProfile(p).skills.stuff=105;ensureProfile(p).skills.control=92;for(const pitch of a.pitches){pitch.grade=95;pitch.command=92}}
+// Weak contact opposition exercises earned shutouts without relying on a rare
+// ordinary-offense sample; every plate appearance still uses the real engine.
+for(const p of state.players.filter(p=>p.position!=='P'))for(const key of ['contact','eye','power'])ensureProfile(p).skills[key]=35;
 for(let i=0;i<48;i++){
  state.day=150+i;for(const p of state.players){playerBaseball(p).fatigue=0;p.lastAppearance=null;}
  const away=inningClub(0,state.day,'우투'),home=inningClub(1,state.day,'우투');runBaseballInnings(away,home,rng(20271001+i*391),{league:'major',maxInnings:12});
