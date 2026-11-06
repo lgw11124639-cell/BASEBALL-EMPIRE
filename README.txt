@@ -1,0 +1,1 @@
+BASEBALL EMPIRE offline Android 0.4.4 / versionCode 8. Same maintained signing certificate. Fixed glove lead without player figures or framing animation, current pitch trajectory, impact/home-run effects, optional synthesized effects and installed offline Korean TTS calls.
