@@ -4861,10 +4861,11 @@ function beBroadcastRunnerRoute(move){
  const next=beBroadcastBasePoint(Math.min(4,move.from+1)),mix=r=>[base[0]+(next[0]-base[0])*r,base[1]+(next[1]-base[1])*r];
  return move.rundown?[base,mix(.65),mix(.25),mix(.5),move.out?mix(.12):base]:[base,mix(.2),move.out?mix(.12):base];
 }
-function beBroadcastDefense(event){
+function beBroadcastDefense(event,speeds=new Map()){
  if(event?.eventType==='baserunning')return beBroadcastRunningDefense(event);
  const position=event?.battedBall?.bunt||/희생.*번트/.test(event?.outcome||'')?'P':beBroadcastPosition(event?.battedBall?.defenderPosition),origins=beBroadcastFieldPoints(event?.defensivePlan),ball=beBroadcastBallPath(event?.battedBall,event?.outcome);
  if(!origins[position]||!ball||/홈런/.test(event?.outcome||''))return null;
+ const advancing=beBroadcastRunnerMoves(event).filter(move=>move.to!==move.from||move.lead),timing=beBroadcastPlayTiming(event,advancing,speeds),homePlay=advancing.some((move,i)=>move.to===4&&timing.runners[i].end>=timing.fieldDuration*.72);
  const field=[ball.x,ball.y],outcome=String(event.outcome||''),outs=Number(event.outsAfter)-Number(event.outsBefore),moves=[],transfers=[];
  const move=(pos,to,end=.38)=>{const existing=moves.find(x=>x.position===pos);if(existing)return existing;const row={position:pos,points:[origins[pos],to],times:[0,end]};moves.push(row);return row;};
  const primary=move(position,field,.44);
@@ -4881,7 +4882,7 @@ function beBroadcastDefense(event){
    if(Math.hypot(field[0]-525,field[1]-365)<=140)carry(beBroadcastBasePoint(1));
    else transfer('P',beBroadcastBasePoint(1),.55,.9);
   }else transfer('1B',beBroadcastBasePoint(1),.55,.9);
- }else if(outs===0&&Number(event.runs)>0&&beBroadcastRunnerMoves(event).some(move=>move.to===4)){
+ }else if(outs===0&&Number(event.runs)>0&&homePlay){
   transfer('C',beBroadcastBasePoint(4),.56,.94);
  }else if(outs===0&&['LF','CF','RF'].includes(position)){
   // Return to an actual cutoff fielder, rather than throwing at an empty base.
@@ -4996,7 +4997,7 @@ function beOpenGameReplay(day,away,overrideGame=null,overrideTeams=null){
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const movingRunners=(runnerMoves||[]).filter(move=>move.to!==move.from||move.lead);
   const shift=kind==='shift',before=shift?beBroadcastFieldPoints(frame.previousPlan):null,after=shift?beBroadcastFieldPoints(frame.e.defensivePlan):null;
-  const defense=shift?{moves:Object.keys(after).map(position=>({position,points:[before[position],after[position]],times:[0,1]})),transfers:[],position:null}:kind==='batted'?beBroadcastDefense(frame.e):null,hasMotion=!!path||movingRunners.length>0||shift;
+  const defense=shift?{moves:Object.keys(after).map(position=>({position,points:[before[position],after[position]],times:[0,1]})),transfers:[],position:null}:kind==='batted'?beBroadcastDefense(frame.e,runnerSpeeds):null,hasMotion=!!path||movingRunners.length>0||shift;
   if(!hasMotion||reduced){if(!shift)replayAudio.play(beReplayAudioCue(frame),playbackRate());if(shift)stadium.querySelectorAll('[data-fielder]').forEach(el=>el.setAttribute('transform','translate('+after[el.dataset.fielder].join(' ')+')'));if(frame.kind==='result'&&/홈런/.test(frame.e.outcome||''))stadium.dataset.celebration='homer';return;}
   stadium.dataset.flight=kind;
   const makePath=d=>{const node=document.createElementNS('http://www.w3.org/2000/svg','path');node.setAttribute('d',d);return node;};

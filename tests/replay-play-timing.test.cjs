@@ -6,7 +6,8 @@ assert.ok(run('buntTiming.runners[buntMoves.findIndex(m=>m.id===9)].end>buntTimi
 assert.equal(run('JSON.stringify(buntEvent)'),run('beforeBunt'));
 run(`const doubleEvent={outcome:'2루타',outsBefore:0,outsAfter:0,batterId:9,bases:[null,null,1],afterBases:[null,9,null],runs:1,runnerSpeeds:{9:90,1:40},battedBall:{sprayAngle:20,launchAngle:20,defenderPosition:'RF'}};const doubleMoves=beBroadcastRunnerMoves(doubleEvent);const timingDouble=beBroadcastPlayTiming(doubleEvent,doubleMoves);`);
 assert.ok(run('timingDouble.fieldDuration>=timingDouble.runners[0].end'),'field play does not finish before double runner');
-assert.equal(run("beBroadcastDefense(doubleEvent).transfers.at(-1).receiver"),'C','scoring play shows a receiving fielder at home');
+assert.equal(run("beBroadcastDefense(doubleEvent).transfers.at(-1).receiver"),'2B','uncontested early score returns to cutoff');
+assert.equal(run("beBroadcastDefense({...doubleEvent,bases:[1,null,null],runnerSpeeds:{9:90,1:30}}).transfers.at(-1).receiver"),'C','close scoring play shows home relay and receiver');
 assert.ok(run("beBroadcastPlayTiming({outcome:'안타',runnerSpeeds:{9:90}},[{id:9,from:0,to:1}]).runners[0].end<beBroadcastPlayTiming({outcome:'안타',runnerSpeeds:{9:30}},[{id:9,from:0,to:1}]).runners[0].end"));
 assert.equal(run("(beBroadcastBallPath({sprayAngle:20,launchAngle:3},'땅볼 아웃').path.match(/Q/g)||[]).length"),3);
 console.log('PASS bunt runner and charging pickup, ground drop/hops/roll, speed-dependent running and shared defense/runner clock');
