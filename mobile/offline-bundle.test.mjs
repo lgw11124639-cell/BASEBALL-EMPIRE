@@ -36,3 +36,8 @@ test('pitcher, swing and bunt use the same club wardrobe reference and retain th
 });
 
 test('national opponents ship actual authored ready, swing, bunt and pitcher uniforms',()=>{const m=JSON.parse(read('assets/broadcast/nations/manifest.json')),p=JSON.parse(read('assets/broadcast/motion/pitcher-ten/manifest.json'));assert.equal(Object.keys(m.countries).length,28);for(const [code,item] of Object.entries(m.countries)){assert.equal(p.nations[code].authored,true);for(const kind of ['ready','swing','bunt','pitcher']){const name=kind==='pitcher'?p.nations[code].path:'assets/broadcast/nations/'+code+'/'+kind+'.webp',data=readFileSync(new URL('../'+name,import.meta.url));assert.deepEqual(data,readFileSync(new URL('../dist-mobile/'+name,import.meta.url)));assert.equal(createHash('sha256').update(data).digest('hex'),kind==='pitcher'?p.nations[code].sha256:item[kind+'Sha256']);}for(const motion of ['ready','swing1','swing2','swing3','bunt1','bunt2','bunt3'])assert.ok(item.authoredSources[motion]);}});
+test('native-transparent sixty-cut review ships its exact source boards and playback assets',()=>{
+ const path='assets/broadcast/motion/pitcher-sixty/',m=JSON.parse(read(path+'manifest.json'));assert.equal(m.frames,60);assert.equal(m.nativeAlpha,true);assert.equal(m.backgroundRemoval,false);assert.equal(m.crossfade,false);
+ for(const file of ['broadcast-sixty.html','broadcast-sixty-player.mjs',path+'manifest.json',m.path,...m.sources.map(s=>path+s.file)])assert.deepEqual(readFileSync(new URL('../'+file,import.meta.url)),readFileSync(new URL('../dist-mobile/'+file,import.meta.url)));
+ for(const s of m.sources)assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path+s.file,import.meta.url))).digest('hex'),s.sha256);
+});
