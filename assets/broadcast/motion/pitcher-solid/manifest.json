@@ -35,16 +35,16 @@
           31
         ],
         [
-          232,
-          61
+          233,
+          62
         ],
         [
           263,
-          86
+          87
         ],
         [
-          249,
-          145
+          248,
+          146
         ]
       ],
       "landing": [
@@ -71,8 +71,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-0.webp",
       "referenceSha256": "4a12108dc0cd3248e331b1f49a9ceddcd010fddb1f2a443d0151693a86893dd3",
-      "sha256": "388df4eafb10eb2f8d22230d4eed6457dfca4731e923385ebf2cd4bfdf044f2d",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "fed9c0574d915e4ee754fc66b27bfe377215f4501a9f467d896bcc77ef86092a",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9256761733021057,
+        0.9187689144042203,
+        0.9386182779178822,
+        0.92247488809436
+      ],
+      "readyArea": [
+        10106,
+        10106,
+        10106,
+        10106
+      ],
+      "motionReferenceArea": [
+        11794,
+        11972,
+        11471,
+        11876
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 0,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 1,
@@ -85,15 +107,15 @@
         ],
         [
           234,
-          60
+          62
         ],
         [
           255,
-          90
+          91
         ],
         [
-          251,
-          144
+          249,
+          145
         ]
       ],
       "landing": [
@@ -120,8 +142,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-1.webp",
       "referenceSha256": "2c67a086a38aa3fcaef54aacf11d94be91732be877de4cc4d5b39e7492526c3d",
-      "sha256": "04dc68f4358a55a881bb87ddafd4e3e6309ffb3130eb5d99539f0baf6ec0c8c6",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "5e63a7eadd2745c1a87f99ebd22b855e9edd940f4c384d2a3522439aa2b064cc",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9384123474353859,
+        0.928555559153899,
+        0.9500226978577713,
+        0.9286344475240471
+      ],
+      "readyArea": [
+        10150,
+        10150,
+        10150,
+        10150
+      ],
+      "motionReferenceArea": [
+        11526,
+        11772,
+        11246,
+        11770
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 1,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 2,
@@ -129,7 +173,7 @@
       "path": "assets/broadcast/motion/pitcher-solid/club-2.webp",
       "release": [
         [
-          218,
+          216,
           40
         ],
         [
@@ -137,12 +181,12 @@
           60
         ],
         [
-          263,
-          98
+          262,
+          99
         ],
         [
-          248,
-          142
+          246,
+          143
         ]
       ],
       "landing": [
@@ -169,8 +213,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-2.webp",
       "referenceSha256": "cea0bbf5984ca0e34cb9fd7c221f286992c2b6c10cc72f27d5aabc63d4618448",
-      "sha256": "541ae01cf3714503cc5f8f020c54110fea7c339d757305e9d01cd67c32707f65",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "d279094767d35dddcf2bee47af37b494def338e888492ecc725ad753868cdcae",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9171482465962068,
+        0.9165043280336619,
+        0.9281495553449173,
+        0.9125943729620591
+      ],
+      "readyArea": [
+        10173,
+        10173,
+        10173,
+        10173
+      ],
+      "motionReferenceArea": [
+        12094,
+        12111,
+        11809,
+        12215
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 2,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 3,
@@ -178,19 +244,19 @@
       "path": "assets/broadcast/motion/pitcher-solid/club-3.webp",
       "release": [
         [
-          222,
+          220,
           34
         ],
         [
-          254,
+          253,
           60
         ],
         [
-          267,
-          96
+          266,
+          97
         ],
         [
-          249,
+          247,
           152
         ]
       ],
@@ -218,8 +284,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-3.webp",
       "referenceSha256": "5c0d9dafbfacd6280062568635cc589c6040a650950011156a640e9b4fb96f1c",
-      "sha256": "e1a521f9e74f7145b9546ad52583e4fb5e51e7a4dc90c1c6e4cdb966d6502bb2",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "5f1ed9b6f2338e5b7396930e79f0cc47ac0a111aee269a4b76f68e6b0236ba77",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9310225183389673,
+        0.9371885629292164,
+        0.9555045143423432,
+        0.9295985727923707
+      ],
+      "readyArea": [
+        10178,
+        10178,
+        10178,
+        10178
+      ],
+      "motionReferenceArea": [
+        11742,
+        11588,
+        11148,
+        11778
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 3,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 4,
@@ -231,16 +319,16 @@
           31
         ],
         [
-          236,
-          61
+          237,
+          62
         ],
         [
           258,
-          92
+          93
         ],
         [
-          253,
-          144
+          251,
+          146
         ]
       ],
       "landing": [
@@ -267,8 +355,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-4.webp",
       "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88",
-      "sha256": "e277031a869350f1755affdab028c7243394a48f199bd9c4a3013cc45aa8ef9d",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "69291885a4b0490cc6094646dacbb639f21ca8d07d7a7456e61b47ff63d2d5a6",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9531412192078905,
+        0.9499871329732472,
+        0.9695302928765482,
+        0.9471958041500947
+      ],
+      "readyArea": [
+        10244,
+        10244,
+        10244,
+        10244
+      ],
+      "motionReferenceArea": [
+        11276,
+        11351,
+        10898,
+        11418
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 4,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 5,
@@ -276,20 +386,20 @@
       "path": "assets/broadcast/motion/pitcher-solid/club-5.webp",
       "release": [
         [
-          230,
-          37
+          229,
+          38
         ],
         [
           249,
           59
         ],
         [
-          267,
-          90
+          266,
+          91
         ],
         [
-          258,
-          146
+          257,
+          147
         ]
       ],
       "landing": [
@@ -316,8 +426,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-5.webp",
       "referenceSha256": "2473487a68c9e9b2d73e27db7d96c6a915fbd81959cd01b5fdae022f585efbb0",
-      "sha256": "1d03977be87c4595b04008336984225d97c39c4bc9cb545ab144750fbc799b17",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "7b8f75a8f4c1970d20293cae8083526e669cb0877cfb093d1d818ef502b759c2",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.923841066083705,
+        0.9199846413925798,
+        0.9285728276126836,
+        0.9284152420659209
+      ],
+      "readyArea": [
+        10159,
+        10159,
+        10159,
+        10159
+      ],
+      "motionReferenceArea": [
+        11903,
+        12003,
+        11782,
+        11786
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 5,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 6,
@@ -325,7 +457,7 @@
       "path": "assets/broadcast/motion/pitcher-solid/club-6.webp",
       "release": [
         [
-          225,
+          223,
           36
         ],
         [
@@ -333,12 +465,12 @@
           61
         ],
         [
-          264,
+          262,
           99
         ],
         [
-          249,
-          146
+          248,
+          147
         ]
       ],
       "landing": [
@@ -365,8 +497,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-6.webp",
       "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7",
-      "sha256": "67b6173f421663e09226f294d78674f0d69d7fcb0a7d15deb4edb471a14a6904",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "fd419d73e828cd12d8d920433109dbccfc5f5c7961bac8f3602a2aba23b0b29f",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9136202757674313,
+        0.9103324659591518,
+        0.930179488681128,
+        0.9256655388199264
+      ],
+      "readyArea": [
+        10266,
+        10266,
+        10266,
+        10266
+      ],
+      "motionReferenceArea": [
+        12299,
+        12388,
+        11865,
+        11981
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 6,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 7,
@@ -374,19 +528,19 @@
       "path": "assets/broadcast/motion/pitcher-solid/club-7.webp",
       "release": [
         [
-          226,
-          35
+          225,
+          36
         ],
         [
-          248,
+          247,
           59
         ],
         [
-          278,
+          276,
           99
         ],
         [
-          256,
+          254,
           143
         ]
       ],
@@ -414,8 +568,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-7.webp",
       "referenceSha256": "fd8aec23d462cd321c4992589449f23877f1c43c880c4dcca994d0c46180f08e",
-      "sha256": "2d3bfc0035f9b59a6cbadbc461109158965272c36597c210a11e61072d68119c",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "5edda3314e5bab06fe2f4df38bc1f42ef54e33f9ae8a397d6efc4615874f084d",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9198313494996938,
+        0.9288586754942753,
+        0.9225273396410025,
+        0.9151508245139071
+      ],
+      "readyArea": [
+        10148,
+        10148,
+        10148,
+        10148
+      ],
+      "motionReferenceArea": [
+        11994,
+        11762,
+        11924,
+        12117
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 7,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 8,
@@ -423,20 +599,20 @@
       "path": "assets/broadcast/motion/pitcher-solid/club-8.webp",
       "release": [
         [
-          222,
-          40
+          221,
+          41
         ],
         [
-          249,
+          247,
           64
         ],
         [
-          266,
-          100
+          265,
+          101
         ],
         [
-          257,
-          148
+          256,
+          149
         ]
       ],
       "landing": [
@@ -463,8 +639,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-8.webp",
       "referenceSha256": "067d8f6b8e736939b6747a5fde8884521add588f4be786691023d6ecd86f96d5",
-      "sha256": "e046f1c89924d45f52e7e8c98622fd1256e1737b0ab65af8aa2ad1ba6a642092",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "ea68346829bfa3acc4b932f7dce7d5100aebce8b52a6728222c47aae61753955",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9391160816722051,
+        0.9370425713316364,
+        0.9535992276225113,
+        0.9294764517418443
+      ],
+      "readyArea": [
+        10152,
+        10152,
+        10152,
+        10152
+      ],
+      "motionReferenceArea": [
+        11511,
+        11562,
+        11164,
+        11751
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 8,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     {
       "id": 9,
@@ -476,16 +674,16 @@
           32
         ],
         [
-          230,
-          59
+          231,
+          60
         ],
         [
           263,
-          85
+          87
         ],
         [
-          249,
-          145
+          248,
+          147
         ]
       ],
       "landing": [
@@ -512,8 +710,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-9.webp",
       "referenceSha256": "8033ad90f6b211d269010ab9d727fc8833fe15f9f803f24fc6f5d9aa7589c349",
-      "sha256": "da86989f5f5fe05b1a527ba9be2c634aa3195bc5c3487cb0f8ea0efae40fffe6",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "3f6200714517fbaa595ee8ad5c9f662e5d519b8f114c5713e2f15f2401661215",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9083305747301974,
+        0.9111603290923138,
+        0.9235561001413196,
+        0.9161860722816827
+      ],
+      "readyArea": [
+        10244,
+        10244,
+        10244,
+        10244
+      ],
+      "motionReferenceArea": [
+        12416,
+        12339,
+        12010,
+        12204
+      ],
+      "gloveRepairSourceSha256": "32a38cbd438bf3c8c6934aaef51ec61f3a9ff22ae63a17c7aaa6b1803815f216",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 9,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     }
   ],
   "nations": {
@@ -523,20 +743,20 @@
       "path": "assets/broadcast/nations/KR/pitcher.webp",
       "release": [
         [
-          225,
-          33
+          224,
+          34
         ],
         [
-          253,
+          252,
           60
         ],
         [
-          265,
-          97
+          263,
+          98
         ],
         [
-          251,
-          145
+          249,
+          146
         ]
       ],
       "landing": [
@@ -563,8 +783,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/KR/ready.webp",
       "referenceSha256": "d67b14831450e2937fb6f93d36341ee8a9adb84711b480aaa1cc71caf79ae64f",
-      "sha256": "2117ffcf6eaa0cda61768ffeba62b151e2d168ec957fd6a82233b8af9f3a9425",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "1aa241eec2a76e9daa31eefd65b61aa1917195fbe8ee97a6c6f1e780d2ca7bde",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9558878081773972,
+        0.9513830522092013,
+        0.9657603944793675,
+        0.9570646855017139
+      ],
+      "readyArea": [
+        10781,
+        10781,
+        10781,
+        10781
+      ],
+      "motionReferenceArea": [
+        11799,
+        11911,
+        11559,
+        11770
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 0,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "JP": {
       "id": "JP",
@@ -572,19 +814,19 @@
       "path": "assets/broadcast/nations/JP/pitcher.webp",
       "release": [
         [
-          220,
-          34
+          219,
+          35
         ],
         [
-          248,
+          246,
           64
         ],
         [
-          266,
-          100
+          265,
+          101
         ],
         [
-          249,
+          247,
           149
         ]
       ],
@@ -612,8 +854,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/JP/ready.webp",
       "referenceSha256": "ecbf99d477183e3b112afb0e5945eceb923a523cc98d5f4421751ce0db0e8585",
-      "sha256": "2ac126f5b5424b9d144248d74a724f3fe886bed43ceeb9ed378f2eca82a202c2",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "cbc1f57a41458c63f093a278d5569603846f3b5d8dde1a9829d500072178466a",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.965415011169212,
+        0.9705028725498327,
+        0.9978099272421564,
+        0.974545039452968
+      ],
+      "readyArea": [
+        10695,
+        10695,
+        10695,
+        10695
+      ],
+      "motionReferenceArea": [
+        11475,
+        11355,
+        10742,
+        11261
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 1,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "TW": {
       "id": "TW",
@@ -621,19 +885,19 @@
       "path": "assets/broadcast/nations/TW/pitcher.webp",
       "release": [
         [
-          228,
+          227,
           31
         ],
         [
-          250,
-          62
+          249,
+          63
         ],
         [
-          268,
+          266,
           98
         ],
         [
-          251,
+          249,
           149
         ]
       ],
@@ -661,8 +925,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/TW/ready.webp",
       "referenceSha256": "5579d814fff1d62777c946a412e4d37fb8fd4984b68a89b5a16773cebbef3ba2",
-      "sha256": "d3280d78cc6596acf9fbf679b96ae0b19bb89476c08ce130bcdb78f23e1652ce",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "2a23f9ecb93c8b6012203c56140135822f10c794b9dd44e92b4a56811c608c87",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9025657126105997,
+        0.8987819754842304,
+        0.9092465829224095,
+        0.8988557095977705
+      ],
+      "readyArea": [
+        9848,
+        9848,
+        9848,
+        9848
+      ],
+      "motionReferenceArea": [
+        12089,
+        12191,
+        11912,
+        12189
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 2,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "CN": {
       "id": "CN",
@@ -670,20 +956,20 @@
       "path": "assets/broadcast/nations/CN/pitcher.webp",
       "release": [
         [
-          216,
-          33
+          215,
+          34
         ],
         [
-          254,
+          253,
           64
         ],
         [
-          266,
-          103
+          265,
+          104
         ],
         [
-          247,
-          149
+          246,
+          150
         ]
       ],
       "landing": [
@@ -710,8 +996,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CN/ready.webp",
       "referenceSha256": "ce068b46087c4b2f666f1932811a09742745f998c2ba8114eaad351857f33ecc",
-      "sha256": "0e3c7da884bb0ed8a2989a15a5207c497dde3b754f7413842e42e144ea6aa285",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "230340cadf072f168df7f97c53b0d89330f200550822484b13e0564028abc81c",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9546456925537338,
+        0.9684107706875454,
+        0.9736078176157996,
+        0.9475737114717361
+      ],
+      "readyArea": [
+        11010,
+        11010,
+        11010,
+        11010
+      ],
+      "motionReferenceArea": [
+        12081,
+        11740,
+        11615,
+        12262
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 3,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "AU": {
       "id": "AU",
@@ -719,20 +1027,20 @@
       "path": "assets/broadcast/nations/AU/pitcher.webp",
       "release": [
         [
-          225,
-          34
+          224,
+          35
         ],
         [
-          252,
-          62
+          251,
+          61
         ],
         [
-          267,
-          96
+          266,
+          97
         ],
         [
-          250,
-          145
+          249,
+          146
         ]
       ],
       "landing": [
@@ -759,8 +1067,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/AU/ready.webp",
       "referenceSha256": "717ad69a159ca91a9dab7370f37f3c2aecbf35d43f40ce18f2267051d62701e1",
-      "sha256": "154f5661ab6376d8baeb3db878c356352899b9ee10f7ce116380128b7f73c587",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "eaa4d1d0b4d158ff0d93c1566cadcc7c5b35618b432d34c1bd0be8da89c9070b",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.95420170294646,
+        0.9414808222230878,
+        0.95488985359058,
+        0.9362044364552762
+      ],
+      "readyArea": [
+        10743,
+        10743,
+        10743,
+        10743
+      ],
+      "motionReferenceArea": [
+        11799,
+        12120,
+        11782,
+        12257
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 4,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "US": {
       "id": "US",
@@ -768,19 +1098,19 @@
       "path": "assets/broadcast/nations/US/pitcher.webp",
       "release": [
         [
-          219,
-          32
+          218,
+          31
         ],
         [
           243,
           62
         ],
         [
-          261,
-          94
+          260,
+          95
         ],
         [
-          252,
+          250,
           148
         ]
       ],
@@ -808,8 +1138,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/US/ready.webp",
       "referenceSha256": "6e1bbdc4d94e2f694a2df45ae35a0195881b7f67e32e274834d02616d43e809e",
-      "sha256": "e2556161ac99cc5f0f9caf770bec35bebf02488095dbdd9f113fc0c38394a144",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "f0ccfc0a9ea1fab2847bffcf089462b85b44e5e76f2c2f3b2ce726d8ac79a020",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.92462456951992,
+        0.922554236018695,
+        0.9424503899830448,
+        0.9194746472384253
+      ],
+      "readyArea": [
+        10655,
+        10655,
+        10655,
+        10655
+      ],
+      "motionReferenceArea": [
+        12463,
+        12519,
+        11996,
+        12603
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 5,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "DO": {
       "id": "DO",
@@ -821,16 +1173,16 @@
           32
         ],
         [
-          236,
-          61
+          237,
+          62
         ],
         [
           254,
-          90
+          91
         ],
         [
-          250,
-          146
+          249,
+          147
         ]
       ],
       "landing": [
@@ -857,8 +1209,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/DO/ready.webp",
       "referenceSha256": "875acc80493b646c49efb9913754aa73b4c698db2650640f5e19dc397bfe8668",
-      "sha256": "e05ad0c9f5deae49aae5499b276a65432ead1e7fd63bd184390e39e4c7d89951",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "dd21d92fabf6f55c1c208b628dfa9925ecd9d7eb432311e63c3371feeb034641",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.948546209241471,
+        0.9449457997840716,
+        0.9585711813017019,
+        0.937021260330896
+      ],
+      "readyArea": [
+        10724,
+        10724,
+        10724,
+        10724
+      ],
+      "motionReferenceArea": [
+        11919,
+        12010,
+        11671,
+        12214
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 6,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "VE": {
       "id": "VE",
@@ -866,19 +1240,19 @@
       "path": "assets/broadcast/nations/VE/pitcher.webp",
       "release": [
         [
-          224,
-          35
+          223,
+          36
         ],
         [
-          253,
+          251,
           62
         ],
         [
-          262,
-          98
+          261,
+          99
         ],
         [
-          250,
+          248,
           148
         ]
       ],
@@ -906,8 +1280,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/VE/ready.webp",
       "referenceSha256": "673217c1a83f2a1a00a4817c45b117a088a55e072b3c723f83c559b61cfe2250",
-      "sha256": "e2255d26110d703ed2658d10634ce93151033e434c1b4df9a360bf2fe5ccec67",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "4bce4941224fe66ed813d2417d2cebc6086c45a389a8dafc7001291f6fed8390",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9598896612545277,
+        0.9559026052139578,
+        0.977334166408364,
+        0.9647077178141753
+      ],
+      "readyArea": [
+        10912,
+        10912,
+        10912,
+        10912
+      ],
+      "motionReferenceArea": [
+        11843,
+        11942,
+        11424,
+        11725
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 7,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "PR": {
       "id": "PR",
@@ -915,19 +1311,19 @@
       "path": "assets/broadcast/nations/PR/pitcher.webp",
       "release": [
         [
-          223,
-          37
-        ],
-        [
-          251,
-          62
-        ],
-        [
-          269,
-          97
+          222,
+          38
         ],
         [
           250,
+          62
+        ],
+        [
+          267,
+          98
+        ],
+        [
+          248,
           146
         ]
       ],
@@ -955,8 +1351,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PR/ready.webp",
       "referenceSha256": "6a9318aa3d9627c45db2594b46cefcddb54917f168abbb0543c4448bcdbe952a",
-      "sha256": "6876f52dc29bdc8b49f22f6cf258c4d0ec5f020b78e16d5912fd9b47a3741e84",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "f97841d0bb2180d6100d0064ec8d6329d997fddc999f83d2b368702f84a70501",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9492817735372603,
+        0.937792490093242,
+        0.9624501685453937,
+        0.934651054565809
+      ],
+      "readyArea": [
+        10710,
+        10710,
+        10710,
+        10710
+      ],
+      "motionReferenceArea": [
+        11885,
+        12178,
+        11562,
+        12260
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 8,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "CU": {
       "id": "CU",
@@ -969,15 +1387,15 @@
         ],
         [
           234,
-          62
+          63
         ],
         [
           256,
-          92
+          93
         ],
         [
-          250,
-          147
+          248,
+          148
         ]
       ],
       "landing": [
@@ -1004,8 +1422,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CU/ready.webp",
       "referenceSha256": "1da148262b21c59c45ea6f3a04933916974be7d25e6dae6a4cc728656af63e40",
-      "sha256": "103e8bb0c511a6d07e08fee626247e25c20dea3bec6fd794c6c4c58286a4b456",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "ac43f8fcd8f6d5a65492eea904a31a4dfd2d064d804347f8fdf3b9da1313e49c",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9752145452930145,
+        0.9787109547899705,
+        0.9892509175687755,
+        0.9711187796942568
+      ],
+      "readyArea": [
+        10801,
+        10801,
+        10801,
+        10801
+      ],
+      "motionReferenceArea": [
+        11357,
+        11276,
+        11037,
+        11453
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 9,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "MX": {
       "id": "MX",
@@ -1013,20 +1453,20 @@
       "path": "assets/broadcast/nations/MX/pitcher.webp",
       "release": [
         [
-          230,
+          228,
           36
         ],
         [
-          258,
+          257,
           62
         ],
         [
-          268,
-          98
+          267,
+          99
         ],
         [
-          247,
-          146
+          246,
+          147
         ]
       ],
       "landing": [
@@ -1053,8 +1493,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/MX/ready.webp",
       "referenceSha256": "1afecbcbd2b80346bd11108c48a9637e4b414cf25901044d594d929268c81e5d",
-      "sha256": "01874b5de3a246ce3f3f49d17f873762f259c0df2c4b1ec0de99ca94151cd672",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "242e7e547aa7b3dbcb249ef69bd650a26d2117312a53f6d3df132a84ee04ba94",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9483098111776069,
+        0.9401381474996023,
+        0.9649340499345439,
+        0.9413093677712454
+      ],
+      "readyArea": [
+        10662,
+        10662,
+        10662,
+        10662
+      ],
+      "motionReferenceArea": [
+        11856,
+        12063,
+        11451,
+        12033
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 10,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "CA": {
       "id": "CA",
@@ -1062,20 +1524,20 @@
       "path": "assets/broadcast/nations/CA/pitcher.webp",
       "release": [
         [
-          214,
-          33
+          213,
+          34
         ],
         [
-          231,
-          60
+          232,
+          61
         ],
         [
           257,
-          94
+          95
         ],
         [
-          252,
-          147
+          250,
+          148
         ]
       ],
       "landing": [
@@ -1102,8 +1564,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CA/ready.webp",
       "referenceSha256": "a32aff651d49f333c7f648b4602d867e266af6e4d810ac4e1992ce4cabd53326",
-      "sha256": "1093733964de596df9787fc3f8ed46a7ee63cbc4393bf909b3470115d17560e2",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "1989e823c6f4a4db3f22c8e1235ee6869653ccbf8d51c0129974e26c8b6ce010",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9533195352850268,
+        0.9453943578228499,
+        0.9578004978631417,
+        0.9497639819674956
+      ],
+      "readyArea": [
+        10904,
+        10904,
+        10904,
+        10904
+      ],
+      "motionReferenceArea": [
+        11998,
+        12200,
+        11886,
+        12088
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 11,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "PA": {
       "id": "PA",
@@ -1111,20 +1595,20 @@
       "path": "assets/broadcast/nations/PA/pitcher.webp",
       "release": [
         [
-          225,
-          33
+          224,
+          34
         ],
         [
-          252,
+          250,
           61
         ],
         [
-          266,
-          100
+          264,
+          101
         ],
         [
-          246,
-          147
+          244,
+          148
         ]
       ],
       "landing": [
@@ -1151,8 +1635,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PA/ready.webp",
       "referenceSha256": "ead10bda8319e4ad6e5f63a7e11acaf28d099097a6fd3c459465550c450e90d5",
-      "sha256": "49408437ca14b384965315c154c99b760a4c3aa9d700c9a86f864430eca18c6b",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "e73af7cb1fc24188ee734695478058f9b682a8b40b6ae18ec5cd6d44e2ea5028",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9577657628600119,
+        0.9501233133952787,
+        0.9724021326192314,
+        0.9537830203786669
+      ],
+      "readyArea": [
+        10961,
+        10961,
+        10961,
+        10961
+      ],
+      "motionReferenceArea": [
+        11949,
+        12142,
+        11592,
+        12049
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 12,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "CO": {
       "id": "CO",
@@ -1160,20 +1666,20 @@
       "path": "assets/broadcast/nations/CO/pitcher.webp",
       "release": [
         [
-          224,
-          34
-        ],
-        [
-          253,
-          61
-        ],
-        [
-          271,
-          96
+          223,
+          35
         ],
         [
           252,
-          146
+          61
+        ],
+        [
+          269,
+          97
+        ],
+        [
+          250,
+          147
         ]
       ],
       "landing": [
@@ -1200,8 +1706,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CO/ready.webp",
       "referenceSha256": "c43aa20a9946f25d48a92f910b20ac29ccdf59a449040c82c6865de1c8188b5e",
-      "sha256": "0d42c17b41d1d01c6f02c4c8b1c606aa748b43cd7b758df2787533683e574990",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "459e624b3e06711efa1d3aff170059ac315b2c23afe0624755b18d8b945bfca4",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9526430839279159,
+        0.9502795926484896,
+        0.9685310206969822,
+        0.9539108453923443
+      ],
+      "readyArea": [
+        10933,
+        10933,
+        10933,
+        10933
+      ],
+      "motionReferenceArea": [
+        12047,
+        12107,
+        11655,
+        12015
+      ],
+      "gloveRepairSourceSha256": "3e2b01307bb108120310867bc2acdcec92bba09e06d07a432182542ef901934a",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 13,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "NI": {
       "id": "NI",
@@ -1209,20 +1737,20 @@
       "path": "assets/broadcast/nations/NI/pitcher.webp",
       "release": [
         [
-          215,
-          34
+          214,
+          35
         ],
         [
           247,
           61
         ],
         [
-          269,
-          94
+          268,
+          95
         ],
         [
-          249,
-          145
+          248,
+          146
         ]
       ],
       "landing": [
@@ -1249,8 +1777,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/NI/ready.webp",
       "referenceSha256": "465754c4061cf66887947ad80a9f38b341cad04b01007dcff8917b757309f1f1",
-      "sha256": "c50c422dfe829c62026f09704b9accfc2fa2a4d2497eff6ba8e76fc3c2871dc5",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "eb70261eacf2695b2bb832c96eedfbe883294249298731573fe72ba44d24faea",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9206403763414059,
+        0.9187345233134006,
+        0.9466722249135653,
+        0.9222889310247432
+      ],
+      "readyArea": [
+        10204,
+        10204,
+        10204,
+        10204
+      ],
+      "motionReferenceArea": [
+        12039,
+        12089,
+        11386,
+        11996
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 0,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "IT": {
       "id": "IT",
@@ -1258,20 +1808,20 @@
       "path": "assets/broadcast/nations/IT/pitcher.webp",
       "release": [
         [
-          224,
+          223,
           33
         ],
         [
-          254,
+          253,
           62
         ],
         [
-          271,
+          269,
           97
         ],
         [
-          263,
-          148
+          261,
+          149
         ]
       ],
       "landing": [
@@ -1298,8 +1848,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/IT/ready.webp",
       "referenceSha256": "3bc44760ceb7a830d1c27bfb28f938f5ae5e918876a44ac1711992a52aa58f7a",
-      "sha256": "b08380b6147a8724ee501b800856b01a1f0eb931f7a3d19a02419b291070d40f",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "9489abe7fbc5f0d4a72a06ccf07a3ca8d0a65d6d44ccb8ad69e9fb5e1bebcb1c",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.918486793893871,
+        0.9030601616375692,
+        0.9375917010218047,
+        0.9266978856845467
+      ],
+      "readyArea": [
+        10185,
+        10185,
+        10185,
+        10185
+      ],
+      "motionReferenceArea": [
+        12073,
+        12489,
+        11586,
+        11860
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 1,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "NL": {
       "id": "NL",
@@ -1307,8 +1879,8 @@
       "path": "assets/broadcast/nations/NL/pitcher.webp",
       "release": [
         [
-          225,
-          34
+          224,
+          35
         ],
         [
           247,
@@ -1316,11 +1888,11 @@
         ],
         [
           265,
-          95
+          97
         ],
         [
-          248,
-          150
+          247,
+          151
         ]
       ],
       "landing": [
@@ -1347,8 +1919,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/NL/ready.webp",
       "referenceSha256": "10940550133fb67903920c328a8b24cccf20a52e63ded9679b126ccbc2b2e10c",
-      "sha256": "9804b550b3808b48cea4148919e10b4fed23fd454aa012d8491963cb01722c88",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "dbee6011686f13681c43a327e2fb7526304c49567a5b5cd0692ee1ba8be8c1bb",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.941159654380689,
+        0.9374913554234918,
+        0.9480401133797485,
+        0.9357537996408727
+      ],
+      "readyArea": [
+        10167,
+        10167,
+        10167,
+        10167
+      ],
+      "motionReferenceArea": [
+        11478,
+        11568,
+        11312,
+        11611
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 2,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "GB": {
       "id": "GB",
@@ -1356,20 +1950,20 @@
       "path": "assets/broadcast/nations/GB/pitcher.webp",
       "release": [
         [
-          221,
-          35
+          220,
+          36
         ],
         [
-          251,
+          249,
           62
         ],
         [
-          261,
+          259,
           98
         ],
         [
-          250,
-          146
+          249,
+          147
         ]
       ],
       "landing": [
@@ -1396,8 +1990,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/GB/ready.webp",
       "referenceSha256": "964909af0534ca09e1a3fb9604158c9c73f9f594bf244842b27bae2d6e952d2d",
-      "sha256": "6ee1ad604eb49fa5eee15b7c81cf87eda2f3a08356a0af05b3dd9f4bf5af751a",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "1fc1e9bb946d271059dd8be0ffc6c93978d230996bd4999dad833008b314d4b6",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.918950310080483,
+        0.9301428594423033,
+        0.9382056834661624,
+        0.9135583596150295
+      ],
+      "readyArea": [
+        10414,
+        10414,
+        10414,
+        10414
+      ],
+      "motionReferenceArea": [
+        12332,
+        12037,
+        11831,
+        12478
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 3,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "CZ": {
       "id": "CZ",
@@ -1405,8 +2021,8 @@
       "path": "assets/broadcast/nations/CZ/pitcher.webp",
       "release": [
         [
-          224,
-          32
+          223,
+          33
         ],
         [
           245,
@@ -1414,11 +2030,11 @@
         ],
         [
           262,
-          94
+          96
         ],
         [
-          254,
-          146
+          253,
+          147
         ]
       ],
       "landing": [
@@ -1445,8 +2061,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CZ/ready.webp",
       "referenceSha256": "86c3699c2989b4b58fdc1c84dce1b2ec5c31be8950f3ab77fc1bf36d2295e818",
-      "sha256": "7db99b7d9965a1598d018db8365011f237c7672a9d92346abd48732ed563f5d9",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "207f4dda12c0d6dd7d2527aff23291baccd50059850b58488a7fd87375ef357e",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9303624662870954,
+        0.9162620824202977,
+        0.9364890223444743,
+        0.9291592686682706
+      ],
+      "readyArea": [
+        10354,
+        10354,
+        10354,
+        10354
+      ],
+      "motionReferenceArea": [
+        11962,
+        12333,
+        11806,
+        11993
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 4,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "IL": {
       "id": "IL",
@@ -1454,20 +2092,20 @@
       "path": "assets/broadcast/nations/IL/pitcher.webp",
       "release": [
         [
-          219,
-          37
+          218,
+          38
         ],
         [
           247,
           62
         ],
         [
-          272,
-          92
+          271,
+          93
         ],
         [
-          257,
-          150
+          255,
+          151
         ]
       ],
       "landing": [
@@ -1494,8 +2132,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/IL/ready.webp",
       "referenceSha256": "bbbf86c5149ef2422eefb9f84093e36750911a7d1f5aebb99f0243418b956cf6",
-      "sha256": "126106325e3a45b952fabf9f01e65b0a88ff7707ae1f8eeb43444f39127653db",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "8d985c95a9bdc77a27c61bb6361905de4a66cdc693a66581bcf07e33ad667604",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9194299105282001,
+        0.934486456099,
+        0.9468947773615237,
+        0.9276732937931287
+      ],
+      "readyArea": [
+        10129,
+        10129,
+        10129,
+        10129
+      ],
+      "motionReferenceArea": [
+        11982,
+        11599,
+        11297,
+        11770
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 5,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "PH": {
       "id": "PH",
@@ -1503,20 +2163,20 @@
       "path": "assets/broadcast/nations/PH/pitcher.webp",
       "release": [
         [
-          226,
+          224,
           39
         ],
         [
-          255,
+          253,
           62
         ],
         [
-          271,
+          269,
           97
         ],
         [
-          253,
-          149
+          252,
+          150
         ]
       ],
       "landing": [
@@ -1543,8 +2203,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PH/ready.webp",
       "referenceSha256": "544ea6d1a4374e5b3894e3e6d0a45f0fdb5a6ede3251a5514536f4681e1927f3",
-      "sha256": "1a31a419928450e8226c03497068f86cc03a012dba3db8817176c1c8885bd783",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "0c4845c0cb77c2404c4b45fa117ef906f01aa9e6dcf7c43bbd820a89beec818e",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9239143538045284,
+        0.9212212810441629,
+        0.9342478373286174,
+        0.9245332364687898
+      ],
+      "readyArea": [
+        10205,
+        10205,
+        10205,
+        10205
+      ],
+      "motionReferenceArea": [
+        11955,
+        12025,
+        11692,
+        11939
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 6,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "TH": {
       "id": "TH",
@@ -1552,20 +2234,20 @@
       "path": "assets/broadcast/nations/TH/pitcher.webp",
       "release": [
         [
-          216,
+          214,
           38
         ],
         [
-          252,
+          251,
           61
         ],
         [
-          266,
-          91
+          265,
+          92
         ],
         [
-          261,
-          146
+          259,
+          147
         ]
       ],
       "landing": [
@@ -1592,8 +2274,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/TH/ready.webp",
       "referenceSha256": "370752d9eb8d93af7fc6fce117ec7cefedf5099004fab3738390ea9de17c1672",
-      "sha256": "1765a7f013bd7319d979e60325d8936300cbfbc3c7c5d37e5f3ed0a7a701221b",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "a1add14a08600251fea3c4bb3acf1801f423be68492e52a719c00ff0813ac45b",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9370857967633789,
+        0.9362091589251599,
+        0.9528788807211597,
+        0.9354143466934853
+      ],
+      "readyArea": [
+        10311,
+        10311,
+        10311,
+        10311
+      ],
+      "motionReferenceArea": [
+        11742,
+        11764,
+        11356,
+        11784
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 7,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "HK": {
       "id": "HK",
@@ -1601,7 +2305,7 @@
       "path": "assets/broadcast/nations/HK/pitcher.webp",
       "release": [
         [
-          224,
+          222,
           33
         ],
         [
@@ -1609,12 +2313,12 @@
           60
         ],
         [
-          272,
-          97
+          271,
+          98
         ],
         [
-          252,
-          145
+          251,
+          147
         ]
       ],
       "landing": [
@@ -1641,8 +2345,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/HK/ready.webp",
       "referenceSha256": "5b74d22666bb1a0d64d9b8559dcb9670603fd229cdf8ed2ebe4f679218dec8fc",
-      "sha256": "bec10361705035a132357e8a38b05c333ee983c12a77b6a0dc871085bf29c035",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "6526872213cd6e192b01d03c91db280d3041e7a7088ba43f29a68f28c10d358f",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9252502048613873,
+        0.9282539552328368,
+        0.9532587454001344,
+        0.939428523921375
+      ],
+      "readyArea": [
+        10202,
+        10202,
+        10202,
+        10202
+      ],
+      "motionReferenceArea": [
+        11917,
+        11840,
+        11227,
+        11560
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 8,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "PK": {
       "id": "PK",
@@ -1650,20 +2376,20 @@
       "path": "assets/broadcast/nations/PK/pitcher.webp",
       "release": [
         [
-          228,
-          32
+          227,
+          33
         ],
         [
-          251,
-          63
+          250,
+          64
         ],
         [
-          266,
+          264,
           100
         ],
         [
-          254,
-          147
+          252,
+          148
         ]
       ],
       "landing": [
@@ -1690,8 +2416,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PK/ready.webp",
       "referenceSha256": "0377a99e24988e9940c4e354ae4ce813d347405565e7853cab9b87dda7eea9c3",
-      "sha256": "af11f8b1d1067fdbaff497ae4ee177f5df271cfe06247a3cbaced5e6764f71e2",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "f4e5e4c6028c7f8621a5fb0fd04a08636866deb148c1915a8ea21b16648d1119",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9340858713793014,
+        0.9210996384468577,
+        0.9388211396347005,
+        0.932655417444468
+      ],
+      "readyArea": [
+        10232,
+        10232,
+        10232,
+        10232
+      ],
+      "motionReferenceArea": [
+        11727,
+        12060,
+        11609,
+        11763
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 9,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "IN": {
       "id": "IN",
@@ -1703,16 +2451,16 @@
           32
         ],
         [
-          235,
-          62
+          236,
+          63
         ],
         [
           256,
-          94
+          95
         ],
         [
-          255,
-          150
+          252,
+          151
         ]
       ],
       "landing": [
@@ -1739,8 +2487,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/IN/ready.webp",
       "referenceSha256": "5298a8ff02d05e0dde16189c12e6f00972e7cb579b9b1e1cb297673fe8c3997f",
-      "sha256": "f6182e40f6fff2b1b7c70783cb805335727b5f9ef8bb12857108f3652829cf2c",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "dc890bdb41370a6a4c86cc3c6004bef32f53c2c1142e36f42aef61e889a2eca7",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9685085267756136,
+        0.9774237273860007,
+        0.9700717589157671,
+        0.9681188981367771
+      ],
+      "readyArea": [
+        10486,
+        10486,
+        10486,
+        10486
+      ],
+      "motionReferenceArea": [
+        11179,
+        10976,
+        11143,
+        11188
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 10,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "ID": {
       "id": "ID",
@@ -1748,20 +2518,20 @@
       "path": "assets/broadcast/nations/ID/pitcher.webp",
       "release": [
         [
-          222,
+          221,
           31
         ],
         [
-          251,
-          59
+          250,
+          58
         ],
         [
-          260,
-          95
+          259,
+          96
         ],
         [
-          245,
-          145
+          243,
+          146
         ]
       ],
       "landing": [
@@ -1788,8 +2558,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/ID/ready.webp",
       "referenceSha256": "273b59b568612b30aa2ef30901716535c38e2148c640c81b2218b30c51b2c415",
-      "sha256": "da64eb8bcea6c2d7ee1e5a266d9e80ee775dcbb5ce151de27ca4c6f5416755f7",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "8007c58098447b7177273a4a0e8f70d6cd25fbd5d023899809bbfe5d731c5297",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9024535404453192,
+        0.9126125398733123,
+        0.9204988847224396,
+        0.8964136864581357
+      ],
+      "readyArea": [
+        10300,
+        10300,
+        10300,
+        10300
+      ],
+      "motionReferenceArea": [
+        12647,
+        12367,
+        12156,
+        12818
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 11,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "SG": {
       "id": "SG",
@@ -1797,20 +2589,20 @@
       "path": "assets/broadcast/nations/SG/pitcher.webp",
       "release": [
         [
-          217,
+          216,
           30
         ],
         [
-          248,
+          247,
           61
         ],
         [
           268,
-          93
+          95
         ],
         [
-          250,
-          147
+          247,
+          149
         ]
       ],
       "landing": [
@@ -1837,8 +2629,30 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/SG/ready.webp",
       "referenceSha256": "65e267005d0d962f7c5cbd03bc13d9ae18b733553c82963caf0a8974c6ab474f",
-      "sha256": "cdf196ac30df6800c3f342b1573b1b168f53c69a0ef95dfb298f61fb5470d7df",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "c7c236858c91d3000ac0e2523cab2f32226c695f6a37678278fdc2d99a06aa9e",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9411291107286843,
+        0.9405295253438237,
+        0.9437002869997113,
+        0.9367191267247443
+      ],
+      "readyArea": [
+        10417,
+        10417,
+        10417,
+        10417
+      ],
+      "motionReferenceArea": [
+        11761,
+        11776,
+        11697,
+        11872
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 12,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     },
     "INTL": {
       "id": "INTL",
@@ -1846,8 +2660,8 @@
       "path": "assets/broadcast/nations/INTL/pitcher.webp",
       "release": [
         [
-          222,
-          35
+          221,
+          36
         ],
         [
           252,
@@ -1855,11 +2669,11 @@
         ],
         [
           268,
-          95
+          97
         ],
         [
-          254,
-          148
+          252,
+          149
         ]
       ],
       "landing": [
@@ -1886,8 +2700,31 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/INTL/ready.webp",
       "referenceSha256": "ab880d2ad024cb2a28481b6122daef700457de3ce6c10b9513a4474dc9692c6d",
-      "sha256": "09f861cccbea4593de3826e32535fe64e7160d22db79882ef4a0ce68d47b65cb",
-      "alphaSource": "original source coverage intersected with foreground mask"
+      "sha256": "61d244091a62766e16d172a6f6674c4e26987c1f75dd38be4ea32c31b690fc9f",
+      "alphaSource": "original source coverage intersected with foreground mask",
+      "motionScale": [
+        0.9161023407993055,
+        0.9216791916861097,
+        0.9276304011566875,
+        0.9178623853436882
+      ],
+      "readyArea": [
+        10295,
+        10295,
+        10295,
+        10295
+      ],
+      "motionReferenceArea": [
+        12267,
+        12119,
+        11964,
+        12220
+      ],
+      "gloveRepairSourceSha256": "b612ee4a4a7b8fa1c2e88728c76aab127b43eb3e6a81d1043c61630331cb6497",
+      "gloveRepairFrame": 2,
+      "gloveRepairCell": 13,
+      "gloveRepair": "whole figure; left glove tucked against chest, only side edge visible; separate right ball hand"
     }
-  }
+  },
+  "motionScaleReference": "standing ready silhouette area matched to initial knee lift; one constant scale per delivery for all moving poses"
 }

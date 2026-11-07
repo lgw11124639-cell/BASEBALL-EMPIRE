@@ -20895,7 +20895,7 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=left] .be-stadium-strike-slot{left:26%!important;top:48%!important;width:15%;height:18.461538%}
 #be-replay-overlay .be-motion-pitcher canvas{transition:none!important;animation:none!important;opacity:1!important}
 /* The count panel ends above the foreground pitcher's head. */
-#be-replay-overlay .be-stadium-hud{transform:scale(calc(var(--be-scene-scale,.5) * .85))!important;top:calc(8px * var(--be-scene-scale,.5))!important}
+#be-replay-overlay .be-stadium-hud{transform:scale(calc(var(--be-scene-scale,.5) * .8))!important;top:calc(8px * var(--be-scene-scale,.5))!important}
 /* Every batter pose uses the same measured batting-box ground plane. */
 #be-replay-overlay .be-stadium[data-batter-registered=true] .be-batter-render{inset:0!important;width:100%!important;height:100%!important;filter:none!important}
 #be-replay-overlay .be-stadium[data-batter-registered=true] .be-batter-render>img{display:none!important}
@@ -20903,3 +20903,10 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-motion-batter>canvas{display:block;width:100%;height:100%;transition:none!important;opacity:1!important}
 /* Five-character averages fit the smaller strike-zone cells. */
 #be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid>span{font-size:calc(12px * var(--be-scene-scale,.5))!important;letter-spacing:-.025em}
+#be-replay-overlay .be-stadium[data-labels-ready=true] .be-player-name{visibility:hidden}
+#be-replay-overlay #be-field-labels{pointer-events:none}
+#be-replay-overlay #be-field-labels rect{fill:#082537;fill-opacity:.78;stroke:#8bb6bf;stroke-opacity:.4;stroke-width:.7}
+#be-replay-overlay #be-field-labels text{font:700 16px system-ui,sans-serif;fill:#fff;stroke:none;paint-order:normal}
+#be-replay-overlay #be-field-labels .be-label-leader{fill:none;stroke:#e7f4ef;stroke-opacity:.55;stroke-width:1}
+#be-replay-overlay .be-stadium[data-view=pitch] #be-field-labels{display:none}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid>span{font-size:calc(8.5px * var(--be-scene-scale,.5))!important}

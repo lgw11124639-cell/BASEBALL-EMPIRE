@@ -1,5 +1,5 @@
 // Register complete generated poses by their shoes, inside the painted batting box.
-import {uniformAtlas} from './broadcast-actors.mjs?v=20261107-plate-scale76';
+import {uniformAtlas} from './broadcast-actors.mjs?v=20261107-zone-labels77';
 const cache=new Map();
 async function loadKit(id,motion){
  const key=id+':'+motion;if(cache.has(key))return cache.get(key);
@@ -16,7 +16,7 @@ async function loadKit(id,motion){
 export async function prepareBatterKits(ids){await Promise.all(ids.flatMap(id=>['swing','bunt'].map(motion=>loadKit(id,motion))));}
 export async function createBatter(canvas,id){
  const ctx=canvas.getContext('2d',{willReadFrequently:true});canvas.width=1440;canvas.height=1040;
- let frames=await loadKit(id,'swing'),kit=id,motion='swing',index=0,renderScale=1,layout={min:520,max:610,feet:322,height:216,mirror:false},request=0,disposed=false;
+ let frames=await loadKit(id,'swing'),ready=frames,kit=id,motion='swing',index=0,renderScale=1,layout={min:520,max:610,feet:322,height:216,mirror:false},request=0,disposed=false;
  function draw(){if(disposed)return;const {shoe}=frames[index],mirror=layout.mirror,min=mirror?384-shoe.max:shoe.min,max=mirror?384-shoe.min:shoe.max;
   const scale=Math.min(layout.height/(384*.9),(layout.max-layout.min-8)/Math.max(1,...frames.map(f=>f.shoe.max-f.shoe.min))),x=(layout.min+layout.max)/2-(min+max)/2*scale,y=layout.feet-shoe.bottom*scale;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,1440,1040);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.setTransform(2,0,0,2,0,0);ctx.save();
@@ -26,7 +26,8 @@ export async function createBatter(canvas,id){
  const api={
   pose(value){const next=Math.max(0,Math.min(3,Math.floor(value)));if(next!==index){index=next;draw();}},
   layout(next){if(JSON.stringify(layout)!==JSON.stringify(next)){layout=next;draw();}},
-  async setKit(next,nextMotion='swing'){if(next===kit&&nextMotion===motion)return;kit=next;motion=nextMotion;const token=++request,loaded=await loadKit(next,nextMotion);if(token===request&&!disposed){frames=loaded;draw();}},
+  async setKit(next,nextMotion='swing'){if(next===kit&&nextMotion===motion)return false;kit=next;motion=nextMotion;const token=++request,[loaded,stance]=await Promise.all([loadKit(next,nextMotion),loadKit(next,'swing')]);if(token===request&&!disposed){frames=loaded;ready=stance;draw();return true;}return false;},
+  strikeZone(){const scale=Math.min(layout.height/(384*.9),(layout.max-layout.min-8)/Math.max(1,...ready.map(f=>f.shoe.max-f.shoe.min))),feet=ready[0].shoe.bottom;const top=layout.feet+(96-feet)*scale,bottom=layout.feet+(264-feet)*scale,height=bottom-top;return{top,bottom,height,width:Math.max(58,Math.min(78,height*.9))};},
   inspect(){return{kit,motion,index,layout,scale:renderScale,shoe:frames[index].shoe,wholeFrame:true};},
   dispose(){disposed=true;request++;canvas.width=canvas.height=1;}
  };draw();return api;

@@ -117,6 +117,7 @@ for (const hand of ["우투", "좌투"])
             return {
               ...node._actor.inspect(),
               aspect: scene.width / scene.height,
+              zoneReference: document.querySelector('.be-motion-batter')._actor.strikeZone(),
               zone: [
                 (zone.left - scene.left) / scene.width,
                 zone.width / scene.width,
@@ -136,8 +137,8 @@ for (const hand of ["우투", "좌투"])
           expect(result.frame).toBe(2);
           expect(result.frameCount).toBe(7);
           expect(result.aspect).toBeCloseTo(18 / 13, 2);
-          expect(result.zone[1]).toBeCloseTo(0.15, 2);
-          expect(result.zone[0]).toBeCloseTo(hand === "우투" ? 0.592 : 0.185, 2);
+          expect(result.zone[1]).toBeCloseTo(result.zoneReference.width/720, 2);
+          expect(result.zone[0]).toBeCloseTo((hand === "우투" ? .667 : .26)-result.zoneReference.width/1440, 2);
           const x = result.registration.mirror
             ? 720 - result.registration.pivot[0]
             : result.registration.pivot[0];
@@ -182,7 +183,7 @@ test('all baked club uniforms keep complete bodies outside the strike zone in ev
 
     const sheet=document.createElement('canvas');sheet.width=1680;sheet.height=1600;
     const preview=sheet.getContext('2d');preview.fillStyle='#102638';preview.fillRect(0,0,1440,1600);
-    const phases=[0,.45,1,2,3,3.5,4],violations=[],sources=[];
+    const phases=[0,.45,1,2,3,3.5,4],violations=[],sources=[],readyAreas=new Map();
     for(let id=0;id<10;id++){
       await actor.setKit(id);sources.push(actor.inspect().source);
       for(const hand of ['right','left'])for(let row=0;row<4;row++)for(let frame=0;frame<7;frame++){
@@ -194,7 +195,7 @@ test('all baked club uniforms keep complete bodies outside the strike zone in ev
         if(frame===4){const [rx,ry]=actor.releasePoint(row,hand),handPixel=ctx.getImageData(Math.round(rx*2),Math.round(ry*2),1,1).data;if(handPixel[3]<80)violations.push({id,hand,row,frame,releaseOffBody:true});}
         const body=ctx.getImageData(0,0,1440,1040).data;let pixels=0;
         for(let i=3;i<body.length;i+=64)if(body[i]>200)pixels++;
-        if(pixels<500)violations.push({id,hand,row,frame,missing:true});
+        if(pixels<500)violations.push({id,hand,row,frame,missing:true});const areaKey=id+':'+hand+':'+row;if(frame===0)readyAreas.set(areaKey,pixels);if(frame===1){const ratio=pixels/readyAreas.get(areaKey);if(ratio<.9||ratio>1.1)violations.push({id,hand,row,frame,bodySizeChanged:true,ratio});}
         if(row===0)preview.drawImage(canvas,(frame+(hand==='left'?7:0))*120,id*160,120,130);
       }
       preview.fillStyle='white';preview.font='14px sans-serif';preview.fillText('Club '+id,8,id*160+151);
