@@ -1,9 +1,9 @@
-# Pitching uniform images
+# Club pitching source keys
 
-Ten wardrobe edits of the user-approved left-handed sheet (`../pitcher-left-approved.png`). Each 1536 × 1024 atlas contains four arm slots and six complete poses in chronological order. The body is never separated into limbs. The original approved right-handed reference remains at `../pitcher-complete.png`.
+These are the six full-body wardrobe key poses per arm slot, edited from the approved left-handed reference (`../pitcher-left-approved.png`). Each club's existing ready-batter image in `../../uniforms/club-ID.webp` is the authoritative uniform reference, including shoulder panels, piping, pants and headwear. The back is blank; no fictional player number is baked into the clothes.
 
-Files are lossless WebP, with their clothing already rendered into every pose. Runtime does not recolor the pitcher. Each cell was reflected in place to establish the renderer's right-handed coordinate convention; the entire actor is reflected back for left-handed pitchers. Column order never changes. The renderer decodes individual pose images to avoid Safari cropped-atlas artifacts.
+The 1536 × 1024 source atlases have six columns and four delivery rows. A whole-cell reflection establishes the right-handed renderer coordinate system; the entire actor is reflected for a left-hander. No limb is cut out or assembled separately. The original first approved right-handed sheet remains at `../pitcher-complete.png`.
 
-`manifest.json` records each wardrobe source digest, final atlas digest, shoe registration points, release pivot and throwing-hand position. The pivot remains at the pitching rubber through release; follow-through and recovery share the same landing point. The complete pose sequence is discrete, not continuous skeletal animation. The rendered back number is part of the model artwork, not a player's statistical record.
+Runtime uses the 31-frame-per-delivery atlases in `../pitcher-motion`, rather than these six-key files. `manifest.json` records the original wardrobe source hash, the final source atlas hash, its ready-batter reference hash and shoe/hand registration coordinates.
 
-To package regenerated wardrobe sources, pass an ordered JSON array of ten local PNG paths to `node scripts/prepare-pitcher-uniforms.mjs`. Preserve original image-generation outputs outside this directory. The script removes only the partial-alpha backdrop, reflects individual cells, finds registration points and encodes lossless assets.
+To regenerate sources, compile `scripts/interpolate-pitcher.cpp` with OpenCV core/imgproc/imgcodecs, set `BE_POSE_PACKER` to that executable, then pass an ordered JSON array of ten source PNG paths to `node scripts/prepare-pitcher-uniforms.mjs`. The approved silhouette guides background removal; partial-alpha image-generation backdrops are not treated as opaque clothing.

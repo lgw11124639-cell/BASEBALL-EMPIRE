@@ -132,8 +132,9 @@ for (const hand of ["우투", "좌투"])
           expect(result.renderer).toBe("complete-frame-sequence");
           expect(result.wholeFrame).toBe(true);
           expect(result.uniformBaked).toBe(true);
-          expect(result.source).toContain("pitcher-kits/club-");
-          expect(result.frame).toBe(1);
+          expect(result.source).toContain("pitcher-motion/club-");
+          expect(result.frame).toBe(6);
+          expect(result.frameCount).toBe(31);
           expect(result.aspect).toBeCloseTo(18 / 13, 2);
           expect(result.zone[1]).toBeCloseTo(0.20, 2);
           expect(result.zone[0]).toBeCloseTo(hand === "우투" ? 0.58 : 0.20, 2);
@@ -177,7 +178,7 @@ test('all baked club uniforms keep complete bodies outside the strike zone in ev
   const errors=await open(page,'우투','우타');
   const result=await page.evaluate(async()=>{
     const module=window.beBroadcastActors,actor=document.querySelector('.be-motion-pitcher')._actor,canvas=document.querySelector('.be-motion-pitcher canvas');
-    await module.preparePitcherKits(Array.from({length:10},(_,id)=>id));
+
     const sheet=document.createElement('canvas');sheet.width=1440;sheet.height=1600;
     const preview=sheet.getContext('2d');preview.fillStyle='#102638';preview.fillRect(0,0,1440,1600);
     const phases=[0,1,2,3,3.6,4],violations=[],sources=[];
@@ -199,6 +200,7 @@ test('all baked club uniforms keep complete bodies outside the strike zone in ev
     }
     return {violations,sources,preview:sheet.toDataURL('image/png')};
   });
+  if(result.violations.length)console.log("Uniform pixel checks",JSON.stringify(result.violations));
   expect(result.violations).toEqual([]);expect(new Set(result.sources).size).toBe(10);
   const {writeFileSync}=await import('node:fs');writeFileSync('test-results/pitcher-uniforms.png',Buffer.from(result.preview.split(',')[1],'base64'));
   expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());

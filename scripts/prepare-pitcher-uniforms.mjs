@@ -7,12 +7,17 @@ import {FRAME_ANCHORS,RELEASE_PIXELS,kits} from '../broadcast-actors.mjs';
 const files=JSON.parse(process.argv[2]);
 if(files.length!==10)throw Error('Ten club source sheets required');
 const dir='assets/broadcast/motion/pitcher-kits';mkdirSync(dir,{recursive:true});
-const manifest={version:1,columns:6,rows:4,tile:256,nativeHand:'right',approvedHand:'left',rendering:'24 whole poses; wardrobe baked into each image; mirror whole actor for left hand',clubs:[]};
+const previous=(()=>{try{return JSON.parse(readFileSync(`${dir}/manifest.json`))}catch{return {clubs:[]}}})();
+const manifest={version:1,columns:6,rows:4,tile:256,nativeHand:'right',approvedHand:'left',rendering:'24 whole poses; wardrobe baked into each image; mirror whole actor for left hand',clubs:previous.clubs};
 for(let id=0;id<10;id++){
+ if(!files[id])continue;
  const dimensions=execFileSync('magick',['identify','-format','%wx%h',files[id]],{encoding:'utf8'});
  if(dimensions!=='1536x1024')throw Error('Unexpected sheet size '+dimensions);
  // Imagegen exports partial-alpha backdrop. Retain the opaque athlete and antialias its boundary.
- const source=execFileSync('magick',[files[id],'-channel','A','-level','75%,98%','+channel','-depth','8','rgba:-'],{maxBuffer:16*1024*1024}),rgba=Buffer.alloc(source.length);
+ const matte=`/tmp/be-club-matte-${id}.png`;
+ if(!process.env.BE_POSE_PACKER)throw Error('BE_POSE_PACKER must point to the compiled asset helper');
+ execFileSync(process.env.BE_POSE_PACKER,['matte',files[id],'assets/broadcast/motion/pitcher-left-approved.png',matte]);
+ const source=execFileSync('magick',[matte,'-depth','8','rgba:-'],{maxBuffer:16*1024*1024}),rgba=Buffer.alloc(source.length);
  for(let y=0;y<1024;y++)for(let x=0;x<1536;x++){
   const mirror=Math.floor(x/256)*256+255-x%256;
   source.copy(rgba,(y*1536+x)*4,(y*1536+mirror)*4,(y*1536+mirror+1)*4);
@@ -48,7 +53,7 @@ for(let id=0;id<10;id++){
   release[row]=point;
  }
  const file=`club-${id}.webp`,output=execFileSync('magick',['-size','1536x1024','-depth','8','rgba:-','-define','webp:lossless=true','webp:-'],{input:rgba,maxBuffer:16*1024*1024});writeFileSync(`${dir}/${file}`,output);
- manifest.clubs.push({id,file,colors:kits[id],sha256:createHash('sha256').update(output).digest('hex'),sourceSha256:createHash('sha256').update(readFileSync(files[id])).digest('hex'),anchors,releasePivot:pivot,release});
+ manifest.clubs[id]={id,file,colors:kits[id],referenceFile:`assets/broadcast/uniforms/club-${id}.webp`,referenceSha256:createHash('sha256').update(readFileSync(`assets/broadcast/uniforms/club-${id}.webp`)).digest('hex'),sha256:createHash('sha256').update(output).digest('hex'),sourceSha256:createHash('sha256').update(readFileSync(files[id])).digest('hex'),anchors,releasePivot:pivot,release};
  console.log(id,file,output.length);
 }
 writeFileSync(`${dir}/manifest.json`,JSON.stringify(manifest,null,2)+'\n');

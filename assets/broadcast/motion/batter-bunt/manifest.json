@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "tile": 384,
+  "columns": 2,
+  "rows": 2,
+  "motion": "bunt",
+  "frames": [
+    "ready",
+    "show-bunt",
+    "contact",
+    "recover"
+  ],
+  "clubs": [
+    {
+      "id": 0,
+      "file": "club-0.webp",
+      "sha256": "96e48e09a4278e73a980148484f87ebf03e756bc4499a1bc332aa209987c984b",
+      "sourceSha256": "7601049958631326ed7c266a953cbbc87c9e340752577d69dc851f45ee21e5ed",
+      "referenceFile": "assets/broadcast/uniforms/club-0.webp",
+      "referenceSha256": "4a12108dc0cd3248e331b1f49a9ceddcd010fddb1f2a443d0151693a86893dd3"
+    },
+    {
+      "id": 1,
+      "file": "club-1.webp",
+      "sha256": "6105322438156e939f478590c95ff81ccbe6b1a47fafb4a2492561b8ca49fd9a",
+      "sourceSha256": "d1db63fa0cd70c5f54e5669dfbdd218ca25e6e5ee637833387dc023ab15eb95d",
+      "referenceFile": "assets/broadcast/uniforms/club-1.webp",
+      "referenceSha256": "2c67a086a38aa3fcaef54aacf11d94be91732be877de4cc4d5b39e7492526c3d"
+    },
+    {
+      "id": 2,
+      "file": "club-2.webp",
+      "sha256": "c1155831c92437fbb1e8a8a1bec16ac92488fb053498720c1cfff97b8b6a8c28",
+      "sourceSha256": "5e52895715bdfc3d3f48f298ed3f0d6b2c63845ce7fa4058b71a214c18bdb134",
+      "referenceFile": "assets/broadcast/uniforms/club-2.webp",
+      "referenceSha256": "cea0bbf5984ca0e34cb9fd7c221f286992c2b6c10cc72f27d5aabc63d4618448"
+    },
+    {
+      "id": 3,
+      "file": "club-3.webp",
+      "sha256": "1fd71663c2875e784f81723a080b670920a456758ef76e7cc36793f153d17258",
+      "sourceSha256": "70fb416f171d87eecc0adf86325450065054f069e0c89cd8b83f87e6cc752536",
+      "referenceFile": "assets/broadcast/uniforms/club-3.webp",
+      "referenceSha256": "5c0d9dafbfacd6280062568635cc589c6040a650950011156a640e9b4fb96f1c"
+    },
+    {
+      "id": 4,
+      "file": "club-4.webp",
+      "sha256": "782b2a938c00f86dba91a3b174214b95a2f0f575769526a877af614b2ebb452a",
+      "sourceSha256": "17c96fc9efe2551123439ac17e09b755532d3b12970cff61d5de1252b36ae0bf",
+      "referenceFile": "assets/broadcast/uniforms/club-4.webp",
+      "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88"
+    },
+    {
+      "id": 5,
+      "file": "club-5.webp",
+      "sha256": "1ca0c2e3a665cce424f00772ca5ad4972c68d6233269bb42da69e14ade94bc1b",
+      "sourceSha256": "b0113695faec2129ab72907259d014937475f085101da121041a5ef21cf6d11e",
+      "referenceFile": "assets/broadcast/uniforms/club-5.webp",
+      "referenceSha256": "2473487a68c9e9b2d73e27db7d96c6a915fbd81959cd01b5fdae022f585efbb0"
+    },
+    {
+      "id": 6,
+      "file": "club-6.webp",
+      "sha256": "b3b02d78985f699edb28122f4fba2c0ba6428b9a98c286eb0abcfd3d456d83d9",
+      "sourceSha256": "2260bf874b53cbe038edaae020ee29eabd4dc8a44ffbf6deefa322a76e8fe3c2",
+      "referenceFile": "assets/broadcast/uniforms/club-6.webp",
+      "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7"
+    },
+    {
+      "id": 7,
+      "file": "club-7.webp",
+      "sha256": "d2f01dfb343c46e56c59da001f0d26a6795da44ceb015445ecba7ee16fadb508",
+      "sourceSha256": "dd8d70bf834054c807853a55fc4e57c6ec09ae34cb6656b9a4aa051f5a43edba",
+      "referenceFile": "assets/broadcast/uniforms/club-7.webp",
+      "referenceSha256": "fd8aec23d462cd321c4992589449f23877f1c43c880c4dcca994d0c46180f08e"
+    },
+    {
+      "id": 8,
+      "file": "club-8.webp",
+      "sha256": "c495f51c8ae7e8de1fef225cee7a57c3a45937e97db31b3942fe65809b8ed4ca",
+      "sourceSha256": "91913460bd0556750217e1143f7859c1d71478afdd83da8853a0dbea1c2f0d07",
+      "referenceFile": "assets/broadcast/uniforms/club-8.webp",
+      "referenceSha256": "067d8f6b8e736939b6747a5fde8884521add588f4be786691023d6ecd86f96d5"
+    },
+    {
+      "id": 9,
+      "file": "club-9.webp",
+      "sha256": "6bfe6a2cbaef4624a661eddbea37e52bdac2878ea5ee609cadbbe8df538ece7b",
+      "sourceSha256": "23eaf2342ff875dc8911abeb60e372e6cee6ade1bdbd2115840aa9625a64e42f",
+      "referenceFile": "assets/broadcast/uniforms/club-9.webp",
+      "referenceSha256": "8033ad90f6b211d269010ab9d727fc8833fe15f9f803f24fc6f5d9aa7589c349"
+    }
+  ]
+}

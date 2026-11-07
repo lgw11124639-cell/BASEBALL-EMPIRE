@@ -1,0 +1,496 @@
+{
+  "version": 2,
+  "tile": 288,
+  "columns": 8,
+  "rows": 16,
+  "framesPerDelivery": 31,
+  "deliveries": 4,
+  "keyFrames": [
+    0,
+    6,
+    12,
+    18,
+    24,
+    30
+  ],
+  "phases": [
+    0,
+    0.16666666666666666,
+    0.3333333333333333,
+    0.5,
+    0.6666666666666666,
+    0.8333333333333334,
+    1,
+    1.1666666666666667,
+    1.3333333333333333,
+    1.5,
+    1.6666666666666667,
+    1.8333333333333333,
+    2,
+    2.1666666666666665,
+    2.3333333333333335,
+    2.5,
+    2.6666666666666665,
+    2.8333333333333335,
+    3,
+    3.0833333333333335,
+    3.1666666666666665,
+    3.25,
+    3.3333333333333335,
+    3.4166666666666665,
+    3.5,
+    3.5833333333333335,
+    3.6666666666666665,
+    3.75,
+    3.8333333333333335,
+    3.9166666666666665,
+    4
+  ],
+  "anchor": [
+    144,
+    270
+  ],
+  "interpolation": "RIFE v4.6; registered whole-body poses; original keys retained; black/white alpha reconstruction",
+  "clubs": [
+    {
+      "id": 0,
+      "file": "club-0.webp",
+      "sha256": "bfe41c4dbf71a62c1a75908bb962f541904e2391e585b46588a385b1f64ccdc2",
+      "sourceSha256": "cca0a1ca4d05cd7e19699d9ca36479cc8649e1ac5b169fa2526ea2047341912d",
+      "referenceFile": "assets/broadcast/uniforms/club-0.webp",
+      "referenceSha256": "4a12108dc0cd3248e331b1f49a9ceddcd010fddb1f2a443d0151693a86893dd3",
+      "release": [
+        [
+          240,
+          47
+        ],
+        [
+          244,
+          68
+        ],
+        [
+          264,
+          94
+        ],
+        [
+          266,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          212,
+          265
+        ],
+        [
+          204,
+          258
+        ],
+        [
+          204,
+          259
+        ],
+        [
+          204,
+          259
+        ]
+      ]
+    },
+    {
+      "id": 1,
+      "file": "club-1.webp",
+      "sha256": "2aacaf3fe2891db6df667e11780d18a6de513e6961bb94fd73429b85ea905bff",
+      "sourceSha256": "9a4fbbf2f0b801fb5220808bcfe0c3d287f950ec81e1b0350882c29d796be090",
+      "referenceFile": "assets/broadcast/uniforms/club-1.webp",
+      "referenceSha256": "2c67a086a38aa3fcaef54aacf11d94be91732be877de4cc4d5b39e7492526c3d",
+      "release": [
+        [
+          232,
+          42
+        ],
+        [
+          243,
+          69
+        ],
+        [
+          264,
+          95
+        ],
+        [
+          265,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          203,
+          259
+        ],
+        [
+          204,
+          258
+        ],
+        [
+          204,
+          259
+        ],
+        [
+          204,
+          259
+        ]
+      ]
+    },
+    {
+      "id": 2,
+      "file": "club-2.webp",
+      "sha256": "762d65fab0e463eb2b5f1c9b202946766a4b2fb469b4ff7a1814705acb3cf038",
+      "sourceSha256": "355a322d38ebf244e3ac6c2bb4a162e6b92b96796a85780022f28e253fc55b3a",
+      "referenceFile": "assets/broadcast/uniforms/club-2.webp",
+      "referenceSha256": "cea0bbf5984ca0e34cb9fd7c221f286992c2b6c10cc72f27d5aabc63d4618448",
+      "release": [
+        [
+          231,
+          41
+        ],
+        [
+          243,
+          68
+        ],
+        [
+          264,
+          94
+        ],
+        [
+          265,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          203,
+          260
+        ],
+        [
+          203,
+          259
+        ],
+        [
+          205,
+          260
+        ],
+        [
+          203,
+          259
+        ]
+      ]
+    },
+    {
+      "id": 3,
+      "file": "club-3.webp",
+      "sha256": "271f707f52881eb5f17efa770e53b68347b84c74213638f8b25466d7cc343886",
+      "sourceSha256": "32ef1a332f87b1268cee879aa22ba28559d20c1ff7fef51e7c00257876fa1d9b",
+      "referenceFile": "assets/broadcast/uniforms/club-3.webp",
+      "referenceSha256": "5c0d9dafbfacd6280062568635cc589c6040a650950011156a640e9b4fb96f1c",
+      "release": [
+        [
+          232,
+          41
+        ],
+        [
+          243,
+          69
+        ],
+        [
+          264,
+          95
+        ],
+        [
+          266,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          258
+        ],
+        [
+          203,
+          259
+        ],
+        [
+          204,
+          260
+        ],
+        [
+          204,
+          259
+        ]
+      ]
+    },
+    {
+      "id": 4,
+      "file": "club-4.webp",
+      "sha256": "8509989e06e74335c840977dcf32bf710c98f7eb6fc00262647adc725a6bd3a4",
+      "sourceSha256": "ae1ce859efe638f45180b2acbc400fd72cf330267da299abfffe9bc4be063157",
+      "referenceFile": "assets/broadcast/uniforms/club-4.webp",
+      "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88",
+      "release": [
+        [
+          237,
+          45
+        ],
+        [
+          242,
+          69
+        ],
+        [
+          263,
+          95
+        ],
+        [
+          265,
+          149
+        ]
+      ],
+      "landing": [
+        [
+          209,
+          262
+        ],
+        [
+          203,
+          259
+        ],
+        [
+          203,
+          259
+        ],
+        [
+          204,
+          260
+        ]
+      ]
+    },
+    {
+      "id": 5,
+      "file": "club-5.webp",
+      "sha256": "cccb9acc80dfbdae0db6dd1153abcd2ea77954aa2aa78c558e46ff00f561c4cd",
+      "sourceSha256": "a6963c7b6d122f09c9e8d9e50493df62954a375c678804ca146c247e6f22589c",
+      "referenceFile": "assets/broadcast/uniforms/club-5.webp",
+      "referenceSha256": "2473487a68c9e9b2d73e27db7d96c6a915fbd81959cd01b5fdae022f585efbb0",
+      "release": [
+        [
+          231,
+          42
+        ],
+        [
+          242,
+          69
+        ],
+        [
+          263,
+          95
+        ],
+        [
+          265,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          202,
+          259
+        ],
+        [
+          203,
+          259
+        ],
+        [
+          202,
+          260
+        ],
+        [
+          204,
+          259
+        ]
+      ]
+    },
+    {
+      "id": 6,
+      "file": "club-6.webp",
+      "sha256": "24aef5df1e5d3d41fca35a8e8c26e8980ea514386136017d9d4d241d71e90330",
+      "sourceSha256": "645651c1c8cc7a4bcfd2469c160f389430e0449efad12d992990fec847939132",
+      "referenceFile": "assets/broadcast/uniforms/club-6.webp",
+      "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7",
+      "release": [
+        [
+          232,
+          41
+        ],
+        [
+          243,
+          69
+        ],
+        [
+          265,
+          94
+        ],
+        [
+          265,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          203,
+          250
+        ],
+        [
+          205,
+          258
+        ],
+        [
+          204,
+          259
+        ],
+        [
+          202,
+          259
+        ]
+      ]
+    },
+    {
+      "id": 7,
+      "file": "club-7.webp",
+      "sha256": "f637dcbfa1882ff65e93473f45d7496eeb4321555b01e1093f02a94a9434b4a5",
+      "sourceSha256": "3dba7a49857e596b5ba8dc0b8efbf77bf2b07b5384a15a235f3200f2c1e23a51",
+      "referenceFile": "assets/broadcast/uniforms/club-7.webp",
+      "referenceSha256": "fd8aec23d462cd321c4992589449f23877f1c43c880c4dcca994d0c46180f08e",
+      "release": [
+        [
+          232,
+          41
+        ],
+        [
+          243,
+          68
+        ],
+        [
+          264,
+          94
+        ],
+        [
+          265,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          203,
+          259
+        ],
+        [
+          203,
+          258
+        ],
+        [
+          203,
+          259
+        ],
+        [
+          204,
+          260
+        ]
+      ]
+    },
+    {
+      "id": 8,
+      "file": "club-8.webp",
+      "sha256": "7af2d8492cb619cc8f8594a5727c610143a90dc4b5188f6cede943f5d6a000db",
+      "sourceSha256": "fd4f8cf311936a46fdad96cd8dcdb794fd5029d110a39707044608acef830631",
+      "referenceFile": "assets/broadcast/uniforms/club-8.webp",
+      "referenceSha256": "067d8f6b8e736939b6747a5fde8884521add588f4be786691023d6ecd86f96d5",
+      "release": [
+        [
+          232,
+          42
+        ],
+        [
+          243,
+          68
+        ],
+        [
+          264,
+          94
+        ],
+        [
+          266,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          202,
+          259
+        ],
+        [
+          203,
+          258
+        ],
+        [
+          204,
+          259
+        ],
+        [
+          204,
+          259
+        ]
+      ]
+    },
+    {
+      "id": 9,
+      "file": "club-9.webp",
+      "sha256": "336656d1fd831adda6aed45b6f192b511840e7b9d40625506b094e37b5c8af20",
+      "sourceSha256": "27bc8d60d75097031517bac5d5935cd0ed1244b577c63c6046e100c5830a5113",
+      "referenceFile": "assets/broadcast/uniforms/club-9.webp",
+      "referenceSha256": "8033ad90f6b211d269010ab9d727fc8833fe15f9f803f24fc6f5d9aa7589c349",
+      "release": [
+        [
+          233,
+          40
+        ],
+        [
+          244,
+          67
+        ],
+        [
+          265,
+          93
+        ],
+        [
+          265,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          258
+        ],
+        [
+          204,
+          257
+        ],
+        [
+          204,
+          258
+        ],
+        [
+          204,
+          259
+        ]
+      ]
+    }
+  ]
+}
