@@ -1,0 +1,381 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": "US",
+  "file": "nation-US.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/nation-US.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666667,
+    1.4806486486486488,
+    1.4266666666666665,
+    1.620828402366864
+  ],
+  "landing": [
+    [
+      144,
+      360
+    ],
+    [
+      159,
+      370
+    ],
+    [
+      246,
+      348
+    ],
+    [
+      163,
+      368
+    ]
+  ],
+  "release": [
+    [
+      261,
+      153
+    ],
+    [
+      209,
+      184
+    ],
+    [
+      331,
+      205
+    ],
+    [
+      268,
+      312
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.1191709844559585,
+    1.125,
+    1.2781065088757397,
+    1.125
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        246,
+        225
+      ],
+      [
+        174,
+        0,
+        274,
+        225
+      ],
+      [
+        376,
+        0,
+        270,
+        225
+      ],
+      [
+        574,
+        0,
+        294,
+        225
+      ],
+      [
+        796,
+        0,
+        279,
+        225
+      ],
+      [
+        1003,
+        0,
+        268,
+        225
+      ],
+      [
+        1199,
+        0,
+        269,
+        225
+      ],
+      [
+        1396,
+        0,
+        237,
+        225
+      ],
+      [
+        1561,
+        0,
+        249,
+        225
+      ],
+      [
+        1738,
+        0,
+        245,
+        225
+      ]
+    ],
+    [
+      [
+        0,
+        201,
+        246,
+        229
+      ],
+      [
+        174,
+        201,
+        273,
+        229
+      ],
+      [
+        375,
+        201,
+        279,
+        229
+      ],
+      [
+        582,
+        201,
+        266,
+        229
+      ],
+      [
+        776,
+        201,
+        292,
+        229
+      ],
+      [
+        996,
+        201,
+        262,
+        229
+      ],
+      [
+        1186,
+        201,
+        265,
+        229
+      ],
+      [
+        1379,
+        201,
+        238,
+        229
+      ],
+      [
+        1545,
+        201,
+        272,
+        229
+      ],
+      [
+        1745,
+        201,
+        238,
+        229
+      ]
+    ],
+    [
+      [
+        0,
+        406,
+        245,
+        213
+      ],
+      [
+        173,
+        406,
+        273,
+        213
+      ],
+      [
+        374,
+        406,
+        277,
+        213
+      ],
+      [
+        579,
+        406,
+        270,
+        213
+      ],
+      [
+        777,
+        406,
+        289,
+        213
+      ],
+      [
+        994,
+        406,
+        265,
+        213
+      ],
+      [
+        1187,
+        406,
+        276,
+        213
+      ],
+      [
+        1391,
+        406,
+        245,
+        213
+      ],
+      [
+        1564,
+        406,
+        252,
+        213
+      ],
+      [
+        1744,
+        406,
+        239,
+        213
+      ]
+    ],
+    [
+      [
+        0,
+        595,
+        245,
+        198
+      ],
+      [
+        173,
+        595,
+        271,
+        198
+      ],
+      [
+        372,
+        595,
+        270,
+        198
+      ],
+      [
+        570,
+        595,
+        275,
+        198
+      ],
+      [
+        773,
+        595,
+        281,
+        198
+      ],
+      [
+        982,
+        595,
+        264,
+        198
+      ],
+      [
+        1174,
+        595,
+        271,
+        198
+      ],
+      [
+        1373,
+        595,
+        263,
+        198
+      ],
+      [
+        1564,
+        595,
+        254,
+        198
+      ],
+      [
+        1746,
+        595,
+        237,
+        198
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-94fd45d5f1d02c0db63d9d92617bbb21f4b8ee95ad5fab6dcd6b02219835e913.png"
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-2dd351ee995cd79b7608997ebadd063fe887b69417e0031be38d005906872cfe.png"
+    },
+    {
+      "row": 0,
+      "frame": 9,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-b148005009161f31d65a4f10c04871c5e731ad2275bd92d13e9b3afee65c62a6.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-42625dd43ca1516540c97fc5ec4cf424ac67f5bce84828cea23398f749f221c0.png"
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-3c195aecee4aa4b00bb47f54a15871ca90e127c4aa47dc1522c3c6d70a464377.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-62acfd6040ce8c4a21eb555263942b4895bc29e9a2f30995733c167acfb5db1b.png"
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-91216636b4cdd8d95610d9023b63edb2d9ddc471b511e3e48f3139e9f3e504b3.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-33624b83d5213c1ba61f95854a7fec727b308678ad5f8b08e863c6becf60dd8c.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-6cd5791af0152a6aba3c012ae67ea01e7aa513c8e094bfd0f3d9cbe49f5554ec.png"
+    }
+  ],
+  "sourceSha256": "fa6ad26ccda811b2c2465ae341ab9fdd555ee17c22140e4913046668e655edcd",
+  "referenceFile": "assets/broadcast/nations/US/ready.webp",
+  "referenceSha256": "6e1bbdc4d94e2f694a2df45ae35a0195881b7f67e32e274834d02616d43e809e",
+  "sha256": "9801708caeb33a26677813b17bb95e00c35adb43d1de642cd3836df3a01c6865"
+}

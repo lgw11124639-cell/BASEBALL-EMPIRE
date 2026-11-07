@@ -239,7 +239,7 @@ test('pitching uses solid complete cuts before the exact release key',async({pag
  const errors=await open(page,'openPitchActor');await page.locator('#be-replay-sound').uncheck();await page.locator('#be-replay-next').click();const frames=new Set();
  for(let i=0;i<20;i++){await page.clock.runFor(50);frames.add(await page.locator('.be-motion-pitcher canvas').getAttribute('data-frame'));}
  expect(frames.size).toBeGreaterThanOrEqual(4);await expect(page.locator('.be-flying-ball')).toHaveCSS('opacity','0');
- await page.clock.runFor(120);const released=await page.locator('.be-motion-pitcher').evaluate(el=>el._actor.inspect());expect(released.frame).toBe(4);expect(released.frameCount).toBe(7);expect(released.released).toBe(true);
+ await page.clock.runFor(120);const released=await page.locator('.be-motion-pitcher').evaluate(el=>el._actor.inspect());expect(released.frame).toBe(6);expect(released.frameCount).toBe(10);expect(released.released).toBe(true);
  expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
 });
 

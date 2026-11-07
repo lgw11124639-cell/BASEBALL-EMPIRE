@@ -1,0 +1,387 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": "CU",
+  "file": "nation-CU.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/nation-CU.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666667,
+    1.4886956521739132,
+    1.4266666666666667,
+    1.7019883040935673
+  ],
+  "landing": [
+    [
+      144,
+      360
+    ],
+    [
+      158,
+      370
+    ],
+    [
+      244,
+      347
+    ],
+    [
+      160,
+      367
+    ]
+  ],
+  "release": [
+    [
+      265,
+      148
+    ],
+    [
+      208,
+      184
+    ],
+    [
+      325,
+      206
+    ],
+    [
+      211,
+      326
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.1428571428571428,
+    1.125,
+    1.255813953488372,
+    1.0588235294117647
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        247,
+        225
+      ],
+      [
+        175,
+        0,
+        273,
+        225
+      ],
+      [
+        376,
+        0,
+        271,
+        225
+      ],
+      [
+        575,
+        0,
+        293,
+        225
+      ],
+      [
+        796,
+        0,
+        279,
+        225
+      ],
+      [
+        1003,
+        0,
+        269,
+        225
+      ],
+      [
+        1200,
+        0,
+        268,
+        225
+      ],
+      [
+        1396,
+        0,
+        238,
+        225
+      ],
+      [
+        1562,
+        0,
+        250,
+        225
+      ],
+      [
+        1740,
+        0,
+        244,
+        225
+      ]
+    ],
+    [
+      [
+        0,
+        201,
+        247,
+        229
+      ],
+      [
+        175,
+        201,
+        272,
+        229
+      ],
+      [
+        375,
+        201,
+        280,
+        229
+      ],
+      [
+        583,
+        201,
+        266,
+        229
+      ],
+      [
+        777,
+        201,
+        291,
+        229
+      ],
+      [
+        996,
+        201,
+        263,
+        229
+      ],
+      [
+        1187,
+        201,
+        264,
+        229
+      ],
+      [
+        1379,
+        201,
+        239,
+        229
+      ],
+      [
+        1546,
+        201,
+        272,
+        229
+      ],
+      [
+        1746,
+        201,
+        238,
+        229
+      ]
+    ],
+    [
+      [
+        0,
+        406,
+        245,
+        212
+      ],
+      [
+        173,
+        406,
+        273,
+        212
+      ],
+      [
+        374,
+        406,
+        278,
+        212
+      ],
+      [
+        580,
+        406,
+        270,
+        212
+      ],
+      [
+        778,
+        406,
+        288,
+        212
+      ],
+      [
+        994,
+        406,
+        266,
+        212
+      ],
+      [
+        1188,
+        406,
+        276,
+        212
+      ],
+      [
+        1392,
+        406,
+        246,
+        212
+      ],
+      [
+        1566,
+        406,
+        252,
+        212
+      ],
+      [
+        1746,
+        406,
+        238,
+        212
+      ]
+    ],
+    [
+      [
+        0,
+        594,
+        245,
+        199
+      ],
+      [
+        173,
+        594,
+        271,
+        199
+      ],
+      [
+        372,
+        594,
+        271,
+        199
+      ],
+      [
+        571,
+        594,
+        274,
+        199
+      ],
+      [
+        773,
+        594,
+        281,
+        199
+      ],
+      [
+        982,
+        594,
+        265,
+        199
+      ],
+      [
+        1175,
+        594,
+        270,
+        199
+      ],
+      [
+        1373,
+        594,
+        264,
+        199
+      ],
+      [
+        1565,
+        594,
+        254,
+        199
+      ],
+      [
+        1747,
+        594,
+        237,
+        199
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-dcabb08c27892ba2bb11f74b0685343bf2aef3ae1f88cc2289c2b5271f325f6e.png"
+    },
+    {
+      "row": 1,
+      "frame": 1,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-1679cd1f4c2a89c0cb47bc6205b9b1d021dca5e2fbbf804bc45e3dcb6f2de6af.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-21afbb26b475117115e31f84d78ea262f33de982a79f9244d740f66cb365a991.png"
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-086f3685c75c8a951167b91a508057b96b746ef2071dad7e7e5330bd769b20c9.png"
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-248e2bc442dc0ace415f669e4433cad91f793516a8d3f70c05a1d5e1a3057a16.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-e7ec7fc93504b8e348dde82327a4823dfce082662dd4b11ced907d87677a851c.png"
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-72c3625d82d5d9137d64a4846ed1333df9eaf7d6c1d38aa25f5ad84b60825f40.png"
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-9ab32d1b6b21e2d340dc044371513519ba80d8a3b1385448a8e1b9ee6fd984af.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-48707684402b847ecc097b6f55b9e55ec58e059336c2021d39327c82e23886bb.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-82830822d8c52b3512effb068cdbdfe38cf413c91f3e51681c2b877af6c07563.png"
+    }
+  ],
+  "sourceSha256": "4a9bcf505d2ac134bac0bfb7351eb9e7ca342dd60619bae06ca55e4e4ecb7490",
+  "referenceFile": "assets/broadcast/nations/CU/ready.webp",
+  "referenceSha256": "1da148262b21c59c45ea6f3a04933916974be7d25e6dae6a4cc728656af63e40",
+  "sha256": "373427e7f3e8d47a2ae7af4c8305db006c2b2855cf4ab55ad194a9dd504d4ecc"
+}

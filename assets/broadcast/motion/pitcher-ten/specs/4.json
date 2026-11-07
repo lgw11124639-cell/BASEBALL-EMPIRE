@@ -1,0 +1,375 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": 4,
+  "file": "club-4.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/club-4.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666665,
+    1.4266666666666665,
+    1.4266666666666667,
+    1.7120000000000002
+  ],
+  "landing": [
+    [
+      153,
+      361
+    ],
+    [
+      144,
+      360
+    ],
+    [
+      244,
+      349
+    ],
+    [
+      161,
+      367
+    ]
+  ],
+  "release": [
+    [
+      271,
+      151
+    ],
+    [
+      194,
+      167
+    ],
+    [
+      325,
+      208
+    ],
+    [
+      211,
+      326
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.130890052356021,
+    1.1612903225806452,
+    1.255813953488372,
+    1.0588235294117647
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        246,
+        225
+      ],
+      [
+        174,
+        0,
+        274,
+        225
+      ],
+      [
+        376,
+        0,
+        271,
+        225
+      ],
+      [
+        575,
+        0,
+        293,
+        225
+      ],
+      [
+        796,
+        0,
+        279,
+        225
+      ],
+      [
+        1003,
+        0,
+        268,
+        225
+      ],
+      [
+        1199,
+        0,
+        268,
+        225
+      ],
+      [
+        1395,
+        0,
+        238,
+        225
+      ],
+      [
+        1561,
+        0,
+        250,
+        225
+      ],
+      [
+        1739,
+        0,
+        244,
+        225
+      ]
+    ],
+    [
+      [
+        0,
+        201,
+        246,
+        228
+      ],
+      [
+        174,
+        201,
+        273,
+        228
+      ],
+      [
+        375,
+        201,
+        279,
+        228
+      ],
+      [
+        582,
+        201,
+        267,
+        228
+      ],
+      [
+        777,
+        201,
+        291,
+        228
+      ],
+      [
+        996,
+        201,
+        262,
+        228
+      ],
+      [
+        1186,
+        201,
+        265,
+        228
+      ],
+      [
+        1379,
+        201,
+        238,
+        228
+      ],
+      [
+        1545,
+        201,
+        272,
+        228
+      ],
+      [
+        1745,
+        201,
+        238,
+        228
+      ]
+    ],
+    [
+      [
+        0,
+        405,
+        245,
+        213
+      ],
+      [
+        173,
+        405,
+        273,
+        213
+      ],
+      [
+        374,
+        405,
+        277,
+        213
+      ],
+      [
+        579,
+        405,
+        271,
+        213
+      ],
+      [
+        778,
+        405,
+        288,
+        213
+      ],
+      [
+        994,
+        405,
+        265,
+        213
+      ],
+      [
+        1187,
+        405,
+        275,
+        213
+      ],
+      [
+        1390,
+        405,
+        247,
+        213
+      ],
+      [
+        1565,
+        405,
+        252,
+        213
+      ],
+      [
+        1745,
+        405,
+        238,
+        213
+      ]
+    ],
+    [
+      [
+        0,
+        594,
+        245,
+        199
+      ],
+      [
+        173,
+        594,
+        271,
+        199
+      ],
+      [
+        372,
+        594,
+        270,
+        199
+      ],
+      [
+        570,
+        594,
+        276,
+        199
+      ],
+      [
+        774,
+        594,
+        280,
+        199
+      ],
+      [
+        982,
+        594,
+        264,
+        199
+      ],
+      [
+        1174,
+        594,
+        270,
+        199
+      ],
+      [
+        1372,
+        594,
+        264,
+        199
+      ],
+      [
+        1564,
+        594,
+        255,
+        199
+      ],
+      [
+        1747,
+        594,
+        236,
+        199
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-6f5dc7c087c57f5160c3acf25512b956fa4f409087dab1f077dc39e1a571b646.png"
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-f59463e5d46d5529bf88c8a073c3780bca4217e3697ff58c29d7db5cf61caa90.png"
+    },
+    {
+      "row": 0,
+      "frame": 9,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-23b24f39a9e07f3d2714c3e61740646cd17210167d83131283e234375354547b.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-25f0d2bbc2f6f1b456866344cf667f99fa0125acceaa5166eae7c183a4da2492.png"
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-624a967d741f7dde5717e34ae9d476d88f2b8c8be8c1c756b0a21ad56d980ec7.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-f67744bdb4bb3719906a2e8e03cfce2f21b6c994c47863ce5a54b44491335ca9.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-373fd2511e9fd7245f1c10528396501b618df4c23a15c4a7976fb0c9c9c86b78.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-c5edac20d18f4f257fff1a833b12cf841f9d1ccfbf6dc3cd9a2233bbefc04c67.png"
+    }
+  ],
+  "sourceSha256": "5fff986a8ff9e1a61c419e8247d1cb5b2c1ae59b01ec9dd8c474db8ec5d48d04",
+  "referenceFile": "assets/broadcast/uniforms/club-4.webp",
+  "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88",
+  "sha256": "422651bfa1a4dae21f44ecb9b4822e645fedf38667196e10a7d339a83a6144a6"
+}

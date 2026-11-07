@@ -1,0 +1,387 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": "TW",
+  "file": "nation-TW.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/nation-TW.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666667,
+    1.4266666666666667,
+    1.4266666666666665,
+    1.4266666666666667
+  ],
+  "landing": [
+    [
+      144,
+      360
+    ],
+    [
+      144,
+      360
+    ],
+    [
+      248,
+      348
+    ],
+    [
+      144,
+      360
+    ]
+  ],
+  "release": [
+    [
+      262,
+      149
+    ],
+    [
+      192,
+      166
+    ],
+    [
+      331,
+      205
+    ],
+    [
+      264,
+      298
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.1428571428571428,
+    1.1675675675675676,
+    1.2781065088757397,
+    1.2705882352941176
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        246,
+        224
+      ],
+      [
+        174,
+        0,
+        274,
+        224
+      ],
+      [
+        376,
+        0,
+        271,
+        224
+      ],
+      [
+        575,
+        0,
+        293,
+        224
+      ],
+      [
+        796,
+        0,
+        279,
+        224
+      ],
+      [
+        1003,
+        0,
+        268,
+        224
+      ],
+      [
+        1199,
+        0,
+        268,
+        224
+      ],
+      [
+        1395,
+        0,
+        239,
+        224
+      ],
+      [
+        1562,
+        0,
+        250,
+        224
+      ],
+      [
+        1740,
+        0,
+        244,
+        224
+      ]
+    ],
+    [
+      [
+        0,
+        200,
+        247,
+        229
+      ],
+      [
+        175,
+        200,
+        272,
+        229
+      ],
+      [
+        375,
+        200,
+        280,
+        229
+      ],
+      [
+        583,
+        200,
+        265,
+        229
+      ],
+      [
+        776,
+        200,
+        292,
+        229
+      ],
+      [
+        996,
+        200,
+        263,
+        229
+      ],
+      [
+        1187,
+        200,
+        264,
+        229
+      ],
+      [
+        1379,
+        200,
+        239,
+        229
+      ],
+      [
+        1546,
+        200,
+        271,
+        229
+      ],
+      [
+        1745,
+        200,
+        239,
+        229
+      ]
+    ],
+    [
+      [
+        0,
+        405,
+        245,
+        213
+      ],
+      [
+        173,
+        405,
+        273,
+        213
+      ],
+      [
+        374,
+        405,
+        278,
+        213
+      ],
+      [
+        580,
+        405,
+        270,
+        213
+      ],
+      [
+        778,
+        405,
+        288,
+        213
+      ],
+      [
+        994,
+        405,
+        266,
+        213
+      ],
+      [
+        1188,
+        405,
+        276,
+        213
+      ],
+      [
+        1392,
+        405,
+        246,
+        213
+      ],
+      [
+        1566,
+        405,
+        252,
+        213
+      ],
+      [
+        1746,
+        405,
+        238,
+        213
+      ]
+    ],
+    [
+      [
+        0,
+        594,
+        245,
+        199
+      ],
+      [
+        173,
+        594,
+        271,
+        199
+      ],
+      [
+        372,
+        594,
+        271,
+        199
+      ],
+      [
+        571,
+        594,
+        275,
+        199
+      ],
+      [
+        774,
+        594,
+        280,
+        199
+      ],
+      [
+        982,
+        594,
+        264,
+        199
+      ],
+      [
+        1174,
+        594,
+        272,
+        199
+      ],
+      [
+        1374,
+        594,
+        263,
+        199
+      ],
+      [
+        1565,
+        594,
+        254,
+        199
+      ],
+      [
+        1747,
+        594,
+        237,
+        199
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-497b6c523451c9f0139adc576826df91d7b9255442597c50e7ff3cfb112ef0d0.png"
+    },
+    {
+      "row": 0,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-9e11356c02be958629f9e6437acf1be6777065ddfd8b40e2fa204a763d2b01c2.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-ef7f2d3bcc308cc7d3677c13ecc879e0ca7d6abfe088998b81cacd1c51b9991e.png"
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-45a4218ad0f494c32e29e2f1a010c1928904468d79eda3a605badf1a9b9c5c60.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-f736f6f3fc35dda576e954438cc25aedc99db9734af96b2f9be3416f9f97bc93.png"
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-89b8b0f61f8ca484e258801190fdf77652fec2db44632b9d5b30466f1b401dc4.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-027554a8aedc9926b83d318bca0af8e9a2a73af0c0139d55cae0e121e33c7990.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-3cd45bbc1879f64bbe9998832accb8ecf381d4381a1a32e62c270266d50b0735.png"
+    },
+    {
+      "row": 3,
+      "frame": 4,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-43ca0dd6f7d3506ed7868ed6b0e69424a8ad1210f44f01d8ca01431ad611ba50.png"
+    },
+    {
+      "row": 3,
+      "frame": 5,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-e139e8a2ccd2d8eb3a13b982eebbba805f819a8128682fcd0c1554f0f37fd00b.png"
+    }
+  ],
+  "sourceSha256": "637eca04644774ba50a11491059845ede3330636e28e7f724be00c172972cef8",
+  "referenceFile": "assets/broadcast/nations/TW/ready.webp",
+  "referenceSha256": "5579d814fff1d62777c946a412e4d37fb8fd4984b68a89b5a16773cebbef3ba2",
+  "sha256": "cadc69001ca2cae45c5b5801edde283441a44f63f6d696fb0e04f111a798f90f"
+}

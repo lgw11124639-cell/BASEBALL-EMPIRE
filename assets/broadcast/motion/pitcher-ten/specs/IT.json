@@ -1,0 +1,375 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": "IT",
+  "file": "nation-IT.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/nation-IT.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666667,
+    1.4266666666666667,
+    1.4266666666666665,
+    1.7019883040935673
+  ],
+  "landing": [
+    [
+      144,
+      360
+    ],
+    [
+      144,
+      360
+    ],
+    [
+      249,
+      348
+    ],
+    [
+      161,
+      368
+    ]
+  ],
+  "release": [
+    [
+      267,
+      148
+    ],
+    [
+      195,
+      166
+    ],
+    [
+      333,
+      205
+    ],
+    [
+      261,
+      315
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.1428571428571428,
+    1.1675675675675676,
+    1.2781065088757397,
+    1.0588235294117647
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        246,
+        224
+      ],
+      [
+        174,
+        0,
+        274,
+        224
+      ],
+      [
+        376,
+        0,
+        270,
+        224
+      ],
+      [
+        574,
+        0,
+        294,
+        224
+      ],
+      [
+        796,
+        0,
+        279,
+        224
+      ],
+      [
+        1003,
+        0,
+        268,
+        224
+      ],
+      [
+        1199,
+        0,
+        269,
+        224
+      ],
+      [
+        1396,
+        0,
+        237,
+        224
+      ],
+      [
+        1561,
+        0,
+        250,
+        224
+      ],
+      [
+        1739,
+        0,
+        244,
+        224
+      ]
+    ],
+    [
+      [
+        0,
+        200,
+        246,
+        230
+      ],
+      [
+        174,
+        200,
+        273,
+        230
+      ],
+      [
+        375,
+        200,
+        279,
+        230
+      ],
+      [
+        582,
+        200,
+        266,
+        230
+      ],
+      [
+        776,
+        200,
+        292,
+        230
+      ],
+      [
+        996,
+        200,
+        262,
+        230
+      ],
+      [
+        1186,
+        200,
+        265,
+        230
+      ],
+      [
+        1379,
+        200,
+        238,
+        230
+      ],
+      [
+        1545,
+        200,
+        272,
+        230
+      ],
+      [
+        1745,
+        200,
+        238,
+        230
+      ]
+    ],
+    [
+      [
+        0,
+        406,
+        245,
+        212
+      ],
+      [
+        173,
+        406,
+        273,
+        212
+      ],
+      [
+        374,
+        406,
+        277,
+        212
+      ],
+      [
+        579,
+        406,
+        270,
+        212
+      ],
+      [
+        777,
+        406,
+        289,
+        212
+      ],
+      [
+        994,
+        406,
+        266,
+        212
+      ],
+      [
+        1188,
+        406,
+        275,
+        212
+      ],
+      [
+        1391,
+        406,
+        246,
+        212
+      ],
+      [
+        1565,
+        406,
+        252,
+        212
+      ],
+      [
+        1745,
+        406,
+        238,
+        212
+      ]
+    ],
+    [
+      [
+        0,
+        594,
+        245,
+        199
+      ],
+      [
+        173,
+        594,
+        272,
+        199
+      ],
+      [
+        373,
+        594,
+        269,
+        199
+      ],
+      [
+        570,
+        594,
+        275,
+        199
+      ],
+      [
+        773,
+        594,
+        281,
+        199
+      ],
+      [
+        982,
+        594,
+        264,
+        199
+      ],
+      [
+        1174,
+        594,
+        271,
+        199
+      ],
+      [
+        1373,
+        594,
+        263,
+        199
+      ],
+      [
+        1564,
+        594,
+        254,
+        199
+      ],
+      [
+        1746,
+        594,
+        237,
+        199
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-37ece8b5e25f9aeaccba0fe6e4a46644bbf649f95045e47d5ec8703081097188.png"
+    },
+    {
+      "row": 0,
+      "frame": 9,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-40554f1929afd5fa345acb15aad4e13b914da97e9a14a196a25a651bcc0f6a43.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-29722085315257470a54395f78b084346e288853273a9e4d8c0c0457abd04369.png"
+    },
+    {
+      "row": 1,
+      "frame": 8,
+      "reason": "incomplete-pose",
+      "cachedAlpha": "matte-95a85bfc2575c1c00259fe5bbbbbbade45debc9c5b18790fe8f17f20efecf0a8.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-ee63b84c25020b8d9fa45cc246f0e037c3930138f2010ed6681eaf1032c1b5f7.png"
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-32ffad9ab2b64b24ffeb0bb869aae3c8aa02896a83f7f8012d9c9bc399322c6b.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-66ea82a82488669be42cc3e1a91155bd993265a05b8ddf20b2f4434e9372c34a.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-51b33a3c0d0e269d6fe57bba4e1759395d49434f7cb84ebb18262e87b3db3d34.png"
+    }
+  ],
+  "sourceSha256": "736e220bed613ff68285c797736a165787a8396078ab948374ac6573f04fb24d",
+  "referenceFile": "assets/broadcast/nations/IT/ready.webp",
+  "referenceSha256": "3bc44760ceb7a830d1c27bfb28f938f5ae5e918876a44ac1711992a52aa58f7a",
+  "sha256": "86fabc19be8a81ce5058b26e5a3172fd0746530f40e96b97be269cf4e77ec4d6"
+}

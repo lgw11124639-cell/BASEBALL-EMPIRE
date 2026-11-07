@@ -1,0 +1,381 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": "AU",
+  "file": "nation-AU.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/nation-AU.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666667,
+    1.4266666666666665,
+    1.4266666666666667,
+    1.9134117647058826
+  ],
+  "landing": [
+    [
+      144,
+      360
+    ],
+    [
+      144,
+      360
+    ],
+    [
+      245,
+      349
+    ],
+    [
+      160,
+      368
+    ]
+  ],
+  "release": [
+    [
+      261,
+      153
+    ],
+    [
+      196,
+      166
+    ],
+    [
+      329,
+      208
+    ],
+    [
+      205,
+      332
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.1191709844559585,
+    1.173913043478261,
+    1.263157894736842,
+    0.9473684210526315
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        246,
+        225
+      ],
+      [
+        174,
+        0,
+        274,
+        225
+      ],
+      [
+        376,
+        0,
+        274,
+        225
+      ],
+      [
+        578,
+        0,
+        290,
+        225
+      ],
+      [
+        796,
+        0,
+        279,
+        225
+      ],
+      [
+        1003,
+        0,
+        268,
+        225
+      ],
+      [
+        1199,
+        0,
+        269,
+        225
+      ],
+      [
+        1396,
+        0,
+        237,
+        225
+      ],
+      [
+        1561,
+        0,
+        250,
+        225
+      ],
+      [
+        1739,
+        0,
+        244,
+        225
+      ]
+    ],
+    [
+      [
+        0,
+        201,
+        246,
+        228
+      ],
+      [
+        174,
+        201,
+        273,
+        228
+      ],
+      [
+        375,
+        201,
+        279,
+        228
+      ],
+      [
+        582,
+        201,
+        266,
+        228
+      ],
+      [
+        776,
+        201,
+        292,
+        228
+      ],
+      [
+        996,
+        201,
+        262,
+        228
+      ],
+      [
+        1186,
+        201,
+        265,
+        228
+      ],
+      [
+        1379,
+        201,
+        238,
+        228
+      ],
+      [
+        1545,
+        201,
+        272,
+        228
+      ],
+      [
+        1745,
+        201,
+        238,
+        228
+      ]
+    ],
+    [
+      [
+        0,
+        405,
+        245,
+        214
+      ],
+      [
+        173,
+        405,
+        273,
+        214
+      ],
+      [
+        374,
+        405,
+        277,
+        214
+      ],
+      [
+        579,
+        405,
+        270,
+        214
+      ],
+      [
+        777,
+        405,
+        289,
+        214
+      ],
+      [
+        994,
+        405,
+        265,
+        214
+      ],
+      [
+        1187,
+        405,
+        276,
+        214
+      ],
+      [
+        1391,
+        405,
+        245,
+        214
+      ],
+      [
+        1564,
+        405,
+        252,
+        214
+      ],
+      [
+        1744,
+        405,
+        239,
+        214
+      ]
+    ],
+    [
+      [
+        0,
+        595,
+        245,
+        198
+      ],
+      [
+        173,
+        595,
+        271,
+        198
+      ],
+      [
+        372,
+        595,
+        270,
+        198
+      ],
+      [
+        570,
+        595,
+        275,
+        198
+      ],
+      [
+        773,
+        595,
+        281,
+        198
+      ],
+      [
+        982,
+        595,
+        264,
+        198
+      ],
+      [
+        1174,
+        595,
+        271,
+        198
+      ],
+      [
+        1373,
+        595,
+        263,
+        198
+      ],
+      [
+        1564,
+        595,
+        253,
+        198
+      ],
+      [
+        1745,
+        595,
+        238,
+        198
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-663a16ef3f6657a36d2999c3264186a5b1dd1e47368ba385699e4ecc9ddc9aab.png"
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-78afde60ffdfce618f03db2ac377e48b2016affd09e51fb47deb75ecb4c37a48.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-84d90b028c13fb125de84a80722f96440fce636b8016e4329c863c1e076d1c03.png"
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-aab4882b94de19ff6a5c8c32dc2de1d0e02650326c6fb507c564f8a08bbe3ab5.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-1ffb384bb30edd64e771f9fbe2d88c9012ee612001aa86083d63a4f26487c5f6.png"
+    },
+    {
+      "row": 3,
+      "frame": 0,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-a24bd67341479ff7e4f87500d8eb2001b9951ca22e1c277acce933b3630105a1.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-b7b4bea4bff3c5153db4055acc2c2426048e6e34a9b8ce3ebae1fa7a5f2c12cb.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-4fce65102924d290d6631959daccfc905b0341392fd41606d8bf3eb45aa59f89.png"
+    },
+    {
+      "row": 3,
+      "frame": 4,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-1d7032ccf8d72add912daf3772d9fa4c0abee520bb436c15e082bcf4648cdec6.png"
+    }
+  ],
+  "sourceSha256": "b657d9572dde7a49a3369b89903729c0959d22f7cba467d6ceffd091417245a8",
+  "referenceFile": "assets/broadcast/nations/AU/ready.webp",
+  "referenceSha256": "717ad69a159ca91a9dab7370f37f3c2aecbf35d43f40ce18f2267051d62701e1",
+  "sha256": "e50480ad7de9948556a03e25fa34835a71eef367d7aa38835908875129e30559"
+}

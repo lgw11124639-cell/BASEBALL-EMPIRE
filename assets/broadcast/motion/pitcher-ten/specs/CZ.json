@@ -1,0 +1,381 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": "CZ",
+  "file": "nation-CZ.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/nation-CZ.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666667,
+    1.4266666666666667,
+    1.4266666666666667,
+    1.611294117647059
+  ],
+  "landing": [
+    [
+      144,
+      360
+    ],
+    [
+      144,
+      360
+    ],
+    [
+      244,
+      348
+    ],
+    [
+      161,
+      368
+    ]
+  ],
+  "release": [
+    [
+      265,
+      148
+    ],
+    [
+      194,
+      170
+    ],
+    [
+      327,
+      208
+    ],
+    [
+      267,
+      313
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.1368421052631579,
+    1.1428571428571428,
+    1.2485549132947977,
+    1.125
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        246,
+        224
+      ],
+      [
+        174,
+        0,
+        274,
+        224
+      ],
+      [
+        376,
+        0,
+        271,
+        224
+      ],
+      [
+        575,
+        0,
+        293,
+        224
+      ],
+      [
+        796,
+        0,
+        279,
+        224
+      ],
+      [
+        1003,
+        0,
+        269,
+        224
+      ],
+      [
+        1200,
+        0,
+        269,
+        224
+      ],
+      [
+        1397,
+        0,
+        237,
+        224
+      ],
+      [
+        1562,
+        0,
+        250,
+        224
+      ],
+      [
+        1740,
+        0,
+        244,
+        224
+      ]
+    ],
+    [
+      [
+        0,
+        200,
+        247,
+        229
+      ],
+      [
+        175,
+        200,
+        272,
+        229
+      ],
+      [
+        375,
+        200,
+        280,
+        229
+      ],
+      [
+        583,
+        200,
+        265,
+        229
+      ],
+      [
+        776,
+        200,
+        293,
+        229
+      ],
+      [
+        997,
+        200,
+        262,
+        229
+      ],
+      [
+        1187,
+        200,
+        264,
+        229
+      ],
+      [
+        1379,
+        200,
+        240,
+        229
+      ],
+      [
+        1547,
+        200,
+        271,
+        229
+      ],
+      [
+        1746,
+        200,
+        238,
+        229
+      ]
+    ],
+    [
+      [
+        0,
+        405,
+        245,
+        213
+      ],
+      [
+        173,
+        405,
+        273,
+        213
+      ],
+      [
+        374,
+        405,
+        278,
+        213
+      ],
+      [
+        580,
+        405,
+        270,
+        213
+      ],
+      [
+        778,
+        405,
+        288,
+        213
+      ],
+      [
+        994,
+        405,
+        266,
+        213
+      ],
+      [
+        1188,
+        405,
+        276,
+        213
+      ],
+      [
+        1392,
+        405,
+        246,
+        213
+      ],
+      [
+        1566,
+        405,
+        252,
+        213
+      ],
+      [
+        1746,
+        405,
+        238,
+        213
+      ]
+    ],
+    [
+      [
+        0,
+        594,
+        245,
+        199
+      ],
+      [
+        173,
+        594,
+        271,
+        199
+      ],
+      [
+        372,
+        594,
+        271,
+        199
+      ],
+      [
+        571,
+        594,
+        274,
+        199
+      ],
+      [
+        773,
+        594,
+        281,
+        199
+      ],
+      [
+        982,
+        594,
+        264,
+        199
+      ],
+      [
+        1174,
+        594,
+        271,
+        199
+      ],
+      [
+        1373,
+        594,
+        264,
+        199
+      ],
+      [
+        1565,
+        594,
+        254,
+        199
+      ],
+      [
+        1747,
+        594,
+        237,
+        199
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-0f916553fb4565eae371515d45e8c8b1b153ee3a6ddea46388d2feed63bde145.png"
+    },
+    {
+      "row": 1,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-210bd891d7efa56a35a76aab1674f4c5a0b7c9f03e681543c171d5d46975c168.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-2e6e9f0e0cd3acfdaa080ad148d62c28a1ec4079ada2ba99754683d9ac5e2ee4.png"
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-2c48200d92304a8a54c8c3b385a010ab8fe5339e58bfb76904b5960ba0df9e51.png"
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-4c5f2c8ca6a8d32b3638690cfaf0e45cb9936baf26d63419d2026e3675ece375.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-83b667710bd921d1b62edb4c96493a5bdb7126256b9d72a51cc28cfbbbb2a465.png"
+    },
+    {
+      "row": 2,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-9a4996ba884ebc93c4fa27af77e4ad583a720fa03ad04c18cd6690d6f0dbc2a5.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-d99aa27f41b4011c514be2ec95fad859d886aff7d54d74bbbc5bfe2d1f3881e1.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-ed8a838c2e90ad259c96c6754d9fb07ad736057eac59dd82aed5ed46b5a5cc08.png"
+    }
+  ],
+  "sourceSha256": "e3cde976d2a3f53b7e75f4380bfbd7ad0f5e68c45e2af49f6b108a02351fc6b8",
+  "referenceFile": "assets/broadcast/nations/CZ/ready.webp",
+  "referenceSha256": "86c3699c2989b4b58fdc1c84dce1b2ec5c31be8950f3ab77fc1bf36d2295e818",
+  "sha256": "a19ca75a81b9942398b0c9983bdd532b84dc172c9bf0c7c68a8b877bccf19737"
+}

@@ -1,0 +1,393 @@
+{
+  "packVersion": 6,
+  "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
+  "id": "KR",
+  "file": "nation-KR.webp",
+  "path": "assets/broadcast/motion/pitcher-ten/nation-KR.webp",
+  "authored": true,
+  "tile": 384,
+  "framesPerDelivery": 10,
+  "releaseFrame": 6,
+  "anchor": [
+    144,
+    360
+  ],
+  "renderScale": 1.1,
+  "renderScaleY": 1.4266666666666667,
+  "renderScaleYByDelivery": [
+    1.4266666666666665,
+    1.4266666666666665,
+    1.4266666666666667,
+    1.5195266272189352
+  ],
+  "landing": [
+    [
+      144,
+      360
+    ],
+    [
+      144,
+      360
+    ],
+    [
+      246,
+      347
+    ],
+    [
+      161,
+      367
+    ]
+  ],
+  "release": [
+    [
+      262,
+      150
+    ],
+    [
+      198,
+      165
+    ],
+    [
+      329,
+      208
+    ],
+    [
+      274,
+      307
+    ]
+  ],
+  "motionScale": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "sourceScales": [
+    1.130890052356021,
+    1.173913043478261,
+    1.255813953488372,
+    1.2
+  ],
+  "cellBounds": [
+    [
+      [
+        0,
+        0,
+        246,
+        224
+      ],
+      [
+        174,
+        0,
+        274,
+        224
+      ],
+      [
+        376,
+        0,
+        270,
+        224
+      ],
+      [
+        574,
+        0,
+        294,
+        224
+      ],
+      [
+        796,
+        0,
+        279,
+        224
+      ],
+      [
+        1003,
+        0,
+        268,
+        224
+      ],
+      [
+        1199,
+        0,
+        269,
+        224
+      ],
+      [
+        1396,
+        0,
+        237,
+        224
+      ],
+      [
+        1561,
+        0,
+        250,
+        224
+      ],
+      [
+        1739,
+        0,
+        244,
+        224
+      ]
+    ],
+    [
+      [
+        0,
+        200,
+        246,
+        230
+      ],
+      [
+        174,
+        200,
+        273,
+        230
+      ],
+      [
+        375,
+        200,
+        279,
+        230
+      ],
+      [
+        582,
+        200,
+        266,
+        230
+      ],
+      [
+        776,
+        200,
+        292,
+        230
+      ],
+      [
+        996,
+        200,
+        262,
+        230
+      ],
+      [
+        1186,
+        200,
+        265,
+        230
+      ],
+      [
+        1379,
+        200,
+        238,
+        230
+      ],
+      [
+        1545,
+        200,
+        272,
+        230
+      ],
+      [
+        1745,
+        200,
+        238,
+        230
+      ]
+    ],
+    [
+      [
+        0,
+        406,
+        245,
+        212
+      ],
+      [
+        173,
+        406,
+        273,
+        212
+      ],
+      [
+        374,
+        406,
+        277,
+        212
+      ],
+      [
+        579,
+        406,
+        270,
+        212
+      ],
+      [
+        777,
+        406,
+        289,
+        212
+      ],
+      [
+        994,
+        406,
+        265,
+        212
+      ],
+      [
+        1187,
+        406,
+        276,
+        212
+      ],
+      [
+        1391,
+        406,
+        246,
+        212
+      ],
+      [
+        1565,
+        406,
+        251,
+        212
+      ],
+      [
+        1744,
+        406,
+        239,
+        212
+      ]
+    ],
+    [
+      [
+        0,
+        594,
+        245,
+        199
+      ],
+      [
+        173,
+        594,
+        271,
+        199
+      ],
+      [
+        372,
+        594,
+        270,
+        199
+      ],
+      [
+        570,
+        594,
+        275,
+        199
+      ],
+      [
+        773,
+        594,
+        281,
+        199
+      ],
+      [
+        982,
+        594,
+        264,
+        199
+      ],
+      [
+        1174,
+        594,
+        271,
+        199
+      ],
+      [
+        1373,
+        594,
+        263,
+        199
+      ],
+      [
+        1564,
+        594,
+        254,
+        199
+      ],
+      [
+        1746,
+        594,
+        237,
+        199
+      ]
+    ]
+  ],
+  "alphaRefinements": [
+    {
+      "row": 0,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-37e9cc21fe8b66cc6e0f55e2b3a93f4337fd99ed82a861cf1d23a121c728934d.png"
+    },
+    {
+      "row": 0,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-08350dae02ec05a4d92303697895987535ad50bfbfd4773b4cb537ab0019fb8c.png"
+    },
+    {
+      "row": 0,
+      "frame": 9,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-78b543fed59152c76ac517a3e99881e8fa9a826e429e8fa9f7a843b1cd289707.png"
+    },
+    {
+      "row": 1,
+      "frame": 1,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-ba30d5d79e7cffccecdc43d63e3e45478e51d16e3993fc5c33f62748f7825c6a.png"
+    },
+    {
+      "row": 1,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-5f07bd42afc338aa582f3e7c80ca7b4ad875456940da9ff9acd5e2d44df1bee1.png"
+    },
+    {
+      "row": 1,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-580e72c333f45b879514863ffe1b78a4660fc7d821eb8fbc6cff1d8531757f9e.png"
+    },
+    {
+      "row": 2,
+      "frame": 0,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-93e393e0ac007baed471f11484fd8bcb23c490d63f86c7f0eab68d76cebca8ad.png"
+    },
+    {
+      "row": 2,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-dfcc192427b065462339763ed8c946e266e695f8b0f45a40ae58bdb5c50f2cc6.png"
+    },
+    {
+      "row": 3,
+      "frame": 2,
+      "reason": "peak-lift",
+      "cachedAlpha": "matte-691adb4b1f3d9e6690440c64ee5ee4043b1d2d6d1fbd38b5a3c674154bfcfba0.png"
+    },
+    {
+      "row": 3,
+      "frame": 3,
+      "reason": "incomplete-early-pose",
+      "cachedAlpha": "matte-aae226685e616d7f2f6f3d8092541b9111364373f8a245f073fdf9c9c70f6455.png"
+    },
+    {
+      "row": 3,
+      "frame": 5,
+      "reason": "incomplete-shoe",
+      "cachedAlpha": "matte-88cc65ed2ae6365bd75031b2f93cedd54afee483bc35372fa25303984b5acd49.png"
+    }
+  ],
+  "sourceSha256": "a6c7ec3a88d098240af25c2348b5def348153ddca9433a6594677df85ac98183",
+  "referenceFile": "assets/broadcast/nations/KR/ready.webp",
+  "referenceSha256": "d67b14831450e2937fb6f93d36341ee8a9adb84711b480aaa1cc71caf79ae64f",
+  "sha256": "6c57b0e3259ec38365dc77fbe671348d314efd7e251017bbdafa5dd25cfbe539"
+}

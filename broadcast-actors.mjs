@@ -1,17 +1,17 @@
-import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-zone-labels77';
+import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-allforms80';
 export {kits};
 const atlases = new Map();
 export async function uniformAtlas(id, motion = "swing") {
   id = normalizeUniformKey(id);
   const key = motion + ":" + id;
   if(!atlases.has(key)) atlases.set(key,(async()=>{
-    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-zone-labels77";
+    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-allforms80";
     const image=new Image();image.src=url;await image.decode();return url;
   })());
   return atlases.get(key);
 }
 // Whole rendered poses from the user's selected sheet. No mesh, joint posing or body-part cuts.
-export const PITCH_SHEET = "assets/broadcast/motion/pitcher-complete.png";
+export const PITCH_SHEET = "assets/broadcast/motion/pitcher-ten/reference.webp";
 export const FRAME_ANCHORS = [
   [
     [156, 247],
@@ -52,17 +52,17 @@ export const RELEASE_PIXELS = [
   [216, 76],
   [217, 131],
 ];
-export const PITCH_FRAME_PHASES=[0,.45,1,2,3,3.5,4];
-export const PITCH_KEY_FRAMES=[0,1,2,3,4,5,6];
-export function pitchFrame(phase){const p=Math.max(0,Math.min(4,Number(phase)||0));return p<.35?0:p<.85?1:p<1.7?2:p<3?3:p<3.35?4:p<3.8?5:6;}
-export const PITCH_UNIFORM_MANIFEST="assets/broadcast/motion/pitcher-solid/manifest.json";
+export const PITCH_FRAME_PHASES=[0,.35,1,1.35,1.85,2.5,3,3.25,3.65,4];
+export const PITCH_KEY_FRAMES=[0,1,2,3,4,5,6,7,8,9];
+export function pitchFrame(phase){const p=Math.max(0,Math.min(4,Number(phase)||0));let frame=0;for(let i=1;i<PITCH_FRAME_PHASES.length;i++){if(p<(PITCH_FRAME_PHASES[i-1]+PITCH_FRAME_PHASES[i])/2)break;frame=i;}return frame;}
+export const PITCH_UNIFORM_MANIFEST="assets/broadcast/motion/pitcher-ten/manifest.json";
 export function framePlacement(frame,row,hand="right",bat="right",spec){
- const x=hand==="left"?156:125,y=452,ratio=frame===0?1:(spec?.motionScale?.[row]??1),scale=1.2*Math.pow(ratio,1.5),anchor=[144,270],landing=spec?.landing?.[row]||[204,254],scaleY=1.2*Math.sqrt(ratio)*1.07;
- return {x:x-anchor[0]*scale,y:y-anchor[1]*scaleY,scale,scaleY,pivot:[x,y],anchor,planted:frame<4?[x,y]:[x+(landing[0]-144)*scale,y+(landing[1]-270)*scaleY],mirror:hand==="left"};
+ const x=hand==="left"?156:160,y=452,anchor=spec?.anchor||[144,360],landing=spec?.landing?.[row]||[248,342],scale=1.1,scaleY=spec?.renderScaleYByDelivery?.[row]??spec?.renderScaleY??4/3*1.07,releaseFrame=spec?.releaseFrame??6;
+ return {x:x-anchor[0]*scale,y:y-anchor[1]*scaleY,scale,scaleY,pivot:[x,y],anchor,planted:frame<releaseFrame?[x,y]:[x+(landing[0]-anchor[0])*scale,y+(landing[1]-anchor[1])*scaleY],mirror:hand==="left"};
 }
 let uniformManifestPromise, uniformManifestData;
 async function uniformManifest() {
-  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-zone-labels77")
+  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-allforms80")
     .then(response=>{if(!response.ok)throw Error("Pitcher uniforms unavailable");return response.json();}).then(data=>{uniformManifestData=data;return data;});
   return uniformManifestPromise;
 }
@@ -76,20 +76,20 @@ async function preparedKit(id) {
     const manifest=await uniformManifest();
     entry.spec=specFor(id);
     entry.lastUsed=performance.now();
-    const source=new Image();source.src=entry.spec.path+"?v=20261107-zone-labels77";
+    const source=new Image();source.src=entry.spec.path+"?v=20261107-allforms80";
     await source.decode();
     const readerCanvas=document.createElement("canvas");readerCanvas.width=source.naturalWidth;readerCanvas.height=source.naturalHeight;
     const reader=readerCanvas.getContext("2d",{willReadFrequently:true});reader.drawImage(source,0,0);
     const images=[];
-    // Decode each complete pose separately: avoids cropped-atlas corruption on iOS Safari.
+    // Keep complete decoded pixel tiles: no cropped-atlas drawing or duplicate PNG decoders on iOS.
     for(let index=0;index<manifest.framesPerDelivery*4;index++){
       const tile=document.createElement("canvas");tile.width=tile.height=manifest.tile;
       tile.getContext("2d").putImageData(reader.getImageData(index%manifest.columns*manifest.tile,Math.floor(index/manifest.columns)*manifest.tile,manifest.tile,manifest.tile),0,0);
-      const image=new Image();image.src=tile.toDataURL("image/png");images.push(image);
+      images.push(tile);
     }
-    await Promise.all(images.map(image=>image.decode()));entry.frames=images;
+    entry.frames=images;
     readerCanvas.width=readerCanvas.height=1;
-    for(const [oldId,old]of [...pitchKits].sort((a,b)=>(a[1].lastUsed||0)-(b[1].lastUsed||0))){if(pitchKits.size<=3)break;if(oldId!==id&&old.frames)pitchKits.delete(oldId);}
+    for(const [oldId,old]of [...pitchKits].sort((a,b)=>(a[1].lastUsed||0)-(b[1].lastUsed||0))){if(pitchKits.size<=2)break;if(oldId!==id&&old.frames)pitchKits.delete(oldId);}
     return images;
   })();
   pitchKits.set(id,entry);
@@ -129,12 +129,17 @@ export async function createPitcher(canvas, initialKit = 0) {
       paint.translate(720, 0);
       paint.scale(-1, 1);
     }
+    // Match the rubber already present in each diagonal mound photograph.
+    // The right-hander sets the support foot on its first-base edge.
+    const rubberX=hand==="left"?156:125,rubberY=p.pivot[1];
+    paint.fillStyle='rgba(49,31,20,.28)';paint.beginPath();paint.moveTo(rubberX-49,rubberY+2);paint.lineTo(rubberX+49,rubberY+2);paint.lineTo(rubberX+47,rubberY+9);paint.lineTo(rubberX-50,rubberY+9);paint.closePath();paint.fill();
+    paint.fillStyle='#eee8d8';paint.beginPath();paint.moveTo(rubberX-48,rubberY-2);paint.lineTo(rubberX+48,rubberY-2);paint.lineTo(rubberX+46,rubberY+5);paint.lineTo(rubberX-49,rubberY+5);paint.closePath();paint.fill();
     paint.drawImage(
-      images[row * 7 + frame],
+      images[row * spec.framesPerDelivery + frame],
       p.x,
       p.y,
-      288 * p.scale,
-      288 * p.scaleY,
+      spec.tile * p.scale,
+      spec.tile * p.scaleY,
     );
     paint.restore();
     // Replace every output pixel, including transparent pixels, in one operation.
@@ -170,7 +175,7 @@ export async function createPitcher(canvas, initialKit = 0) {
       }
     },
     pose(value, delivery = 0, throwHand = "right", ballReleased = false) {
-      const next = pitchFrame(value),
+      const next = ballReleased?pitchFrame(value):Math.min(5,pitchFrame(value)),
         changed =
           next !== frame ||
           delivery !== row ||
@@ -185,7 +190,7 @@ export async function createPitcher(canvas, initialKit = 0) {
     },
     releasePoint(delivery, throwHand) {
       // Reflect pixel centers, not edges, so a left-hander still releases from the same skin pixel.
-      const p = framePlacement(4, delivery, throwHand, bat, spec),
+      const p = framePlacement(spec.releaseFrame, delivery, throwHand, bat, spec),
         point = spec?.release[delivery] || RELEASE_PIXELS[delivery],
         x = p.x + (point[0] + .5) * p.scale;
       return [throwHand === "left" ? 720 - x : x, p.y + (point[1] + .5) * p.scaleY];
@@ -195,9 +200,12 @@ export async function createPitcher(canvas, initialKit = 0) {
       return {
         renderer: "complete-frame-sequence",
         source: spec.path,
-        frameCount:7,
+        frameCount:spec.framesPerDelivery,
         solidFramesOnly:true,
         atomicFrameReplace:true,
+        fixedRubber:true,
+        rubberPivot:p.pivot,
+        rubberCenter:[hand==="left"?564:125,p.pivot[1]],
         keyFrame:PITCH_KEY_FRAMES.indexOf(frame),
         reference: PITCH_SHEET,
         uniformBaked: true,

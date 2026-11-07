@@ -1,0 +1,13 @@
+import{createPitcher,PITCH_FRAME_PHASES}from'./broadcast-actors.mjs?v=20261107-allforms80';
+import{NATIONAL_COLORS}from'./broadcast-uniforms.mjs?v=20261107-allforms80';
+const clubs=['서울 로열스','부산 마리너스','인천 웨이브스','대구 타이탄즈','광주 피닉스','대전 이글스','수원 나이츠','창원 스톰','울산 샤크스','청주 블레이즈'],styles=['오버핸드','쓰리쿼터','사이드암','언더핸드'],kit=document.querySelector('#kit'),hand=document.querySelector('#hand'),play=document.querySelector('#play'),seek=document.querySelector('#seek'),output=document.querySelector('#step'),status=document.querySelector('#status'),durations=[650,180,260,200,200,150,100,180,220,400];
+kit.innerHTML='<optgroup label="클럽">'+clubs.map((name,i)=>`<option value="${i}">${name}</option>`).join('')+'</optgroup><optgroup label="국가대표">'+Object.keys(NATIONAL_COLORS).map(key=>`<option value="${key}">${key} 국가대표</option>`).join('')+'</optgroup>';
+document.querySelector('.forms').innerHTML=styles.map((s,i)=>`<article><h2>${s}</h2><div class="scene" data-hand="right"><canvas data-row="${i}" aria-label="${s} 투구 동작"></canvas></div></article>`).join('');
+let actors=[],playing=false,start=0,token=0;const cycle=durations.reduce((a,b)=>a+b,0),labels=['준비','다리 들기','최고점','다리 내리기 · 손 분리','스트라이드','착지 · 코킹','릴리스','초기 팔로스루','감속','균형 회복'];
+function pose(index){seek.value=index;output.textContent=`${index+1} / 10`;status.textContent=labels[index];actors.forEach((a,row)=>a.pose(PITCH_FRAME_PHASES[index],row,hand.value,index>=6));}
+function pause(){playing=false;play.textContent='▶ 재생';}
+function tick(now){if(!playing)return;let elapsed=(now-start)%cycle,index=0;while(index<9&&elapsed>=durations[index]){elapsed-=durations[index];index++;}pose(index);requestAnimationFrame(tick);}
+play.onclick=()=>{if(playing){pause();return;}playing=true;play.textContent='❚❚ 일시정지';start=performance.now()-durations.slice(0,Number(seek.value)).reduce((a,b)=>a+b,0);requestAnimationFrame(tick);};
+seek.oninput=()=>{pause();pose(Number(seek.value));};hand.onchange=()=>{document.querySelectorAll('.scene').forEach(s=>s.dataset.hand=hand.value);pose(Number(seek.value));};
+kit.onchange=async()=>{pause();const current=++token;play.disabled=true;status.textContent='유니폼을 불러오는 중…';try{await Promise.all(actors.map(a=>a.setKit(kit.value)));if(current!==token)return;pose(Number(seek.value));play.disabled=false;}catch(error){status.textContent='유니폼을 불러오지 못했습니다.';console.error(error);}};
+try{actors=await Promise.all([...document.querySelectorAll('canvas')].map(c=>createPitcher(c,0)));actors.forEach(a=>a.resize(720,520));window.beUniformReview={actors,pose,pause};pose(0);play.disabled=false;}catch(error){status.textContent='투구폼을 불러오지 못했습니다.';console.error(error);}
