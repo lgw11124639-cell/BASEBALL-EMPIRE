@@ -1,0 +1,13 @@
+# 120-frame motion review
+
+broadcast-smooth.html samples the approved sixty-cut native-alpha pitcher over two seconds at a60fps target. It provides120 distinct display states and a60-cut comparison mode. It does not claim120 independently image-generated source poses. The source atlas and all three original native-transparent boards remain byte-identical, with hashes in pitcher-smooth/manifest.json.
+
+OpenCV DIS calculates59 forward/backward displacement pairs offline at384px, packed into118 opaque96x96 RGB data tiles. The fragment shader decodes bilinear vector data, inverts the displacement three times and samples one nearest original pose. Two silhouettes are never blended. Planted-foot regions are locked while both endpoints share a pivot/landing sole. Every render clears the entire transparent buffer before a scissored draw, so no previous pose survives. No source background extraction, source recoloring, regenerated anatomy or new mannequin model is used.
+
+Rendering preserves torso width and translates the upper body rigidly above a continuous waist boundary while lengthening the leg region6%, with a4% whole-body camera scale. This targets the visual impression of a188cm athlete; it is not a physical height measurement from a photograph. The final forward right-foot step is compressed modestly below the waist while the planted left-foot location stays fixed. The right-handed pivot starts at screen x96 on the left end of the existing rubber; the complete mirrored left-handed view starts atx593 on its opposite end. The glove, cap, skin and uniform come from the approved cut artwork.
+
+The deeper mound-to-home background was newly generated as one continuous scene with smaller distant catcher/umpire and an18.44m spatial brief. The model is not marched toward the catcher to simulate depth. The source generation identifier/hash is recorded; the previous scene and60-cut page remain available for comparison. This is a review page, separate from live game outcomes and wardrobes.
+
+Chromium and WebKit validate all120 distinct decoded states, transparent corners, planted-sole pixels, deterministic replacement after the final frame, mirrored geometry, playback/pause/seek/end and60-cut comparison. Packaging checks verify exact source, field and page bytes. Actual presentation rate follows the display/browser; the UI labels60fps as a target.
+
+Rebuild motion data with the C++ OpenCV helper, then run scripts/prepare-pitcher-smooth.py for metadata and the generated stadium background. OpenCV/SciPy/Pillow are offline build dependencies and are not distributed to players.

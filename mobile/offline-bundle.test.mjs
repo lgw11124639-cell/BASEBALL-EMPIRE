@@ -41,3 +41,8 @@ test('native-transparent sixty-cut review ships its exact source boards and play
  for(const file of ['broadcast-sixty.html','broadcast-sixty-player.mjs',path+'manifest.json',m.path,...m.sources.map(s=>path+s.file)])assert.deepEqual(readFileSync(new URL('../'+file,import.meta.url)),readFileSync(new URL('../dist-mobile/'+file,import.meta.url)));
  for(const s of m.sources)assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path+s.file,import.meta.url))).digest('hex'),s.sha256);
 });
+test('smooth motion review preserves approved sources and ships motion data without a new body model',()=>{
+ const root='assets/broadcast/motion/pitcher-smooth/',m=JSON.parse(read(root+'manifest.json'));assert.equal(m.frames,120);assert.equal(m.sourceFrames,60);assert.equal(m.crossfade,false);assert.equal(m.backgroundRemoval,false);assert.equal(m.rubberEdgeStart,true);assert.equal(m.heightTargetCm,188);assert.equal(m.heightTargetIsVisual,true);assert.equal(m.hipY.length,60);
+ for(const [path,sha]of[[m.sourceManifest,m.sourceManifestSha256],[m.sourceAtlas,m.sourceAtlasSha256],[m.flow,m.flowSha256]])assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path,import.meta.url))).digest('hex'),sha);
+ for(const file of ['broadcast-smooth.html','broadcast-smooth-player.mjs',root+'manifest.json',m.flow,m.background])assert.deepEqual(readFileSync(new URL('../'+file,import.meta.url)),readFileSync(new URL('../dist-mobile/'+file,import.meta.url)));
+});
