@@ -20890,6 +20890,16 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay #be-replay-speed{appearance:none!important;-webkit-appearance:none!important;box-sizing:border-box!important;width:64px!important;min-width:64px!important;height:34px!important;min-height:34px!important;padding:0 22px 0 8px!important}
 #be-replay-overlay .be-stadium{scroll-margin-block:8px}
 
-/* Camera choice follows screen side, independently of anatomical throwing hand. */
-#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=right] .be-stadium-strike-slot{left:30%!important;top:55%!important}
-#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=left] .be-stadium-strike-slot{left:68%!important;top:49%!important}
+/* Original authored right-hander pitches from foreground left toward the plate on right. */
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=right] .be-stadium-strike-slot{left:66.7%!important;top:43%!important;width:15%;height:18.461538%}
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=left] .be-stadium-strike-slot{left:26%!important;top:48%!important;width:15%;height:18.461538%}
+#be-replay-overlay .be-motion-pitcher canvas{transition:none!important;animation:none!important;opacity:1!important}
+/* The count panel ends above the foreground pitcher's head. */
+#be-replay-overlay .be-stadium-hud{transform:scale(calc(var(--be-scene-scale,.5) * .85))!important;top:calc(8px * var(--be-scene-scale,.5))!important}
+/* Every batter pose uses the same measured batting-box ground plane. */
+#be-replay-overlay .be-stadium[data-batter-registered=true] .be-batter-render{inset:0!important;width:100%!important;height:100%!important;filter:none!important}
+#be-replay-overlay .be-stadium[data-batter-registered=true] .be-batter-render>img{display:none!important}
+#be-replay-overlay .be-stadium[data-batter-registered=true] .be-motion-batter{display:block!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important}
+#be-replay-overlay .be-motion-batter>canvas{display:block;width:100%;height:100%;transition:none!important;opacity:1!important}
+/* Five-character averages fit the smaller strike-zone cells. */
+#be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid>span{font-size:calc(12px * var(--be-scene-scale,.5))!important;letter-spacing:-.025em}

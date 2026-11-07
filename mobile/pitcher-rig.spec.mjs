@@ -136,12 +136,12 @@ for (const hand of ["우투", "좌투"])
           expect(result.frame).toBe(2);
           expect(result.frameCount).toBe(7);
           expect(result.aspect).toBeCloseTo(18 / 13, 2);
-          expect(result.zone[1]).toBeCloseTo(0.20, 2);
-          expect(result.zone[0]).toBeCloseTo(hand === "우투" ? 0.20 : 0.58, 2);
+          expect(result.zone[1]).toBeCloseTo(0.15, 2);
+          expect(result.zone[0]).toBeCloseTo(hand === "우투" ? 0.592 : 0.185, 2);
           const x = result.registration.mirror
             ? 720 - result.registration.pivot[0]
             : result.registration.pivot[0];
-          expect(x).toBe(hand === "좌투" ? 156 : 564);
+          expect(x).toBe(hand === "좌투" ? 564 : 125);
           expect(result.registration.mirror).toBe(hand === "좌투");
           await page.locator(".be-stadium").evaluate(el=>el.scrollIntoView({block:"center"}));
           await page.clock.runFor(30);
@@ -187,8 +187,8 @@ test('all baked club uniforms keep complete bodies outside the strike zone in ev
       await actor.setKit(id);sources.push(actor.inspect().source);
       for(const hand of ['right','left'])for(let row=0;row<4;row++)for(let frame=0;frame<7;frame++){
         actor.pose(phases[frame],row,hand,frame>=3);
-        const ctx=canvas.getContext('2d'),x=hand==='right'?144:418,y=hand==='right'?222:191;
-        const zone=ctx.getImageData(x*2,y*2,144*2,128*2).data;
+        const ctx=canvas.getContext('2d'),x=hand==='right'?426:133,y=hand==='right'?223:249;
+        const zone=ctx.getImageData(x*2,y*2,108*2,96*2).data;
         let opaque=0;for(let i=3;i<zone.length;i+=4)if(zone[i]>32)opaque++;
         if(opaque)violations.push({id,hand,row,frame,opaque});
         if(frame===4){const [rx,ry]=actor.releasePoint(row,hand),handPixel=ctx.getImageData(Math.round(rx*2),Math.round(ry*2),1,1).data;if(handPixel[3]<80)violations.push({id,hand,row,frame,releaseOffBody:true});}
@@ -205,4 +205,36 @@ test('all baked club uniforms keep complete bodies outside the strike zone in ev
   expect(result.violations).toEqual([]);expect(new Set(result.sources).size).toBe(10);
   const {writeFileSync}=await import('node:fs');writeFileSync('test-results/pitcher-uniforms.png',Buffer.from(result.preview.split(',')[1],'base64'));
   expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
+});
+
+test('pose changes replace transparent pixels and never retain a prior pose',async({page})=>{
+ await open(page,'우투','우타');
+ const result=await page.evaluate(()=>{
+  const actor=document.querySelector('.be-motion-pitcher')._actor,canvas=document.querySelector('.be-motion-pitcher canvas'),ctx=canvas.getContext('2d');
+  actor.pose(3.5,0,'right',true);const expected=ctx.getImageData(0,0,1440,1040).data;
+  actor.pose(0,0,'right',false);ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='red';ctx.fillRect(0,0,16,16);
+  actor.pose(3.5,0,'right',true);const corner=ctx.getImageData(0,0,16,16).data;
+  const actual=ctx.getImageData(0,0,1440,1040).data;let difference=0;for(let i=0;i<actual.length;i++)difference=Math.max(difference,Math.abs(actual[i]-expected[i]));return{same:difference<=2,alpha:[...corner].filter((_,i)=>i%4===3).reduce((a,b)=>a+b,0),atomic:actor.inspect().atomicFrameReplace};
+ });
+ expect(result).toEqual({same:true,alpha:0,atomic:true});await page.evaluate(()=>beCloseGameReplay());
+});
+
+test('batter shoes stay inside both batting boxes through swing and bunt poses',async({page})=>{
+ await open(page,'우투','우타');
+ const issues=await page.evaluate(async()=>{
+  const actor=document.querySelector('.be-motion-batter')._actor,canvas=document.querySelector('.be-motion-batter canvas'),ctx=canvas.getContext('2d'),issues=[];
+  const manifest=await(await fetch('assets/broadcast/motion/pitcher-solid/manifest.json')).json();
+  for(const kit of[...manifest.clubs.map(s=>s.id),...Object.keys(manifest.nations)])for(const motion of['swing','bunt']){
+   await actor.setKit(kit,motion);
+   for(const mirror of[false,true])for(const[min,max,feet]of[[78,158,348],[224,292,348],[364,436,322],[524,604,322]]){actor.layout({min,max,feet,height:216,mirror});let expectedScale;
+    for(let n=0;n<4;n++){
+     actor.pose(n);const scale=actor.inspect().scale;if(expectedScale!=null&&scale!==expectedScale)issues.push({kit,motion,n,scaleChanged:true});expectedScale=scale;const registered=[Number(canvas.dataset.footMin),Number(canvas.dataset.footMax)];
+     if(registered[0]<min+3||registered[1]>max-3)issues.push({kit,motion,n,registered,min,max});
+     const pixels=ctx.getImageData(0,(feet-20)*2,1440,42).data;let actualMin=1440,actualMax=0;
+     for(let y=0;y<42;y++)for(let x=0;x<1440;x++){const at=(y*1440+x)*4;if(pixels[at+3]>180&&Math.max(pixels[at],pixels[at+1],pixels[at+2])<150){actualMin=Math.min(actualMin,x);actualMax=Math.max(actualMax,x);}}
+     if(actualMin<min*2-2||actualMax>max*2+2)issues.push({kit,motion,n,mirror,min,max,actualMin:actualMin/2,actualMax:actualMax/2});
+    }
+   }
+  }return issues;
+ });expect(issues).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
 });
