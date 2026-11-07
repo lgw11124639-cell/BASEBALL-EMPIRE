@@ -1,21 +1,11 @@
-export const kits = [
-  ["#eee8da", "#eee8da", "#1b3763"],
-  ["#087e80", "#eee9db", "#07474d"],
-  ["#66a9d8", "#e9e9eb", "#183e65"],
-  ["#a24d40", "#e4e3e4", "#67332d"],
-  ["#eee8d5", "#eee9df", "#a85c18"],
-  ["#563778", "#ece6d8", "#3b2458"],
-  ["#9ca8b2", "#dce0e2", "#293b49"],
-  ["#1a5947", "#e9e5d6", "#174b3e"],
-  ["#ecebea", "#e2e5e7", "#17648f"],
-  ["#1c2428", "#e4e6e7", "#19232b"],
-];
+import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-solid-uniform69';
+export {kits};
 const atlases = new Map();
 export async function uniformAtlas(id, motion = "swing") {
-  id = kits[id] ? id : 0;
+  id = normalizeUniformKey(id);
   const key = motion + ":" + id;
   if(!atlases.has(key)) atlases.set(key,(async()=>{
-    const url="assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp?v=20261107-uniform-motion68";
+    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-solid-uniform69";
     const image=new Image();image.src=url;await image.decode();return url;
   })());
   return atlases.get(key);
@@ -62,35 +52,31 @@ export const RELEASE_PIXELS = [
   [216, 76],
   [217, 131],
 ];
-export const PITCH_FRAME_PHASES = Array.from({length:31},(_,i)=>i<=18?i/6:3+(i-18)/12);
-export const PITCH_KEY_FRAMES = [0,6,12,18,24,30];
-export function pitchFrame(phase) {
-  const value=Math.max(0,Math.min(4,Number(phase)||0));
-  return Math.min(30,Math.floor(value<=3?value*6:18+(value-3)*12+1e-7));
-}
-export const PITCH_UNIFORM_MANIFEST = "assets/broadcast/motion/pitcher-motion/manifest.json";
-export function framePlacement(frame, row, hand = "right", bat = "right", spec) {
-  const x=hand==="left"?156:125,y=452,scale=1.2,anchor=[144,270];
-  const landing=spec?.landing?.[row]||[201,259];
-  return {x:x-anchor[0]*scale,y:y-anchor[1]*scale,scale,pivot:[x,y],anchor,
-    planted:frame<=18?[x,y]:[x+(landing[0]-144)*scale,y+(landing[1]-270)*scale],mirror:hand==="left"};
+export const PITCH_FRAME_PHASES=[0,.45,1,2,3,3.5,4];
+export const PITCH_KEY_FRAMES=[0,1,2,3,4,5,6];
+export function pitchFrame(phase){const p=Math.max(0,Math.min(4,Number(phase)||0));return p<.35?0:p<.85?1:p<1.7?2:p<3?3:p<3.35?4:p<3.8?5:6;}
+export const PITCH_UNIFORM_MANIFEST="assets/broadcast/motion/pitcher-solid/manifest.json";
+export function framePlacement(frame,row,hand="right",bat="right",spec){
+ const x=hand==="left"?156:125,y=452,scale=1.2,anchor=[144,270],landing=spec?.landing?.[row]||[204,254];
+ return {x:x-anchor[0]*scale,y:y-anchor[1]*scale,scale,pivot:[x,y],anchor,planted:frame<4?[x,y]:[x+(landing[0]-144)*scale,y+(landing[1]-270)*scale],mirror:hand==="left"};
 }
 let uniformManifestPromise, uniformManifestData;
 async function uniformManifest() {
-  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-uniform-motion68")
+  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-solid-uniform69")
     .then(response=>{if(!response.ok)throw Error("Pitcher uniforms unavailable");return response.json();}).then(data=>{uniformManifestData=data;return data;});
   return uniformManifestPromise;
 }
+const specFor=id=>typeof id==="string"?uniformManifestData.nations[id]:uniformManifestData.clubs[id];
 const pitchKits = new Map();
 async function preparedKit(id) {
-  id = kits[id] ? id : 0;
+  id = normalizeUniformKey(id);
   if(pitchKits.has(id)){const entry=pitchKits.get(id);entry.lastUsed=performance.now();return entry.promise;}
   const entry={frames:null,spec:null};
   entry.promise=(async()=>{
     const manifest=await uniformManifest();
-    entry.spec=manifest.clubs[id];
+    entry.spec=specFor(id);
     entry.lastUsed=performance.now();
-    const source=new Image();source.src="assets/broadcast/motion/pitcher-motion/"+entry.spec.file+"?v=20261107-uniform-motion68";
+    const source=new Image();source.src=entry.spec.path+"?v=20261107-solid-uniform69";
     await source.decode();
     const readerCanvas=document.createElement("canvas");readerCanvas.width=source.naturalWidth;readerCanvas.height=source.naturalHeight;
     const reader=readerCanvas.getContext("2d",{willReadFrequently:true});reader.drawImage(source,0,0);
@@ -114,8 +100,8 @@ export async function preparePitcherKits(ids) {
   await Promise.all(ids.map(preparedKit));
 }
 export async function createPitcher(canvas, initialKit = 0) {
-  initialKit=kits[initialKit]?initialKit:0;
-  let images = await preparedKit(initialKit), spec=(await uniformManifest()).clubs[initialKit];
+  initialKit=normalizeUniformKey(initialKit);
+  let images = await preparedKit(initialKit), spec=(await uniformManifest(),specFor(initialKit));
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   let width = 720,
     height = 520,
@@ -141,7 +127,7 @@ export async function createPitcher(canvas, initialKit = 0) {
       ctx.scale(-1, 1);
     }
     ctx.drawImage(
-      images[row * 31 + frame],
+      images[row * 7 + frame],
       p.x,
       p.y,
       288 * p.scale,
@@ -166,10 +152,10 @@ export async function createPitcher(canvas, initialKit = 0) {
       }
     },
     async setKit(id) {
-      id = kits[id] ? id : 0;
+      id = normalizeUniformKey(id);
       if (id === kit) return;
       kit = id;
-      const nextSpec=uniformManifestData.clubs[id];
+      const nextSpec=specFor(id);
       const loaded = pitchKits.get(id)?.frames || (await preparedKit(id));
       if (kit === id && !disposed) {
         images = loaded;
@@ -193,7 +179,7 @@ export async function createPitcher(canvas, initialKit = 0) {
     },
     releasePoint(delivery, throwHand) {
       // Reflect pixel centers, not edges, so a left-hander still releases from the same skin pixel.
-      const p = framePlacement(18, delivery, throwHand, bat, spec),
+      const p = framePlacement(4, delivery, throwHand, bat, spec),
         point = spec?.release[delivery] || RELEASE_PIXELS[delivery],
         x = p.x + (point[0] + .5) * p.scale;
       return [throwHand === "left" ? 720 - x : x, p.y + (point[1] + .5) * p.scale];
@@ -202,8 +188,9 @@ export async function createPitcher(canvas, initialKit = 0) {
       const p = framePlacement(frame, row, hand, bat, spec);
       return {
         renderer: "complete-frame-sequence",
-        source: "assets/broadcast/motion/pitcher-motion/club-"+kit+".webp",
-        frameCount:31,
+        source: spec.path,
+        frameCount:7,
+        solidFramesOnly:true,
         keyFrame:PITCH_KEY_FRAMES.indexOf(frame),
         reference: PITCH_SHEET,
         uniformBaked: true,

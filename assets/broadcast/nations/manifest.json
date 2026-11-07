@@ -1,0 +1,425 @@
+{
+  "version": 1,
+  "countries": {
+    "KR": {
+      "code": "KR",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "2ec8729fd46458f04d6eb8a08027c7417c210d1d4efd2cbe9a8d0eef9667ec4c",
+      "swingSha256": "4a7e8c9177a6f0de2285bc134d32d0a7deef5612cbf7e1ce10725d508605fcad",
+      "buntSha256": "f2ba374112b0cb6d8581790b93a6259bb057f9eb089b242452f993f7171938de"
+    },
+    "JP": {
+      "code": "JP",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "fb8c109bf99b913fd18d3f35cebe03804d3abffda0b425120d5a859771f5c7a5",
+      "swingSha256": "ae35cd12824499999fc766d5d25b4f4d41202eab2a219e59bf9c495aecc0f009",
+      "buntSha256": "03141a2329fa5fee0feffc8fe71bbfea608a3a794c2cc0a09d92d09e82b51fd5"
+    },
+    "TW": {
+      "code": "TW",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "26f8a64b8cc7158eae4b66e278b989b7b24e4adf7f72a93824ef30f6fb04d561",
+      "swingSha256": "a48844eafd1920f096f5b9609ae0b3ecd571f0c93377e753600fd9ff09d7b3d4",
+      "buntSha256": "b503f5c1f0b91a857754b4c57eae574332839c2c4369880785a2c7112297aa82"
+    },
+    "CN": {
+      "code": "CN",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "784178cb6395eb7183566340d4a86f8ba20a7c42d4a5251f38b66bd5b80c3715",
+      "swingSha256": "f5319cbaa9450b1ae59e266c9bf1ec426b54739bb3ce57a4766282ee77af0b34",
+      "buntSha256": "bf07fd23d9b053b70290ec47d9ab086e9cbd3a56cfff87191067f0c0d0393e1a"
+    },
+    "AU": {
+      "code": "AU",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "2c328ada98fe4a722fc405a59b69ce5932c2549cd3595438d720541001307cd2",
+      "swingSha256": "cb2607330df3b8593eac26d6acd9de8dbb4dd627cc88167e87990a812dd061f1",
+      "buntSha256": "14a1ce4a32636418b8d6599862c6035bd5f51cfd8761b534d703737e6f47d88a"
+    },
+    "US": {
+      "code": "US",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "b83cf7ab996b519bed396e84d84659393dab7206d9f6eacca524737da5f566e3",
+      "swingSha256": "8ba419b039ce329b6d725e6ef99a175e46bcc2ef6e2a63689a416d830107a8e5",
+      "buntSha256": "acad55084d977a23657ec31cc81dd91715b79455886c2a3d4c3b72436996ab5a"
+    },
+    "DO": {
+      "code": "DO",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "9f3534ca3179123ba2545a4cb5bd7b053f43100909bc5ba8d270d0517fa69f18",
+      "swingSha256": "941f73243854e8eb8965b37ff45a8e81b63301fe5442295ac565640b73456366",
+      "buntSha256": "15bdaf541f4317d34f4ad4c5f778ac156e9763e2db6dca4f30e3913041c36f8c"
+    },
+    "VE": {
+      "code": "VE",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "1008600a3eb0a0b2cfabb2cb426120290c92d065d94051d8b1fa7dedb3545c78",
+      "swingSha256": "ab794e08e8cf0db0313ed73d97e9109b599c5999751600ade7d975f1045cab16",
+      "buntSha256": "8cbc71076dde5c2ecaf9faf9b3d2ef99cd74edb0bb02d71022c6159b57f211da"
+    },
+    "PR": {
+      "code": "PR",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "6ed67057b831ddf3e8dd0ad7d7e0670b6afe8b5a4636347a48681bc7f8aa7d23",
+      "swingSha256": "9ba26ea6311b3f0fdb603c2e315da8f6da7921ee5179fdeab9cc534f513c356b",
+      "buntSha256": "a2d093fb30eb039259860d6523024a90ea05d047e8c95297c580ac0404251224"
+    },
+    "CU": {
+      "code": "CU",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "15f3dd69d14c6920ea6669db3b6110bbb76dc3ed40effd63efd12cd5ff43dedd",
+      "swingSha256": "9f4f06b6d36892165dd672e58004243f8e791630710abe53069402650991d836",
+      "buntSha256": "a475b417e2753e84162972fdf7909788b8ac943093713803a0eb634f0d770b16"
+    },
+    "MX": {
+      "code": "MX",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "50bcde3cdcc322aac777ba42db6d7751dbcfff1f719df18a6fcb8f0c3344cbdd",
+      "swingSha256": "33779591119d3165eab962f2c1eb21f26f5bbf5a3530625be5d8f171d220fc7e",
+      "buntSha256": "61e4fd13358b750dbd074afd8a2118339c30906121440fe6b3f85120347b974c"
+    },
+    "CA": {
+      "code": "CA",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "3eae5319bc892199f4085c89fc0d315b644d6f6b91b04891cea716c912336047",
+      "swingSha256": "546fcc8a96307e08aac950828a9790cdf3c774ff9d6be5912a6f818699db61a9",
+      "buntSha256": "5938db44ccea36bb2b92d1193959764ac09428e799c4815e7f2f6131372d2acd"
+    },
+    "PA": {
+      "code": "PA",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "06821d428913152fb035ed25aeb51be35d34090a2071ef547ea01499dd6f56a7",
+      "swingSha256": "89ceaa509ab3475e24da138ffc55b4b89274e9d3403a9f57dc8773d43a621709",
+      "buntSha256": "5dd119364036328c8ae1dafaa846343e9b47974e849fa24fddaf74f44fea57c6"
+    },
+    "CO": {
+      "code": "CO",
+      "authoredSources": {
+        "ready": "9ad824c420683541184fb67abb01e47550cd861154b9b8bf7c6032490c3e6b0d",
+        "swing1": "59ebfa7e2a836278950cadff2169d15bef79733b80aa0c15e2da9ffc3b250cc4",
+        "swing2": "6dec35c37d5add7e64d6509d2c539f5f118d35a80f3626b31800b9b614daa23e",
+        "swing3": "3459fa4d9d3042ca6da344113e68f795866f42d0e5eaa21705edba5be91b944f",
+        "bunt1": "14d48a61193442b2cf373a09fc3bc94fae6513426574ca963ff35acef9929912",
+        "bunt2": "68eb2e27fea03d71738c9856bc758f50fcef7d314c1f1b07a444d493f035bfa7",
+        "bunt3": "54849ffa9f23140648652cab00791f38d0b2b103a5fe0952dcdee3074376750f"
+      },
+      "readySha256": "464a121754c08292f6e51d91ecb8e86b469a55a0c8aac49172836f7ae0a0cb2d",
+      "swingSha256": "8d04110a9b2d3175ac4d658f3361be17d92a62a33e5900e5ca1fa45bb83d3f4c",
+      "buntSha256": "8636805d69d2076791f01c80cf2977b37d720a773c56640671cf1605b8468cb8"
+    },
+    "NI": {
+      "code": "NI",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "35de7d7b3eff06bb1ac4973f79e695c77efb38a9a61f1e5acaa0d5f1f6bb172d",
+      "swingSha256": "d237a76ab32f5b7eb5afea3962c121c68f1c4644ef54a9e9da531ea73767dc8a",
+      "buntSha256": "08decf0e8157083ffe9e2b9be1ac50161110f48647b25c70a03b7f3d9c4037d7"
+    },
+    "IT": {
+      "code": "IT",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "8b52b6e30081f857e1b488894d7e24c3b7213b07623e6a2b3110d5e16a4514e8",
+      "swingSha256": "351c5fb35d6a464bf6b55d3c39992a7f4b2bed3d3667753217cc8881430360c2",
+      "buntSha256": "942e444ff74d663975c6a4b2feb9a7ad175c9dbd480c1a38c5f72b3442e0ae8e"
+    },
+    "NL": {
+      "code": "NL",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "7603a60e9f1a7593cb4612f4cd671cdfdb74d6702392b0e777d628a3630652f2",
+      "swingSha256": "f302d401377d9333703073c0adcf26540f97c638ccb42461fbdadfe759d55e41",
+      "buntSha256": "d7d4b4aadefdaccf76d9617f15ac0e69511a6f4bc105dd7312f07477c93eec25"
+    },
+    "GB": {
+      "code": "GB",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "b304cc69e915c542e3c420234e6f54e8b35b6dba9573e2dc6c6721be0ba035d7",
+      "swingSha256": "6b7f6be533a874ae1cdde5372e564bea655fa66c20f96dd4e5459333731aa120",
+      "buntSha256": "7e7162fb87c4d91adfe602dda9b5bcb4261b8185f32c5ebbb749b2c49d07e27a"
+    },
+    "CZ": {
+      "code": "CZ",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "a6706f38b392c8a2b6e67ca0da2df79bba211dd2bd17422330565ad2ebe716ca",
+      "swingSha256": "1c761ef1d113dc98e7d66a28018009a398b27eae284059b81032b123d467b1bc",
+      "buntSha256": "22aca48945bf1c7e12a21e9df7ba8928a47e9c994c28a166d6d07beb08b31036"
+    },
+    "IL": {
+      "code": "IL",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "ca54d9b2308dd92846ce390ff7e78308db47d690f3488fde8d770c5bad404bdc",
+      "swingSha256": "7fa5c0fa2a92e24b3bd8afd272f336626c0d3cc81be891ca2209c3c76852ac09",
+      "buntSha256": "3ab663c09d09d6afa28d417ab68b938a5aaec64b474c06ae869a2b748f3e1009"
+    },
+    "PH": {
+      "code": "PH",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "8b55d95d27865d5e9a123297386d168d82a2ac065e52bd4a673ca329444a40a3",
+      "swingSha256": "de176cfa93985d037b9d5837b22166c8adc5214b011e5084cf6da7df32c7b8a3",
+      "buntSha256": "5ff3b3dd23dff235471796d5ffd17c3487acd3ffa447bfd5466e2da5931fa957"
+    },
+    "TH": {
+      "code": "TH",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "ffe8a17a5427e1b1e84ce172216010c3df23d63c65089fbbdca70dbef5ec1008",
+      "swingSha256": "f8104b01d5a8f1ca1e6ec6ffcc55b8eccb2b389ebde4a39a5b44ab661e4cd49f",
+      "buntSha256": "31f23e61d057d392dd38a58796c42140d29293526ff803bed4bc91ee0b96343f"
+    },
+    "HK": {
+      "code": "HK",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "93c9ed930c7cf668d0258c73a65b2a4dd8cdebf540825f6034858c1a58346153",
+      "swingSha256": "1211e168380c494dcc2fc867d46ac953f46500104045c1ff9a06c44605b4b55f",
+      "buntSha256": "e8464034def98d305abd52b7d1c83fad835c829354e3ea68e7fe339c0571df16"
+    },
+    "PK": {
+      "code": "PK",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "3fc37f9c4c347b15e973167d030a45606bc33a5856751f37ace0c609193360d4",
+      "swingSha256": "e1c00da5fa08b51d9f80d5fdfa21b7a3981a7cb22eb8b6c55a408346678ac4c8",
+      "buntSha256": "3c73c2fc7d7e2f9b02b288a93948bd407a995cc64375a496e379cb1f9f2919d4"
+    },
+    "IN": {
+      "code": "IN",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "e963572aa5b39d15ace9d8816fe9880fdc7259be0cd4a804aec8bdd0f6fc2d03",
+      "swingSha256": "dbb45dc7f96e03dd6c9aeb2291243c1834a5a3575e0a7b609769c1965c223732",
+      "buntSha256": "1218f77e4cad7308f133bbf24e0e485b78efcdeff92575ff3c633574c18f8a49"
+    },
+    "ID": {
+      "code": "ID",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "06fdd01c433e236bb305c24b373852980361ec4dbfbf9ce047865afd65079787",
+      "swingSha256": "e64ab1f8c0b8b9f58bb894209181935af6273c9d622f5086f913e577aa430bea",
+      "buntSha256": "9af3e7345348ef4d579251a6e2028b482ce97bda57381e204b1faab30024f2a9"
+    },
+    "SG": {
+      "code": "SG",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "5b8b033b406a8a0bdb3a44980909ff57c698030c56f4835ed0132f8ad748a339",
+      "swingSha256": "b134833c3ae020430a0ffce255b9b57b46d29b184c08ffb2dde83c7747ad0826",
+      "buntSha256": "c0e7377955f7b3809d6322e6839548196f812dc500297763a3f7e996fdedbafa"
+    },
+    "INTL": {
+      "code": "INTL",
+      "authoredSources": {
+        "ready": "e94dd038e6958ebec62bd2877da7da97c09f3553a36d53f25c9ed1f3726ea188",
+        "swing1": "1031c30a64a6f76eb33e18689b2f156606ff12c60e724af0f6b8c1bdda3a317d",
+        "swing2": "d59ce0fa392854dd47ce3f1da67d8427d59d9de449883b844c95f1667500cae6",
+        "swing3": "d3dd374ab85af9a2d49c7784892c57c33dcc95d029d77c991bbed9fbfd4c9d80",
+        "bunt1": "232290b3c21477d8a193c3188ff6c6f9e2f7401ce573479f96209b67f20234e7",
+        "bunt2": "23673629f5b44e3f4098e6e5e77d3bb30bc2d973b96f08cf56813aa29578aa99",
+        "bunt3": "a870eab29560eadd613c9ca188cae5b5540cf6ba5cf9e661c876220cec8173f5"
+      },
+      "readySha256": "b18fe3a4b034b3f966ac10dd971fbf70d4b18f4151aa696da7c6fe8745ac6578",
+      "swingSha256": "34759fc805dfbdab802e32ad7e364afe6e039aaf9f0684f8048df7afc25c6792",
+      "buntSha256": "2d705090b87b9bff5c75a645582bd19ed7c9d430ac961cdb89397cec2f177d2e"
+    }
+  }
+}

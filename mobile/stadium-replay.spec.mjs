@@ -15,13 +15,14 @@ window.tripleProfile=()=>beBroadcastBallPath({sprayAngle:-28,launchAngle:18,defe
 window.openFirstOutCover=(angle=32)=>{const b=structuredClone(state.players.find(p=>p.position!=='P')),r=structuredClone(b);b.id=1;r.id=2;b.age=r.age=27;ensureProfile(b).skills.speed=60;ensureProfile(r).skills.speed=60;const ball={ground:true,sprayAngle:angle,launchAngle:2,exitVelocity:95,defenderPosition:'1B'},plan=beGroundOutPlan(b,{plan:{first:[b,r]}},{batters:[],active:{id:12},starter:{id:12}},ball,[{id:2,pitcherId:12},null,null],1,()=>.99);beOpenGameReplay(1,0,{...fixture,awayRuns:0,homeRuns:0,broadcastEvents:[event(1,'away',1,'땅볼 아웃',seq(['인플레이']),1,2,{bases:[2,null,null],afterBases:plan.afterBases.map(p=>p?.id??null),runnerSpeeds:{1:60,2:60},runnerOuts:plan.outs,groundPlay:{version:2,fielder:plan.fielder,pickup:plan.pickup,timing:plan.timing,throwBases:plan.throwBases,receivers:plan.receivers,batterOut:true},battedBall:ball,batterThrowHand:'좌투',batterHand:'우타',pitchHand:'좌투',pitchDelivery:'언더핸드'})]});};
 
 window.openPitchActor=(hand='우투',delivery='오버핸드',batHand='우타',call='인플레이',outcome='홈런',club=0)=>beOpenGameReplay(1,club,{...fixture,away:club,home:(club+1)%10,awayRuns:1,homeRuns:0,awayInnings:[1],homeInnings:[0],broadcastEvents:[event(1,'away',1,outcome,seq([call],[[50,50]]),0,0,{pitchHand:hand,pitchDelivery:delivery,batterHand:batHand,batterThrowHand:'우투',afterBases:[null,null,null],score:1,runs:1,battedBall:{sprayAngle:10,launchAngle:30,defenderPosition:'RF',bunt:/번트/.test(outcome)}})]});
+window.openNationalUniform=(side='away')=>beOpenGameReplay(1,0,{...fixture,opponent:'JP',broadcastEvents:[event(1,side,1,'볼넷',seq(['볼'],[[50,50]]))]},[{name:'일본',city:'',color:'#26334f',countryCode:'JP'},{name:'대한민국',city:'',color:'#285bb3',countryCode:'KR'}]);
 window.openUniformScrimmage=()=>beOpenGameReplay(1,6,{...fixture,scrimmage:true,clubId:6,broadcastEvents:[event(1,'away',1,'볼넷',seq(['볼'],[[50,50]]))]});
 window.openHalfBreak=()=>beOpenGameReplay(1,0,{...fixture,broadcastEvents:[event(1,'away',1,'삼진',seq(['헛스윙 삼진']),2,3),event(1,'home',3,'삼진',seq(['헛스윙 삼진']),2,3),event(2,'away',2,'삼진',seq(['헛스윙 삼진']),0,1)]});
 `;
 async function open(page,action='openStadium',args=[]){
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));
  const source=original.slice(0,original.lastIndexOf('(async()=>{try{app.innerHTML=')).replace(/^import .*;\s*$/gm,'')+setup;
- await page.route('**/app.js',route=>route.fulfill({contentType:'text/javascript',body:source}));await page.goto('/');await page.waitForFunction(action=>typeof window[action]==='function',action);await page.evaluate(({action,args})=>window[action](...args),{action,args});await expect(page.locator('#be-replay-next')).toBeEnabled({timeout:30000});return errors;
+ await page.route(/\/app\.js(?:\?.*)?$/,route=>route.fulfill({contentType:'text/javascript',body:source}));await page.goto(process.env.BE_TEST_ENTRY||'/');await expect.poll(()=>page.evaluate(action=>typeof window[action]==='function',action),{timeout:30000}).toBe(true);await page.evaluate(({action,args})=>window[action](...args),{action,args});await expect(page.locator('#be-replay-next')).toBeEnabled({timeout:30000});return errors;
 }
 async function frame(page){await page.locator('#be-replay-next').click();await page.clock.runFor(10);for(let n=0;n<1000&&await page.locator('.be-stadium').getAttribute('data-flight');n++)await page.clock.runFor(20);if(await page.locator('#be-replay-auto').isEnabled())await page.locator('#be-replay-auto').click();}
 for(const width of [320,390,1080])test('compact replay, transparent zone, records and two actions '+width,async({page})=>{
@@ -222,7 +223,7 @@ test('release begins at the displayed pitching hand after resize and preparation
  const errors=await open(page,'openPitchActor',['좌투','언더핸드','좌타']);await page.locator('#be-replay-sound').uncheck();await page.locator('#be-replay-next').click();await page.clock.runFor(240);await page.locator('#be-replay-auto').click();const stopped=await page.locator('.be-motion-pitcher').evaluate(el=>el.innerHTML);await page.clock.runFor(2000);expect(await page.locator('.be-motion-pitcher').evaluate(el=>el.innerHTML)).toBe(stopped);await page.setViewportSize({width:430,height:844});await page.locator('#be-replay-next').click();await page.clock.runFor(1000);const distance=await page.evaluate(()=>{const d=document.querySelector('#be-pitch-trail path').getAttribute('d'),origin=d.match(/^M([-0-9.]+) ([-0-9.]+)/),actor=document.querySelector('.be-pitcher-render');return Math.hypot(Number(origin[1])-Number(actor.dataset.releaseX),Number(origin[2])-Number(actor.dataset.releaseY));});expect(distance).toBeLessThan(.1);await expect(page.locator('.be-flying-ball')).toHaveCSS('opacity','1');expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
 });
 
-test('whole-frame pitcher freezes and advances to the selected release pose',async({page})=>{const errors=await open(page,'openPitchActor');await page.locator('#be-replay-sound').uncheck();await page.locator('#be-replay-next').click();await page.clock.runFor(550);await page.locator('#be-replay-auto').click();const lift=await page.evaluate(()=>document.querySelector('.be-motion-pitcher')._actor.inspect());expect(lift.frame).toBe(6);expect(lift.wholeFrame).toBe(true);await page.clock.runFor(1000);expect(await page.evaluate(()=>document.querySelector('.be-motion-pitcher')._actor.inspect())).toEqual(lift);await page.locator('#be-replay-next').click();await page.clock.runFor(650);const release=await page.evaluate(()=>document.querySelector('.be-motion-pitcher')._actor.inspect());expect(release.frame).toBeGreaterThanOrEqual(18);expect(release.frame).toBeLessThan(24);expect(release.released).toBe(true);expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());});
+test('whole-frame pitcher freezes and advances to the selected release pose',async({page})=>{const errors=await open(page,'openPitchActor');await page.locator('#be-replay-sound').uncheck();await page.locator('#be-replay-next').click();await page.clock.runFor(550);await page.locator('#be-replay-auto').click();const lift=await page.evaluate(()=>document.querySelector('.be-motion-pitcher')._actor.inspect());expect(lift.frame).toBe(2);expect(lift.wholeFrame).toBe(true);await page.clock.runFor(1000);expect(await page.evaluate(()=>document.querySelector('.be-motion-pitcher')._actor.inspect())).toEqual(lift);await page.locator('#be-replay-next').click();await page.clock.runFor(650);const release=await page.evaluate(()=>document.querySelector('.be-motion-pitcher')._actor.inspect());expect(release.frame).toBeGreaterThanOrEqual(4);expect(release.frame).toBeLessThan(7);expect(release.released).toBe(true);expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());});
 
 for(const call of ['인플레이','파울','볼'])test('bunt shows the bat without a full swing '+call,async({page})=>{
  const errors=await open(page,'openPitchActor',['우투','오버핸드','우타',call,'희생번트']);
@@ -233,11 +234,11 @@ for(const call of ['인플레이','파울','볼'])test('bunt shows the bat witho
  await page.locator('#be-replay-auto').click();await page.locator('.be-stadium').screenshot({path:'test-results/bunt-'+call+'.png'});
  expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
 });
-test('pitching plays intermediate frames before the exact release key',async({page})=>{
+test('pitching uses solid complete cuts before the exact release key',async({page})=>{
  const errors=await open(page,'openPitchActor');await page.locator('#be-replay-sound').uncheck();await page.locator('#be-replay-next').click();const frames=new Set();
  for(let i=0;i<20;i++){await page.clock.runFor(50);frames.add(await page.locator('.be-motion-pitcher canvas').getAttribute('data-frame'));}
- expect(frames.size).toBeGreaterThanOrEqual(12);await expect(page.locator('.be-flying-ball')).toHaveCSS('opacity','0');
- await page.clock.runFor(120);const released=await page.locator('.be-motion-pitcher').evaluate(el=>el._actor.inspect());expect(released.frame).toBe(18);expect(released.frameCount).toBe(31);expect(released.released).toBe(true);
+ expect(frames.size).toBeGreaterThanOrEqual(4);await expect(page.locator('.be-flying-ball')).toHaveCSS('opacity','0');
+ await page.clock.runFor(120);const released=await page.locator('.be-motion-pitcher').evaluate(el=>el._actor.inspect());expect(released.frame).toBe(4);expect(released.frameCount).toBe(7);expect(released.released).toBe(true);
  expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
 });
 
@@ -248,5 +249,15 @@ test('same-club scrimmage preloads and shows one uniform for pitcher and batter'
  await expect(page.locator('.be-batter-render>img')).toHaveAttribute('src',/uniforms\/club-6\.webp/);
  await expect(page.locator('.be-motion-batter')).toHaveAttribute('data-kit','6');
  expect(await page.locator('.be-motion-pitcher').evaluate(el=>el._actor.inspect().kit)).toBe(6);
+ expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
+});
+
+for(const side of ['away','home'])test('national opponents keep their country uniforms for both roles '+side,async({page})=>{
+ const errors=await open(page,'openNationalUniform',[side]),pitcher=side==='away'?'KR':'JP',batter=side==='away'?'JP':'KR';
+ await page.locator('#be-replay-sound').uncheck();await page.locator('#be-replay-next').click();await page.clock.runFor(550);
+ await expect(page.locator('.be-batter-render>img')).toHaveAttribute('src',new RegExp('nations/'+batter+'/ready\\.webp'));
+ await expect(page.locator('.be-motion-batter')).toHaveAttribute('data-kit',batter);
+ expect(await page.locator('.be-motion-pitcher').evaluate(el=>el._actor.inspect().kit)).toBe(pitcher);
+ await page.locator('#be-replay-auto').click();await page.locator('.be-stadium').screenshot({path:'test-results/national-'+side+'.png'});
  expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
 });

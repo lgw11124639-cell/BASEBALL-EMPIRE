@@ -20874,3 +20874,18 @@ main.game-shell .record-room { padding: 26px !important; }
 /* A bunt presents the bat; it never reuses a full-swing pose. */
 #be-replay-overlay .be-stadium[data-bunt=true] .be-motion-batter{display:block}
 #be-replay-overlay .be-stadium[data-bunt=true] .be-batter-render>img{visibility:hidden}
+
+/* Each control has its own track; iOS cannot clip the speed picker arrow. */
+#be-replay-overlay>.be-replay-controls{box-sizing:border-box!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:8px!important;row-gap:8px!important;align-items:stretch;padding-top:8px!important}
+#be-replay-overlay .be-replay-options{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;align-items:center;min-width:0;width:100%;min-height:38px;gap:8px!important}
+#be-replay-overlay .be-replay-options label{display:inline-flex;align-items:center;gap:6px;min-height:36px;margin:0;font-size:12px;line-height:1.2;white-space:nowrap;justify-self:start}
+#be-replay-overlay .be-replay-options label:nth-child(2){justify-self:center}
+#be-replay-overlay .be-replay-options label:last-child{justify-self:end}
+#be-replay-overlay .be-replay-options input{width:18px;height:18px;flex:0 0 18px;margin:0}
+#be-replay-overlay .be-replay-options select{appearance:none!important;-webkit-appearance:none!important;box-sizing:border-box!important;flex:0 0 64px!important;width:64px!important;max-width:64px!important;min-width:0!important;min-height:34px!important;height:34px!important;padding:0 22px 0 8px!important;margin:0!important;font-size:12px!important;line-height:normal!important;border:1px solid #d1dfe6;border-radius:8px;background-color:#f7fafb!important;background-image:linear-gradient(45deg,transparent 50%,#365b6e 50%),linear-gradient(135deg,#365b6e 50%,transparent 50%)!important;background-position:calc(100% - 12px) 50%,calc(100% - 8px) 50%!important;background-size:4px 4px!important;background-repeat:no-repeat!important}
+#be-replay-overlay .be-replay-controls>button{display:flex;align-items:center;justify-content:center;width:100%;height:46px!important;min-height:46px!important;margin:0!important;padding:0 10px!important;font-size:13px!important;line-height:20px!important;border-radius:10px}
+#be-replay-overlay .be-pitcher-render{filter:none!important}
+@media(max-width:360px){#be-replay-overlay .be-replay-options label{font-size:11px;gap:4px}}
+#be-replay-overlay .be-replay-options label:last-child{width:96px!important;max-width:none;flex-shrink:0}
+#be-replay-overlay #be-replay-speed{appearance:none!important;-webkit-appearance:none!important;box-sizing:border-box!important;width:64px!important;min-width:64px!important;height:34px!important;min-height:34px!important;padding:0 22px 0 8px!important}
+#be-replay-overlay .be-stadium{scroll-margin-block:8px}

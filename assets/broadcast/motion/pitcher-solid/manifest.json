@@ -1,0 +1,1855 @@
+{
+  "version": 4,
+  "tile": 288,
+  "columns": 7,
+  "rows": 4,
+  "framesPerDelivery": 7,
+  "anchor": [
+    144,
+    270
+  ],
+  "landing": [
+    204,
+    254
+  ],
+  "keyFrames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "releaseFrame": 4,
+  "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+  "interpolation": "none; one authored whole-body frame at full opacity",
+  "clubs": [
+    {
+      "id": 0,
+      "file": "club-0.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-0.webp",
+      "release": [
+        [
+          221,
+          30
+        ],
+        [
+          232,
+          60
+        ],
+        [
+          262,
+          86
+        ],
+        [
+          248,
+          144
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "903f32f454307d74127dd3e8d645260bdae100317083387133f54255db7af767",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-0.webp",
+      "referenceSha256": "4a12108dc0cd3248e331b1f49a9ceddcd010fddb1f2a443d0151693a86893dd3",
+      "sha256": "3807c5e33ffafee8aa84463743e79790a4c6d57a1865938e89b7500a3be49c05"
+    },
+    {
+      "id": 1,
+      "file": "club-1.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-1.webp",
+      "release": [
+        [
+          220,
+          31
+        ],
+        [
+          233,
+          60
+        ],
+        [
+          255,
+          90
+        ],
+        [
+          250,
+          144
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "d96231d2ad8867a102d8395dbe79a63452e77fd0bc4de2a9342b4735c4a0d487",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-1.webp",
+      "referenceSha256": "2c67a086a38aa3fcaef54aacf11d94be91732be877de4cc4d5b39e7492526c3d",
+      "sha256": "9ad3c9c1fa6cefdee320929b6323a34283ffe675bc4e0210f79ab5238f6bc708"
+    },
+    {
+      "id": 2,
+      "file": "club-2.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-2.webp",
+      "release": [
+        [
+          218,
+          37
+        ],
+        [
+          243,
+          60
+        ],
+        [
+          265,
+          99
+        ],
+        [
+          248,
+          142
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "e6320af142dfb66c87366a61876dc25ce892a212dac95dc574947148e49f257f",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-2.webp",
+      "referenceSha256": "cea0bbf5984ca0e34cb9fd7c221f286992c2b6c10cc72f27d5aabc63d4618448",
+      "sha256": "b07e591720a44fb11e4b8c0b9dc0b95c66766c6a87b1109588aac8fd36beac95"
+    },
+    {
+      "id": 3,
+      "file": "club-3.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-3.webp",
+      "release": [
+        [
+          222,
+          34
+        ],
+        [
+          252,
+          61
+        ],
+        [
+          268,
+          97
+        ],
+        [
+          249,
+          149
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "154e1d82bd4e43783809fc012e72c99e23574b83b41cc12f42b66d7e308c9205",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-3.webp",
+      "referenceSha256": "5c0d9dafbfacd6280062568635cc589c6040a650950011156a640e9b4fb96f1c",
+      "sha256": "88ea3cf073feb36210b8792d6b2b3311bb2ade35189fc454d5732a8b9633e069"
+    },
+    {
+      "id": 4,
+      "file": "club-4.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-4.webp",
+      "release": [
+        [
+          223,
+          31
+        ],
+        [
+          235,
+          61
+        ],
+        [
+          257,
+          92
+        ],
+        [
+          250,
+          145
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-4.webp",
+      "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88",
+      "sha256": "da23a82b1524ed6b972ac7d2a8575c92a16e79c0c770118669e7b3029dd1a831"
+    },
+    {
+      "id": 5,
+      "file": "club-5.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-5.webp",
+      "release": [
+        [
+          230,
+          36
+        ],
+        [
+          249,
+          59
+        ],
+        [
+          264,
+          90
+        ],
+        [
+          257,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "0302e2fb2b6024f1875ed8ea38bb70cdc0d93dbdee25bdeaf09c209cfed5da0b",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-5.webp",
+      "referenceSha256": "2473487a68c9e9b2d73e27db7d96c6a915fbd81959cd01b5fdae022f585efbb0",
+      "sha256": "83b84527845a022d4a856f59de463db4aa17b5595f2a3d3ee6333550e1783068"
+    },
+    {
+      "id": 6,
+      "file": "club-6.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-6.webp",
+      "release": [
+        [
+          225,
+          35
+        ],
+        [
+          252,
+          60
+        ],
+        [
+          267,
+          96
+        ],
+        [
+          249,
+          145
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "3cca019f9497ae720d20f1b8ef4d233edae8f73dc15cf4c384f5831ea7e47631",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-6.webp",
+      "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7",
+      "sha256": "bf714d60519855efcc5cc4bed574d41e8f2ad5b5dfa8b4dd2a37bc8870cd1c02"
+    },
+    {
+      "id": 7,
+      "file": "club-7.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-7.webp",
+      "release": [
+        [
+          226,
+          34
+        ],
+        [
+          249,
+          59
+        ],
+        [
+          277,
+          98
+        ],
+        [
+          257,
+          142
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "26b615fe48522dd9b2828fd5baeb526490730b751ea053ee8de37166f0db12f0",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-7.webp",
+      "referenceSha256": "fd8aec23d462cd321c4992589449f23877f1c43c880c4dcca994d0c46180f08e",
+      "sha256": "99361bb3e03947cacd3059fd20e767431dd648ee0e0d9e4b7f95592d88896a5f"
+    },
+    {
+      "id": 8,
+      "file": "club-8.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-8.webp",
+      "release": [
+        [
+          222,
+          40
+        ],
+        [
+          249,
+          64
+        ],
+        [
+          266,
+          100
+        ],
+        [
+          257,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "af758a260aa878b50439a2e7f8aff0fff5e446570fa9186f3eea10965d38fd07",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-8.webp",
+      "referenceSha256": "067d8f6b8e736939b6747a5fde8884521add588f4be786691023d6ecd86f96d5",
+      "sha256": "90cbf1a559050f3b1d34d135686397b49ba7cbe451cfbb1344acf4766ac81090"
+    },
+    {
+      "id": 9,
+      "file": "club-9.webp",
+      "path": "assets/broadcast/motion/pitcher-solid/club-9.webp",
+      "release": [
+        [
+          219,
+          31
+        ],
+        [
+          229,
+          59
+        ],
+        [
+          256,
+          89
+        ],
+        [
+          254,
+          143
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "8f7ef6da37d2406d264c880b5c38d0a6a0e0462bac1500756db5af024a28a17d",
+      "readySourceSha256": "28c83b164642bfd2661899fd107297486f6b0d73a2449372006b29b7c5dc0e61",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/uniforms/club-9.webp",
+      "referenceSha256": "8033ad90f6b211d269010ab9d727fc8833fe15f9f803f24fc6f5d9aa7589c349",
+      "sha256": "acb2f06e32886449739e965a4e695c96731dce04a459812b88ad55b938c41b66"
+    }
+  ],
+  "nations": {
+    "KR": {
+      "id": "KR",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/KR/pitcher.webp",
+      "release": [
+        [
+          225,
+          31
+        ],
+        [
+          254,
+          59
+        ],
+        [
+          266,
+          95
+        ],
+        [
+          250,
+          144
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "e31ad653f53670ba70cf7c1ee6b2049b2606f5a3d07af2e0e90a59daf6729eac",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/KR/ready.webp",
+      "referenceSha256": "2ec8729fd46458f04d6eb8a08027c7417c210d1d4efd2cbe9a8d0eef9667ec4c",
+      "sha256": "e2c6a8347692b016812d9717e6b44fc9d9134ef7da97c7be8d7e691f9c2b9317"
+    },
+    "JP": {
+      "id": "JP",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/JP/pitcher.webp",
+      "release": [
+        [
+          220,
+          34
+        ],
+        [
+          248,
+          63
+        ],
+        [
+          266,
+          100
+        ],
+        [
+          249,
+          149
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "531c9e68e96c4ad05f98752bde2115ace23877e60ab8fbc9642fe553160256c2",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/JP/ready.webp",
+      "referenceSha256": "fb8c109bf99b913fd18d3f35cebe03804d3abffda0b425120d5a859771f5c7a5",
+      "sha256": "5a642a237251e41b0f715c10213d8333efdfd8c30608a34a9107c75b70d04b75"
+    },
+    "TW": {
+      "id": "TW",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/TW/pitcher.webp",
+      "release": [
+        [
+          228,
+          31
+        ],
+        [
+          250,
+          62
+        ],
+        [
+          266,
+          98
+        ],
+        [
+          251,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "f67d651f355d61eb9b5952340735e1d2bb6cdb670135d237031421a595b61dc3",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/TW/ready.webp",
+      "referenceSha256": "26f8a64b8cc7158eae4b66e278b989b7b24e4adf7f72a93824ef30f6fb04d561",
+      "sha256": "0b3a7d60c1e5a4a8c8bc917369a7bce574926fde9754e47d258c476c757949a4"
+    },
+    "CN": {
+      "id": "CN",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/CN/pitcher.webp",
+      "release": [
+        [
+          217,
+          34
+        ],
+        [
+          254,
+          64
+        ],
+        [
+          267,
+          103
+        ],
+        [
+          247,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "f020233e131c64029e4d2925c70bd81b3a0e913c9a28e8ea0c1771e115acd0e0",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/CN/ready.webp",
+      "referenceSha256": "784178cb6395eb7183566340d4a86f8ba20a7c42d4a5251f38b66bd5b80c3715",
+      "sha256": "347fc6b1fd1ef845d482035aee3e55d0118fb0c1a21a685002ee41d17cce3960"
+    },
+    "AU": {
+      "id": "AU",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/AU/pitcher.webp",
+      "release": [
+        [
+          225,
+          33
+        ],
+        [
+          252,
+          61
+        ],
+        [
+          267,
+          95
+        ],
+        [
+          251,
+          145
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "4c9e0c9c975fbd7cbc22cff8de65c6266c98c0deb48ec33f60a26f0780edd285",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/AU/ready.webp",
+      "referenceSha256": "2c328ada98fe4a722fc405a59b69ce5932c2549cd3595438d720541001307cd2",
+      "sha256": "29262e476a5831a3cff90829d6a9358d252c1237c460c3f8e989a319b2910969"
+    },
+    "US": {
+      "id": "US",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/US/pitcher.webp",
+      "release": [
+        [
+          219,
+          32
+        ],
+        [
+          243,
+          62
+        ],
+        [
+          260,
+          93
+        ],
+        [
+          252,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "26fca9285f9adbbcc867ed17725201ca74098b0ff124eafd5e333bf73e4c3e23",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/US/ready.webp",
+      "referenceSha256": "b83cf7ab996b519bed396e84d84659393dab7206d9f6eacca524737da5f566e3",
+      "sha256": "eca0c680607417d50c0195b92c78ef36c8f87a714eb402e98a4fb2a284e05356"
+    },
+    "DO": {
+      "id": "DO",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/DO/pitcher.webp",
+      "release": [
+        [
+          221,
+          31
+        ],
+        [
+          234,
+          61
+        ],
+        [
+          254,
+          90
+        ],
+        [
+          249,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "d0efa70f5453b2ffc20e442f56d0ef4d1ec01983faf7fbc03bb67099c4d5871e",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/DO/ready.webp",
+      "referenceSha256": "9f3534ca3179123ba2545a4cb5bd7b053f43100909bc5ba8d270d0517fa69f18",
+      "sha256": "6d9d6beb182815308f42b6de3554bc6db2e4007985e714f8c3bb6ec9a66fbfdb"
+    },
+    "VE": {
+      "id": "VE",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/VE/pitcher.webp",
+      "release": [
+        [
+          226,
+          37
+        ],
+        [
+          255,
+          60
+        ],
+        [
+          263,
+          96
+        ],
+        [
+          250,
+          147
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "7c833e040c768772a169065c1cd062a294e3b12f3d6ea1a5a618f68018b2d79b",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/VE/ready.webp",
+      "referenceSha256": "1008600a3eb0a0b2cfabb2cb426120290c92d065d94051d8b1fa7dedb3545c78",
+      "sha256": "c1ea4843cb837221be40fb38d27ce7741c5abb0eaea1ed5dbdd7dd66f4c17122"
+    },
+    "PR": {
+      "id": "PR",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/PR/pitcher.webp",
+      "release": [
+        [
+          224,
+          34
+        ],
+        [
+          251,
+          62
+        ],
+        [
+          269,
+          97
+        ],
+        [
+          250,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "bbe2e547ba733494611f222254b0e4cbc10ab51e59c9a82d4a746da10ad6fed5",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/PR/ready.webp",
+      "referenceSha256": "6ed67057b831ddf3e8dd0ad7d7e0670b6afe8b5a4636347a48681bc7f8aa7d23",
+      "sha256": "0284397b5f8a148a08d9a7acd2c80b8953f9c4c94447b16c9969f3d6523fb8fa"
+    },
+    "CU": {
+      "id": "CU",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/CU/pitcher.webp",
+      "release": [
+        [
+          221,
+          31
+        ],
+        [
+          234,
+          62
+        ],
+        [
+          252,
+          93
+        ],
+        [
+          250,
+          147
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "7544d70865b7f6a7c47d5a2ff7101cdc7df9a2bc411263fbea6639015b66684d",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/CU/ready.webp",
+      "referenceSha256": "15f3dd69d14c6920ea6669db3b6110bbb76dc3ed40effd63efd12cd5ff43dedd",
+      "sha256": "ce5f00ea666ae6d8be7428e51920896fcf047c6509fdbb90cec7b75f28319605"
+    },
+    "MX": {
+      "id": "MX",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/MX/pitcher.webp",
+      "release": [
+        [
+          230,
+          35
+        ],
+        [
+          259,
+          62
+        ],
+        [
+          269,
+          95
+        ],
+        [
+          249,
+          145
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "3c3629a31e01b6ab9ae0790784b15480a92b91634307f2d37c2235250ae53815",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/MX/ready.webp",
+      "referenceSha256": "50bcde3cdcc322aac777ba42db6d7751dbcfff1f719df18a6fcb8f0c3344cbdd",
+      "sha256": "166f11c91181a4b2ee698fb74fe711dc03ad0a9f3fdd08d5c312ea6f881b357a"
+    },
+    "CA": {
+      "id": "CA",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/CA/pitcher.webp",
+      "release": [
+        [
+          214,
+          32
+        ],
+        [
+          232,
+          59
+        ],
+        [
+          256,
+          94
+        ],
+        [
+          252,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "7356b2819c56a18339ff6ca781bc39c88469d4e810c941880e96c8125ee7b0c0",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/CA/ready.webp",
+      "referenceSha256": "3eae5319bc892199f4085c89fc0d315b644d6f6b91b04891cea716c912336047",
+      "sha256": "cefaf6530bf508f759b6d92cb0e21a30f83247f190fdea60cf798cee88de5175"
+    },
+    "PA": {
+      "id": "PA",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/PA/pitcher.webp",
+      "release": [
+        [
+          226,
+          30
+        ],
+        [
+          252,
+          60
+        ],
+        [
+          266,
+          99
+        ],
+        [
+          246,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "7cfafc91fbc49ff563373da78728b4ba62cabf01d575413a493da731ade197c8",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/PA/ready.webp",
+      "referenceSha256": "06821d428913152fb035ed25aeb51be35d34090a2071ef547ea01499dd6f56a7",
+      "sha256": "18c94654715e60e0b2d43458cb1118e2c0c9fc9d1341db3991208caac6655ad1"
+    },
+    "CO": {
+      "id": "CO",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/CO/pitcher.webp",
+      "release": [
+        [
+          225,
+          32
+        ],
+        [
+          255,
+          60
+        ],
+        [
+          270,
+          96
+        ],
+        [
+          252,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "e09327c0024f6679959eb512cc6b8404af394a9cb75a1fdd6bd574fd5be61a36",
+      "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/CO/ready.webp",
+      "referenceSha256": "464a121754c08292f6e51d91ecb8e86b469a55a0c8aac49172836f7ae0a0cb2d",
+      "sha256": "f7eb3c0e3f06e8a67ad54aa1f702498df198981a223fe24f148b0cd6fe23c1a5"
+    },
+    "NI": {
+      "id": "NI",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/NI/pitcher.webp",
+      "release": [
+        [
+          215,
+          33
+        ],
+        [
+          247,
+          61
+        ],
+        [
+          268,
+          95
+        ],
+        [
+          249,
+          145
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "e60f36e4f008ea582b2758534353bc03cdc62de229ab16cbea56cda72f3b1b0a",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/NI/ready.webp",
+      "referenceSha256": "35de7d7b3eff06bb1ac4973f79e695c77efb38a9a61f1e5acaa0d5f1f6bb172d",
+      "sha256": "48ccf52852b775d3c3ebb7d1f078861b0559ca98ce6615e28832fb51b26dca2c"
+    },
+    "IT": {
+      "id": "IT",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/IT/pitcher.webp",
+      "release": [
+        [
+          224,
+          33
+        ],
+        [
+          252,
+          63
+        ],
+        [
+          271,
+          97
+        ],
+        [
+          263,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "b5f3feb33c3333142295deba1f5f45806081ac0e03744497b812889a34c7437b",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/IT/ready.webp",
+      "referenceSha256": "8b52b6e30081f857e1b488894d7e24c3b7213b07623e6a2b3110d5e16a4514e8",
+      "sha256": "e5c50f0f747041a1d1495f3f47a309953b8047d9626842f1ccdc41471fd6a886"
+    },
+    "NL": {
+      "id": "NL",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/NL/pitcher.webp",
+      "release": [
+        [
+          226,
+          36
+        ],
+        [
+          247,
+          61
+        ],
+        [
+          265,
+          95
+        ],
+        [
+          249,
+          149
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "de78b609c120616c55d3893de9bbc810ebef55d1d089dd567d0e854b9fae7090",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/NL/ready.webp",
+      "referenceSha256": "7603a60e9f1a7593cb4612f4cd671cdfdb74d6702392b0e777d628a3630652f2",
+      "sha256": "c5a22dc8f48bd905937c9b063dc3802f3fe0468664f49b753e300bd8dcd951ae"
+    },
+    "GB": {
+      "id": "GB",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/GB/pitcher.webp",
+      "release": [
+        [
+          222,
+          31
+        ],
+        [
+          252,
+          61
+        ],
+        [
+          263,
+          95
+        ],
+        [
+          251,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "916f57c503a665b1727dee835bfe4f333a77b4a2c4f35d8ca1a035ea93028e59",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/GB/ready.webp",
+      "referenceSha256": "b304cc69e915c542e3c420234e6f54e8b35b6dba9573e2dc6c6721be0ba035d7",
+      "sha256": "a56329e08efa7f92bec9ed4a6244480ba67b7f09c1c9bb370f133c9a4cf09e79"
+    },
+    "CZ": {
+      "id": "CZ",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/CZ/pitcher.webp",
+      "release": [
+        [
+          224,
+          32
+        ],
+        [
+          245,
+          62
+        ],
+        [
+          264,
+          95
+        ],
+        [
+          254,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "e3830720f36f8a0dd2fe1bad585200ae2383dfee1f97222836713c39359b64c3",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/CZ/ready.webp",
+      "referenceSha256": "a6706f38b392c8a2b6e67ca0da2df79bba211dd2bd17422330565ad2ebe716ca",
+      "sha256": "3e90bfc6d16165eee3e03d2427179378295fea537900fa596c1b3c5a924145b8"
+    },
+    "IL": {
+      "id": "IL",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/IL/pitcher.webp",
+      "release": [
+        [
+          219,
+          37
+        ],
+        [
+          247,
+          62
+        ],
+        [
+          269,
+          94
+        ],
+        [
+          257,
+          150
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "5424b3f10b19d792b737763c70bce26c9310602e309bfec9b7e4f7fcbd3dc70a",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/IL/ready.webp",
+      "referenceSha256": "ca54d9b2308dd92846ce390ff7e78308db47d690f3488fde8d770c5bad404bdc",
+      "sha256": "5b2fbcdf84a4117e71eb0ab35423f5304c0903776932ed6833daf79eb519b2f9"
+    },
+    "PH": {
+      "id": "PH",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/PH/pitcher.webp",
+      "release": [
+        [
+          227,
+          36
+        ],
+        [
+          256,
+          61
+        ],
+        [
+          271,
+          96
+        ],
+        [
+          253,
+          148
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "aacc2c23efcb438a8d8554562e2f0dc6f1f10fb7c446c93e779d7054da15bf8d",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/PH/ready.webp",
+      "referenceSha256": "8b55d95d27865d5e9a123297386d168d82a2ac065e52bd4a673ca329444a40a3",
+      "sha256": "572e59739b114d8ca6bd9c4104b87ec4a5e79a91c963fabf20dd69607912e4d1"
+    },
+    "TH": {
+      "id": "TH",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/TH/pitcher.webp",
+      "release": [
+        [
+          216,
+          38
+        ],
+        [
+          252,
+          61
+        ],
+        [
+          266,
+          91
+        ],
+        [
+          259,
+          147
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "8f7e5cb3b7d08f38ef3afdfeda160506ff700d524adbf3a5cebb4bc17d5e245c",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/TH/ready.webp",
+      "referenceSha256": "ffe8a17a5427e1b1e84ce172216010c3df23d63c65089fbbdca70dbef5ec1008",
+      "sha256": "858c302e74d685f91a0a1b6ef776a9de2c3ab25ee437b08844f0d03d323a8ede"
+    },
+    "HK": {
+      "id": "HK",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/HK/pitcher.webp",
+      "release": [
+        [
+          224,
+          33
+        ],
+        [
+          255,
+          60
+        ],
+        [
+          271,
+          96
+        ],
+        [
+          253,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "3d71a1e3d4cf0d1196fcffb1f39462f4b5e4a41f6483c397cb7e896790c27195",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/HK/ready.webp",
+      "referenceSha256": "93c9ed930c7cf668d0258c73a65b2a4dd8cdebf540825f6034858c1a58346153",
+      "sha256": "9ff5c7f1038d2f3f05047cc0ff63e37c39d83e185d5979778920a66daa872a79"
+    },
+    "PK": {
+      "id": "PK",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/PK/pitcher.webp",
+      "release": [
+        [
+          228,
+          31
+        ],
+        [
+          251,
+          63
+        ],
+        [
+          270,
+          96
+        ],
+        [
+          255,
+          145
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "bf83b218bb756f4f1a49694747f40f13b3928437d6fb7dea676fac1c0392bdd5",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/PK/ready.webp",
+      "referenceSha256": "3fc37f9c4c347b15e973167d030a45606bc33a5856751f37ace0c609193360d4",
+      "sha256": "1e6818e0a4a9566c522a9642666f5fa3ab816fea31023be47a7b325b31a1aa4a"
+    },
+    "IN": {
+      "id": "IN",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/IN/pitcher.webp",
+      "release": [
+        [
+          221,
+          32
+        ],
+        [
+          235,
+          62
+        ],
+        [
+          256,
+          94
+        ],
+        [
+          255,
+          150
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "cb9c0ec4a65165552309d83a5fa677fa58b9d8efbe4a79b8f68c5793c10f2f52",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/IN/ready.webp",
+      "referenceSha256": "e963572aa5b39d15ace9d8816fe9880fdc7259be0cd4a804aec8bdd0f6fc2d03",
+      "sha256": "37a644a0070edc73d2f93171d6ba16c12af92434391d4f5e1c1268d872d4667e"
+    },
+    "ID": {
+      "id": "ID",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/ID/pitcher.webp",
+      "release": [
+        [
+          223,
+          32
+        ],
+        [
+          250,
+          60
+        ],
+        [
+          261,
+          94
+        ],
+        [
+          244,
+          145
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "57fce41d745e127493ee3bf66f85b129df3c316b39c1dc37b7923a031e3e5cae",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/ID/ready.webp",
+      "referenceSha256": "06fdd01c433e236bb305c24b373852980361ec4dbfbf9ce047865afd65079787",
+      "sha256": "9bec568783d7fe25345447512327f8e5c43db32446e5b373b8c0eaba50114fec"
+    },
+    "SG": {
+      "id": "SG",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/SG/pitcher.webp",
+      "release": [
+        [
+          217,
+          30
+        ],
+        [
+          248,
+          61
+        ],
+        [
+          268,
+          93
+        ],
+        [
+          251,
+          146
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "d1982470b2705af897695758febb41b0e3e34ef6bcab064e6c0c4ea40b0f924a",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/SG/ready.webp",
+      "referenceSha256": "5b8b033b406a8a0bdb3a44980909ff57c698030c56f4835ed0132f8ad748a339",
+      "sha256": "8bc3faf679674961dd1f3a8de119b9b9162083f71184e389235ea559a7cddd93"
+    },
+    "INTL": {
+      "id": "INTL",
+      "file": "pitcher.webp",
+      "path": "assets/broadcast/nations/INTL/pitcher.webp",
+      "release": [
+        [
+          223,
+          32
+        ],
+        [
+          254,
+          60
+        ],
+        [
+          272,
+          94
+        ],
+        [
+          254,
+          147
+        ]
+      ],
+      "landing": [
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ],
+        [
+          204,
+          254
+        ]
+      ],
+      "authored": true,
+      "sourceSha256": "e2d5ada3f2352243ff7d824406a54d4950e8db0698653a95f11481c760f234d0",
+      "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
+      "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
+      "referenceFile": "assets/broadcast/nations/INTL/ready.webp",
+      "referenceSha256": "b18fe3a4b034b3f966ac10dd971fbf70d4b18f4151aa696da7c6fe8745ac6578",
+      "sha256": "fb6c922891df2162103ed47c9bf3c245d0260e8538effeb6cac9e377a60ced7f"
+    }
+  }
+}
