@@ -1,5 +1,5 @@
 // Ten whole photographs, registered to the support shoe. No blending or limb compositing.
-export const durations=[600,240,380,160,140,100,140,200,220,500];
+export const durations=[600,200,300,240,180,120,100,200,220,500];
 const starts=durations.map((_,i)=>durations.slice(0,i).reduce((a,b)=>a+b,0)),total=durations.reduce((a,b)=>a+b,0);
 const labels=['준비','초기 들기 · 오른쪽 비틀기','최고점 · 오른쪽 비틀기','스트라이드 · 손 분리','착지 · 코킹','릴리스','초기 팔로스루','팔로스루','감속','균형 회복'];
 const cache=new Map();
@@ -30,11 +30,11 @@ export class FormPlayer{
   this.button.onclick=()=>this.playing?this.pause():this.play();host.querySelector('[data-action=previous]').onclick=()=>{this.pause();this.seek((this.index+9)%10);};host.querySelector('[data-action=next]').onclick=()=>{this.pause();this.seek((this.index+1)%10);};this.range.oninput=()=>{this.pause();this.seek(Number(this.range.value));};host.querySelector('select').onchange=e=>{this.rate=Number(e.target.value);this.last=null;};
  }
  async init(){
-  const images=[...this.section.querySelectorAll('.pose img')];await Promise.all(images.map(i=>i.decode()));this.frames=images.map(analyze);const plant=this.frames[4];this.land=[450+(plant.left.x-plant.right.x)*1.5,700+(plant.left.y-plant.right.y)*1.5];this.ready=true;this.seek(0);this.host.querySelectorAll('button').forEach(b=>b.disabled=false);return this;
+  const images=[...this.section.querySelectorAll('.pose img')];await Promise.all(images.map(i=>i.decode()));this.frames=images.map(analyze);images.forEach((img,i)=>{const clean=document.createElement('canvas'),frame=this.frames[i];clean.width=frame.w;clean.height=frame.h;clean.className='single';clean.setAttribute('role','img');clean.setAttribute('aria-label',img.alt);clean.getContext('2d').drawImage(frame.img,0,0);img.hidden=true;img.style.display='none';img.parentElement.append(clean);});this.releaseIndex=this.section.id==='submarine'?6:5;const plant=this.frames[this.releaseIndex-1];this.land=[450+(plant.left.x-plant.right.x)*1.5,700+(plant.left.y-plant.right.y)*1.5];this.ready=true;this.seek(0);this.host.querySelectorAll('button').forEach(b=>b.disabled=false);return this;
  }
  draw(index){
-  const label=this.section.id==='submarine'&&index===3?'상체 낮추기 · 손 분리':this.section.id==='submarine'&&index===4?'착지 · 낮은 코킹':labels[index];
-  const f=this.frames[index],support=index<5?(index===1||index===2?f.lowest:f.right):f.left,target=index<5?[450,700]:this.land,s=1.5,dx=target[0]-support.x*s,dy=target[1]-support.y*s,w=f.w*s,h=f.h*s,c=this.ctx;
+  const label=this.section.id==='submarine'?['준비','초기 들기 · 오른쪽 비틀기','최고점 · 오른쪽 비틀기','왼다리 내리기 · 중심 이동','스트라이드 · 손 분리 · 몸 낮추기','왼발 착지 · 낮은 코킹','낮은 릴리스','팔로스루','감속','균형 회복'][index]:labels[index];
+  const f=this.frames[index],support=index<this.releaseIndex?(index>=1&&index<=(this.section.id==='submarine'?3:2)?f.lowest:f.right):f.left,target=index<this.releaseIndex?[450,700]:this.land,s=1.5,dx=target[0]-support.x*s,dy=target[1]-support.y*s,w=f.w*s,h=f.h*s,c=this.ctx;
   c.globalAlpha=1;c.clearRect(0,0,720,800);c.fillStyle='#dedee3';c.fillRect(0,0,720,800);
   // Extend the empty studio backdrop to the viewport edges; no moving photo rectangles.
   const xs=[{s:0,n:1,d:0,l:dx},{s:0,n:f.w,d:dx,l:w},{s:f.w-1,n:1,d:dx+w,l:720-dx-w}],ys=[{s:0,n:1,d:0,l:dy},{s:0,n:f.h,d:dy,l:h},{s:f.h-1,n:1,d:dy+h,l:800-dy-h}];
@@ -42,7 +42,7 @@ export class FormPlayer{
   c.fillStyle='rgba(242,245,248,.94)';c.fillRect(0,0,720,92);c.fillRect(0,740,720,60);
   c.fillStyle='#f9fafb';c.strokeStyle='#a8adb3';c.lineWidth=1;c.fillRect(412,704,76,6);c.strokeRect(412,704,76,6);
   c.fillStyle='#173345';c.font='600 26px system-ui';c.fillText(this.name,26,42);c.font='17px system-ui';c.fillStyle='#526b7c';c.fillText('우투 · 10단계 동작',26,70);c.font='600 20px system-ui';c.fillStyle='#173345';c.fillText(String(index+1).padStart(2,'0')+'  '+label,26,770);
-  this.index=index;this.canvas.dataset.step=String(index+1);this.host.dataset.step=String(index+1);this.range.value=String(index);this.output.value=(index+1)+' / 10';this.status.textContent=(index+1)+'번 · '+label;this.registration={support:index<5?'right':'left',point:[...target],source:[support.x,support.y],offset:[dx,dy],scale:s};
+  this.index=index;this.canvas.dataset.step=String(index+1);this.host.dataset.step=String(index+1);this.range.value=String(index);this.output.value=(index+1)+' / 10';this.status.textContent=(index+1)+'번 · '+label;this.registration={support:index<this.releaseIndex?'right':'left',point:[...target],source:[support.x,support.y],offset:[dx,dy],scale:s};
  }
  seek(index){if(!this.ready)return;this.elapsed=starts[index];this.last=null;this.draw(index);}
  tick=now=>{if(!this.playing)return;if(this.last!=null)this.elapsed=(this.elapsed+(now-this.last)*this.rate)%total;this.last=now;let i=starts.findLastIndex(t=>this.elapsed>=t);if(i!==this.index)this.draw(i);this.raf=requestAnimationFrame(this.tick);};
