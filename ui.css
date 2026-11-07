@@ -20860,3 +20860,13 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-replay-options{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
 #be-replay-overlay .be-replay-options label{width:auto!important;min-width:0;max-width:100%}
 #be-replay-overlay .be-replay-options select{box-sizing:border-box!important;width:66px!important;min-width:0!important;max-width:66px!important;flex:0 0 66px;color:#294d63!important;background:#f7fafb!important}
+
+/* Diagonal pitcher cameras: the rubber, clay, plate, catcher and umpire are one render. */
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-pitch-background{object-fit:cover}
+#be-replay-overlay .be-stadium .be-catcher-render,#be-replay-overlay .be-stadium .be-umpire-render{display:none!important}
+#be-replay-overlay .be-stadium[data-view=pitch][data-bat-hand] .be-stadium-strike-slot{left:68%!important;top:49%!important;width:20%;height:24.615385%}
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=left] .be-stadium-strike-slot{left:30%!important;top:55%!important}
+
+/* Keep the count panel above the foreground pitcher, away from either batting box. */
+#be-replay-overlay .be-stadium[data-pitcher-side=left] .be-stadium-hud{left:calc(18px * var(--be-scene-scale,.5))!important;right:auto!important;transform-origin:top left}
+#be-replay-overlay .be-stadium[data-pitcher-side=right] .be-stadium-hud{right:calc(18px * var(--be-scene-scale,.5))!important;left:auto!important;transform-origin:top right}

@@ -76,7 +76,7 @@ async function checkFooter(page) {
 for (const hand of ["우투", "좌투"])
   for (const bat of ["우타", "좌타"])
     test(
-      "pitcher is opposite batter and modal owns its footer " +
+      "pitcher uses actual-handed camera and modal owns its footer " +
         hand +
         " " +
         bat,
@@ -131,14 +131,16 @@ for (const hand of ["우투", "좌투"])
           else pixels = digest;
           expect(result.renderer).toBe("complete-frame-sequence");
           expect(result.wholeFrame).toBe(true);
+          expect(result.uniformBaked).toBe(true);
+          expect(result.source).toContain("pitcher-kits/club-");
           expect(result.frame).toBe(1);
           expect(result.aspect).toBeCloseTo(18 / 13, 2);
-          expect(result.zone[1]).toBeCloseTo(0.22, 2);
-          expect(result.zone[0]).toBeCloseTo(bat === "우타" ? 0.44 : 0.34, 2);
+          expect(result.zone[1]).toBeCloseTo(0.20, 2);
+          expect(result.zone[0]).toBeCloseTo(hand === "우투" ? 0.58 : 0.20, 2);
           const x = result.registration.mirror
             ? 720 - result.registration.pivot[0]
             : result.registration.pivot[0];
-          expect(x).toBe(bat === "좌타" ? 500 : 220);
+          expect(x).toBe(hand === "좌투" ? 564 : 125);
           expect(result.registration.mirror).toBe(hand === "좌투");
           await page.locator(".be-stadium").scrollIntoViewIfNeeded();
           const clear = await page.evaluate(
@@ -170,3 +172,34 @@ for (const hand of ["우투", "좌투"])
         ).toBe("");
       },
     );
+
+test('all baked club uniforms keep complete bodies outside the strike zone in every pose',async({page})=>{
+  const errors=await open(page,'우투','우타');
+  const result=await page.evaluate(async()=>{
+    const module=window.beBroadcastActors,actor=document.querySelector('.be-motion-pitcher')._actor,canvas=document.querySelector('.be-motion-pitcher canvas');
+    await module.preparePitcherKits(Array.from({length:10},(_,id)=>id));
+    const sheet=document.createElement('canvas');sheet.width=1440;sheet.height=1600;
+    const preview=sheet.getContext('2d');preview.fillStyle='#102638';preview.fillRect(0,0,1440,1600);
+    const phases=[0,1,2,3,3.6,4],violations=[],sources=[];
+    for(let id=0;id<10;id++){
+      await actor.setKit(id);sources.push(actor.inspect().source);
+      for(const hand of ['right','left'])for(let row=0;row<4;row++)for(let frame=0;frame<6;frame++){
+        actor.pose(phases[frame],row,hand,frame>=3);
+        const ctx=canvas.getContext('2d'),x=hand==='right'?418:144,y=hand==='right'?191:222;
+        const zone=ctx.getImageData(x*2,y*2,144*2,128*2).data;
+        let opaque=0;for(let i=3;i<zone.length;i+=4)if(zone[i]>32)opaque++;
+        if(opaque)violations.push({id,hand,row,frame,opaque});
+        if(frame===3){const [rx,ry]=actor.releasePoint(row,hand),handPixel=ctx.getImageData(Math.round(rx*2),Math.round(ry*2),1,1).data;if(handPixel[3]<80)violations.push({id,hand,row,frame,releaseOffBody:true});}
+        const body=ctx.getImageData(0,0,1440,1040).data;let pixels=0;
+        for(let i=3;i<body.length;i+=64)if(body[i]>200)pixels++;
+        if(pixels<500)violations.push({id,hand,row,frame,missing:true});
+        if(row===0)preview.drawImage(canvas,(frame+(hand==='left'?6:0))*120,id*160,120,130);
+      }
+      preview.fillStyle='white';preview.font='14px sans-serif';preview.fillText('Club '+id,8,id*160+151);
+    }
+    return {violations,sources,preview:sheet.toDataURL('image/png')};
+  });
+  expect(result.violations).toEqual([]);expect(new Set(result.sources).size).toBe(10);
+  const {writeFileSync}=await import('node:fs');writeFileSync('test-results/pitcher-uniforms.png',Buffer.from(result.preview.split(',')[1],'base64'));
+  expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
+});

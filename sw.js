@@ -1,5 +1,5 @@
 /* BASEBALL EMPIRE - network-first PWA updater; does not touch IndexedDB */
-const VERSION='2.3.37-20261107-batter-side66';
+const VERSION='2.3.38-20261107-club-pitch67';
 self.addEventListener('install',event=>{self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('baseball-empire-')).map(k=>caches.delete(k)));await self.clients.claim()})())});
 self.addEventListener('fetch',event=>{

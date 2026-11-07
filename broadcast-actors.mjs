@@ -112,121 +112,48 @@ export function pitchFrame(phase) {
             ? 4
             : 5;
 }
-export function framePlacement(frame, row, hand = "right", bat = "right") {
-  // Batting box selects the camera side; pitching hand only mirrors the whole pose.
-  const screenX = bat === "left" ? 500 : 220,
-    x = hand === "left" ? 720 - screenX : screenX,
-    y = 500,
-    scale = 1.4,
-    anchor = FRAME_ANCHORS[row][frame],
-    plant = frame >= 3;
-  return {
-    x: x + (plant ? 81 * scale : 0) - anchor[0] * scale,
-    y: y - (plant ? 12 * scale : 0) - anchor[1] * scale,
-    scale,
-    pivot: [x, y],
-    mirror: hand === "left",
-  };
+export const PITCH_UNIFORM_MANIFEST = "assets/broadcast/motion/pitcher-kits/manifest.json";
+export function framePlacement(frame, row, hand = "right", bat = "right", spec) {
+  // The native poses are right-handed; one whole-image reflection makes a left-hander.
+  // These points coincide with the rubber in each coherent diagonal camera background.
+  const x = hand === "left" ? 156 : 125, y = 452, scale = 1.2;
+  const anchors = spec?.anchors || FRAME_ANCHORS;
+  const releasePivot = spec?.releasePivot?.[row] || [104, 247];
+  const landing = anchors[row][3];
+  const anchor = frame < 3 ? anchors[row][frame] : frame === 3 ? releasePivot : anchors[row][frame];
+  const target = frame < 4 ? [x,y] : [x + (landing[0]-releasePivot[0])*scale, y + (landing[1]-releasePivot[1])*scale];
+  return {x:target[0]-anchor[0]*scale, y:target[1]-anchor[1]*scale, scale,
+    pivot:[x,y], planted:target, anchor, mirror:hand === "left"};
 }
-let sheetPromise;
-async function sourceSheet() {
-  if (!sheetPromise)
-    sheetPromise = (async () => {
-      const image = new Image();
-      image.src = PITCH_SHEET + "?v=20261107-batter-side66";
-      await image.decode();
-      const canvas = document.createElement("canvas");
-      canvas.width = image.width;
-      canvas.height = image.height;
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      ctx.drawImage(image, 0, 0);
-      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height),
-        d = pixels.data;
-      // The selected export has a partly transparent checkerboard. Keep its opaque athlete pixels.
-      for (let i = 3; i < d.length; i += 4)
-        d[i] = Math.max(0, Math.min(255, ((d[i] - 232) * 255) / 16));
-      ctx.putImageData(pixels, 0, 0);
-      return canvas;
-    })();
-  return sheetPromise;
-}
-function clubSheet(source, id) {
-  const canvas = document.createElement("canvas");
-  canvas.width = source.width;
-  canvas.height = source.height;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  ctx.drawImage(source, 0, 0);
-  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height),
-    d = pixels.data,
-    kit = kits[id] || kits[0],
-    rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)),
-    jersey = rgb(kit[0]),
-    cap = rgb(kit[2]);
-  const heads = [
-    [137, 19],
-    [143, 17],
-    [145, 46],
-    [124, 58],
-    [140, 75],
-    [143, 56],
-  ];
-  for (let i = 0; i < d.length; i += 4) {
-    if (!d[i + 3]) continue;
-    const px = i / 4,
-      x = px % canvas.width,
-      y = Math.floor(px / canvas.width),
-      col = Math.floor(x / 256),
-      localX = x % 256,
-      localY = y % 256,
-      r = d[i],
-      g = d[i + 1],
-      b = d[i + 2];
-    if (
-      localY < 185 &&
-      b > r * 1.03 &&
-      b >= g * 0.98 &&
-      Math.max(r, g, b) < 145
-    ) {
-      const head = heads[col],
-        hat =
-          Math.abs(localX - head[0]) < 25 && Math.abs(localY - head[1]) < 21,
-        color = hat ? cap : jersey,
-        shade = Math.min(1.3, Math.max(0.18, Math.max(r, g, b) / 85 + 0.15));
-      for (let c = 0; c < 3; c++) d[i + c] = Math.min(255, color[c] * shade);
-    }
-  }
-  ctx.putImageData(pixels, 0, 0);
-  return canvas;
+let uniformManifestPromise;
+async function uniformManifest() {
+  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-club-pitch67")
+    .then(response=>{if(!response.ok)throw Error("Pitcher uniforms unavailable");return response.json();});
+  return uniformManifestPromise;
 }
 const pitchKits = new Map();
 async function preparedKit(id) {
   id = kits[id] ? id : 0;
-  if (pitchKits.has(id)) return pitchKits.get(id).promise;
-  const entry = { frames: null };
-  entry.promise = (async () => {
-    const colored = clubSheet(await sourceSheet(), id),
-      reader = colored.getContext("2d", { willReadFrequently: true }),
-      images = [];
-    for (let row = 0; row < 4; row++)
-      for (let col = 0; col < 6; col++) {
-        const tile = document.createElement("canvas");
-        tile.width = tile.height = 256;
-        tile
-          .getContext("2d")
-          .putImageData(
-            reader.getImageData(col * 256, row * 256, 256, 256),
-            0,
-            0,
-          );
-        const image = new Image();
-        image.src = tile.toDataURL("image/png");
-        images.push(image);
-      }
-    await Promise.all(images.map((image) => image.decode()));
-    entry.frames = images;
-    return images;
+  if(pitchKits.has(id))return pitchKits.get(id).promise;
+  const entry={frames:null,spec:null};
+  entry.promise=(async()=>{
+    const manifest=await uniformManifest();
+    entry.spec=manifest.clubs[id];
+    const source=new Image();source.src="assets/broadcast/motion/pitcher-kits/"+entry.spec.file+"?v=20261107-club-pitch67";
+    await source.decode();
+    const readerCanvas=document.createElement("canvas");readerCanvas.width=1536;readerCanvas.height=1024;
+    const reader=readerCanvas.getContext("2d",{willReadFrequently:true});reader.drawImage(source,0,0);
+    const images=[];
+    // Decode each complete pose separately: avoids cropped-atlas corruption on iOS Safari.
+    for(let row=0;row<4;row++)for(let col=0;col<6;col++){
+      const tile=document.createElement("canvas");tile.width=tile.height=256;
+      tile.getContext("2d").putImageData(reader.getImageData(col*256,row*256,256,256),0,0);
+      const image=new Image();image.src=tile.toDataURL("image/png");images.push(image);
+    }
+    await Promise.all(images.map(image=>image.decode()));entry.frames=images;return images;
   })();
-  pitchKits.set(id, entry);
+  pitchKits.set(id,entry);
+  entry.promise.catch(()=>{if(pitchKits.get(id)===entry)pitchKits.delete(id);});
   return entry.promise;
 }
 export async function preparePitcherKits(ids) {
@@ -247,25 +174,17 @@ export async function createPitcher(canvas) {
     disposed = false;
   const draw = () => {
     if (disposed) return;
-    canvas.width = 720;
-    canvas.height = 520;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    canvas.width = 1440;
+    canvas.height = 1040;
+    ctx.setTransform(2, 0, 0, 2, 0, 0);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.fillStyle = "#347d60";
-    ctx.fillRect(0, 485, 720, 35);
-    const p = framePlacement(frame, row, hand, bat);
+    const p = framePlacement(frame, row, hand, bat, pitchKits.get(kit)?.spec);
     ctx.save();
     if (p.mirror) {
       ctx.translate(720, 0);
       ctx.scale(-1, 1);
     }
-    ctx.fillStyle = "#906f54";
-    ctx.beginPath();
-    ctx.ellipse(p.pivot[0], 503, 70, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#eee9df";
-    ctx.fillRect(p.pivot[0] - 25, 499, 66, 5);
     ctx.drawImage(
       images[row * 6 + frame],
       p.x,
@@ -316,16 +235,18 @@ export async function createPitcher(canvas) {
       if (changed) draw();
     },
     releasePoint(delivery, throwHand) {
-      const p = framePlacement(3, delivery, throwHand, bat),
-        point = RELEASE_PIXELS[delivery],
+      const p = framePlacement(3, delivery, throwHand, bat, pitchKits.get(kit)?.spec),
+        point = pitchKits.get(kit)?.spec?.release[delivery] || RELEASE_PIXELS[delivery],
         x = p.x + point[0] * p.scale;
       return [throwHand === "left" ? 720 - x : x, p.y + point[1] * p.scale];
     },
     inspect() {
-      const p = framePlacement(frame, row, hand, bat);
+      const p = framePlacement(frame, row, hand, bat, pitchKits.get(kit)?.spec);
       return {
         renderer: "complete-frame-sequence",
-        source: PITCH_SHEET,
+        source: "assets/broadcast/motion/pitcher-kits/club-"+kit+".webp",
+        reference: PITCH_SHEET,
+        uniformBaked: true,
         phase,
         frame,
         row,
