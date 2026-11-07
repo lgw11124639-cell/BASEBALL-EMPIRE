@@ -1,5 +1,5 @@
 // Register complete generated poses by their shoes, inside the painted batting box.
-import {uniformAtlas} from './broadcast-actors.mjs?v=20261107-allforms80';
+import {uniformAtlas} from './broadcast-actors.mjs?v=20261107-proportions81';
 const cache=new Map();
 async function loadKit(id,motion){
  const key=id+':'+motion;if(cache.has(key))return cache.get(key);

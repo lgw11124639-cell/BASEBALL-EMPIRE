@@ -1,5 +1,5 @@
 {
-  "packVersion": 6,
+  "packVersion": 8,
   "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
   "id": "TW",
   "file": "nation-TW.webp",
@@ -22,38 +22,38 @@
   ],
   "landing": [
     [
-      144,
-      360
+      250,
+      345
     ],
     [
-      144,
-      360
+      237,
+      345
     ],
     [
-      248,
-      348
+      260,
+      364
     ],
     [
-      144,
-      360
+      219,
+      343
     ]
   ],
   "release": [
     [
-      262,
-      149
+      279,
+      147
     ],
     [
-      192,
-      166
+      285,
+      151
     ],
     [
-      331,
-      205
+      343,
+      221
     ],
     [
-      264,
-      298
+      281,
+      295
     ]
   ],
   "motionScale": [
@@ -383,5 +383,11 @@
   "sourceSha256": "637eca04644774ba50a11491059845ede3330636e28e7f724be00c172972cef8",
   "referenceFile": "assets/broadcast/nations/TW/ready.webp",
   "referenceSha256": "5579d814fff1d62777c946a412e4d37fb8fd4984b68a89b5a16773cebbef3ba2",
-  "sha256": "cadc69001ca2cae45c5b5801edde283441a44f63f6d696fb0e04f111a798f90f"
+  "sha256": "c5f781f85e73dd5ccc453a672c109da5231d453c4321a3d16423e2d627233bc2",
+  "renderScaleByDelivery": [
+    1.4266666666666667,
+    1.4266666666666667,
+    1.2745098039215685,
+    1.4266666666666667
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "packVersion": 6,
+  "packVersion": 8,
   "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
   "id": "IL",
   "file": "nation-IL.webp",
@@ -15,45 +15,45 @@
   "renderScale": 1.1,
   "renderScaleY": 1.4266666666666667,
   "renderScaleYByDelivery": [
+    1.639148936170213,
     1.4266666666666665,
-    1.4886956521739132,
     1.4266666666666665,
-    1.620828402366864
+    1.4266666666666665
   ],
   "landing": [
     [
-      144,
-      360
+      243,
+      364
     ],
     [
-      158,
-      370
+      250,
+      354
     ],
     [
-      249,
-      348
+      262,
+      365
     ],
     [
-      162,
-      368
+      244,
+      352
     ]
   ],
   "release": [
     [
-      265,
-      146
+      270,
+      190
     ],
     [
-      208,
-      184
+      302,
+      159
     ],
     [
-      332,
-      205
+      345,
+      222
     ],
     [
-      268,
-      312
+      306,
+      303
     ]
   ],
   "motionScale": [
@@ -63,10 +63,10 @@
     1
   ],
   "sourceScales": [
-    1.148936170212766,
-    1.125,
+    1,
+    1.173913043478261,
     1.2781065088757397,
-    1.125
+    1.2781065088757397
   ],
   "cellBounds": [
     [
@@ -371,5 +371,11 @@
   "sourceSha256": "8020ab3a750b955c6af784dee98929a8bbd8b923cad652aae9881657836b856c",
   "referenceFile": "assets/broadcast/nations/IL/ready.webp",
   "referenceSha256": "bbbf86c5149ef2422eefb9f84093e36750911a7d1f5aebb99f0243418b956cf6",
-  "sha256": "8f567aae2e18102dba93d7e4e346afc84371e9808123d4f95f95b50f2e028ca2"
+  "sha256": "82a47c4d4abe9b2c233b6ecc52e7bec7b0d32667b45ff2fc9f931c2369e5eb72",
+  "renderScaleByDelivery": [
+    1.639148936170213,
+    1.4266666666666665,
+    1.2621359223300972,
+    1.4266666666666665
+  ]
 }

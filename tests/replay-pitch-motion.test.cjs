@@ -16,10 +16,12 @@ assert.equal(run("beReplayLeadLabel({x:68,y:50},'좌타')"),'바깥쪽');
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(spec.referenceFile)).digest('hex'),spec.referenceSha256,'ready batter matches the generated wardrobe reference');
   for(const hand of ['right','left'])for(const bat of ['right','left'])for(let row=0;row<4;row++){
    let landing;
+   assert.ok(spec.landing[row][0]-spec.anchor[0]>60,'landing foot advances from the rubber instead of teleporting back');
    for(let frame=0;frame<10;frame++){
     const p=framePlacement(frame,row,hand,bat,spec),screenX=p.mirror?720-p.pivot[0]:p.pivot[0];
     assert.equal(screenX,hand==='left'?564:160,'camera follows actual throwing hand independently of batter');
     assert.equal(p.mirror,hand==='left');
+    assert.equal(p.scale,p.scaleY,'preserve source body proportions in every pose');
     assert.ok(Math.abs(p.x+(frame<6?p.anchor[0]:spec.landing[row][0])*p.scale-p.planted[0])<.001);
     assert.ok(Math.abs(p.y+(frame<6?p.anchor[1]:spec.landing[row][1])*p.scaleY-p.planted[1])<.001);
     if(frame<6)assert.deepEqual(p.planted,p.pivot,'pivot remains on the rubber through release');

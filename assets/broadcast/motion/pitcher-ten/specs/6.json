@@ -1,5 +1,5 @@
 {
-  "packVersion": 6,
+  "packVersion": 8,
   "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
   "id": 6,
   "file": "club-6.webp",
@@ -22,38 +22,38 @@
   ],
   "landing": [
     [
-      144,
-      360
+      250,
+      344
     ],
     [
-      144,
-      360
+      233,
+      344
     ],
     [
       249,
       348
     ],
     [
-      144,
-      360
+      220,
+      343
     ]
   ],
   "release": [
     [
-      264,
-      148
+      282,
+      146
     ],
     [
-      196,
-      168
+      285,
+      152
     ],
     [
       337,
       205
     ],
     [
-      265,
-      298
+      284,
+      295
     ]
   ],
   "motionScale": [
@@ -347,5 +347,11 @@
   "sourceSha256": "2af7e0da6120fa2722ccad41b7117e3b151cf50f95c874d83707cb206619de5b",
   "referenceFile": "assets/broadcast/uniforms/club-6.webp",
   "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7",
-  "sha256": "00d2585e41231b9f833ca5790a21ebff77f75c425a2c26c500feb143f5e615ec"
+  "sha256": "7c86f2b30376f9aff5fdf92baaba18e5c71f681ca77847e829b9d2cd54c91a3d",
+  "renderScaleByDelivery": [
+    1.4266666666666667,
+    1.4266666666666665,
+    1.3265306122448979,
+    1.4266666666666667
+  ]
 }

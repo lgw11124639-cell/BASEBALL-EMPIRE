@@ -1,11 +1,11 @@
-import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-allforms80';
+import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-proportions81';
 export {kits};
 const atlases = new Map();
 export async function uniformAtlas(id, motion = "swing") {
   id = normalizeUniformKey(id);
   const key = motion + ":" + id;
   if(!atlases.has(key)) atlases.set(key,(async()=>{
-    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-allforms80";
+    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-proportions81";
     const image=new Image();image.src=url;await image.decode();return url;
   })());
   return atlases.get(key);
@@ -57,12 +57,13 @@ export const PITCH_KEY_FRAMES=[0,1,2,3,4,5,6,7,8,9];
 export function pitchFrame(phase){const p=Math.max(0,Math.min(4,Number(phase)||0));let frame=0;for(let i=1;i<PITCH_FRAME_PHASES.length;i++){if(p<(PITCH_FRAME_PHASES[i-1]+PITCH_FRAME_PHASES[i])/2)break;frame=i;}return frame;}
 export const PITCH_UNIFORM_MANIFEST="assets/broadcast/motion/pitcher-ten/manifest.json";
 export function framePlacement(frame,row,hand="right",bat="right",spec){
- const x=hand==="left"?156:160,y=452,anchor=spec?.anchor||[144,360],landing=spec?.landing?.[row]||[248,342],scale=1.1,scaleY=spec?.renderScaleYByDelivery?.[row]??spec?.renderScaleY??4/3*1.07,releaseFrame=spec?.releaseFrame??6;
+ // Preserve the authored body ratio; fit one whole-body scale for all ten poses.
+ const x=hand==="left"?156:160,y=452,anchor=spec?.anchor||[144,360],landing=spec?.landing?.[row]||[248,342],scaleY=spec?.renderScaleByDelivery?.[row]??spec?.renderScaleYByDelivery?.[row]??spec?.renderScaleY??4/3*1.07,scale=scaleY,releaseFrame=spec?.releaseFrame??6;
  return {x:x-anchor[0]*scale,y:y-anchor[1]*scaleY,scale,scaleY,pivot:[x,y],anchor,planted:frame<releaseFrame?[x,y]:[x+(landing[0]-anchor[0])*scale,y+(landing[1]-anchor[1])*scaleY],mirror:hand==="left"};
 }
 let uniformManifestPromise, uniformManifestData;
 async function uniformManifest() {
-  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-allforms80")
+  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-proportions81")
     .then(response=>{if(!response.ok)throw Error("Pitcher uniforms unavailable");return response.json();}).then(data=>{uniformManifestData=data;return data;});
   return uniformManifestPromise;
 }
@@ -76,7 +77,7 @@ async function preparedKit(id) {
     const manifest=await uniformManifest();
     entry.spec=specFor(id);
     entry.lastUsed=performance.now();
-    const source=new Image();source.src=entry.spec.path+"?v=20261107-allforms80";
+    const source=new Image();source.src=entry.spec.path+"?v=20261107-proportions81";
     await source.decode();
     const readerCanvas=document.createElement("canvas");readerCanvas.width=source.naturalWidth;readerCanvas.height=source.naturalHeight;
     const reader=readerCanvas.getContext("2d",{willReadFrequently:true});reader.drawImage(source,0,0);

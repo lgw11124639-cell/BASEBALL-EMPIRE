@@ -1,5 +1,5 @@
 {
-  "packVersion": 6,
+  "packVersion": 8,
   "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
   "id": "VE",
   "file": "nation-VE.webp",
@@ -22,38 +22,38 @@
   ],
   "landing": [
     [
-      144,
-      360
+      252,
+      345
     ],
     [
-      144,
-      360
+      235,
+      344
     ],
     [
-      248,
-      348
+      262,
+      364
     ],
     [
-      144,
-      360
+      220,
+      343
     ]
   ],
   "release": [
     [
-      264,
-      148
+      283,
+      147
     ],
     [
-      196,
-      167
+      287,
+      151
     ],
     [
-      332,
-      205
+      346,
+      221
     ],
     [
-      262,
-      298
+      282,
+      295
     ]
   ],
   "motionScale": [
@@ -383,5 +383,11 @@
   "sourceSha256": "be01e3a1e4fdd28338f927af10ce54562453ebdf314f1a7decd06138b4134594",
   "referenceFile": "assets/broadcast/nations/VE/ready.webp",
   "referenceSha256": "673217c1a83f2a1a00a4817c45b117a088a55e072b3c723f83c559b61cfe2250",
-  "sha256": "cbc19bd582350f3ad9a765b61f9705416e957e38c9eb643fa3f3f3b535039999"
+  "sha256": "dcb9636d619324b6ddbad08c7d7af0987718e3e39e125982c8e10e4ede4c75ee",
+  "renderScaleByDelivery": [
+    1.4266666666666667,
+    1.4266666666666667,
+    1.2621359223300972,
+    1.4266666666666667
+  ]
 }

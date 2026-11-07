@@ -8,6 +8,7 @@ const entries=readFileSync(process.argv[2],'utf8').trim().split('\n').filter(Boo
 for(const {key,path}of entries){
  if(!process.env.BE_REPACK&&(m.clubs[key]?.sourceSha256===hash(path)||m.nations[key]?.sourceSha256===hash(path)))continue;
  const work='/tmp/be-ten-'+key;mkdirSync(work,{recursive:true});const matte=work+'/foreground.png',normalized=work+'/cells.png',coarse=work+'/coarse.png';
+ if(!process.env.BE_REGISTER_ONLY||!existsSync(matte)){
  // Authored sheets have whitespace between figures, not exact arithmetic grid lines.
  // Find those gaps before foreground extraction so no shoe/hand is cut at a cell edge.
  const [iw,ih]=execFileSync('magick',['identify','-format','%w %h',path],{encoding:'utf8'}).split(' ').map(Number),rgb=execFileSync('magick',[path,'-depth','8','rgb:-'],{maxBuffer:40*1024*1024}),foreground=(x,y)=>{const at=(y*iw+x)*3,r=rgb[at],g=rgb[at+1],b=rgb[at+2];return Math.max(r,g,b)<155||Math.max(r,g,b)-Math.min(r,g,b)>27;};
@@ -20,6 +21,8 @@ for(const {key,path}of entries){
  const coarseHash=work+'/coarse.sha256',inputHash=hash(normalized)+'-u2netp224-v1';
  if(!existsSync(coarse)||!existsSync(coarseHash)||readFileSync(coarseHash,'utf8')!==inputHash){execFileSync(process.env.BE_FOREGROUND||'/tmp/be-segment-ten-224',['/tmp/be-u2netp.onnx',normalized,coarse,'10','4']);writeFileSync(coarseHash,inputHash);}
  execFileSync(process.env.BE_MATTE_PYTHON||'/workspace/.be-matting-venv/bin/python',['scripts/refine-ten-pitcher-alpha.py',normalized,coarse,matte,process.env.BE_REFINEMENT_MODEL||'/tmp/be-rmbg14-quant.onnx'],{maxBuffer:4*1024*1024});
+ }
+ const cellBounds=JSON.parse(readFileSync(work+'/cells-meta.json'));
  const [w,h]=execFileSync('magick',['identify','-format','%w %h',matte],{encoding:'utf8'}).split(' ').map(Number),pixels=execFileSync('magick',[matte,'-depth','8','rgba:-'],{maxBuffer:40*1024*1024});
  const frames=[];
  for(let row=0;row<rows;row++)for(let f=0;f<columns;f++){
@@ -33,10 +36,12 @@ for(const {key,path}of entries){
   for(let y=Math.round(ch*.64);y<ch;y++)for(let x=0;x<cw;x++){
    const id=y*cw+x;if(seen.has(id)||!dark(x,y))continue;seen.add(id);const q=[[x,y]],pts=[];
    for(let i=0;i<q.length;i++){const[a,b]=q[i];pts.push([a,b]);for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=a+dx,ny=b+dy,n=ny*cw+nx;if(nx<0||nx>=cw||ny<ch*.64||ny>=ch||seen.has(n)||!dark(nx,ny))continue;seen.add(n);q.push([nx,ny]);}}
-   const low=Math.max(...pts.map(p=>p[1]));if(pts.length<5||low<bottom-20)continue;const sole=pts.filter(p=>p[1]>=low-2).map(p=>p[0]).sort((a,b)=>a-b);shoes.push([sole[Math.floor(sole.length/2)],low]);
+   const low=Math.max(...pts.map(p=>p[1]));if(pts.length<5||low<bottom-(f>=5?50:20))continue;const sole=pts.filter(p=>p[1]>=low-2).map(p=>p[0]).sort((a,b)=>a-b);shoes.push([sole[Math.floor(sole.length/2)],low]);
   }
   if(!shoes.length)throw Error('Missing shoe '+key+'/'+row+'/'+f);
-  const low=Math.max(...shoes.map(s=>s[1])),ground=shoes.filter(s=>s[1]>=low-10).sort((a,b)=>a[0]-b[0]);
+  // At landing the rear toe and front sole differ in height. Keep both shoes
+  // through recovery so the front leg cannot be mistaken for the rubber foot.
+  const low=Math.max(...shoes.map(s=>s[1])),ground=shoes.filter(s=>s[1]>=low-(f>=5?50:10)).sort((a,b)=>a[0]-b[0]);
   const foot=f===5?ground[0]:f===0||f>=6?ground.at(-1):ground.slice().sort((a,b)=>b[1]-a[1])[0];
   frames.push({row,f,cw,ch,raw,top,bottom,left,right,foot,frontFoot:ground.at(-1)});
  }
@@ -58,7 +63,7 @@ for(const {key,path}of entries){
  const national=typeof key==='string',file=national?'nation-'+key+'.webp':'club-'+key+'.webp',out=dir+'/'+file;
  writeFileSync(out,execFileSync('magick',['-size',`${tile*columns}x${tile*rows}`,'-depth','8','rgba:-','-quality','95','webp:-'],{input:atlas,maxBuffer:40*1024*1024}));
  const referenceFile=national?'assets/broadcast/nations/'+key+'/ready.webp':'assets/broadcast/uniforms/club-'+key+'.webp';
- const spec={packVersion:6,foregroundMethod:'u2netp224-rmbg1024-alpha-only',id:key,file,path:out,authored:true,tile,framesPerDelivery:10,releaseFrame:6,anchor,renderScale:1.1,renderScaleY:4/3*1.07,renderScaleYByDelivery:scales.map((s,row)=>4/3*1.07*216/(s*(frames[row*10].bottom-frames[row*10].top+1))),landing:landingPoints,release,motionScale:[1,1,1,1],sourceScales:scales,cellBounds,alphaRefinements:JSON.parse(readFileSync(matte+'.json')),sourceSha256:hash(path),referenceFile,referenceSha256:hash(referenceFile),sha256:hash(out)};
+ const spec={packVersion:8,foregroundMethod:'u2netp224-rmbg1024-alpha-only',id:key,file,path:out,authored:true,tile,framesPerDelivery:10,releaseFrame:6,anchor,renderScale:1.1,renderScaleY:4/3*1.07,renderScaleYByDelivery:scales.map((s,row)=>4/3*1.07*216/(s*(frames[row*10].bottom-frames[row*10].top+1))),landing:landingPoints,release,motionScale:[1,1,1,1],sourceScales:scales,cellBounds,alphaRefinements:JSON.parse(readFileSync(matte+'.json')),sourceSha256:hash(path),referenceFile,referenceSha256:hash(referenceFile),sha256:hash(out)};
  if(national)m.nations[key]=spec;else m.clubs[key]=spec;
  mkdirSync(dir+'/specs',{recursive:true});writeFileSync(dir+'/specs/'+key+'.json',JSON.stringify(spec,null,2)+'\n');if(!process.env.BE_SPEC_ONLY)writeFileSync(manifestFile,JSON.stringify(m,null,2)+'\n');console.log('Packed',key,'40 complete poses',scales.map(n=>n.toFixed(3)).join(','));
 }

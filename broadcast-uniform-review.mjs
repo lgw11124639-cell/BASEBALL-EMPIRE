@@ -1,5 +1,5 @@
-import{createPitcher,PITCH_FRAME_PHASES}from'./broadcast-actors.mjs?v=20261107-allforms80';
-import{NATIONAL_COLORS}from'./broadcast-uniforms.mjs?v=20261107-allforms80';
+import{createPitcher,PITCH_FRAME_PHASES}from'./broadcast-actors.mjs?v=20261107-proportions81';
+import{NATIONAL_COLORS}from'./broadcast-uniforms.mjs?v=20261107-proportions81';
 const clubs=['서울 로열스','부산 마리너스','인천 웨이브스','대구 타이탄즈','광주 피닉스','대전 이글스','수원 나이츠','창원 스톰','울산 샤크스','청주 블레이즈'],styles=['오버핸드','쓰리쿼터','사이드암','언더핸드'],kit=document.querySelector('#kit'),hand=document.querySelector('#hand'),play=document.querySelector('#play'),seek=document.querySelector('#seek'),output=document.querySelector('#step'),status=document.querySelector('#status'),durations=[650,180,260,200,200,150,100,180,220,400];
 kit.innerHTML='<optgroup label="클럽">'+clubs.map((name,i)=>`<option value="${i}">${name}</option>`).join('')+'</optgroup><optgroup label="국가대표">'+Object.keys(NATIONAL_COLORS).map(key=>`<option value="${key}">${key} 국가대표</option>`).join('')+'</optgroup>';
 document.querySelector('.forms').innerHTML=styles.map((s,i)=>`<article><h2>${s}</h2><div class="scene" data-hand="right"><canvas data-row="${i}" aria-label="${s} 투구 동작"></canvas></div></article>`).join('');

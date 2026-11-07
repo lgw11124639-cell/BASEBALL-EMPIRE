@@ -1,5 +1,5 @@
 {
-  "packVersion": 6,
+  "packVersion": 8,
   "foregroundMethod": "u2netp224-rmbg1024-alpha-only",
   "id": "PK",
   "file": "nation-PK.webp",
@@ -15,45 +15,45 @@
   "renderScale": 1.1,
   "renderScaleY": 1.4266666666666667,
   "renderScaleYByDelivery": [
-    1.5317894736842106,
+    1.4266666666666667,
     1.4266666666666665,
     1.4266666666666667,
     1.4266666666666665
   ],
   "landing": [
     [
-      160,
-      368
+      271,
+      354
     ],
     [
-      144,
-      360
+      236,
+      345
     ],
     [
       248,
       349
     ],
     [
-      144,
-      360
+      223,
+      343
     ]
   ],
   "release": [
     [
-      271,
-      172
+      306,
+      157
     ],
     [
-      196,
-      168
+      288,
+      153
     ],
     [
       332,
       206
     ],
     [
-      266,
-      297
+      286,
+      294
     ]
   ],
   "motionScale": [
@@ -63,7 +63,7 @@
     1
   ],
   "sourceScales": [
-    1.0588235294117647,
+    1.1368421052631579,
     1.1612903225806452,
     1.2705882352941176,
     1.2781065088757397
@@ -353,5 +353,11 @@
   "sourceSha256": "295f0652cb7a01fe61fcc57ebee5dd54201ca02397ca130c98a9ef79ba7e0d8a",
   "referenceFile": "assets/broadcast/nations/PK/ready.webp",
   "referenceSha256": "0377a99e24988e9940c4e354ae4ce813d347405565e7853cab9b87dda7eea9c3",
-  "sha256": "7b1ee8020b9d3f4cc7b48ef6e2c946da337cecaa233a51bb36f431380ee984dd"
+  "sha256": "b5dfb703468558939de8a53bf0fddaa1db020e0a7f5c7514287f550e99880977",
+  "renderScaleByDelivery": [
+    1.4266666666666667,
+    1.4266666666666665,
+    1.3541666666666667,
+    1.4266666666666665
+  ]
 }
