@@ -16,6 +16,10 @@
   "flowColumns": 10,
   "flowRows": 12,
   "flowFields": 118,
+  "releaseSource": [
+    333.54545454545456,
+    137.8181818181818
+  ],
   "hipY": [
     201.0,
     201.0,
@@ -82,7 +86,16 @@
   "leftCanonicalPivotX": 127,
   "rubberEdgeStart": true,
   "bodyScale": 1.04,
-  "legScale": 1.06,
+  "legScale": 1.18,
+  "batter": {
+    "kit": 0,
+    "box": {
+      "min": 608,
+      "max": 644,
+      "feet": 260,
+      "height": 80
+    }
+  },
   "heightTargetCm": 188,
   "heightTargetIsVisual": true,
   "finalStepCompression": 0.32,

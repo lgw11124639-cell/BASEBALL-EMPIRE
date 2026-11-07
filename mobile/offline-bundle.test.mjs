@@ -46,3 +46,11 @@ test('smooth motion review preserves approved sources and ships motion data with
  for(const [path,sha]of[[m.sourceManifest,m.sourceManifestSha256],[m.sourceAtlas,m.sourceAtlasSha256],[m.flow,m.flowSha256]])assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path,import.meta.url))).digest('hex'),sha);
  for(const file of ['broadcast-smooth.html','broadcast-smooth-player.mjs',root+'manifest.json',m.flow,m.background])assert.deepEqual(readFileSync(new URL('../'+file,import.meta.url)),readFileSync(new URL('../dist-mobile/'+file,import.meta.url)));
 });
+
+
+test('live motion fields preserve all 38 baked wardrobes and ship all four deliveries offline',()=>{
+ const spec=JSON.parse(read('assets/broadcast/motion/pitcher-game/manifest.json'));
+ const entries=[...spec.clubs,...Object.values(spec.nations)];assert.equal(entries.length,38);
+ for(const item of entries){assert.equal(item.forms,4);assert.equal(item.displayFrames,120);for(const [name,hash] of [[item.source,item.sourceSha256],[item.flow,item.flowSha256]]){const original=readFileSync(new URL('../'+name,import.meta.url));assert.equal(createHash('sha256').update(original).digest('hex'),hash);assert.deepEqual(readFileSync(new URL('../dist-mobile/'+name,import.meta.url)),original);}}
+ for(const name of ['broadcast-game-actor.mjs','broadcast-review-zone.mjs','broadcast-smooth-batter.mjs'])assert.equal(read('dist-mobile/'+name),read(name));
+});

@@ -20910,3 +20910,35 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay #be-field-labels .be-label-leader{fill:none;stroke:#e7f4ef;stroke-opacity:.55;stroke-width:1}
 #be-replay-overlay .be-stadium[data-view=pitch] #be-field-labels{display:none}
 #be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid>span{font-size:calc(8.5px * var(--be-scene-scale,.5))!important}
+
+/* Distant plate and readable recorded-zone zoom share the same normalized data. */
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-pitch-background{object-fit:cover!important;object-position:center!important;transform:none!important}
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=left] .be-stadium-pitch-background{transform:scaleX(-1)!important}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-plate-actor{display:none!important}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid{min-width:0!important;min-height:0!important;border-width:.5px!important}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-broadcast-zone-grid>span{font-size:0!important;min-width:0!important;min-height:0!important;border-width:.3px!important;background:transparent!important}
+#be-replay-overlay #be-stadium-pitches text{display:none}
+#be-replay-overlay .be-live-zone-zoom{grid-column:1;grid-row:1;padding:0;margin:0;min-width:0;color:#dceaf0;font:10px system-ui,sans-serif;text-align:center}
+#be-replay-overlay .be-live-zone-zoom strong{display:block;margin-bottom:3px;font-size:10px}
+#be-replay-overlay .be-live-zone-plot{position:relative;width:88px;height:114px;margin:auto}
+#be-replay-overlay .be-live-zone-grid{position:absolute;left:10%;top:7.6923%;width:80%;height:84.6154%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border:1px solid #d4e4eb}
+#be-replay-overlay .be-live-zone-grid span{display:flex;align-items:center;justify-content:center;min-width:0;border:.3px solid #7b9ba6;font:700 9px system-ui,sans-serif;color:#eef6f9}
+#be-replay-overlay .be-live-zone-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#be-replay-overlay .be-live-zone-plot text{font:700 7px system-ui,sans-serif;fill:#153b47}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-footer{grid-template-columns:88px minmax(0,1fr) minmax(0,1fr)}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-result{grid-column:2}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-pitch-record-panel{grid-column:3}
+#be-replay-overlay .be-stadium[data-view=field] .be-live-zone-zoom{display:none}
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=right] .be-stadium-strike-slot{left:81.94444%!important;top:42.2%!important;width:3.05%;height:6.8%}
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=left] .be-stadium-strike-slot{left:18.05556%!important;top:42.2%!important;width:3.05%;height:6.8%}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-stadium-pitch-background{z-index:1!important}
+#be-replay-overlay .be-stadium[data-view=pitch] .be-batter-render{z-index:2!important}
+/* The readable zone opens on demand without pushing player cards under controls. */
+#be-replay-overlay .be-live-zone-zoom{position:relative;align-self:center;z-index:15}
+#be-replay-overlay .be-live-zone-zoom summary{list-style:none;cursor:pointer;padding:7px 4px;border:1px solid #8cabb9;border-radius:6px;font:700 11px system-ui,sans-serif;white-space:nowrap;color:#eaf3f7}
+#be-replay-overlay .be-live-zone-zoom summary::-webkit-details-marker{display:none}
+#be-replay-overlay .be-live-zone-zoom[open] summary{background:#216568}
+#be-replay-overlay .be-live-zone-plot{position:absolute!important;bottom:calc(100% + 12px);left:0;width:150px!important;height:195px!important;border:1px solid #c1d7df;border-radius:7px;background:#102f43;box-shadow:0 5px 20px #00172588}
+#be-replay-overlay .be-live-zone-grid span{font-size:14px}
+#be-replay-overlay .be-live-zone-grid .be-zone-hot{background:#9a534d}
+#be-replay-overlay .be-live-zone-grid .be-zone-cold{background:#355d83}

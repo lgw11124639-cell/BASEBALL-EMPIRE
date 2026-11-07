@@ -1,11 +1,11 @@
-import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-proportions81';
+import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-live86';
 export {kits};
 const atlases = new Map();
 export async function uniformAtlas(id, motion = "swing") {
   id = normalizeUniformKey(id);
   const key = motion + ":" + id;
   if(!atlases.has(key)) atlases.set(key,(async()=>{
-    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-proportions81";
+    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-live86";
     const image=new Image();image.src=url;await image.decode();return url;
   })());
   return atlases.get(key);
@@ -63,7 +63,7 @@ export function framePlacement(frame,row,hand="right",bat="right",spec){
 }
 let uniformManifestPromise, uniformManifestData;
 async function uniformManifest() {
-  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-proportions81")
+  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-live86")
     .then(response=>{if(!response.ok)throw Error("Pitcher uniforms unavailable");return response.json();}).then(data=>{uniformManifestData=data;return data;});
   return uniformManifestPromise;
 }
@@ -77,7 +77,7 @@ async function preparedKit(id) {
     const manifest=await uniformManifest();
     entry.spec=specFor(id);
     entry.lastUsed=performance.now();
-    const source=new Image();source.src=entry.spec.path+"?v=20261107-proportions81";
+    const source=new Image();source.src=entry.spec.path+"?v=20261107-live86";
     await source.decode();
     const readerCanvas=document.createElement("canvas");readerCanvas.width=source.naturalWidth;readerCanvas.height=source.naturalHeight;
     const reader=readerCanvas.getContext("2d",{willReadFrequently:true});reader.drawImage(source,0,0);
@@ -98,9 +98,9 @@ async function preparedKit(id) {
   return entry.promise;
 }
 export async function preparePitcherKits(ids) {
-  await Promise.all(ids.map(preparedKit));
+  const module=await import('./broadcast-game-actor.mjs?v=20261107-live86');await module.prepareGamePitcherKits(ids);
 }
-export async function createPitcher(canvas, initialKit = 0) {
+export async function createSpritePitcher(canvas, initialKit = 0) {
   initialKit=normalizeUniformKey(initialKit);
   let images = await preparedKit(initialKit), spec=(await uniformManifest(),specFor(initialKit));
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -234,3 +234,5 @@ export async function createPitcher(canvas, initialKit = 0) {
   draw();
   return api;
 }
+
+export async function createPitcher(canvas,initialKit=0){const module=await import('./broadcast-game-actor.mjs?v=20261107-live86');return module.createGamePitcher(canvas,initialKit);}
