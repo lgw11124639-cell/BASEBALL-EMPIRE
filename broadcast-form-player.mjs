@@ -16,9 +16,21 @@ function analyze(img){
   if(tail<24||maxX-minX<12||maxY<h*.73)continue;let sum=0,count=0;for(let i=0;i<tail;i++){const at=queue[i];if(Math.floor(at/w)>=maxY-2){sum+=at%w;count++;}}shoes.push({x:sum/count,y:maxY,area:tail});
  }
  if(!shoes.length)throw Error('발 위치를 확인할 수 없습니다: '+img.src);
- // The top-left quarter contains only the printed step number and empty studio backdrop.
- const cornerW=Math.floor(w*.23),cornerH=Math.floor(h*.27),clean=x.getImageData(0,0,w,h);
- for(let px=0;px<cornerW;px++)for(let py=0;py<cornerH;py++)for(let ch=0;ch<3;ch++){const top=data[px*4+ch],bottom=data[(cornerH*w+px)*4+ch];clean.data[(py*w+px)*4+ch]=Math.round(top+(bottom-top)*py/cornerH);}
+ // Remove only isolated printed digits. The glove can enter this corner during stride.
+ const cornerW=Math.floor(w*.35),cornerH=Math.floor(h*.27),clean=x.getImageData(0,0,w,h),marked=new Uint8Array(w*h);
+ const ink=i=>data[i*4+3]>180&&Math.max(data[i*4],data[i*4+1],data[i*4+2])<170;
+ for(let py=0;py<cornerH;py++)for(let px=0;px<cornerW;px++){
+  const seed=py*w+px;if(marked[seed]||!ink(seed))continue;let head=0,tail=1,minX=px,maxX=px,minY=py,maxY=py;queue[0]=seed;marked[seed]=1;
+  while(head<tail){const at=queue[head++],ax=at%w,ay=Math.floor(at/w);minX=Math.min(minX,ax);maxX=Math.max(maxX,ax);minY=Math.min(minY,ay);maxY=Math.max(maxY,ay);
+   for(const n of[ax?at-1:-1,ax<w-1?at+1:-1,ay?at-w:-1,ay<h-1?at+w:-1])if(n>=0&&!marked[n]&&ink(n)){marked[n]=1;queue[tail++]=n;}
+  }
+  // A component reaching outside the numeral region belongs to the player, not a digit.
+  if(tail<10||maxX>=cornerW||maxY>=cornerH||maxX-minX<3)continue;
+  const y1=Math.max(0,minY-5),y2=Math.min(h-1,maxY+5);
+  for(let xx=Math.max(0,minX-4);xx<=Math.min(w-1,maxX+4);xx++)for(let yy=y1;yy<=y2;yy++)for(let ch=0;ch<3;ch++){
+   const top=data[(y1*w+xx)*4+ch],bottom=data[(y2*w+xx)*4+ch];clean.data[(yy*w+xx)*4+ch]=Math.round(top+(bottom-top)*(yy-y1)/Math.max(1,y2-y1));
+  }
+ }
  x.putImageData(clean,0,0);
  shoes.sort((a,b)=>a.x-b.x);const left=shoes[0],right=shoes.at(-1),lowest=shoes.reduce((a,b)=>a.y>b.y?a:b),out={img:c,source:img.src,w,h,left,right,lowest,shoes};cache.set(img.src,out);return out;
 }

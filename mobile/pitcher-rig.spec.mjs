@@ -137,11 +137,11 @@ for (const hand of ["우투", "좌투"])
           expect(result.frameCount).toBe(7);
           expect(result.aspect).toBeCloseTo(18 / 13, 2);
           expect(result.zone[1]).toBeCloseTo(0.20, 2);
-          expect(result.zone[0]).toBeCloseTo(hand === "우투" ? 0.58 : 0.20, 2);
+          expect(result.zone[0]).toBeCloseTo(hand === "우투" ? 0.20 : 0.58, 2);
           const x = result.registration.mirror
             ? 720 - result.registration.pivot[0]
             : result.registration.pivot[0];
-          expect(x).toBe(hand === "좌투" ? 564 : 125);
+          expect(x).toBe(hand === "좌투" ? 156 : 564);
           expect(result.registration.mirror).toBe(hand === "좌투");
           await page.locator(".be-stadium").evaluate(el=>el.scrollIntoView({block:"center"}));
           await page.clock.runFor(30);
@@ -187,7 +187,7 @@ test('all baked club uniforms keep complete bodies outside the strike zone in ev
       await actor.setKit(id);sources.push(actor.inspect().source);
       for(const hand of ['right','left'])for(let row=0;row<4;row++)for(let frame=0;frame<7;frame++){
         actor.pose(phases[frame],row,hand,frame>=3);
-        const ctx=canvas.getContext('2d'),x=hand==='right'?418:144,y=hand==='right'?191:222;
+        const ctx=canvas.getContext('2d'),x=hand==='right'?144:418,y=hand==='right'?222:191;
         const zone=ctx.getImageData(x*2,y*2,144*2,128*2).data;
         let opaque=0;for(let i=3;i<zone.length;i+=4)if(zone[i]>32)opaque++;
         if(opaque)violations.push({id,hand,row,frame,opaque});

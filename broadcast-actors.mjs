@@ -1,11 +1,11 @@
-import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-alpha-cover70';
+import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-diagonal75';
 export {kits};
 const atlases = new Map();
 export async function uniformAtlas(id, motion = "swing") {
   id = normalizeUniformKey(id);
   const key = motion + ":" + id;
   if(!atlases.has(key)) atlases.set(key,(async()=>{
-    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-alpha-cover70";
+    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-diagonal75";
     const image=new Image();image.src=url;await image.decode();return url;
   })());
   return atlases.get(key);
@@ -57,12 +57,12 @@ export const PITCH_KEY_FRAMES=[0,1,2,3,4,5,6];
 export function pitchFrame(phase){const p=Math.max(0,Math.min(4,Number(phase)||0));return p<.35?0:p<.85?1:p<1.7?2:p<3?3:p<3.35?4:p<3.8?5:6;}
 export const PITCH_UNIFORM_MANIFEST="assets/broadcast/motion/pitcher-solid/manifest.json";
 export function framePlacement(frame,row,hand="right",bat="right",spec){
- const x=hand==="left"?156:125,y=452,scale=1.2,anchor=[144,270],landing=spec?.landing?.[row]||[204,254];
+ const x=564,y=452,scale=1.0,anchor=[144,270],landing=spec?.landing?.[row]||[204,254];
  return {x:x-anchor[0]*scale,y:y-anchor[1]*scale,scale,pivot:[x,y],anchor,planted:frame<4?[x,y]:[x+(landing[0]-144)*scale,y+(landing[1]-270)*scale],mirror:hand==="left"};
 }
 let uniformManifestPromise, uniformManifestData;
 async function uniformManifest() {
-  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-alpha-cover70")
+  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-diagonal75")
     .then(response=>{if(!response.ok)throw Error("Pitcher uniforms unavailable");return response.json();}).then(data=>{uniformManifestData=data;return data;});
   return uniformManifestPromise;
 }
@@ -76,7 +76,7 @@ async function preparedKit(id) {
     const manifest=await uniformManifest();
     entry.spec=specFor(id);
     entry.lastUsed=performance.now();
-    const source=new Image();source.src=entry.spec.path+"?v=20261107-alpha-cover70";
+    const source=new Image();source.src=entry.spec.path+"?v=20261107-diagonal75";
     await source.decode();
     const readerCanvas=document.createElement("canvas");readerCanvas.width=source.naturalWidth;readerCanvas.height=source.naturalHeight;
     const reader=readerCanvas.getContext("2d",{willReadFrequently:true});reader.drawImage(source,0,0);

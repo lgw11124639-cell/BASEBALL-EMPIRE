@@ -20889,3 +20889,7 @@ main.game-shell .record-room { padding: 26px !important; }
 #be-replay-overlay .be-replay-options label:last-child{width:96px!important;max-width:none;flex-shrink:0}
 #be-replay-overlay #be-replay-speed{appearance:none!important;-webkit-appearance:none!important;box-sizing:border-box!important;width:64px!important;min-width:64px!important;height:34px!important;min-height:34px!important;padding:0 22px 0 8px!important}
 #be-replay-overlay .be-stadium{scroll-margin-block:8px}
+
+/* Camera choice follows screen side, independently of anatomical throwing hand. */
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=right] .be-stadium-strike-slot{left:30%!important;top:55%!important}
+#be-replay-overlay .be-stadium[data-view=pitch][data-pitch-hand=left] .be-stadium-strike-slot{left:68%!important;top:49%!important}

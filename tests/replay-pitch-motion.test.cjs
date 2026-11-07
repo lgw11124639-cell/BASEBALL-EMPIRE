@@ -18,7 +18,7 @@ assert.equal(run("beReplayLeadLabel({x:68,y:50},'좌타')"),'바깥쪽');
    let landing;
    for(let frame=0;frame<7;frame++){
     const p=framePlacement(frame,row,hand,bat,spec),screenX=p.mirror?720-p.pivot[0]:p.pivot[0];
-    assert.equal(screenX,hand==='left'?564:125,'camera follows actual throwing hand independently of batter');
+    assert.equal(screenX,hand==='left'?156:564,'camera follows actual throwing hand independently of batter');
     assert.equal(p.mirror,hand==='left');
     assert.ok(Math.abs(p.x+(frame<4?p.anchor[0]:spec.landing[row][0])*p.scale-p.planted[0])<.001);
     assert.ok(Math.abs(p.y+(frame<4?p.anchor[1]:spec.landing[row][1])*p.scale-p.planted[1])<.001);
@@ -28,6 +28,11 @@ assert.equal(run("beReplayLeadLabel({x:68,y:50},'좌타')"),'바깥쪽');
    }
    const p=framePlacement(4,row,hand,bat,spec),release=spec.release[row];
    assert.ok(p.x+release[0]*p.scale>0&&p.y+release[1]*p.scale>0);
+   const rawX=p.x+(release[0]+.5)*p.scale,startX=p.mirror?720-rawX:rawX,targetX=hand==='right'?216:490;
+   const pitch={throwHand:hand==='right'?'우투':'좌투',delivery:['오버핸드','쓰리쿼터','사이드암','언더핸드'][row],releaseX:startX,releaseY:p.y+(release[1]+.5)*p.scale};
+   const start=run('beBroadcastPitchPoint('+JSON.stringify(pitch)+','+targetX+',290,'+targetX+',210,0)'),end=run('beBroadcastPitchPoint('+JSON.stringify(pitch)+','+targetX+',290,'+targetX+',210,1)');
+   assert.equal(start.x,startX,'flight starts on actual throwing hand');assert.deepEqual(JSON.parse(JSON.stringify(end)),{x:targetX,y:290});
+   assert.ok(hand==='right'?start.x>end.x:start.x<end.x,'righty pitches right-to-left; lefty pitches left-to-right');
   }
  }
  assert.equal(unique.size,38);assert.ok(bytes<45*1024*1024,'38 complete uniform atlases remain compact');
