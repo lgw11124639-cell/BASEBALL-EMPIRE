@@ -1,7 +1,7 @@
 // Ten whole photographs, registered to the support shoe. No blending or limb compositing.
 export const durations=[600,200,300,240,180,120,100,200,220,500];
 const starts=durations.map((_,i)=>durations.slice(0,i).reduce((a,b)=>a+b,0)),total=durations.reduce((a,b)=>a+b,0);
-const labels=['준비','초기 들기 · 오른쪽 비틀기','최고점 · 오른쪽 비틀기','스트라이드 · 손 분리','착지 · 코킹','릴리스','초기 팔로스루','팔로스루','감속','균형 회복'];
+const labels=['준비','초기 다리 들기','최고점 · 골반과 몸통 정렬','다리 내리기 · 손 분리','스트라이드','착지 · 코킹','릴리스','초기 팔로스루','팔로스루 · 감속','균형 회복'];
 const cache=new Map();
 function analyze(img){
  if(cache.has(img.src))return cache.get(img.src);
@@ -16,43 +16,27 @@ function analyze(img){
   if(tail<24||maxX-minX<12||maxY<h*.73)continue;let sum=0,count=0;for(let i=0;i<tail;i++){const at=queue[i];if(Math.floor(at/w)>=maxY-2){sum+=at%w;count++;}}shoes.push({x:sum/count,y:maxY,area:tail});
  }
  if(!shoes.length)throw Error('발 위치를 확인할 수 없습니다: '+img.src);
- // Remove only isolated printed digits. The glove can enter this corner during stride.
- const cornerW=Math.floor(w*.35),cornerH=Math.floor(h*.27),clean=x.getImageData(0,0,w,h),marked=new Uint8Array(w*h);
- const ink=i=>data[i*4+3]>180&&Math.max(data[i*4],data[i*4+1],data[i*4+2])<170;
- for(let py=0;py<cornerH;py++)for(let px=0;px<cornerW;px++){
-  const seed=py*w+px;if(marked[seed]||!ink(seed))continue;let head=0,tail=1,minX=px,maxX=px,minY=py,maxY=py;queue[0]=seed;marked[seed]=1;
-  while(head<tail){const at=queue[head++],ax=at%w,ay=Math.floor(at/w);minX=Math.min(minX,ax);maxX=Math.max(maxX,ax);minY=Math.min(minY,ay);maxY=Math.max(maxY,ay);
-   for(const n of[ax?at-1:-1,ax<w-1?at+1:-1,ay?at-w:-1,ay<h-1?at+w:-1])if(n>=0&&!marked[n]&&ink(n)){marked[n]=1;queue[tail++]=n;}
-  }
-  // A component reaching outside the numeral region belongs to the player, not a digit.
-  if(tail<10||maxX>=cornerW||maxY>=cornerH||maxX-minX<3)continue;
-  const y1=Math.max(0,minY-5),y2=Math.min(h-1,maxY+5);
-  for(let xx=Math.max(0,minX-4);xx<=Math.min(w-1,maxX+4);xx++)for(let yy=y1;yy<=y2;yy++)for(let ch=0;ch<3;ch++){
-   const top=data[(y1*w+xx)*4+ch],bottom=data[(y2*w+xx)*4+ch];clean.data[(yy*w+xx)*4+ch]=Math.round(top+(bottom-top)*(yy-y1)/Math.max(1,y2-y1));
-  }
- }
- x.putImageData(clean,0,0);
  shoes.sort((a,b)=>a.x-b.x);const left=shoes[0],right=shoes.at(-1),lowest=shoes.reduce((a,b)=>a.y>b.y?a:b),out={img:c,source:img.src,w,h,left,right,lowest,shoes};cache.set(img.src,out);return out;
 }
 export class FormPlayer{
  constructor(section,name,onPlay){
   this.section=section;this.name=name;this.onPlay=onPlay;this.playing=false;this.elapsed=0;this.index=0;this.rate=1;this.last=null;this.raf=null;
-  const host=document.createElement('div');host.className='motion-player';host.innerHTML=`<canvas width="720" height="800" aria-label="${name} 애니메이션"></canvas><div class="motion-tools"><p class="motion-status" role="status">동작을 불러오는 중…</p><div class="motion-actions"><button type="button" data-action="previous" disabled aria-label="이전 동작">◀ 이전</button><button type="button" data-action="play" disabled aria-pressed="false">▶ 재생</button><button type="button" data-action="next" disabled aria-label="다음 동작">다음 ▶</button></div><label class="motion-range-label">구분동작 <output>1 / 10</output><input type="range" min="0" max="9" step="1" value="0" aria-label="${name} 구분동작"></label><label class="motion-speed">속도 <select aria-label="${name} 재생 속도"><option value="1">1배</option><option value="2">2배</option><option value="3">3배</option></select></label><p class="motion-note">오른발 지지 → 왼발 착지 · 파란 손목은 공을 던지는 오른손</p></div>`;
+  const host=document.createElement('div');host.className='motion-player';host.innerHTML=`<canvas width="720" height="800" aria-label="${name} 애니메이션"></canvas><div class="motion-tools"><p class="motion-status" role="status">동작을 불러오는 중…</p><div class="motion-actions"><button type="button" data-action="previous" disabled aria-label="이전 동작">◀ 이전</button><button type="button" data-action="play" disabled aria-pressed="false">▶ 재생</button><button type="button" data-action="next" disabled aria-label="다음 동작">다음 ▶</button></div><label class="motion-range-label">구분동작 <output>1 / 10</output><input type="range" min="0" max="9" step="1" value="0" aria-label="${name} 구분동작"></label><label class="motion-speed">속도 <select aria-label="${name} 재생 속도"><option value="1">1배</option><option value="2">2배</option><option value="3">3배</option></select></label><p class="motion-note">확정한 2·3번 자세 · 오른발 지지 → 왼발 착지</p></div>`;
   section.insertBefore(host,section.querySelector('.steps'));this.host=host;this.canvas=host.querySelector('canvas');this.ctx=this.canvas.getContext('2d');this.button=host.querySelector('[data-action=play]');this.range=host.querySelector('input');this.status=host.querySelector('.motion-status');this.output=host.querySelector('output');
   this.button.onclick=()=>this.playing?this.pause():this.play();host.querySelector('[data-action=previous]').onclick=()=>{this.pause();this.seek((this.index+9)%10);};host.querySelector('[data-action=next]').onclick=()=>{this.pause();this.seek((this.index+1)%10);};this.range.oninput=()=>{this.pause();this.seek(Number(this.range.value));};host.querySelector('select').onchange=e=>{this.rate=Number(e.target.value);this.last=null;};
  }
  async init(){
-  const images=[...this.section.querySelectorAll('.pose img')];await Promise.all(images.map(i=>i.decode()));this.frames=images.map(analyze);images.forEach((img,i)=>{const clean=document.createElement('canvas'),frame=this.frames[i];clean.width=frame.w;clean.height=frame.h;clean.className='single';clean.setAttribute('role','img');clean.setAttribute('aria-label',img.alt);clean.getContext('2d').drawImage(frame.img,0,0);img.hidden=true;img.style.display='none';img.parentElement.append(clean);});this.releaseIndex=this.section.id==='submarine'?6:5;const plant=this.frames[this.releaseIndex-1];this.land=[450+(plant.left.x-plant.right.x)*1.5,700+(plant.left.y-plant.right.y)*1.5];this.ready=true;this.seek(0);this.host.querySelectorAll('button').forEach(b=>b.disabled=false);return this;
+  const images=[...this.section.querySelectorAll('.pose img')];await Promise.all(images.map(i=>i.decode()));this.frames=images.map(analyze);images.forEach((img,i)=>{const clean=document.createElement('canvas'),frame=this.frames[i];clean.width=frame.w;clean.height=frame.h;clean.className='single';clean.setAttribute('role','img');clean.setAttribute('aria-label',img.alt);clean.getContext('2d').drawImage(frame.img,0,0);img.hidden=true;img.style.display='none';img.parentElement.append(clean);});this.releaseIndex=6;const plant=this.frames[this.releaseIndex-1];this.land=[240+(plant.right.x-plant.left.x)*1.5,700+(plant.right.y-plant.left.y)*1.5];this.ready=true;this.seek(0);this.host.querySelectorAll('button').forEach(b=>b.disabled=false);return this;
  }
  draw(index){
-  const label=this.section.id==='submarine'?['준비','초기 들기 · 오른쪽 비틀기','최고점 · 오른쪽 비틀기','왼다리 내리기 · 중심 이동','스트라이드 · 손 분리 · 몸 낮추기','왼발 착지 · 낮은 코킹','낮은 릴리스','팔로스루','감속','균형 회복'][index]:labels[index];
-  const f=this.frames[index],support=index<this.releaseIndex?(index>=1&&index<=(this.section.id==='submarine'?3:2)?f.lowest:f.right):f.left,target=index<this.releaseIndex?[450,700]:this.land,s=1.5,dx=target[0]-support.x*s,dy=target[1]-support.y*s,w=f.w*s,h=f.h*s,c=this.ctx;
+  const label=labels[index];
+  const f=this.frames[index],support=index<this.releaseIndex?(index>=1&&index<=4?f.lowest:f.left):f.right,target=index<this.releaseIndex?[240,700]:this.land,s=1.5,dx=target[0]-support.x*s,dy=target[1]-support.y*s,w=f.w*s,h=f.h*s,c=this.ctx;
   c.globalAlpha=1;c.clearRect(0,0,720,800);c.fillStyle='#dedee3';c.fillRect(0,0,720,800);
   // Extend the empty studio backdrop to the viewport edges; no moving photo rectangles.
   const xs=[{s:0,n:1,d:0,l:dx},{s:0,n:f.w,d:dx,l:w},{s:f.w-1,n:1,d:dx+w,l:720-dx-w}],ys=[{s:0,n:1,d:0,l:dy},{s:0,n:f.h,d:dy,l:h},{s:f.h-1,n:1,d:dy+h,l:800-dy-h}];
   for(const a of xs)for(const b of ys)if(a.l>0&&b.l>0)c.drawImage(f.img,a.s,b.s,a.n,b.n,a.d,b.d,a.l,b.l);
   c.fillStyle='rgba(242,245,248,.94)';c.fillRect(0,0,720,92);c.fillRect(0,740,720,60);
-  c.fillStyle='#f9fafb';c.strokeStyle='#a8adb3';c.lineWidth=1;c.fillRect(412,704,76,6);c.strokeRect(412,704,76,6);
+  c.fillStyle='#f9fafb';c.strokeStyle='#a8adb3';c.lineWidth=1;c.fillRect(202,704,76,6);c.strokeRect(202,704,76,6);
   c.fillStyle='#173345';c.font='600 26px system-ui';c.fillText(this.name,26,42);c.font='17px system-ui';c.fillStyle='#526b7c';c.fillText('우투 · 10단계 동작',26,70);c.font='600 20px system-ui';c.fillStyle='#173345';c.fillText(String(index+1).padStart(2,'0')+'  '+label,26,770);
   this.index=index;this.canvas.dataset.step=String(index+1);this.host.dataset.step=String(index+1);this.range.value=String(index);this.output.value=(index+1)+' / 10';this.status.textContent=(index+1)+'번 · '+label;this.registration={support:index<this.releaseIndex?'right':'left',point:[...target],source:[support.x,support.y],offset:[dx,dy],scale:s};
  }

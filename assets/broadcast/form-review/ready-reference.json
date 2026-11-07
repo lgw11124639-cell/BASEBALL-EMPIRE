@@ -1,0 +1,225 @@
+{
+  "acceptedPairSha256": "7c5d813680f20980d9c84dd6b37994eaca0c707e889a7ac9317e9c4ae1a2b06b",
+  "poses": {
+    "sidearm": {
+      "sourceSha256": "4dcceba3a61bcd5bd99735e574627aad54c5a5b933d3fa853b9d6fd07d542777",
+      "frames": [
+        {
+          "file": "sidearm-step-1.webp",
+          "sha256": "4b36a9de77f2ae62df21569fe2374b6fa46613cb65733bd259a6fbcde68b7568",
+          "acceptedPair": false
+        },
+        {
+          "file": "sidearm-step-2.webp",
+          "sha256": "faf77424c0f33215f935431f5412a7821bbe87ae4a9417914f0175c150cbfa07",
+          "acceptedPair": true
+        },
+        {
+          "file": "sidearm-step-3.webp",
+          "sha256": "e0b97cfc1c6c817f5d6da8e213512ec9315d4de8eb9f5555504d91a9801630af",
+          "acceptedPair": true
+        },
+        {
+          "file": "sidearm-step-4.webp",
+          "sha256": "6992d533192959add25e1883d47e1306e698e218405e207fb6886f3a00307ecd",
+          "acceptedPair": false
+        },
+        {
+          "file": "sidearm-step-5.webp",
+          "sha256": "8b7b82bf7002e27beb8cc41240ac1d7102a83cbf014070e3f83bfcad07c23abb",
+          "acceptedPair": false
+        },
+        {
+          "file": "sidearm-step-6.webp",
+          "sha256": "b498d9dbef5d86442b2841645d66965dbd5f8976fc559c47d3fcc762ca2e9af0",
+          "acceptedPair": false
+        },
+        {
+          "file": "sidearm-step-7.webp",
+          "sha256": "f8db4badb4d0175bf96aa5184d77e055db17a8e4b817943deb4792d39f8fad6c",
+          "acceptedPair": false
+        },
+        {
+          "file": "sidearm-step-8.webp",
+          "sha256": "3caf56e0d5dbc75536ab3ac716bbce813f3d29e2fbc63c64a37b710709b0c9e1",
+          "acceptedPair": false
+        },
+        {
+          "file": "sidearm-step-9.webp",
+          "sha256": "aa75460538dfabc9c418876315df11a6ff1c7010a7ec9f26c9bf0f7ac5ec4dbc",
+          "acceptedPair": false
+        },
+        {
+          "file": "sidearm-step-10.webp",
+          "sha256": "7b6c205534d4fd0635f6bfb8836b8c31e9b483810437017cca7987ce5e52dcf3",
+          "acceptedPair": false
+        }
+      ]
+    },
+    "threequarter": {
+      "sourceSha256": "9ddb374a3acb833afff63167d80b14040eaba4f7e8c3647b0aa5808ce63bece1",
+      "frames": [
+        {
+          "file": "threequarter-step-1.webp",
+          "sha256": "b21aeb8d7c2a422d6167497766de243afe717a0dee95c4d6bc0845d7dec4acc8",
+          "acceptedPair": false
+        },
+        {
+          "file": "threequarter-step-2.webp",
+          "sha256": "faf77424c0f33215f935431f5412a7821bbe87ae4a9417914f0175c150cbfa07",
+          "acceptedPair": true
+        },
+        {
+          "file": "threequarter-step-3.webp",
+          "sha256": "e0b97cfc1c6c817f5d6da8e213512ec9315d4de8eb9f5555504d91a9801630af",
+          "acceptedPair": true
+        },
+        {
+          "file": "threequarter-step-4.webp",
+          "sha256": "f09ed0c90b1c39a2021f051e4f2a042bd8ffa262f5e92f10c1d4c9e7e2095e13",
+          "acceptedPair": false
+        },
+        {
+          "file": "threequarter-step-5.webp",
+          "sha256": "015b27916f5d503d7ddf0e7bfcff55213c2c7cfd73dd33730f67d36cd8159499",
+          "acceptedPair": false
+        },
+        {
+          "file": "threequarter-step-6.webp",
+          "sha256": "21954fe4d4d55baefdc320e827a70ef68430781b61c06719f7342ad7512df058",
+          "acceptedPair": false
+        },
+        {
+          "file": "threequarter-step-7.webp",
+          "sha256": "81cb9cc578f0aa68b52dfb6179a8b7d2f682239adc774e30fe0ca754b9ab430c",
+          "acceptedPair": false
+        },
+        {
+          "file": "threequarter-step-8.webp",
+          "sha256": "df386fd8f853d45cf73df81fced314e8f137f3562e1748de5d8c9ac23e1e2ee6",
+          "acceptedPair": false
+        },
+        {
+          "file": "threequarter-step-9.webp",
+          "sha256": "c222ac66a6a0980ec51cff0295abc7a6d49d56d628451f0b44fd04564ba2e181",
+          "acceptedPair": false
+        },
+        {
+          "file": "threequarter-step-10.webp",
+          "sha256": "1ae4a3c4af41cca859c8dc09e9989488772590378db2e06a6a56abf5a3ded73a",
+          "acceptedPair": false
+        }
+      ]
+    },
+    "submarine": {
+      "sourceSha256": "47606e3ca9b8e6cac789c9aeb4e856dd2bb644f4d6bd0625712ee1bb3d07b8aa",
+      "frames": [
+        {
+          "file": "submarine-step-1.webp",
+          "sha256": "fe6ed92ea6deea9c1c05c85a54822659e4d1f1da0dd14411ecf961029b9e8ee4",
+          "acceptedPair": false
+        },
+        {
+          "file": "submarine-step-2.webp",
+          "sha256": "faf77424c0f33215f935431f5412a7821bbe87ae4a9417914f0175c150cbfa07",
+          "acceptedPair": true
+        },
+        {
+          "file": "submarine-step-3.webp",
+          "sha256": "e0b97cfc1c6c817f5d6da8e213512ec9315d4de8eb9f5555504d91a9801630af",
+          "acceptedPair": true
+        },
+        {
+          "file": "submarine-step-4.webp",
+          "sha256": "ad26e2f54721154e5db22a7db50cce37112ec37989de6b2005ffb4bf98af4952",
+          "acceptedPair": false
+        },
+        {
+          "file": "submarine-step-5.webp",
+          "sha256": "75a00c69c4298febfea18bd0623ccfdc180f9843bccf83a53abbdb635d005ab2",
+          "acceptedPair": false
+        },
+        {
+          "file": "submarine-step-6.webp",
+          "sha256": "d7a3d2a72acb83ab3c54ff539983e10e7eedb327c7bb6ca5b947461b13618f11",
+          "acceptedPair": false
+        },
+        {
+          "file": "submarine-step-7.webp",
+          "sha256": "590908e046e543e747ee0b7f372028d8a8ed8da324d56d9b9cdd5083e21e36cf",
+          "acceptedPair": false
+        },
+        {
+          "file": "submarine-step-8.webp",
+          "sha256": "1e8ca08808cda3de22e08c98515a1f00871966ccb1513b70104f56b435e304a1",
+          "acceptedPair": false
+        },
+        {
+          "file": "submarine-step-9.webp",
+          "sha256": "0ab47393f80f8d8e816a429dc826ab8a6307aaab50f4d28b56016f025c780686",
+          "acceptedPair": false
+        },
+        {
+          "file": "submarine-step-10.webp",
+          "sha256": "3739c4dc258dd33f214fc2c9c4b5a45716a9cb86d9d58aab405bcff70e82ab8d",
+          "acceptedPair": false
+        }
+      ]
+    },
+    "overhand": {
+      "sourceSha256": "4135f014457c689e543908b5498f91415df0b9a924a94223cd65becfae298946",
+      "frames": [
+        {
+          "file": "overhand-step-1.webp",
+          "sha256": "80c595e48e612f702990e8cde67dbc4f5a4cd8b752102c3a5503ef3b9e9abcb5",
+          "acceptedPair": false
+        },
+        {
+          "file": "overhand-step-2.webp",
+          "sha256": "faf77424c0f33215f935431f5412a7821bbe87ae4a9417914f0175c150cbfa07",
+          "acceptedPair": true
+        },
+        {
+          "file": "overhand-step-3.webp",
+          "sha256": "e0b97cfc1c6c817f5d6da8e213512ec9315d4de8eb9f5555504d91a9801630af",
+          "acceptedPair": true
+        },
+        {
+          "file": "overhand-step-4.webp",
+          "sha256": "12873439d96cea06eb44f0587da2955fb072826711ed089f83d6687350980d8a",
+          "acceptedPair": false
+        },
+        {
+          "file": "overhand-step-5.webp",
+          "sha256": "9d481d69cfca9c1b8021741882c6b27751caf939e581f96d387e0fa52535e1b2",
+          "acceptedPair": false
+        },
+        {
+          "file": "overhand-step-6.webp",
+          "sha256": "ededd05be1309470a7e60a6e71d5e4abaeeb6c2e0a73ff7b663a7433ed7cf9b2",
+          "acceptedPair": false
+        },
+        {
+          "file": "overhand-step-7.webp",
+          "sha256": "41b6c2afdc8504e1e3ff2e0ff39907864eb56c158847bffa125f835a97396092",
+          "acceptedPair": false
+        },
+        {
+          "file": "overhand-step-8.webp",
+          "sha256": "b81ef087ae674551e044522422ef195948a99bc32063ab82dbebddef4784196e",
+          "acceptedPair": false
+        },
+        {
+          "file": "overhand-step-9.webp",
+          "sha256": "0f363c295a648510af83b81d0d10486829d934b9ab2d26617b7419a2fe53d18c",
+          "acceptedPair": false
+        },
+        {
+          "file": "overhand-step-10.webp",
+          "sha256": "a1b15d9254221694d6096a4420dcbd5490cceb4fa0b296e368ae0f57ad4930bd",
+          "acceptedPair": false
+        }
+      ]
+    }
+  }
+}
