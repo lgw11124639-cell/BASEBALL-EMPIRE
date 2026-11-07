@@ -14,82 +14,92 @@
     {
       "id": 0,
       "file": "club-0.webp",
-      "sha256": "11d4699bea24c3ba51ccb60194baa3b93397ffcc8e113de0e9d705e28a0a0e7d",
+      "sha256": "69d6f302bf4cd53899f72038459ad3945c2f485f4a801cc0fe89447b46351caf",
       "sourceSha256": "44288cf4a7b849dc1a4876d4597ee12b446231e4fc5e8b3337ae21b9e6a17ef2",
       "referenceFile": "assets/broadcast/uniforms/club-0.webp",
-      "referenceSha256": "4a12108dc0cd3248e331b1f49a9ceddcd010fddb1f2a443d0151693a86893dd3"
+      "referenceSha256": "4a12108dc0cd3248e331b1f49a9ceddcd010fddb1f2a443d0151693a86893dd3",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 1,
       "file": "club-1.webp",
-      "sha256": "7ae0d9ac45275fef55a070e8837be7aa2dec4b311cb892928bcffee8d330cd9d",
+      "sha256": "39e64a019744964a3b54557baf0008820efb1865dbeda4e34e5a299d451fd48c",
       "sourceSha256": "50eea010a6941c2320f5a65eb495a4e7e9d81e9dcf699f6fa0ea5b623e2e9462",
       "referenceFile": "assets/broadcast/uniforms/club-1.webp",
-      "referenceSha256": "2c67a086a38aa3fcaef54aacf11d94be91732be877de4cc4d5b39e7492526c3d"
+      "referenceSha256": "2c67a086a38aa3fcaef54aacf11d94be91732be877de4cc4d5b39e7492526c3d",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 2,
       "file": "club-2.webp",
-      "sha256": "e90005ecfdb816858b9605ca6c0c72f5c7064149eaf0a293e2a816317efffd2c",
+      "sha256": "77eb683e5f20f737859f283f107ecf697e8af0ed459cf4f8ff40e4eda264e2de",
       "sourceSha256": "5fbffb7140c03b3f9ee502fd1afbf184ef89b06ace522ba691d686acaf7c4725",
       "referenceFile": "assets/broadcast/uniforms/club-2.webp",
-      "referenceSha256": "cea0bbf5984ca0e34cb9fd7c221f286992c2b6c10cc72f27d5aabc63d4618448"
+      "referenceSha256": "cea0bbf5984ca0e34cb9fd7c221f286992c2b6c10cc72f27d5aabc63d4618448",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 3,
       "file": "club-3.webp",
-      "sha256": "3a1796568e09a1f043afc88464c86147b97fa4ad5381591b69e82c08e6a6267f",
+      "sha256": "e4f9898a682c211ab17eb9e0c3411d060fff4cb4b120b6fa83384b4781b09273",
       "sourceSha256": "80b0bfa0d30d7c9f7b7d84a7b1811f534d054fe7b42cbe7f707fb419eb714864",
       "referenceFile": "assets/broadcast/uniforms/club-3.webp",
-      "referenceSha256": "5c0d9dafbfacd6280062568635cc589c6040a650950011156a640e9b4fb96f1c"
+      "referenceSha256": "5c0d9dafbfacd6280062568635cc589c6040a650950011156a640e9b4fb96f1c",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 4,
       "file": "club-4.webp",
-      "sha256": "dd0296a64f5eafcf2c5d1b1bef75326fa50684554ef5449f90fe9428432e08fe",
+      "sha256": "6ac65ab4832290eeed667a7a061d966f711b0189f70526537f77e182bc6cdd99",
       "sourceSha256": "743cf63b903a6c8e17f88542d3a6073794bfa1d7625d13e7bee31aaffdaf49a6",
       "referenceFile": "assets/broadcast/uniforms/club-4.webp",
-      "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88"
+      "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 5,
       "file": "club-5.webp",
-      "sha256": "216c120649e6aa91aefb03c95729957c7bb1d51e0c5833e4d52422adbcbede90",
+      "sha256": "27fd08438ee8aca51e4e5d58c2e49fff8f3fe1b2e774ab18ea0284d7dd121451",
       "sourceSha256": "b22012276673513eaa80e6468891c88cef388b1b9b854869d363e50be61aba6b",
       "referenceFile": "assets/broadcast/uniforms/club-5.webp",
-      "referenceSha256": "2473487a68c9e9b2d73e27db7d96c6a915fbd81959cd01b5fdae022f585efbb0"
+      "referenceSha256": "2473487a68c9e9b2d73e27db7d96c6a915fbd81959cd01b5fdae022f585efbb0",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 6,
       "file": "club-6.webp",
-      "sha256": "dbb0f0c9532d6b709f83495fc2d51a6d144809f6097c4dad822e4c30f8c4534c",
+      "sha256": "ba0342e74230c429a5c910dc416dd53a3793996fac813f6bd61cfb9f95e41099",
       "sourceSha256": "0f3f7a3106d2ac0d9c1059f17a2335347157255cfc0ea66224ba654bb05c2f5c",
       "referenceFile": "assets/broadcast/uniforms/club-6.webp",
-      "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7"
+      "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 7,
       "file": "club-7.webp",
-      "sha256": "92cde3344a5e73920027dfc6d9490689c861ee3f5049e55b25a2c191bbee9ab1",
+      "sha256": "63156226f6556b62c9ecfda94a75efb5fc64f810c6b96d1c6327cee6883d86e3",
       "sourceSha256": "2fbb7c0300fc8f00f46757de148c124fc570a93773d438850d8a3aa7033887d3",
       "referenceFile": "assets/broadcast/uniforms/club-7.webp",
-      "referenceSha256": "fd8aec23d462cd321c4992589449f23877f1c43c880c4dcca994d0c46180f08e"
+      "referenceSha256": "fd8aec23d462cd321c4992589449f23877f1c43c880c4dcca994d0c46180f08e",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 8,
       "file": "club-8.webp",
-      "sha256": "7aaa5914c243faf30a3b6b3f3e496d4b0d5750833b431a6f316f78025b00e4bb",
+      "sha256": "24e80a8f4d0715631b1014bce771b612898fb2b3ca98469895060f6da19947c2",
       "sourceSha256": "a0283b817d538da0bf1c0f3659ecaaf01abd64a44425de774dbbce3cd964909b",
       "referenceFile": "assets/broadcast/uniforms/club-8.webp",
-      "referenceSha256": "067d8f6b8e736939b6747a5fde8884521add588f4be786691023d6ecd86f96d5"
+      "referenceSha256": "067d8f6b8e736939b6747a5fde8884521add588f4be786691023d6ecd86f96d5",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 9,
       "file": "club-9.webp",
-      "sha256": "95e9b15f19fa1c5389712044021b89fa6cef8eb9c9c63dcfee69e1fabed24480",
+      "sha256": "b41dd10d8eeef3814b3721c81c063bf0cc512d5cc8e4f12d560ab46aeabc6393",
       "sourceSha256": "fe1cf3149f7b81afd1b77a567fbf695f73d27b4e7537d02b6cb6b7b0980b19c5",
       "referenceFile": "assets/broadcast/uniforms/club-9.webp",
-      "referenceSha256": "8033ad90f6b211d269010ab9d727fc8833fe15f9f803f24fc6f5d9aa7589c349"
+      "referenceSha256": "8033ad90f6b211d269010ab9d727fc8833fe15f9f803f24fc6f5d9aa7589c349",
+      "alphaSource": "original source coverage intersected with foreground mask"
     }
   ]
 }

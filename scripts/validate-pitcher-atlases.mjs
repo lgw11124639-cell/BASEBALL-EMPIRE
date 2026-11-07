@@ -23,6 +23,7 @@ for(const spec of [...m.clubs,...Object.values(m.nations)]){
   }
   if(signatures.size<6)failures.push({id:spec.id,row,distinct:signatures.size});
  }
+ if(spec.id===0)assert.ok(at(6,142,127)<10,'transparent forearm/glove gap stays transparent');
  console.log('checked club',spec.id,'28 full-body poses');
 }
 assert.deepEqual(failures,[]);console.log('PASS 1064 authored solid cuts, clean transparent corners, planted feet and distinct intermediate images');

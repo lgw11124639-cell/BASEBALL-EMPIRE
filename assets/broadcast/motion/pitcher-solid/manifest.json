@@ -31,20 +31,20 @@
       "path": "assets/broadcast/motion/pitcher-solid/club-0.webp",
       "release": [
         [
-          221,
-          30
+          220,
+          31
         ],
         [
           232,
-          60
+          61
         ],
         [
-          262,
+          263,
           86
         ],
         [
-          248,
-          144
+          249,
+          145
         ]
       ],
       "landing": [
@@ -71,7 +71,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-0.webp",
       "referenceSha256": "4a12108dc0cd3248e331b1f49a9ceddcd010fddb1f2a443d0151693a86893dd3",
-      "sha256": "3807c5e33ffafee8aa84463743e79790a4c6d57a1865938e89b7500a3be49c05"
+      "sha256": "388df4eafb10eb2f8d22230d4eed6457dfca4731e923385ebf2cd4bfdf044f2d",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 1,
@@ -83,7 +84,7 @@
           31
         ],
         [
-          233,
+          234,
           60
         ],
         [
@@ -91,7 +92,7 @@
           90
         ],
         [
-          250,
+          251,
           144
         ]
       ],
@@ -119,7 +120,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-1.webp",
       "referenceSha256": "2c67a086a38aa3fcaef54aacf11d94be91732be877de4cc4d5b39e7492526c3d",
-      "sha256": "9ad3c9c1fa6cefdee320929b6323a34283ffe675bc4e0210f79ab5238f6bc708"
+      "sha256": "04dc68f4358a55a881bb87ddafd4e3e6309ffb3130eb5d99539f0baf6ec0c8c6",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 2,
@@ -128,15 +130,15 @@
       "release": [
         [
           218,
-          37
+          40
         ],
         [
           243,
           60
         ],
         [
-          265,
-          99
+          263,
+          98
         ],
         [
           248,
@@ -167,7 +169,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-2.webp",
       "referenceSha256": "cea0bbf5984ca0e34cb9fd7c221f286992c2b6c10cc72f27d5aabc63d4618448",
-      "sha256": "b07e591720a44fb11e4b8c0b9dc0b95c66766c6a87b1109588aac8fd36beac95"
+      "sha256": "541ae01cf3714503cc5f8f020c54110fea7c339d757305e9d01cd67c32707f65",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 3,
@@ -179,16 +182,16 @@
           34
         ],
         [
-          252,
-          61
+          254,
+          60
         ],
         [
-          268,
-          97
+          267,
+          96
         ],
         [
           249,
-          149
+          152
         ]
       ],
       "landing": [
@@ -215,7 +218,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-3.webp",
       "referenceSha256": "5c0d9dafbfacd6280062568635cc589c6040a650950011156a640e9b4fb96f1c",
-      "sha256": "88ea3cf073feb36210b8792d6b2b3311bb2ade35189fc454d5732a8b9633e069"
+      "sha256": "e1a521f9e74f7145b9546ad52583e4fb5e51e7a4dc90c1c6e4cdb966d6502bb2",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 4,
@@ -227,16 +231,16 @@
           31
         ],
         [
-          235,
+          236,
           61
         ],
         [
-          257,
+          258,
           92
         ],
         [
-          250,
-          145
+          253,
+          144
         ]
       ],
       "landing": [
@@ -263,7 +267,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-4.webp",
       "referenceSha256": "d5fd99b9f17ac95e6fc65708bf9a2cac2428d168d7d142c40335c2618d54bd88",
-      "sha256": "da23a82b1524ed6b972ac7d2a8575c92a16e79c0c770118669e7b3029dd1a831"
+      "sha256": "e277031a869350f1755affdab028c7243394a48f199bd9c4a3013cc45aa8ef9d",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 5,
@@ -272,19 +277,19 @@
       "release": [
         [
           230,
-          36
+          37
         ],
         [
           249,
           59
         ],
         [
-          264,
+          267,
           90
         ],
         [
-          257,
-          148
+          258,
+          146
         ]
       ],
       "landing": [
@@ -311,7 +316,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-5.webp",
       "referenceSha256": "2473487a68c9e9b2d73e27db7d96c6a915fbd81959cd01b5fdae022f585efbb0",
-      "sha256": "83b84527845a022d4a856f59de463db4aa17b5595f2a3d3ee6333550e1783068"
+      "sha256": "1d03977be87c4595b04008336984225d97c39c4bc9cb545ab144750fbc799b17",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 6,
@@ -320,19 +326,19 @@
       "release": [
         [
           225,
-          35
+          36
         ],
         [
-          252,
-          60
+          251,
+          61
         ],
         [
-          267,
-          96
+          264,
+          99
         ],
         [
           249,
-          145
+          146
         ]
       ],
       "landing": [
@@ -359,7 +365,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-6.webp",
       "referenceSha256": "80def4f5c0582b317cd58fa4e31310b0ea640c52be31b77a769632d9fca17ed7",
-      "sha256": "bf714d60519855efcc5cc4bed574d41e8f2ad5b5dfa8b4dd2a37bc8870cd1c02"
+      "sha256": "67b6173f421663e09226f294d78674f0d69d7fcb0a7d15deb4edb471a14a6904",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 7,
@@ -368,19 +375,19 @@
       "release": [
         [
           226,
-          34
+          35
         ],
         [
-          249,
+          248,
           59
         ],
         [
-          277,
-          98
+          278,
+          99
         ],
         [
-          257,
-          142
+          256,
+          143
         ]
       ],
       "landing": [
@@ -407,7 +414,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-7.webp",
       "referenceSha256": "fd8aec23d462cd321c4992589449f23877f1c43c880c4dcca994d0c46180f08e",
-      "sha256": "99361bb3e03947cacd3059fd20e767431dd648ee0e0d9e4b7f95592d88896a5f"
+      "sha256": "2d3bfc0035f9b59a6cbadbc461109158965272c36597c210a11e61072d68119c",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 8,
@@ -455,7 +463,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-8.webp",
       "referenceSha256": "067d8f6b8e736939b6747a5fde8884521add588f4be786691023d6ecd86f96d5",
-      "sha256": "90cbf1a559050f3b1d34d135686397b49ba7cbe451cfbb1344acf4766ac81090"
+      "sha256": "e046f1c89924d45f52e7e8c98622fd1256e1737b0ab65af8aa2ad1ba6a642092",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     {
       "id": 9,
@@ -464,19 +473,19 @@
       "release": [
         [
           219,
-          31
+          32
         ],
         [
-          229,
+          230,
           59
         ],
         [
-          256,
-          89
+          263,
+          85
         ],
         [
-          254,
-          143
+          249,
+          145
         ]
       ],
       "landing": [
@@ -503,7 +512,8 @@
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/uniforms/club-9.webp",
       "referenceSha256": "8033ad90f6b211d269010ab9d727fc8833fe15f9f803f24fc6f5d9aa7589c349",
-      "sha256": "acb2f06e32886449739e965a4e695c96731dce04a459812b88ad55b938c41b66"
+      "sha256": "da86989f5f5fe05b1a527ba9be2c634aa3195bc5c3487cb0f8ea0efae40fffe6",
+      "alphaSource": "original source coverage intersected with foreground mask"
     }
   ],
   "nations": {
@@ -514,19 +524,19 @@
       "release": [
         [
           225,
-          31
+          33
         ],
         [
-          254,
-          59
+          253,
+          60
         ],
         [
-          266,
-          95
+          265,
+          97
         ],
         [
-          250,
-          144
+          251,
+          145
         ]
       ],
       "landing": [
@@ -552,8 +562,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/KR/ready.webp",
-      "referenceSha256": "2ec8729fd46458f04d6eb8a08027c7417c210d1d4efd2cbe9a8d0eef9667ec4c",
-      "sha256": "e2c6a8347692b016812d9717e6b44fc9d9134ef7da97c7be8d7e691f9c2b9317"
+      "referenceSha256": "d67b14831450e2937fb6f93d36341ee8a9adb84711b480aaa1cc71caf79ae64f",
+      "sha256": "2117ffcf6eaa0cda61768ffeba62b151e2d168ec957fd6a82233b8af9f3a9425",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "JP": {
       "id": "JP",
@@ -566,7 +577,7 @@
         ],
         [
           248,
-          63
+          64
         ],
         [
           266,
@@ -600,8 +611,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/JP/ready.webp",
-      "referenceSha256": "fb8c109bf99b913fd18d3f35cebe03804d3abffda0b425120d5a859771f5c7a5",
-      "sha256": "5a642a237251e41b0f715c10213d8333efdfd8c30608a34a9107c75b70d04b75"
+      "referenceSha256": "ecbf99d477183e3b112afb0e5945eceb923a523cc98d5f4421751ce0db0e8585",
+      "sha256": "2ac126f5b5424b9d144248d74a724f3fe886bed43ceeb9ed378f2eca82a202c2",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "TW": {
       "id": "TW",
@@ -617,12 +629,12 @@
           62
         ],
         [
-          266,
+          268,
           98
         ],
         [
           251,
-          148
+          149
         ]
       ],
       "landing": [
@@ -648,8 +660,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/TW/ready.webp",
-      "referenceSha256": "26f8a64b8cc7158eae4b66e278b989b7b24e4adf7f72a93824ef30f6fb04d561",
-      "sha256": "0b3a7d60c1e5a4a8c8bc917369a7bce574926fde9754e47d258c476c757949a4"
+      "referenceSha256": "5579d814fff1d62777c946a412e4d37fb8fd4984b68a89b5a16773cebbef3ba2",
+      "sha256": "d3280d78cc6596acf9fbf679b96ae0b19bb89476c08ce130bcdb78f23e1652ce",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "CN": {
       "id": "CN",
@@ -657,20 +670,20 @@
       "path": "assets/broadcast/nations/CN/pitcher.webp",
       "release": [
         [
-          217,
-          34
+          216,
+          33
         ],
         [
           254,
           64
         ],
         [
-          267,
+          266,
           103
         ],
         [
           247,
-          148
+          149
         ]
       ],
       "landing": [
@@ -696,8 +709,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CN/ready.webp",
-      "referenceSha256": "784178cb6395eb7183566340d4a86f8ba20a7c42d4a5251f38b66bd5b80c3715",
-      "sha256": "347fc6b1fd1ef845d482035aee3e55d0118fb0c1a21a685002ee41d17cce3960"
+      "referenceSha256": "ce068b46087c4b2f666f1932811a09742745f998c2ba8114eaad351857f33ecc",
+      "sha256": "0e3c7da884bb0ed8a2989a15a5207c497dde3b754f7413842e42e144ea6aa285",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "AU": {
       "id": "AU",
@@ -706,18 +720,18 @@
       "release": [
         [
           225,
-          33
+          34
         ],
         [
           252,
-          61
+          62
         ],
         [
           267,
-          95
+          96
         ],
         [
-          251,
+          250,
           145
         ]
       ],
@@ -744,8 +758,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/AU/ready.webp",
-      "referenceSha256": "2c328ada98fe4a722fc405a59b69ce5932c2549cd3595438d720541001307cd2",
-      "sha256": "29262e476a5831a3cff90829d6a9358d252c1237c460c3f8e989a319b2910969"
+      "referenceSha256": "717ad69a159ca91a9dab7370f37f3c2aecbf35d43f40ce18f2267051d62701e1",
+      "sha256": "154f5661ab6376d8baeb3db878c356352899b9ee10f7ce116380128b7f73c587",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "US": {
       "id": "US",
@@ -761,8 +776,8 @@
           62
         ],
         [
-          260,
-          93
+          261,
+          94
         ],
         [
           252,
@@ -792,8 +807,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/US/ready.webp",
-      "referenceSha256": "b83cf7ab996b519bed396e84d84659393dab7206d9f6eacca524737da5f566e3",
-      "sha256": "eca0c680607417d50c0195b92c78ef36c8f87a714eb402e98a4fb2a284e05356"
+      "referenceSha256": "6e1bbdc4d94e2f694a2df45ae35a0195881b7f67e32e274834d02616d43e809e",
+      "sha256": "e2556161ac99cc5f0f9caf770bec35bebf02488095dbdd9f113fc0c38394a144",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "DO": {
       "id": "DO",
@@ -801,11 +817,11 @@
       "path": "assets/broadcast/nations/DO/pitcher.webp",
       "release": [
         [
-          221,
-          31
+          220,
+          32
         ],
         [
-          234,
+          236,
           61
         ],
         [
@@ -813,7 +829,7 @@
           90
         ],
         [
-          249,
+          250,
           146
         ]
       ],
@@ -840,8 +856,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/DO/ready.webp",
-      "referenceSha256": "9f3534ca3179123ba2545a4cb5bd7b053f43100909bc5ba8d270d0517fa69f18",
-      "sha256": "6d9d6beb182815308f42b6de3554bc6db2e4007985e714f8c3bb6ec9a66fbfdb"
+      "referenceSha256": "875acc80493b646c49efb9913754aa73b4c698db2650640f5e19dc397bfe8668",
+      "sha256": "e05ad0c9f5deae49aae5499b276a65432ead1e7fd63bd184390e39e4c7d89951",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "VE": {
       "id": "VE",
@@ -849,20 +866,20 @@
       "path": "assets/broadcast/nations/VE/pitcher.webp",
       "release": [
         [
-          226,
-          37
+          224,
+          35
         ],
         [
-          255,
-          60
+          253,
+          62
         ],
         [
-          263,
-          96
+          262,
+          98
         ],
         [
           250,
-          147
+          148
         ]
       ],
       "landing": [
@@ -888,8 +905,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/VE/ready.webp",
-      "referenceSha256": "1008600a3eb0a0b2cfabb2cb426120290c92d065d94051d8b1fa7dedb3545c78",
-      "sha256": "c1ea4843cb837221be40fb38d27ce7741c5abb0eaea1ed5dbdd7dd66f4c17122"
+      "referenceSha256": "673217c1a83f2a1a00a4817c45b117a088a55e072b3c723f83c559b61cfe2250",
+      "sha256": "e2255d26110d703ed2658d10634ce93151033e434c1b4df9a360bf2fe5ccec67",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "PR": {
       "id": "PR",
@@ -897,8 +915,8 @@
       "path": "assets/broadcast/nations/PR/pitcher.webp",
       "release": [
         [
-          224,
-          34
+          223,
+          37
         ],
         [
           251,
@@ -936,8 +954,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PR/ready.webp",
-      "referenceSha256": "6ed67057b831ddf3e8dd0ad7d7e0670b6afe8b5a4636347a48681bc7f8aa7d23",
-      "sha256": "0284397b5f8a148a08d9a7acd2c80b8953f9c4c94447b16c9969f3d6523fb8fa"
+      "referenceSha256": "6a9318aa3d9627c45db2594b46cefcddb54917f168abbb0543c4448bcdbe952a",
+      "sha256": "6876f52dc29bdc8b49f22f6cf258c4d0ec5f020b78e16d5912fd9b47a3741e84",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "CU": {
       "id": "CU",
@@ -953,8 +972,8 @@
           62
         ],
         [
-          252,
-          93
+          256,
+          92
         ],
         [
           250,
@@ -984,8 +1003,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CU/ready.webp",
-      "referenceSha256": "15f3dd69d14c6920ea6669db3b6110bbb76dc3ed40effd63efd12cd5ff43dedd",
-      "sha256": "ce5f00ea666ae6d8be7428e51920896fcf047c6509fdbb90cec7b75f28319605"
+      "referenceSha256": "1da148262b21c59c45ea6f3a04933916974be7d25e6dae6a4cc728656af63e40",
+      "sha256": "103e8bb0c511a6d07e08fee626247e25c20dea3bec6fd794c6c4c58286a4b456",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "MX": {
       "id": "MX",
@@ -994,19 +1014,19 @@
       "release": [
         [
           230,
-          35
+          36
         ],
         [
-          259,
+          258,
           62
         ],
         [
-          269,
-          95
+          268,
+          98
         ],
         [
-          249,
-          145
+          247,
+          146
         ]
       ],
       "landing": [
@@ -1032,8 +1052,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/MX/ready.webp",
-      "referenceSha256": "50bcde3cdcc322aac777ba42db6d7751dbcfff1f719df18a6fcb8f0c3344cbdd",
-      "sha256": "166f11c91181a4b2ee698fb74fe711dc03ad0a9f3fdd08d5c312ea6f881b357a"
+      "referenceSha256": "1afecbcbd2b80346bd11108c48a9637e4b414cf25901044d594d929268c81e5d",
+      "sha256": "01874b5de3a246ce3f3f49d17f873762f259c0df2c4b1ec0de99ca94151cd672",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "CA": {
       "id": "CA",
@@ -1042,19 +1063,19 @@
       "release": [
         [
           214,
-          32
+          33
         ],
         [
-          232,
-          59
+          231,
+          60
         ],
         [
-          256,
+          257,
           94
         ],
         [
           252,
-          146
+          147
         ]
       ],
       "landing": [
@@ -1080,8 +1101,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CA/ready.webp",
-      "referenceSha256": "3eae5319bc892199f4085c89fc0d315b644d6f6b91b04891cea716c912336047",
-      "sha256": "cefaf6530bf508f759b6d92cb0e21a30f83247f190fdea60cf798cee88de5175"
+      "referenceSha256": "a32aff651d49f333c7f648b4602d867e266af6e4d810ac4e1992ce4cabd53326",
+      "sha256": "1093733964de596df9787fc3f8ed46a7ee63cbc4393bf909b3470115d17560e2",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "PA": {
       "id": "PA",
@@ -1089,20 +1111,20 @@
       "path": "assets/broadcast/nations/PA/pitcher.webp",
       "release": [
         [
-          226,
-          30
+          225,
+          33
         ],
         [
           252,
-          60
+          61
         ],
         [
           266,
-          99
+          100
         ],
         [
           246,
-          146
+          147
         ]
       ],
       "landing": [
@@ -1128,8 +1150,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PA/ready.webp",
-      "referenceSha256": "06821d428913152fb035ed25aeb51be35d34090a2071ef547ea01499dd6f56a7",
-      "sha256": "18c94654715e60e0b2d43458cb1118e2c0c9fc9d1341db3991208caac6655ad1"
+      "referenceSha256": "ead10bda8319e4ad6e5f63a7e11acaf28d099097a6fd3c459465550c450e90d5",
+      "sha256": "49408437ca14b384965315c154c99b760a4c3aa9d700c9a86f864430eca18c6b",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "CO": {
       "id": "CO",
@@ -1137,15 +1160,15 @@
       "path": "assets/broadcast/nations/CO/pitcher.webp",
       "release": [
         [
-          225,
-          32
+          224,
+          34
         ],
         [
-          255,
-          60
+          253,
+          61
         ],
         [
-          270,
+          271,
           96
         ],
         [
@@ -1176,8 +1199,9 @@
       "readySourceSha256": "c616f4652a90e82b8236f3d54479e88f933bbb0af263b9f4e7ffb76fa3dea005",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CO/ready.webp",
-      "referenceSha256": "464a121754c08292f6e51d91ecb8e86b469a55a0c8aac49172836f7ae0a0cb2d",
-      "sha256": "f7eb3c0e3f06e8a67ad54aa1f702498df198981a223fe24f148b0cd6fe23c1a5"
+      "referenceSha256": "c43aa20a9946f25d48a92f910b20ac29ccdf59a449040c82c6865de1c8188b5e",
+      "sha256": "0d42c17b41d1d01c6f02c4c8b1c606aa748b43cd7b758df2787533683e574990",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "NI": {
       "id": "NI",
@@ -1186,15 +1210,15 @@
       "release": [
         [
           215,
-          33
+          34
         ],
         [
           247,
           61
         ],
         [
-          268,
-          95
+          269,
+          94
         ],
         [
           249,
@@ -1224,8 +1248,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/NI/ready.webp",
-      "referenceSha256": "35de7d7b3eff06bb1ac4973f79e695c77efb38a9a61f1e5acaa0d5f1f6bb172d",
-      "sha256": "48ccf52852b775d3c3ebb7d1f078861b0559ca98ce6615e28832fb51b26dca2c"
+      "referenceSha256": "465754c4061cf66887947ad80a9f38b341cad04b01007dcff8917b757309f1f1",
+      "sha256": "c50c422dfe829c62026f09704b9accfc2fa2a4d2497eff6ba8e76fc3c2871dc5",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "IT": {
       "id": "IT",
@@ -1237,8 +1262,8 @@
           33
         ],
         [
-          252,
-          63
+          254,
+          62
         ],
         [
           271,
@@ -1272,8 +1297,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/IT/ready.webp",
-      "referenceSha256": "8b52b6e30081f857e1b488894d7e24c3b7213b07623e6a2b3110d5e16a4514e8",
-      "sha256": "e5c50f0f747041a1d1495f3f47a309953b8047d9626842f1ccdc41471fd6a886"
+      "referenceSha256": "3bc44760ceb7a830d1c27bfb28f938f5ae5e918876a44ac1711992a52aa58f7a",
+      "sha256": "b08380b6147a8724ee501b800856b01a1f0eb931f7a3d19a02419b291070d40f",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "NL": {
       "id": "NL",
@@ -1281,8 +1307,8 @@
       "path": "assets/broadcast/nations/NL/pitcher.webp",
       "release": [
         [
-          226,
-          36
+          225,
+          34
         ],
         [
           247,
@@ -1293,8 +1319,8 @@
           95
         ],
         [
-          249,
-          149
+          248,
+          150
         ]
       ],
       "landing": [
@@ -1320,8 +1346,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/NL/ready.webp",
-      "referenceSha256": "7603a60e9f1a7593cb4612f4cd671cdfdb74d6702392b0e777d628a3630652f2",
-      "sha256": "c5a22dc8f48bd905937c9b063dc3802f3fe0468664f49b753e300bd8dcd951ae"
+      "referenceSha256": "10940550133fb67903920c328a8b24cccf20a52e63ded9679b126ccbc2b2e10c",
+      "sha256": "9804b550b3808b48cea4148919e10b4fed23fd454aa012d8491963cb01722c88",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "GB": {
       "id": "GB",
@@ -1329,19 +1356,19 @@
       "path": "assets/broadcast/nations/GB/pitcher.webp",
       "release": [
         [
-          222,
-          31
-        ],
-        [
-          252,
-          61
-        ],
-        [
-          263,
-          95
+          221,
+          35
         ],
         [
           251,
+          62
+        ],
+        [
+          261,
+          98
+        ],
+        [
+          250,
           146
         ]
       ],
@@ -1368,8 +1395,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/GB/ready.webp",
-      "referenceSha256": "b304cc69e915c542e3c420234e6f54e8b35b6dba9573e2dc6c6721be0ba035d7",
-      "sha256": "a56329e08efa7f92bec9ed4a6244480ba67b7f09c1c9bb370f133c9a4cf09e79"
+      "referenceSha256": "964909af0534ca09e1a3fb9604158c9c73f9f594bf244842b27bae2d6e952d2d",
+      "sha256": "6ee1ad604eb49fa5eee15b7c81cf87eda2f3a08356a0af05b3dd9f4bf5af751a",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "CZ": {
       "id": "CZ",
@@ -1385,8 +1413,8 @@
           62
         ],
         [
-          264,
-          95
+          262,
+          94
         ],
         [
           254,
@@ -1416,8 +1444,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/CZ/ready.webp",
-      "referenceSha256": "a6706f38b392c8a2b6e67ca0da2df79bba211dd2bd17422330565ad2ebe716ca",
-      "sha256": "3e90bfc6d16165eee3e03d2427179378295fea537900fa596c1b3c5a924145b8"
+      "referenceSha256": "86c3699c2989b4b58fdc1c84dce1b2ec5c31be8950f3ab77fc1bf36d2295e818",
+      "sha256": "7db99b7d9965a1598d018db8365011f237c7672a9d92346abd48732ed563f5d9",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "IL": {
       "id": "IL",
@@ -1433,8 +1462,8 @@
           62
         ],
         [
-          269,
-          94
+          272,
+          92
         ],
         [
           257,
@@ -1464,8 +1493,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/IL/ready.webp",
-      "referenceSha256": "ca54d9b2308dd92846ce390ff7e78308db47d690f3488fde8d770c5bad404bdc",
-      "sha256": "5b2fbcdf84a4117e71eb0ab35423f5304c0903776932ed6833daf79eb519b2f9"
+      "referenceSha256": "bbbf86c5149ef2422eefb9f84093e36750911a7d1f5aebb99f0243418b956cf6",
+      "sha256": "126106325e3a45b952fabf9f01e65b0a88ff7707ae1f8eeb43444f39127653db",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "PH": {
       "id": "PH",
@@ -1473,20 +1503,20 @@
       "path": "assets/broadcast/nations/PH/pitcher.webp",
       "release": [
         [
-          227,
-          36
+          226,
+          39
         ],
         [
-          256,
-          61
+          255,
+          62
         ],
         [
           271,
-          96
+          97
         ],
         [
           253,
-          148
+          149
         ]
       ],
       "landing": [
@@ -1512,8 +1542,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PH/ready.webp",
-      "referenceSha256": "8b55d95d27865d5e9a123297386d168d82a2ac065e52bd4a673ca329444a40a3",
-      "sha256": "572e59739b114d8ca6bd9c4104b87ec4a5e79a91c963fabf20dd69607912e4d1"
+      "referenceSha256": "544ea6d1a4374e5b3894e3e6d0a45f0fdb5a6ede3251a5514536f4681e1927f3",
+      "sha256": "1a31a419928450e8226c03497068f86cc03a012dba3db8817176c1c8885bd783",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "TH": {
       "id": "TH",
@@ -1533,8 +1564,8 @@
           91
         ],
         [
-          259,
-          147
+          261,
+          146
         ]
       ],
       "landing": [
@@ -1560,8 +1591,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/TH/ready.webp",
-      "referenceSha256": "ffe8a17a5427e1b1e84ce172216010c3df23d63c65089fbbdca70dbef5ec1008",
-      "sha256": "858c302e74d685f91a0a1b6ef776a9de2c3ab25ee437b08844f0d03d323a8ede"
+      "referenceSha256": "370752d9eb8d93af7fc6fce117ec7cefedf5099004fab3738390ea9de17c1672",
+      "sha256": "1765a7f013bd7319d979e60325d8936300cbfbc3c7c5d37e5f3ed0a7a701221b",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "HK": {
       "id": "HK",
@@ -1573,16 +1605,16 @@
           33
         ],
         [
-          255,
+          256,
           60
         ],
         [
-          271,
-          96
+          272,
+          97
         ],
         [
-          253,
-          146
+          252,
+          145
         ]
       ],
       "landing": [
@@ -1608,8 +1640,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/HK/ready.webp",
-      "referenceSha256": "93c9ed930c7cf668d0258c73a65b2a4dd8cdebf540825f6034858c1a58346153",
-      "sha256": "9ff5c7f1038d2f3f05047cc0ff63e37c39d83e185d5979778920a66daa872a79"
+      "referenceSha256": "5b74d22666bb1a0d64d9b8559dcb9670603fd229cdf8ed2ebe4f679218dec8fc",
+      "sha256": "bec10361705035a132357e8a38b05c333ee983c12a77b6a0dc871085bf29c035",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "PK": {
       "id": "PK",
@@ -1618,19 +1651,19 @@
       "release": [
         [
           228,
-          31
+          32
         ],
         [
           251,
           63
         ],
         [
-          270,
-          96
+          266,
+          100
         ],
         [
-          255,
-          145
+          254,
+          147
         ]
       ],
       "landing": [
@@ -1656,8 +1689,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/PK/ready.webp",
-      "referenceSha256": "3fc37f9c4c347b15e973167d030a45606bc33a5856751f37ace0c609193360d4",
-      "sha256": "1e6818e0a4a9566c522a9642666f5fa3ab816fea31023be47a7b325b31a1aa4a"
+      "referenceSha256": "0377a99e24988e9940c4e354ae4ce813d347405565e7853cab9b87dda7eea9c3",
+      "sha256": "af11f8b1d1067fdbaff497ae4ee177f5df271cfe06247a3cbaced5e6764f71e2",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "IN": {
       "id": "IN",
@@ -1704,8 +1738,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/IN/ready.webp",
-      "referenceSha256": "e963572aa5b39d15ace9d8816fe9880fdc7259be0cd4a804aec8bdd0f6fc2d03",
-      "sha256": "37a644a0070edc73d2f93171d6ba16c12af92434391d4f5e1c1268d872d4667e"
+      "referenceSha256": "5298a8ff02d05e0dde16189c12e6f00972e7cb579b9b1e1cb297673fe8c3997f",
+      "sha256": "f6182e40f6fff2b1b7c70783cb805335727b5f9ef8bb12857108f3652829cf2c",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "ID": {
       "id": "ID",
@@ -1713,19 +1748,19 @@
       "path": "assets/broadcast/nations/ID/pitcher.webp",
       "release": [
         [
-          223,
-          32
+          222,
+          31
         ],
         [
-          250,
-          60
+          251,
+          59
         ],
         [
-          261,
-          94
+          260,
+          95
         ],
         [
-          244,
+          245,
           145
         ]
       ],
@@ -1752,8 +1787,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/ID/ready.webp",
-      "referenceSha256": "06fdd01c433e236bb305c24b373852980361ec4dbfbf9ce047865afd65079787",
-      "sha256": "9bec568783d7fe25345447512327f8e5c43db32446e5b373b8c0eaba50114fec"
+      "referenceSha256": "273b59b568612b30aa2ef30901716535c38e2148c640c81b2218b30c51b2c415",
+      "sha256": "da64eb8bcea6c2d7ee1e5a266d9e80ee775dcbb5ce151de27ca4c6f5416755f7",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "SG": {
       "id": "SG",
@@ -1773,8 +1809,8 @@
           93
         ],
         [
-          251,
-          146
+          250,
+          147
         ]
       ],
       "landing": [
@@ -1800,8 +1836,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/SG/ready.webp",
-      "referenceSha256": "5b8b033b406a8a0bdb3a44980909ff57c698030c56f4835ed0132f8ad748a339",
-      "sha256": "8bc3faf679674961dd1f3a8de119b9b9162083f71184e389235ea559a7cddd93"
+      "referenceSha256": "65e267005d0d962f7c5cbd03bc13d9ae18b733553c82963caf0a8974c6ab474f",
+      "sha256": "cdf196ac30df6800c3f342b1573b1b168f53c69a0ef95dfb298f61fb5470d7df",
+      "alphaSource": "original source coverage intersected with foreground mask"
     },
     "INTL": {
       "id": "INTL",
@@ -1809,20 +1846,20 @@
       "path": "assets/broadcast/nations/INTL/pitcher.webp",
       "release": [
         [
-          223,
-          32
+          222,
+          35
+        ],
+        [
+          252,
+          62
+        ],
+        [
+          268,
+          95
         ],
         [
           254,
-          60
-        ],
-        [
-          272,
-          94
-        ],
-        [
-          254,
-          147
+          148
         ]
       ],
       "landing": [
@@ -1848,8 +1885,9 @@
       "readySourceSha256": "0792e0da50c8318bedc783e33f89f010ea688e8437496004ba66296cb84cca19",
       "poseReferenceSha256": "97715283c951841fbb80e2471498454e62a1702b1a10ec7cf2faf0419bc90434",
       "referenceFile": "assets/broadcast/nations/INTL/ready.webp",
-      "referenceSha256": "b18fe3a4b034b3f966ac10dd971fbf70d4b18f4151aa696da7c6fe8745ac6578",
-      "sha256": "fb6c922891df2162103ed47c9bf3c245d0260e8538effeb6cac9e377a60ced7f"
+      "referenceSha256": "ab880d2ad024cb2a28481b6122daef700457de3ce6c10b9513a4474dc9692c6d",
+      "sha256": "09f861cccbea4593de3826e32535fe64e7160d22db79882ef4a0ce68d47b65cb",
+      "alphaSource": "original source coverage intersected with foreground mask"
     }
   }
 }

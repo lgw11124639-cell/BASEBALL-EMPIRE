@@ -1,11 +1,11 @@
-import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-solid-uniform69';
+import {kits,normalizeUniformKey} from './broadcast-uniforms.mjs?v=20261107-alpha-cover70';
 export {kits};
 const atlases = new Map();
 export async function uniformAtlas(id, motion = "swing") {
   id = normalizeUniformKey(id);
   const key = motion + ":" + id;
   if(!atlases.has(key)) atlases.set(key,(async()=>{
-    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-solid-uniform69";
+    const url=(typeof id==="string"?"assets/broadcast/nations/"+id+"/"+motion+".webp":"assets/broadcast/motion/batter-"+motion+"/club-"+id+".webp")+"?v=20261107-alpha-cover70";
     const image=new Image();image.src=url;await image.decode();return url;
   })());
   return atlases.get(key);
@@ -62,7 +62,7 @@ export function framePlacement(frame,row,hand="right",bat="right",spec){
 }
 let uniformManifestPromise, uniformManifestData;
 async function uniformManifest() {
-  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-solid-uniform69")
+  if(!uniformManifestPromise) uniformManifestPromise = fetch(PITCH_UNIFORM_MANIFEST + "?v=20261107-alpha-cover70")
     .then(response=>{if(!response.ok)throw Error("Pitcher uniforms unavailable");return response.json();}).then(data=>{uniformManifestData=data;return data;});
   return uniformManifestPromise;
 }
@@ -76,7 +76,7 @@ async function preparedKit(id) {
     const manifest=await uniformManifest();
     entry.spec=specFor(id);
     entry.lastUsed=performance.now();
-    const source=new Image();source.src=entry.spec.path+"?v=20261107-solid-uniform69";
+    const source=new Image();source.src=entry.spec.path+"?v=20261107-alpha-cover70";
     await source.decode();
     const readerCanvas=document.createElement("canvas");readerCanvas.width=source.naturalWidth;readerCanvas.height=source.naturalHeight;
     const reader=readerCanvas.getContext("2d",{willReadFrequently:true});reader.drawImage(source,0,0);

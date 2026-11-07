@@ -18,7 +18,7 @@ int main(int argc,char**argv){
   int count=connectedComponentsWithStats(binary,labels,stats,centroids),largest=1;
   for(int i=2;i<count;i++)if(stats.at<int>(i,CC_STAT_AREA)>stats.at<int>(largest,CC_STAT_AREA))largest=i;
   for(int y=0;y<mask.rows;y++)for(int x=0;x<mask.cols;x++)if(labels.at<int>(y,x)!=largest)mask.at<float>(y,x)=0;
-  for(int y=0;y<src.rows;y++)for(int x=0;x<src.cols;x++){float a=std::clamp((mask.at<float>(y,x)-.35f)/.45f,0.f,1.f);result.at<Vec4b>(rect.y+y,rect.x+x)[3]=saturate_cast<uchar>(a*255);}
+  for(int y=0;y<src.rows;y++)for(int x=0;x<src.cols;x++){float a=std::clamp((mask.at<float>(y,x)-.35f)/.45f,0.f,1.f)*std::clamp((float(src.at<Vec4b>(y,x)[3])-96.f)/144.f,0.f,1.f);result.at<Vec4b>(rect.y+y,rect.x+x)[3]=saturate_cast<uchar>(a*255);}
  }
  imwrite(argv[3],result);std::cout<<"background removed\n";
 }

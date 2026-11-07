@@ -10,8 +10,9 @@ for(const entry of JSON.parse(readFileSync(process.argv[2]))){
  execFileSync('magick',[source,'-resize','1536x1024!',normalized]);
  execFileSync(process.env.BE_FOREGROUND,['/tmp/be-u2netp.onnx',normalized,cutout]);
  const boardHash=hash(readFileSync(readyBoard)),board='/tmp/be-board-'+boardHash+'.png';if(!existsSync(board))execFileSync(process.env.BE_FOREGROUND,['/tmp/be-u2netp.onnx',readyBoard,board,String(readyColumns),String(readyRows)]);
- const [w,h]=execFileSync('magick',['identify','-format','%w %h',board],{encoding:'utf8'}).trim().split(' ').map(Number),col=readyIndex%readyColumns,row=Math.floor(readyIndex/readyColumns),x=Math.round(col*w/readyColumns),y=Math.round(row*h/readyRows),width=Math.round((col+1)*w/readyColumns)-x,height=Math.round((row+1)*h/readyRows)-y,ready='/tmp/be-render-'+token+'-ready.png';
- execFileSync('magick',[board,'-crop',`${width}x${height}+${x}+${y}`,'+repage','-trim','+repage','-resize','x240','-background','none','-gravity','south','-extent','256x256',ready]);
+ const safeBoard='/tmp/be-ready-safe-'+boardHash+'.png';if(!process.env.BE_SOURCE_ALPHA)throw Error('BE_SOURCE_ALPHA packaging guard is required');if(!existsSync(safeBoard))execFileSync(process.env.BE_SOURCE_ALPHA,[readyBoard,board,safeBoard]);
+ const [w,h]=execFileSync('magick',['identify','-format','%w %h',safeBoard],{encoding:'utf8'}).trim().split(' ').map(Number),col=readyIndex%readyColumns,row=Math.floor(readyIndex/readyColumns),x=Math.round(col*w/readyColumns),y=Math.round(row*h/readyRows),width=Math.round((col+1)*w/readyColumns)-x,height=Math.round((row+1)*h/readyRows)-y,ready='/tmp/be-render-'+token+'-ready.png';
+ execFileSync('magick',[safeBoard,'-crop',`${width}x${height}+${x}+${y}`,'+repage','-trim','+repage','-resize','x240','-background','none','-gravity','south','-extent','256x256',ready]);
  const national=typeof key==='string',path=national?'assets/broadcast/nations/'+key+'/pitcher.webp':dir+'/club-'+key+'.webp';if(national)mkdirSync('assets/broadcast/nations/'+key,{recursive:true});
  const meta=JSON.parse(execFileSync(process.env.BE_RENDER_PACKER,[cutout,ready,path],{encoding:'utf8'}));
  const referenceFile=national?'assets/broadcast/nations/'+key+'/ready.webp':'assets/broadcast/uniforms/club-'+key+'.webp';

@@ -3,10 +3,11 @@ import {readFileSync,writeFileSync,mkdirSync,existsSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {NATIONAL_COLORS} from '../broadcast-uniforms.mjs';
+if(!process.env.BE_SOURCE_ALPHA)throw Error('BE_SOURCE_ALPHA packaging guard is required');
 const hash=data=>createHash('sha256').update(data).digest('hex'),codes=Object.keys(NATIONAL_COLORS),root='assets/broadcast/nations';mkdirSync(root,{recursive:true});
 let manifest;try{manifest=JSON.parse(readFileSync(root+'/manifest.json'))}catch{manifest={version:1,countries:{}}}
 function board(path){
- const sha=hash(readFileSync(path)),cut='/tmp/be-national-white-'+sha+'.png';
+ const sha=hash(readFileSync(path)),white='/tmp/be-national-white-'+sha+'.png',old='/tmp/be-national-spaced-'+sha+'.png',cut=existsSync(white)?white:existsSync(old)?old:white;
  if(!existsSync(cut)){
   const [w,h]=execFileSync('magick',['identify','-format','%w %h',path],{encoding:'utf8'}).trim().split(' ').map(Number),cw=Math.round(w/7),ch=Math.round(h/2),pad=Math.round(cw*.28),parts=[];
   for(let i=0;i<14;i++){const x=Math.round(i%7*w/7),y=Math.round(Math.floor(i/7)*h/2),left=Math.max(0,x-pad),right=Math.min(w,x+cw+pad),part='/tmp/be-spaced-'+sha+'-'+i+'.png';
@@ -15,7 +16,7 @@ function board(path){
   const spaced='/tmp/be-spaced-'+sha+'.png';execFileSync('magick',['montage',...parts,'-background','none','-tile','7x2','-geometry',`${cw+2*pad}x${ch}+0+0`,spaced]);
   execFileSync(process.env.BE_FOREGROUND,['/tmp/be-u2netp.onnx',spaced,cut,'7','2']);
  }
- const [w,h]=execFileSync('magick',['identify','-format','%w %h',cut],{encoding:'utf8'}).trim().split(' ').map(Number);return {cut,w,h,sha};
+ const safe='/tmp/be-national-source-alpha-'+sha+'.png',spaced='/tmp/be-spaced-'+sha+'.png';if(!existsSync(safe)&&process.env.BE_SOURCE_ALPHA&&existsSync(spaced))execFileSync(process.env.BE_SOURCE_ALPHA,[spaced,cut,safe]);const result=existsSync(safe)?safe:cut;const [w,h]=execFileSync('magick',['identify','-format','%w %h',result],{encoding:'utf8'}).trim().split(' ').map(Number);return {cut:result,w,h,sha};
 }
 function figure(b,index,out,ready=false){const c=index%7,r=Math.floor(index/7),x=Math.round(c*b.w/7),y=Math.round(r*b.h/2),w=Math.round((c+1)*b.w/7)-x,h=Math.round((r+1)*b.h/2)-y;
  // Captions live below the feet and are not part of the sprite.

@@ -16,6 +16,7 @@ window.openFirstOutCover=(angle=32)=>{const b=structuredClone(state.players.find
 
 window.openPitchActor=(hand='우투',delivery='오버핸드',batHand='우타',call='인플레이',outcome='홈런',club=0)=>beOpenGameReplay(1,club,{...fixture,away:club,home:(club+1)%10,awayRuns:1,homeRuns:0,awayInnings:[1],homeInnings:[0],broadcastEvents:[event(1,'away',1,outcome,seq([call],[[50,50]]),0,0,{pitchHand:hand,pitchDelivery:delivery,batterHand:batHand,batterThrowHand:'우투',afterBases:[null,null,null],score:1,runs:1,battedBall:{sprayAngle:10,launchAngle:30,defenderPosition:'RF',bunt:/번트/.test(outcome)}})]});
 window.openNationalUniform=(side='away')=>beOpenGameReplay(1,0,{...fixture,opponent:'JP',broadcastEvents:[event(1,side,1,'볼넷',seq(['볼'],[[50,50]]))]},[{name:'일본',city:'',color:'#26334f',countryCode:'JP'},{name:'대한민국',city:'',color:'#285bb3',countryCode:'KR'}]);
+window.openCoverHit=(position='LF')=>beOpenGameReplay(1,0,{...fixture,broadcastEvents:[event(1,'away',1,'안타',seq(['인플레이'],[[50,50]]),0,0,{bases:[2,null,null],afterBases:[1,2,null],battedBall:{sprayAngle:position==='LF'?-35:35,launchAngle:18,defenderPosition:position}})]});
 window.openUniformScrimmage=()=>beOpenGameReplay(1,6,{...fixture,scrimmage:true,clubId:6,broadcastEvents:[event(1,'away',1,'볼넷',seq(['볼'],[[50,50]]))]});
 window.openHalfBreak=()=>beOpenGameReplay(1,0,{...fixture,broadcastEvents:[event(1,'away',1,'삼진',seq(['헛스윙 삼진']),2,3),event(1,'home',3,'삼진',seq(['헛스윙 삼진']),2,3),event(2,'away',2,'삼진',seq(['헛스윙 삼진']),0,1)]});
 `;
@@ -260,4 +261,9 @@ for(const side of ['away','home'])test('national opponents keep their country un
  expect(await page.locator('.be-motion-pitcher').evaluate(el=>el._actor.inspect().kit)).toBe(pitcher);
  await page.locator('#be-replay-auto').click();await page.locator('.be-stadium').screenshot({path:'test-results/national-'+side+'.png'});
  expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
+});
+
+for(const [position,cover]of[['LF','2B'],['RF','SS']])test('outfield cutoff leaves a separate second-base cover '+position,async({page})=>{
+ const errors=await open(page,'openCoverHit',[position]);await page.locator('#be-replay-sound').uncheck();await frame(page);await page.locator('#be-replay-next').click();await page.clock.runFor(7000);
+ const point=await page.locator('[data-fielder="'+cover+'"]').evaluate(node=>{const m=node.transform.baseVal.consolidate().matrix,n=node.querySelector('.be-fielder-body').transform.baseVal.consolidate()?.matrix;return [Math.round(m.e+(n?.e||0)),Math.round(m.f+(n?.f||0))]});expect(point).toEqual([360,275]);await page.locator('.be-stadium').screenshot({path:'test-results/outfield-cover-'+position+'.png'});expect(errors).toEqual([]);await page.evaluate(()=>beCloseGameReplay());
 });

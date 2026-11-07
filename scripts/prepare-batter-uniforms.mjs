@@ -13,7 +13,8 @@ for(let id=0;id<10;id++){
  execFileSync('magick',[files[id],'-resize','768x768!',resized]);
  execFileSync('magick',[kind==='bunt'?process.env.BE_BUNT_MASTER:'assets/broadcast/motion/batter-swing.webp','-resize','768x768!',reference]);
  execFileSync(process.env.BE_POSE_PACKER,['matte',resized,reference,matte,'2','2']);
- execFileSync('magick',[matte,'-quality','95',dir+'/'+file]);
+ if(!process.env.BE_SOURCE_ALPHA)throw Error('BE_SOURCE_ALPHA packaging guard is required');const safe=resized+'.safe.png';execFileSync(process.env.BE_SOURCE_ALPHA,[resized,matte,safe]);
+ execFileSync('magick',[safe,'-quality','95',dir+'/'+file]);
  const data=readFileSync(dir+'/'+file);manifest.clubs[id]={id,file,sha256:createHash('sha256').update(data).digest('hex'),sourceSha256:createHash('sha256').update(readFileSync(files[id])).digest('hex'),referenceFile,referenceSha256:createHash('sha256').update(readFileSync(referenceFile)).digest('hex')};
  console.log(kind,id,data.length);
 }
