@@ -1,0 +1,304 @@
+{
+  "forms": [
+    {
+      "row": 0,
+      "uniquePoses": 120,
+      "uniqueRenderedFrames": 120
+    },
+    {
+      "row": 1,
+      "uniquePoses": 120,
+      "uniqueRenderedFrames": 120
+    },
+    {
+      "row": 2,
+      "uniquePoses": 120,
+      "uniqueRenderedFrames": 120
+    },
+    {
+      "row": 3,
+      "uniquePoses": 120,
+      "uniqueRenderedFrames": 120
+    }
+  ],
+  "uniformCount": 38,
+  "uniforms": [
+    {
+      "key": "0",
+      "renderHash": 2063747525
+    },
+    {
+      "key": "1",
+      "renderHash": 435837884
+    },
+    {
+      "key": "2",
+      "renderHash": 3852420342
+    },
+    {
+      "key": "3",
+      "renderHash": 4070548002
+    },
+    {
+      "key": "4",
+      "renderHash": 1307948995
+    },
+    {
+      "key": "5",
+      "renderHash": 4281523221
+    },
+    {
+      "key": "6",
+      "renderHash": 1061123232
+    },
+    {
+      "key": "7",
+      "renderHash": 1227600053
+    },
+    {
+      "key": "8",
+      "renderHash": 839568714
+    },
+    {
+      "key": "9",
+      "renderHash": 3010388396
+    },
+    {
+      "key": "KR",
+      "renderHash": 2656717571
+    },
+    {
+      "key": "JP",
+      "renderHash": 3422569866
+    },
+    {
+      "key": "TW",
+      "renderHash": 2316481359
+    },
+    {
+      "key": "CN",
+      "renderHash": 3609941635
+    },
+    {
+      "key": "AU",
+      "renderHash": 2206621799
+    },
+    {
+      "key": "US",
+      "renderHash": 3336970914
+    },
+    {
+      "key": "DO",
+      "renderHash": 3625313480
+    },
+    {
+      "key": "VE",
+      "renderHash": 2328243840
+    },
+    {
+      "key": "PR",
+      "renderHash": 1708331444
+    },
+    {
+      "key": "CU",
+      "renderHash": 1259341159
+    },
+    {
+      "key": "MX",
+      "renderHash": 1984362610
+    },
+    {
+      "key": "CA",
+      "renderHash": 4132164589
+    },
+    {
+      "key": "PA",
+      "renderHash": 1570785079
+    },
+    {
+      "key": "CO",
+      "renderHash": 118393687
+    },
+    {
+      "key": "NI",
+      "renderHash": 2421181575
+    },
+    {
+      "key": "IT",
+      "renderHash": 2988285602
+    },
+    {
+      "key": "NL",
+      "renderHash": 1540512023
+    },
+    {
+      "key": "GB",
+      "renderHash": 2048468942
+    },
+    {
+      "key": "CZ",
+      "renderHash": 1507493440
+    },
+    {
+      "key": "IL",
+      "renderHash": 1261056732
+    },
+    {
+      "key": "PH",
+      "renderHash": 818560621
+    },
+    {
+      "key": "TH",
+      "renderHash": 3261815967
+    },
+    {
+      "key": "HK",
+      "renderHash": 2037377984
+    },
+    {
+      "key": "PK",
+      "renderHash": 3130360968
+    },
+    {
+      "key": "IN",
+      "renderHash": 3055218700
+    },
+    {
+      "key": "ID",
+      "renderHash": 1412643533
+    },
+    {
+      "key": "SG",
+      "renderHash": 1847031777
+    },
+    {
+      "key": "INTL",
+      "renderHash": 567175616
+    }
+  ],
+  "maxLengthDrift": 0.000003643692504773366,
+  "maxPivotError": 0.0000023643994238064002,
+  "maxLandingError": 0.0000032377075343542257,
+  "maxArmReachError": 0,
+  "maxGazeError": 0.000003865835389275077,
+  "maxThrowDirectionError": 0.00000328977735121399,
+  "limbLengths": {
+    "thighR": 0.48922896747208466,
+    "shinR": 0.4785832424241339,
+    "upperarmR": 0.25917731799318383,
+    "forearmR": 0.2774584221416352,
+    "thighL": 0.4892290454520849,
+    "shinL": 0.47858304299005494,
+    "upperarmL": 0.2591774111402747,
+    "forearmL": 0.27745760496119326
+  },
+  "ready": {
+    "phase": 0,
+    "hand": "right",
+    "delivery": 0,
+    "rightSole": [
+      -0.10999986877011592,
+      -2.676847539739846e-7,
+      7.040122709522922e-7
+    ],
+    "leftSole": [
+      0.01500021581478558,
+      -4.272898659896107e-8,
+      0.07500094488897244
+    ],
+    "rightKnee": [
+      -0.08301675254619259,
+      0.5570140829105206,
+      0.04522693972134147
+    ],
+    "leftKnee": [
+      0.05059146617402549,
+      0.5410510499168717,
+      0.20321346497985218
+    ],
+    "throwingBone": "wrist.R",
+    "gloveBone": "wrist.L",
+    "pivotLocked": true,
+    "landingLocked": false,
+    "errors": {
+      "legR": 0,
+      "legL": 0,
+      "armR": 0,
+      "armL": 0
+    }
+  },
+  "lift": {
+    "phase": 1,
+    "hand": "right",
+    "delivery": 0,
+    "rightSole": [
+      -0.1099997624887442,
+      -9.836664149887042e-9,
+      9.366638800481497e-7
+    ],
+    "leftSole": [
+      0.11999842249296247,
+      0.6500006822095804,
+      0.2900027415646641
+    ],
+    "rightKnee": [
+      -0.0987608829695066,
+      0.557588421996405,
+      0.045833321252984005
+    ],
+    "leftKnee": [
+      -0.0016180394825504874,
+      1.1036130828992325,
+      0.5650650741093987
+    ],
+    "throwingBone": "wrist.R",
+    "gloveBone": "wrist.L",
+    "pivotLocked": true,
+    "landingLocked": false,
+    "errors": {
+      "legR": 0,
+      "legL": 0,
+      "armR": 0,
+      "armL": 0
+    }
+  },
+  "end": {
+    "phase": 4,
+    "hand": "right",
+    "delivery": 0,
+    "rightSole": [
+      -0.11000020339470193,
+      -4.886956638805451e-7,
+      1.1800009625065395
+    ],
+    "leftSole": [
+      0.14000011543982913,
+      -0.0000010295410331762067,
+      1.1200007778306935
+    ],
+    "rightKnee": [
+      -0.11373701215977874,
+      0.5569434044853294,
+      1.2331672311580961
+    ],
+    "leftKnee": [
+      0.14243876737845101,
+      0.5585667467464237,
+      1.1558842061628192
+    ],
+    "throwingBone": "wrist.R",
+    "gloveBone": "wrist.L",
+    "pivotLocked": false,
+    "landingLocked": true,
+    "errors": {
+      "legR": 0,
+      "legL": 0,
+      "armR": 0,
+      "armL": 0
+    }
+  },
+  "browserErrors": [],
+  "timeBaseHz": 60,
+  "durationMs": 2000,
+  "scope": "Separate 3D review; current game actor unchanged"
+}
